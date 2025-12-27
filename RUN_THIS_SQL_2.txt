@@ -1,0 +1,3 @@
+
+-- Run this if you want to store difficulty properly (optional but recommended)
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS difficulty_level TEXT DEFAULT 'Beginner';

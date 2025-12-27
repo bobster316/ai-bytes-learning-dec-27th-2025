@@ -1,0 +1,210 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-inter: 'Inter', sans-serif;
+  --font-jetbrains-mono: 'JetBrains Mono', monospace;
+  --font-cormorant: 'Cormorant Garamond', serif;
+}
+
+:root {
+  /* Typography Scale - Neural Architect */
+  --fs-hero: 120px;
+  /* 11% background progress */
+  --fs-h1: 40px;
+  /* Course Titles */
+  --fs-h2: 28px;
+  /* Module Titles */
+  --fs-body: 18px;
+  /* Standard Reading Content */
+  --fs-micro: 12px;
+  /* AI Data Shards / Labels */
+
+  /* Spacing & Rhythm */
+  --lh-body: 1.75;
+  --para-spacing: 2rem;
+  /* Space between paragraph blocks */
+  --max-content-width: 68ch;
+  /* The Golden Ratio for readability */
+
+  /* Colors - "Obsidian" Palette */
+  --navy-blue: #0A1628;
+  --dark-navy: #020617;
+  --obsidian: #030305;
+  --royal-blue: #00d3f2;
+  --electric-indigo: #06b6d4;
+  --cyan-glow: #00d3f2;
+
+  --pure-white: #FFFFFF;
+  --soft-white: #E0E0E0;
+  --off-white: #F8FAFC;
+
+  /* Theme Defaults */
+  --background: var(--off-white);
+  --foreground: var(--navy-blue);
+
+  --primary: #00d3f2;
+  --primary-foreground: #020617;
+  --muted: #64748B;
+  --border: #E2E8F0;
+  --card: #FFFFFF;
+
+  /* Tailwind Config Mappings */
+  --background-default: var(--off-white);
+  --foreground-default: var(--navy-blue);
+  --background-subtle: var(--soft-white);
+  --foreground-subtle: var(--muted);
+  --background-card: var(--card);
+  --background-inverse: var(--navy-blue);
+  --foreground-inverse: var(--pure-white);
+  --border-default: var(--border);
+}
+
+.dark {
+  --background: var(--obsidian);
+  --foreground: var(--pure-white);
+  --primary: #00d3f2;
+  --primary-foreground: #020617;
+  --muted: #94A3B8;
+  --border: rgba(255, 255, 255, 0.1);
+  --card: rgba(255, 255, 255, 0.05);
+
+  /* Tailwind Config Mappings */
+  --background-default: var(--obsidian);
+  --foreground-default: var(--pure-white);
+  --background-subtle: #1e293b;
+  --foreground-subtle: #cbd5e1;
+  --background-card: var(--card);
+  --background-inverse: var(--pure-white);
+  --foreground-inverse: var(--obsidian);
+  --border-default: var(--border);
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  background: #f8fafc;
+  /* Light mode solid background */
+  color: var(--foreground-default);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.dark body {
+  background: #020617;
+  /* Dark mode solid background */
+}
+
+/* 
+  Modern Grid Background Utility
+  Creates a subtle technical grid background 
+*/
+.bg-grid-slate-200 {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='%23e2e8f0'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e");
+}
+
+.dark .bg-grid-slate-800 {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='%231e293b'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e");
+}
+
+/* 
+   Glassmorphism Utilities 
+   Used for premium cards
+*/
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.dark .glass-panel {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 
+   Gradients for Text "Glow"
+*/
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  background-image: linear-gradient(135deg, #00d3f2, #06b6d4);
+}
+
+/* Animations from previous file + new ones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-delay-100 {
+  animation-delay: 0.1s;
+}
+
+.animate-delay-200 {
+  animation-delay: 0.2s;
+}
+
+.animate-delay-300 {
+  animation-delay: 0.3s;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--mid-grey);
+  border-radius: 4px;
+}
+
+@keyframes scan-horizontal {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
