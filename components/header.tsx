@@ -2,25 +2,63 @@
 
 import { Logo } from "@/components/logo";
 import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Moon, Sun, Menu, X, Settings } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Menu, X, Settings, User, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useTheme } from "next-themes";
+import { useRouter } from "next/navigation";
 
 export function Header() {
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const [user, setUser] = useState<{ email: string; name?: string } | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // useEffect only runs on the client, so now we can safely show the UI
   useEffect(() => {
     setMounted(true);
+    checkUser();
   }, []);
 
+  const checkUser = async () => {
+    try {
+      const { createClient } = await import("@/lib/supabase/client");
+      const supabase = createClient();
+      if (!supabase) {
+        setLoading(false);
+        return;
+      }
+
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (authUser) {
+        setUser({
+          email: authUser.email || "",
+          name: authUser.user_metadata?.full_name || authUser.email?.split("@")[0],
+        });
+      }
+    } catch (error) {
+      console.error("Error checking user:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      const { createClient } = await import("@/lib/supabase/client");
+      const supabase = createClient();
+      if (supabase) {
+        await supabase.auth.signOut();
+        setUser(null);
+        router.push("/");
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
   if (!mounted) {
-    return null; // or a skeleton loader
+    return null;
   }
 
   return (
@@ -28,16 +66,13 @@ export function Header() {
       <div className="flex h-28 items-center justify-between px-2 lg:px-6 max-w-full overflow-hidden">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 lg:gap-3 shrink-0 pl-0">
-          {/* Large logo but constrained width to prevent overflow */}
-          <div className="relative h-20 w-80 md:h-24 md:w-[26rem] overflow-hidden">
-            <Logo className="w-full h-full scale-[1.8] origin-left" />
+          <div className="relative h-20 w-64 lg:w-72 xl:w-[26rem] overflow-hidden transition-all duration-300">
+            <Logo className="w-full h-full scale-[2.2] origin-left" />
           </div>
         </Link>
 
-
-
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-5 xl:gap-8">
+        <nav className="hidden lg:flex items-center gap-4 xl:gap-8 shrink">
           <Link
             href="/"
             className="text-sm font-semibold text-slate-600 dark:text-slate-300 transition-colors hover:text-slate-900 dark:hover:text-white whitespace-nowrap"
@@ -71,7 +106,7 @@ export function Header() {
         </nav>
 
         {/* Desktop CTA Buttons */}
-        <div className="hidden lg:flex items-center gap-2 xl:gap-4">
+        <div className="hidden lg:flex items-center gap-2 xl:gap-4 shrink-0">
           <Link href="/admin">
             <Button variant="ghost" size="sm" className="text-slate-600 dark:text-slate-300 font-medium px-2">
               <Settings className="w-4 h-4 mr-0 lg:mr-2" />
@@ -80,19 +115,45 @@ export function Header() {
           </Link>
 
           <div className="h-6 w-px bg-border mx-2" />
-          <Link href="/auth/signin">
-            <Button variant="ghost" className="text-slate-600 dark:text-slate-300 font-bold px-2 xl:px-4 text-xs xl:text-sm whitespace-nowrap">
-              Sign In
-            </Button>
-          </Link>
-          <Link href="/auth/signup">
-            <Button className="font-bold bg-[#00d3f2] hover:bg-[#00b8d4] text-white shadow-lg hover:shadow-xl transition-all px-4 xl:px-6 text-xs xl:text-sm h-10 whitespace-nowrap">
-              Start Free Trial
-            </Button>
-          </Link>
+
+          {loading ? (
+            <div className="w-24 h-10 bg-slate-200 dark:bg-slate-700 animate-pulse rounded-lg" />
+          ) : user ? (
+            // Logged in state
+            <div className="flex items-center gap-3">
+              <Link href="/dashboard">
+                <Button variant="ghost" className="text-slate-600 dark:text-slate-300 font-medium px-3">
+                  <User className="w-4 h-4 mr-2" />
+                  Dashboard
+                </Button>
+              </Link>
+              <Button
+                variant="outline"
+                onClick={handleSignOut}
+                className="text-slate-600 dark:text-slate-300 font-medium px-3"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
+          ) : (
+            // Logged out state
+            <>
+              <Link href="/auth/signin">
+                <Button variant="ghost" className="text-slate-600 dark:text-slate-300 font-bold px-2 xl:px-4 text-xs xl:text-sm whitespace-nowrap">
+                  Sign In
+                </Button>
+              </Link>
+              <Link href="/auth/signup">
+                <Button className="font-bold bg-[#00d3f2] hover:bg-[#00b8d4] text-white shadow-lg hover:shadow-xl transition-all px-4 xl:px-6 text-xs xl:text-sm h-10 whitespace-nowrap">
+                  Start Free Trial
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
 
-        {/* Mobile Menu Button - Shown on screens < lg */}
+        {/* Mobile Menu Button */}
         <button
           className="lg:hidden p-2 -mr-2"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -103,59 +164,80 @@ export function Header() {
             <Menu className="h-6 w-6 text-foreground" />
           )}
         </button>
-      </div >
+      </div>
 
       {/* Mobile Menu */}
-      {
-        mobileMenuOpen && (
-          <div className="border-t border-border bg-background lg:hidden animate-in slide-in-from-top-5 duration-200">
-            <nav className="container mx-auto flex flex-col space-y-4 px-4 py-6">
-              <Link
-                href="/"
-                className="text-lg font-medium text-foreground/80 hover:text-foreground p-2 rounded-md hover:bg-muted"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Home
-              </Link>
-              <Link
-                href="/courses"
-                className="text-lg font-medium text-foreground/80 hover:text-foreground p-2 rounded-md hover:bg-muted"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Courses
-              </Link>
-              <Link
-                href="/pricing"
-                className="text-lg font-medium text-foreground/80 hover:text-foreground p-2 rounded-md hover:bg-muted"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Pricing
-              </Link>
-              <Link
-                href="/about"
-                className="text-lg font-medium text-foreground/80 hover:text-foreground p-2 rounded-md hover:bg-muted"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                About
-              </Link>
-              <Link
-                href="/blog"
-                className="text-lg font-medium text-foreground/80 hover:text-foreground p-2 rounded-md hover:bg-muted"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Blog
-              </Link>
-              <Link
-                href="/admin"
-                className="text-lg font-medium text-foreground/80 hover:text-foreground p-2 rounded-md hover:bg-muted flex items-center"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <Settings className="w-5 h-5 mr-2" />
-                Admin
-              </Link>
+      {mobileMenuOpen && (
+        <div className="border-t border-border bg-background lg:hidden animate-in slide-in-from-top-5 duration-200">
+          <nav className="container mx-auto flex flex-col space-y-4 px-4 py-6">
+            <Link
+              href="/"
+              className="text-lg font-medium text-foreground/80 hover:text-foreground p-2 rounded-md hover:bg-muted"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Home
+            </Link>
+            <Link
+              href="/courses"
+              className="text-lg font-medium text-foreground/80 hover:text-foreground p-2 rounded-md hover:bg-muted"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Courses
+            </Link>
+            <Link
+              href="/pricing"
+              className="text-lg font-medium text-foreground/80 hover:text-foreground p-2 rounded-md hover:bg-muted"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Pricing
+            </Link>
+            <Link
+              href="/about"
+              className="text-lg font-medium text-foreground/80 hover:text-foreground p-2 rounded-md hover:bg-muted"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              About
+            </Link>
+            <Link
+              href="/blog"
+              className="text-lg font-medium text-foreground/80 hover:text-foreground p-2 rounded-md hover:bg-muted"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Blog
+            </Link>
+            <Link
+              href="/admin"
+              className="text-lg font-medium text-foreground/80 hover:text-foreground p-2 rounded-md hover:bg-muted flex items-center"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Settings className="w-5 h-5 mr-2" />
+              Admin
+            </Link>
 
-              <div className="pt-4 space-y-3 border-t border-border mt-2">
-
+            <div className="pt-4 space-y-3 border-t border-border mt-2">
+              {user ? (
+                // Logged in mobile
+                <div className="space-y-3">
+                  <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full">
+                      <User className="w-4 h-4 mr-2" />
+                      Dashboard
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      handleSignOut();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </div>
+              ) : (
+                // Logged out mobile
                 <div className="grid grid-cols-2 gap-3">
                   <Link href="/auth/signin">
                     <Button variant="outline" className="w-full">
@@ -168,11 +250,11 @@ export function Header() {
                     </Button>
                   </Link>
                 </div>
-              </div>
-            </nav>
-          </div>
-        )
-      }
-    </header >
+              )}
+            </div>
+          </nav>
+        </div>
+      )}
+    </header>
   );
 }

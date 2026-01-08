@@ -155,7 +155,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const $ = cheerio.load(article.content);
+    const $ = cheerio.load(article.content || "");
 
     // Remove the featured image if it's present in the body
     if (imageUrl) {

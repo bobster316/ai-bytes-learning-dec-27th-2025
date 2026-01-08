@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './AINews.css';
 
 const AINews = () => {
@@ -13,35 +13,26 @@ const AINews = () => {
   const ARTICLES_PER_PAGE = 12;
   const API_URL = 'http://localhost:5000/api/ai-news';
 
-  useEffect(() => {
-    fetchNews();
-    
-    // Auto-refresh every 5 minutes for urgent news
-    const refreshInterval = setInterval(fetchNews, 5 * 60 * 1000);
-    
-    return () => clearInterval(refreshInterval);
-  }, [page]);
-
-  const fetchNews = async () => {
+  const fetchNews = useCallback(async () => {
     try {
       setLoading(true);
       const offset = page * ARTICLES_PER_PAGE;
       const response = await fetch(
         `${API_URL}?limit=${ARTICLES_PER_PAGE}&offset=${offset}`
       );
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch news');
       }
 
       const data = await response.json();
-      
+
       if (page === 0) {
         setArticles(data.articles);
       } else {
         setArticles(prev => [...prev, ...data.articles]);
       }
-      
+
       setHasMore(offset + data.articles.length < data.total);
       setLastUpdate(data.last_updated);
       setUrgentCount(data.urgent_count || 0);
@@ -52,7 +43,16 @@ const AINews = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page]);
+
+  useEffect(() => {
+    fetchNews();
+
+    // Auto-refresh every 5 minutes for urgent news
+    const refreshInterval = setInterval(fetchNews, 5 * 60 * 1000);
+
+    return () => clearInterval(refreshInterval);
+  }, [fetchNews]);
 
   const loadMore = () => {
     setPage(prev => prev + 1);
@@ -65,7 +65,7 @@ const AINews = () => {
     const diffTime = Math.abs(now - date);
     const diffMinutes = Math.floor(diffTime / (1000 * 60));
     const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
-    
+
     if (diffMinutes < 60) return `${diffMinutes} min ago`;
     if (diffHours < 24) return `${diffHours} hours ago`;
     return date.toLocaleDateString();
@@ -80,7 +80,7 @@ const AINews = () => {
     const lastUpdateTime = new Date(lastUpdateStr);
     const now = new Date();
     const diffMinutes = Math.floor((now - lastUpdateTime) / (1000 * 60));
-    
+
     if (diffMinutes < 1) return 'just now';
     if (diffMinutes < 60) return `${diffMinutes} min ago`;
     return `${Math.floor(diffMinutes / 60)} hours ago`;
@@ -135,8 +135,8 @@ const AINews = () => {
         <>
           <div className="news-grid">
             {articles.map((article, index) => (
-              <article 
-                key={index} 
+              <article
+                key={index}
                 className={`news-card ${article.is_urgent ? 'urgent-news' : ''}`}
               >
                 {article.is_urgent && (
@@ -144,7 +144,7 @@ const AINews = () => {
                     <span>🔥 BREAKING</span>
                   </div>
                 )}
-                
+
                 <div className="news-image-container">
                   <img
                     src={article.image || getPlaceholderImage()}
@@ -156,25 +156,25 @@ const AINews = () => {
                   />
                   <div className="news-source-badge">{article.source}</div>
                 </div>
-                
+
                 <div className="news-content">
                   <div className="news-meta">
                     <span className="news-date">{formatDate(article.published)}</span>
                   </div>
-                  
+
                   <h2 className="news-title">
                     <a href={article.link} target="_blank" rel="noopener noreferrer">
                       {article.title}
                     </a>
                   </h2>
-                  
+
                   {article.summary && (
                     <p className="news-summary">{article.summary}</p>
                   )}
-                  
-                  <a 
-                    href={article.link} 
-                    target="_blank" 
+
+                  <a
+                    href={article.link}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="read-more"
                   >
@@ -187,8 +187,8 @@ const AINews = () => {
 
           {hasMore && (
             <div className="load-more-container">
-              <button 
-                onClick={loadMore} 
+              <button
+                onClick={loadMore}
                 disabled={loading}
                 className="load-more-button"
               >

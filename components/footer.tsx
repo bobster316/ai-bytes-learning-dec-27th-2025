@@ -8,7 +8,7 @@ export function Footer() {
     return (
         <footer className="relative w-full mt-10 bg-slate-50 dark:bg-[#0B1120] transition-colors duration-300">
             {/* ... background elements ... */}
-            <div className="absolute inset-x-0 bottom-0 top-20 bg-white dark:bg-[#0B1120] rounded-t-[2.5rem] overflow-hidden -z-10 shadow-2xl border-t border-slate-200 dark:border-white/5 mx-auto w-[98%] max-w-[1400px]">
+            <div className="absolute inset-x-0 bottom-0 top-20 bg-white dark:bg-[#0B1120] rounded-t-[2.5rem] overflow-hidden -z-10 shadow-2xl border-t border-slate-200 dark:border-white/5 mx-auto w-[98%] max-w-[1400px] pointer-events-none">
                 <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
                 {/* subtle glow - dark mode only or adjusted for light */}
                 <div className="absolute -top-[200px] left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/5 dark:bg-primary/10 blur-[100px] rounded-full opacity-50 pointer-events-none"></div>
@@ -20,10 +20,10 @@ export function Footer() {
 
                     {/* Brand Column */}
                     <div className="lg:col-span-4 space-y-8">
-                        {/* Logo - Restored Size & Dual Mode */}
-                        <div className="relative h-40 w-[32rem] md:h-48 md:w-[40rem] lg:w-[44rem] xl:w-[50rem] overflow-hidden transition-all duration-300 flex items-center">
-                            <Logo className="w-full h-full" />
-                        </div>
+                        {/* Logo - Clickable, links to homepage */}
+                        <Link href="/" className="relative h-[4.6rem] w-56 md:h-[5.75rem] md:w-64 overflow-hidden transition-all duration-300 flex items-center hover:opacity-80">
+                            <Logo className="w-full h-full scale-[2.1] origin-left" />
+                        </Link>
                         <p className="text-slate-600 dark:text-slate-400 text-base leading-relaxed max-w-sm font-medium">
                             Democratizing AI education for everyone. Master complex topics in 60-minute byte-sized lessons designed for all ages and backgrounds.
                         </p>

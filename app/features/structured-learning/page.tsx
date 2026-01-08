@@ -12,7 +12,7 @@ export default function StructuredLearningPage() {
 
         "One of the biggest challenges in self-directed learning is the 'tutorial hell' phenomenon, where learners consume endless content but never truly understand how to apply it or how different concepts relate to one another. You might learn how to write a specific line of code or use a specific tool, but without understanding the broader context, that knowledge is fragile. Our structured approach eliminates this by contextualising every lesson within a broader learning path. You always know exactly where you are, where you have come from, and where you are going next.",
 
-        "Our lessons are bite-sized by design, typically taking no more than 15 minutes to complete. This is not just a convenience; it is a cognitive necessity. Research into cognitive load theory suggests that our brains have a limited capacity for processing new information in a single sitting. When that capacity is exceeded, learning stops, and confusion begins. By limiting our lessons to focused, digestible chunks, we ensure that you remain in the optimal zone for retention and understanding throughout your journey.",
+        "Our lessons are byte-sized by design, typically taking no more than 15 minutes to complete. This is not just a convenience; it is a cognitive necessity. Research into cognitive load theory suggests that our brains have a limited capacity for processing new information in a single sitting. When that capacity is exceeded, learning stops, and confusion begins. By limiting our lessons to focused, digestible chunks, we ensure that you remain in the optimal zone for retention and understanding throughout your journey.",
 
         "This micro-learning format also respects the reality of your busy professional life. Finding an hour to watch a lecture is difficult; finding 15 minutes while commuting, waiting for a meeting, or having a morning coffee is entirely achievable. This consistency is the key to mastery. Studying for 15 minutes every day is infinitely more effective than studying for four hours once a month. Our structure facilitates this habit-forming behaviour, turning learning into a sustainable daily practice rather than a sporadic burden.",
 
@@ -43,8 +43,8 @@ export default function StructuredLearningPage() {
         },
         {
             src: "/images/features/structured-learning-2.png",
-            alt: "A professional woman studying on a tablet in a coffee shop, demonstrating bite-sized learning.",
-            caption: "Bite-sized sections fit into your busy schedule, not the other way around."
+            alt: "A professional woman studying on a tablet in a coffee shop, demonstrating byte-sized learning.",
+            caption: "Byte-sized sections fit into your busy schedule, not the other way around."
         },
         {
             src: "/images/features/structured-learning-3.png",
@@ -56,7 +56,7 @@ export default function StructuredLearningPage() {
     return (
         <FeaturePageLayout
             title="Structured Learning"
-            subtitle="Bite-sized lessons with clear progression paths for maximum retention"
+            subtitle="Byte-sized lessons with clear progression paths for maximum retention"
             content={content}
             images={images}
         />

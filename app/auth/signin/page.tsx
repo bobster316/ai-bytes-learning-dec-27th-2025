@@ -78,11 +78,13 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0A1628] via-[#1E3A5F] to-[#0F172A]">
+    <div className="min-h-screen bg-background">
       <Header />
 
-      <section className="py-20">
-        <div className="container mx-auto px-4">
+      {/* Sign In Section - Homepage Style Container */}
+      <section className="relative mx-auto w-[95%] max-w-7xl my-4 rounded-3xl border border-white/5 shadow-2xl py-16 flex items-center justify-center overflow-hidden bg-slate-900">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-900/20 via-slate-900 to-slate-900 pointer-events-none rounded-3xl"></div>
+        <div className="container relative z-10 mx-auto px-4">
           <Card className="max-w-md mx-auto">
             <CardHeader className="text-center">
               <div className="w-16 h-16 bg-gradient-to-br from-primary to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4">

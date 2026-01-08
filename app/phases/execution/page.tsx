@@ -61,7 +61,7 @@ export default function ExecutionPage() {
                                 {
                                     icon: Video,
                                     title: "60-Minute Lessons",
-                                    description: "Bite-sized, focused content that respects your time while delivering maximum value."
+                                    description: "Byte-sized, focused content that respects your time while delivering maximum value."
                                 },
                                 {
                                     icon: Code,

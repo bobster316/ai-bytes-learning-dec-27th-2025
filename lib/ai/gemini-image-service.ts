@@ -32,21 +32,40 @@ class GeminiImageService {
      * Generate an image using Gemini 2.5 Flash Image model.
      * Returns a base64 data URI or null if generation fails.
      */
-    async generateImage(prompt: string): Promise<GeminiImage | null> {
+    /**
+     * Generate an image using Gemini 2.5 Flash Image model.
+     * Returns a base64 data URI or null if generation fails.
+     * @param prompt The image generation prompt
+     * @param index Optional index of the image in the lesson sequence (0-5)
+     */
+    async generateImage(prompt: string, index: number = 0): Promise<GeminiImage | null> {
         if (!this.client) {
             console.warn('[GeminiImageService] Client not initialized, skipping');
             return null;
         }
 
         try {
-            console.log(`[GeminiImageService] Generating image for: "${prompt.substring(0, 50)}..."`);
+            console.log(`[GeminiImageService] Generating image for: "${prompt.substring(0, 50)}..." (Index: ${index})`);
 
             // Enhance prompt for educational content
             const enhancedPrompt = this.buildEducationalPrompt(prompt);
 
+            // User-defined temperature variation for uniqueness
+            // [0.8, 0.9, 0.85, 0.95, 0.9, 0.85]
+            const temps = [0.8, 0.9, 0.85, 0.95, 0.9, 0.85];
+            const selectedTemp = temps[index % temps.length];
+
+            // Random seed logic to ensure strict deduplication
+            // We use the current time + index to ensure each run is unique
+            const randomSeed = Math.floor(Date.now() * Math.random()) + index;
+
             const response = await this.client.models.generateContent({
                 model: this.model,
                 contents: enhancedPrompt,
+                config: {
+                    temperature: selectedTemp,
+                    randomSeed: randomSeed
+                }
             });
 
             // Extract image from response
@@ -89,10 +108,14 @@ class GeminiImageService {
         const lowerPrompt = prompt.toLowerCase();
         // Check for explicit PHOTOREALISTIC prefix or photo-related keywords
         if (lowerPrompt.startsWith('photorealistic:') ||
+            lowerPrompt.startsWith('photography mode only:') ||
             lowerPrompt.includes('photograph') ||
             lowerPrompt.includes('real-world') ||
             lowerPrompt.includes('hd photo') ||
             lowerPrompt.includes('real life') ||
+            lowerPrompt.includes('shot with') ||
+            lowerPrompt.includes('camera') ||
+            lowerPrompt.includes('lens') ||
             lowerPrompt.includes('8k hd')) {
             return 'photorealistic';
         }
@@ -108,38 +131,39 @@ class GeminiImageService {
         // Remove style prefix if present
         let cleanPrompt = basePrompt
             .replace(/^PHOTOREALISTIC:\s*/i, '')
+            .replace(/^PHOTOGRAPHY MODE ONLY:\s*/i, '')
             .replace(/^ILLUSTRATION:\s*/i, '');
 
         if (style === 'photorealistic') {
             console.log('[GeminiImageService] 📷 Using PHOTOREALISTIC style');
-            return `Create a stunning, photorealistic HD photograph for an AI learning platform:
+            return `Generate a RAW, DOCUMENTARY-STYLE PHOTOGRAPH.
+            
+PROMPT: ${cleanPrompt}
 
-${cleanPrompt}
+PHOTOGRAPHY SPECIFICATIONS:
+- CAMERA: Phase One XF IQ4 150MP, 80mm f/2.8 lens.
+- STYLE: Corporate Editorial / Tech Documentary.
+- LIGHTING: Natural environmental lighting mixed with subtle rim lighting. NO dramatic, oversaturated "gamer" or "cyberpunk" lighting unless specified.
+- TEXTURE: Highly detailed skin texture, fabric weaves, and material imperfections.
+- AVOID: "CGI", "3D Render", "Plastic", "Smooth", "Cartoon", "Illustration", "Digital Art", "Unreal Engine".
+- COMPOSITION: Professional framing, rule of thirds, depth of field to separate subject.
+- COLOR: Natural, balanced color grading (Fujifilm GFX simulation). 
 
-Photography requirements:
-- Ultra-realistic, high-definition photograph (8K quality)
-- Natural lighting with professional composition
-- Real-world scene with authentic details
-- Sharp focus, proper depth of field
-- Professional stock photography quality
-- Diverse representation of people when applicable
-- Modern, technological environment where relevant
-- No artificial or cartoonish elements
-- No watermarks or signatures`;
+CRITICAL: The image must look like a real photo taken by a human photographer, not a digital artwork.`;
         } else {
             console.log('[GeminiImageService] 🎨 Using ILLUSTRATION style');
-            return `Create a professional educational illustration for an AI learning platform:
+            return `Create a premium, corporate Memphis-style flat illustration for a B2B tech platform:
 
-${cleanPrompt}
+PROMPT: ${cleanPrompt}
 
-Style requirements:
-- Clean, modern digital illustration
-- Dark background with vibrant accent colors (cyan, purple, magenta)
-- Professional infographic quality
-- Clear labels and annotations where appropriate
-- Suitable for educational presentation
-- High contrast and readable at various sizes
-- No watermarks or signatures`;
+DESIGN REQUIREMENTS:
+- STYLE: Flat, minimal, vector-art style.
+- COLORS: Slate-900 acting as ink, with primary accents of #06b6d4 (Cyan) and #8b5cf6 (Violet). 
+- NO SHADING: Use solid colors. No gradients or drop shadows.
+- SHAPES: Geometric, clean lines. No "hand-drawn" sketchiness.
+- COMPOSITION: Abstract representation of the concept.
+- NO TEXT: Do not include text.
+- ASPECT RATIO: 16:9.`;
         }
     }
 

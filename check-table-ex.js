@@ -1,24 +1,26 @@
 
-require('dotenv').config({ path: '.env.local' });
 const { createClient } = require('@supabase/supabase-js');
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env.local') });
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
-async function checkTable() {
-    console.log('Fetching questions for quiz 569...');
+async function checkTable(tableName) {
+    console.log(`Checking for 'learning_analytics' table...`);
     const { data, error } = await supabase
-        .from('course_quiz_questions')
-        .select('*')
-        .eq('quiz_id', '569');
+        .from('learning_analytics')
+        .select('id')
+        .limit(1);
 
     if (error) {
-        console.error('Select Error:', error.message);
+        console.log("Error accessing learning_analytics:", error.message);
     } else {
-        console.log('Data length:', data ? data.length : 'null');
-        if (data && data.length > 0) {
-            console.log('First question:', data[0]);
-        }
+        console.log("learning_analytics table exists!");
     }
 }
 
-checkTable();
+const table = process.argv[2] || 'courses';
+checkTable(table);

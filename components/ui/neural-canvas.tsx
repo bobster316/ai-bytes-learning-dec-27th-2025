@@ -28,7 +28,7 @@ export function NeuralCanvas() {
         // 1. Structure
         // Distribute layers across the width
         const layerCount = 6;
-        const layers = [];
+        const layers: any[] = [];
         for (let i = 0; i < layerCount; i++) {
             layers.push({
                 id: i,

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Cormorant_Garamond } from "next/font/google";
 import { AnalyticsProvider } from "@/components/analytics-provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { JarvisMinimal } from "@/components/voice/JarvisMinimal";
+
 import "./globals.css";
 
 const inter = Inter({
@@ -46,7 +48,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en-GB" suppressHydrationWarning={true}>
+    <html lang="en-GB" suppressHydrationWarning={true} data-scroll-behavior="smooth">
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} ${cormorantGaramond.variable} antialiased`}
         suppressHydrationWarning={true}
@@ -60,6 +62,8 @@ export default function RootLayout({
         >
           <AnalyticsProvider>
             {children}
+            <JarvisMinimal />
+
           </AnalyticsProvider>
         </ThemeProvider>
       </body>

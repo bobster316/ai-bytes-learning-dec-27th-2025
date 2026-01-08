@@ -151,9 +151,16 @@ function ParticleSwarm({ progress }: { progress: number }) {
     );
 }
 
-const NeuralLoom = ({ progress, logs }: { progress: number, logs: string[] }) => {
+const NeuralLoom = ({ progress, logs, stage = "Synthesizing", error }: { progress: number, logs: string[], stage?: string, error?: { title: string, message: string, details?: string } | null }) => {
     // Smoothed progress for UI numbers to avoid jumping
     const [displayProgress, setDisplayProgress] = useState(0);
+
+    // ...
+
+    // Replace static text
+    <span className="text-xs text-cyan-400 uppercase tracking-[0.3em] mt-2 text-center px-4">
+        {stage}
+    </span>
 
     useEffect(() => {
         // Quick visual loop to catch up UI number smoothly
@@ -182,38 +189,74 @@ const NeuralLoom = ({ progress, logs }: { progress: number, logs: string[] }) =>
                 </Float>
             </Canvas>
 
-            {/* Circular Progress Overlay */}
+            {/* Center Content: Error or Progress */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                <div className="relative w-80 h-80 md:w-96 md:h-96">
-                    {/* Rotating Rings */}
-                    <div className="absolute inset-0 border border-cyan-500/10 rounded-full animate-[spin_10s_linear_infinite]" />
-                    <div className="absolute inset-4 border border-purple-500/10 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
-
-                    {/* SVG Progress Circle */}
-                    <svg className="w-full h-full -rotate-90">
-                        <circle
-                            cx="50%" cy="50%" r="48%"
-                            className="stroke-cyan-900/20 fill-none stroke-[2]"
-                        />
-                        <circle
-                            cx="50%" cy="50%" r="48%"
-                            className="stroke-cyan-400 fill-none stroke-[2] transition-all duration-300 ease-out"
-                            strokeDasharray="300%"
-                            strokeDashoffset={`${300 - (displayProgress / 100) * 300}%`}
-                            strokeLinecap="round"
-                        />
-                    </svg>
-
-                    {/* Central Percent */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-6xl md:text-7xl font-light text-white font-mono tracking-tighter">
-                            {Math.round(displayProgress)}%
-                        </span>
-                        <span className="text-xs text-cyan-400 uppercase tracking-[0.3em] mt-2">
-                            Synthesizing
-                        </span>
+                {error ? (
+                    <div className="relative max-w-lg w-full p-8 bg-red-950/40 backdrop-blur-md rounded-2xl border border-red-500/30 text-center pointer-events-auto shadow-2xl animate-in fade-in zoom-in duration-300">
+                        <div className="flex justify-center mb-6">
+                            <div className="p-4 rounded-full bg-red-500/10 border border-red-500/20 shadow-[0_0_30px_rgba(239,68,68,0.2)]">
+                                <svg className="w-10 h-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <h2 className="text-2xl font-bold text-red-100 mb-2 font-mono tracking-tight">{error.title || "Course Generation Failed"}</h2>
+                        <p className="text-red-200/80 mb-6 leading-relaxed">
+                            {error.message}
+                        </p>
+                        {error.details && (
+                            <div className="text-xs font-mono bg-black/40 p-4 rounded-lg border border-red-500/10 text-red-300/60 mb-8 text-left break-words">
+                                <span className="block text-red-500/80 mb-1 uppercase tracking-wider text-[10px]">Technical Reason:</span>
+                                {error.details}
+                            </div>
+                        )}
+                        <div className="flex gap-4 justify-center">
+                            <button
+                                onClick={() => window.location.reload()}
+                                className="px-6 py-2.5 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-lg shadow-lg hover:shadow-red-500/20 transition-all active:scale-95"
+                            >
+                                Try Again
+                            </button>
+                            <a
+                                href="/admin/courses"
+                                className="px-6 py-2.5 bg-transparent border border-red-500/30 text-red-200 hover:bg-red-500/10 font-semibold rounded-lg transition-all"
+                            >
+                                Back to Courses
+                            </a>
+                        </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="relative w-80 h-80 md:w-96 md:h-96">
+                        {/* Rotating Rings */}
+                        <div className="absolute inset-0 border border-cyan-500/10 rounded-full animate-[spin_10s_linear_infinite]" />
+                        <div className="absolute inset-4 border border-purple-500/10 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
+
+                        {/* SVG Progress Circle */}
+                        <svg className="w-full h-full -rotate-90">
+                            <circle
+                                cx="50%" cy="50%" r="48%"
+                                className="stroke-cyan-900/20 fill-none stroke-[2]"
+                            />
+                            <circle
+                                cx="50%" cy="50%" r="48%"
+                                className="stroke-cyan-400 fill-none stroke-[2] transition-all duration-300 ease-out"
+                                strokeDasharray="300%"
+                                strokeDashoffset={`${300 - (displayProgress / 100) * 300}%`}
+                                strokeLinecap="round"
+                            />
+                        </svg>
+
+                        {/* Central Percent */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                            <span className="text-6xl md:text-7xl font-light text-white font-mono tracking-tighter">
+                                {Math.round(displayProgress)}%
+                            </span>
+                            <span className="text-xs text-cyan-400 uppercase tracking-[0.3em] mt-2 text-center px-4 animate-pulse">
+                                {stage}
+                            </span>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Logs - Bottom Left */}

@@ -35,7 +35,7 @@ export async function GET(
     // Fetch generation record from database
     const supabase = createClient();
     const { data: generation, error } = await supabase
-      .from('ai_generated_courses')
+      .from('course_generation_progress')
       .select('*')
       .eq('id', generationId)
       .single();
@@ -52,16 +52,16 @@ export async function GET(
 
     // Calculate progress using database fields if available
     const progress = calculateProgress(
-      generation.generation_status,
+      generation.status,
       generation.current_step,
-      generation.percent_complete,
-      generation.generation_started_at,
-      generation.generation_completed_at
+      generation.progress_percentage,
+      generation.created_at,
+      generation.completed_at
     );
 
     const response: GenerationStatusResponse = {
       generationId: generation.id,
-      status: generation.generation_status,
+      status: generation.status,
       progress,
       courseId: generation.course_id,
       error: generation.error_message,

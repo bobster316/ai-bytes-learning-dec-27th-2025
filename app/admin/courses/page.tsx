@@ -6,31 +6,31 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
     Plus,
     Search,
-    Filter,
-    MoreVertical,
     BookOpen,
-    Eye,
     Trash2,
     Edit,
     Image as ImageIcon,
     Clock,
-    Activity,
     ShieldCheck,
-    ChevronRight,
-    CheckCircle2
+    MoreHorizontal,
+    Eye,
+    Archive,
+    CheckCircle
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Header } from "@/components/header";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Header } from "@/components/header";
 
 export default function AdminCoursesPage() {
     const [courses, setCourses] = useState<any[]>([]);
@@ -38,9 +38,6 @@ export default function AdminCoursesPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft">("all");
     const supabase = createClient();
-
-    const [hasDuplicates, setHasDuplicates] = useState(false);
-    const [duplicateCount, setDuplicateCount] = useState(0);
 
     const categories = [
         { id: "all", label: "All Courses" },
@@ -57,37 +54,27 @@ export default function AdminCoursesPage() {
         { id: "business", label: "Business AI" },
     ];
 
-    const checkForDuplicates = useCallback((courseList: any[]) => {
-        const seenIds = new Set();
-        let dups = 0;
-        for (const course of courseList) {
-            if (!course.thumbnail_url) continue;
-            let id = course.thumbnail_url;
-            if (id.includes('pexels')) id = id.match(/\/photos\/(\d+)\//)?.[1] || id;
-            else if (id.includes('unsplash')) id = id.match(/photo-([a-zA-Z0-9-]+)/)?.[1] || id;
-            else if (id.includes('pollinations')) {
-                if (!id.includes('seed=')) id = id.split('?')[0];
-            }
-
-            if (seenIds.has(id)) dups++;
-            else seenIds.add(id);
-        }
-        setDuplicateCount(dups);
-        setHasDuplicates(dups > 0);
-    }, []);
-
     const fetchCourses = useCallback(async () => {
-        const { data, error } = await supabase
-            .from('courses')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (!error) {
-            setCourses(data || []);
-            checkForDuplicates(data || []);
+        try {
+            const response = await fetch('/api/admin/courses/list');
+            if (response.ok) {
+                const data = await response.json();
+                setCourses(data.courses || []);
+            } else if (response.status === 404) {
+                // Valid state: No courses yet or endpoint not ready
+                setCourses([]);
+            } else if (response.status === 500) {
+                // Generation likely in progress - silent return (Option B)
+                return;
+            } else {
+                console.warn(`Fetch courses status: ${response.status}`);
+            }
+        } catch (error) {
+            console.error("Error fetching courses:", error);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
-    }, [supabase, checkForDuplicates]);
+    }, []);
 
     useEffect(() => {
         fetchCourses();
@@ -128,58 +115,23 @@ export default function AdminCoursesPage() {
         });
     }, [courses, searchQuery, statusFilter]);
 
-    const handleFixDuplicates = async () => {
-        setLoading(true);
-        const processedIds = new Set();
-        const updates = [];
-        let fixedCount = 0;
-
-        console.log('[Dedupe] Starting scan...');
-
-        for (const course of courses) {
-            if (!course.thumbnail_url) continue;
-
-            let id = course.thumbnail_url;
-            if (id.includes('pexels')) id = id.match(/\/photos\/(\d+)\//)?.[1] || id;
-            else if (id.includes('unsplash')) id = id.match(/photo-([a-zA-Z0-9-]+)/)?.[1] || id;
-            else if (id.includes('pollinations')) {
-                if (!id.includes('seed=')) id = id.split('?')[0];
-            }
-
-            if (processedIds.has(id)) {
-                // Found duplicate!
-                fixedCount++;
-                console.log('[Dedupe] Fixing duplicate for:', course.title);
-                const seed = Math.floor(Math.random() * 1000000000);
-                const prompt = course.title.substring(0, 50) + " abstract technology";
-                const newUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1280&height=720&nologo=true&seed=${seed}`;
-
-                updates.push(
-                    supabase.from('courses').update({ thumbnail_url: newUrl }).eq('id', course.id)
-                );
-            } else {
-                processedIds.add(id);
-            }
-        }
-
-        if (updates.length > 0) {
-            await Promise.all(updates);
-            // Force hard reload to clear image cache
-            window.location.reload();
-        } else {
-            setLoading(false);
-        }
-    };
-
     async function togglePublish(course: any) {
         const newStatus = !course.published;
-        const { error } = await supabase
-            .from('courses')
-            .update({ published: newStatus })
-            .eq('id', course.id);
 
-        if (!error) {
-            setCourses(courses.map(c => c.id === course.id ? { ...c, published: newStatus } : c));
+        try {
+            const response = await fetch('/api/admin/courses/update', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: course.id, published: newStatus })
+            });
+
+            if (response.ok) {
+                setCourses(courses.map(c => c.id === course.id ? { ...c, published: newStatus } : c));
+            } else {
+                alert("Failed to update status");
+            }
+        } catch (error) {
+            console.error("Error updating status:", error);
         }
     }
 
@@ -233,7 +185,7 @@ export default function AdminCoursesPage() {
                             <div className="flex gap-3">
                                 {selectedCourses.size > 0 && (
                                     <Button
-                                        variant="destructive"
+                                        variant="danger"
                                         className="rounded-full shadow-lg font-bold px-6"
                                         onClick={deleteSelected}
                                     >
@@ -396,36 +348,51 @@ export default function AdminCoursesPage() {
                                             </div>
 
                                             {/* Actions */}
-                                            <div className="flex items-center gap-1 justify-end">
-                                                <Link href={`/admin/courses/edit/${course.id}`}>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="ghost"
-                                                        className="h-8 w-8 text-gray-500 hover:text-blue-600"
-                                                        onClick={(e) => { e.stopPropagation(); }}
-                                                        title="Edit Course"
-                                                    >
-                                                        <Edit className="w-4 h-4" />
-                                                    </Button>
-                                                </Link>
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    className="h-8 w-8 text-gray-500 hover:text-primary"
-                                                    onClick={(e) => { e.stopPropagation(); togglePublish(course); }}
-                                                    title={course.published ? "Unpublish" : "Publish"}
-                                                >
-                                                    {course.published ? <ShieldCheck className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    className="h-8 w-8 text-gray-500 hover:text-red-600"
-                                                    onClick={(e) => { e.stopPropagation(); deleteCourse(course.id); }}
-                                                    title="Delete Course"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </Button>
+                                            <div className="flex items-center justify-end pr-2">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" className="h-8 w-8 p-0" onClick={(e) => e.stopPropagation()}>
+                                                            <span className="sr-only">Open menu</span>
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="w-[160px]">
+                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                        <Link href={`/courses/${course.id}`} target="_blank">
+                                                            <DropdownMenuItem>
+                                                                <Eye className="mr-2 h-4 w-4" />
+                                                                View Course
+                                                            </DropdownMenuItem>
+                                                        </Link>
+                                                        <Link href={`/admin/courses/edit/${course.id}`}>
+                                                            <DropdownMenuItem>
+                                                                <Edit className="mr-2 h-4 w-4" />
+                                                                Edit Course
+                                                            </DropdownMenuItem>
+                                                        </Link>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); togglePublish(course); }}>
+                                                            {course.published ? (
+                                                                <>
+                                                                    <Archive className="mr-2 h-4 w-4" />
+                                                                    Unpublish
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <CheckCircle className="mr-2 h-4 w-4" />
+                                                                    Publish
+                                                                </>
+                                                            )}
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            onClick={(e) => { e.stopPropagation(); deleteCourse(course.id); }}
+                                                            className="text-red-600 focus:text-red-600"
+                                                        >
+                                                            <Trash2 className="mr-2 h-4 w-4" />
+                                                            Delete
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </div>
                                         </motion.div>
                                     ))}

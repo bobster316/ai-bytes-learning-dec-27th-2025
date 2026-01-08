@@ -2,13 +2,23 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import LessonContentRenderer from "@/components/course/lesson-content-renderer";
 import { LessonSidebar } from "@/components/course/lesson-sidebar";
+
+import { CourseAnalyticsTracker } from "@/components/course/analytics-tracker";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { checkLessonAccess, recordLessonAccess } from "@/lib/subscriptions/check-access";
+import { AccessBlocked } from "@/components/subscription/access-blocked";
 
 export default async function LessonPage(props: { params: Promise<{ courseId: string; lessonId: string }> }) {
     const params = await props.params;
     const { courseId, lessonId } = params;
     const supabase = await createClient();
+
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Check subscription access
+    const accessCheck = await checkLessonAccess(user?.id, lessonId);
 
     // Fetch Lesson with Topic and Course info
     const { data: lesson, error } = await supabase
@@ -17,11 +27,8 @@ export default async function LessonPage(props: { params: Promise<{ courseId: st
       *,
       topic:course_topics(
         id,
-        title,
-        course:courses(
-            id,
-            title
-        )
+        title
+      )
       )
     `)
         .eq('id', lessonId)
@@ -31,11 +38,52 @@ export default async function LessonPage(props: { params: Promise<{ courseId: st
         notFound();
     }
 
+    // If user doesn't have access, show upgrade prompt
+    if (!accessCheck.hasAccess) {
+        return (
+            <div className="min-h-screen bg-background text-foreground font-sans">
+                <div className="container mx-auto max-w-[1600px]">
+                    {/* Show lesson title but block content */}
+                    <div className="py-8 px-4">
+                        <Link
+                            href={`/courses/${courseId}`}
+                            className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors mb-4"
+                        >
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            Back to Course Overview
+                        </Link>
+                        <h1 className="font-sans text-3xl md:text-4xl font-bold tracking-tight text-foreground leading-tight mb-2">
+                            {lesson.title}
+                        </h1>
+                        <p className="text-muted-foreground">
+                            {lesson.topic?.title || 'Module'}
+                        </p>
+                    </div>
+
+                    {/* Access blocked component */}
+                    <AccessBlocked
+                        reason={accessCheck.reason || 'Upgrade to access this content.'}
+                        plan={accessCheck.plan}
+                        bytesUsed={accessCheck.bytesUsed}
+                        bytesLimit={accessCheck.bytesLimit}
+                        isLoggedOut={!user}
+                    />
+                </div>
+            </div>
+        );
+    }
+
+    // Record access if this is a new byte (first time accessing)
+    if (user && accessCheck.isNewByte) {
+        await recordLessonAccess(user.id, lessonId);
+    }
+
     // Fetch Full Course Outline for Sidebar
     const { data: courseOutline } = await supabase
         .from('courses')
         .select(`
             title,
+            course_type,
             topics:course_topics(
                 id,
                 title,
@@ -90,14 +138,14 @@ export default async function LessonPage(props: { params: Promise<{ courseId: st
     return (
         <div className="min-h-screen bg-background text-foreground font-sans">
             <div className="container mx-auto max-w-[1600px] flex items-start gap-8">
-
+                <CourseAnalyticsTracker courseId={courseId} lessonId={lessonId} />
                 {/* Sidebar Navigation */}
                 {courseOutline && <LessonSidebar outline={courseOutline} />}
 
-                <main className="flex-1 pb-32 min-w-0">
+                <main className="flex-1 pb-32 min-w-0 flex flex-col lg:flex-row gap-12">
                     {useNativeRender ? (
-                        <div className="w-full">
-                            <article>
+                        <>
+                            <article className="flex-1 min-w-0">
                                 <div className="py-8 space-y-6 border-b border-border/50 mb-12 max-w-[var(--max-content-width)] mx-auto">
                                     <Link
                                         href={`/courses/${courseId}`}
@@ -117,9 +165,15 @@ export default async function LessonPage(props: { params: Promise<{ courseId: st
                                     </h1>
                                 </div>
 
-                                <LessonContentRenderer content={contentJson} images={images || []} />
+                                <LessonContentRenderer
+                                    content={contentJson}
+                                    images={images || []}
+                                    pipelineType={courseOutline?.course_type || 'conceptual'}
+                                />
                             </article>
-                        </div>
+
+
+                        </>
                     ) : htmlContent ? (
                         <iframe
                             srcDoc={htmlContent}

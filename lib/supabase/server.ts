@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 export async function createClient(useServiceRole = false) {
-  const cookieStore = await cookies()
+  const cookieStore = useServiceRole ? undefined : await cookies()
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const supabaseKey = useServiceRole
@@ -15,9 +15,11 @@ export async function createClient(useServiceRole = false) {
     {
       cookies: {
         getAll() {
-          return cookieStore.getAll()
+          return cookieStore?.getAll() ?? []
         },
         setAll(cookiesToSet) {
+          if (!cookieStore) return
+
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)

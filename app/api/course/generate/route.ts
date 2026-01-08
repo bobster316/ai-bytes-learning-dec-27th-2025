@@ -1,169 +1,345 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { aiClient } from '@/lib/ai/groq';
+import { createClient } from '@supabase/supabase-js';
+import { AgentOrchestrator } from '@/lib/ai/agent-system';
 import { imageService } from '@/lib/ai/image-service';
-import { generateLessonHTML } from '@/lib/utils/lesson-renderer';
+import { generateLessonHTML } from '@/lib/utils/lesson-renderer-v2';
 import {
-    validateCourseGenerationRequest,
     safeParse,
     courseGenerationRequestSchema
 } from '@/lib/validations/course-generator';
 import type { CourseGenerationRequest } from '@/lib/types/course-generator';
 
+export const runtime = 'nodejs'; // 1. Force Node.js runtime
 export const maxDuration = 300; // 5 minutes
 
-export async function POST(req: NextRequest) {
-    const supabase = await createClient(true);
-    try {
-        const body = await req.json();
-        const validationResult = safeParse(courseGenerationRequestSchema, body);
-
-        if (!validationResult.success) {
-            console.error('[API] Validation failed:', validationResult.errors);
-            return NextResponse.json({ success: false, errors: validationResult.errors }, { status: 400 });
-        }
-
-        const input = validationResult.data as CourseGenerationRequest;
-        const { courseName, difficultyLevel, courseDescription, targetDuration } = input;
-
-        // 1. Create Course Record
-        console.log('[API] Creating course record:', courseName);
-        const { data: course, error: cErr } = await supabase
-            .from('courses')
+// Database helper functions
+const db = {
+    async createGenerationRecord(supabase: any, courseId: string) {
+        const { data, error } = await supabase
+            .from('course_generation_progress')
             .insert({
-                title: courseName,
-                description: courseDescription || `AI-generated course on ${courseName}`,
-                published: false
+                course_id: courseId,
+                status: 'in_progress',
+                current_step: 'Initializing...',
+                progress_percentage: 0
             })
             .select()
             .single();
 
-        if (cErr) {
-            console.error('[API] Course creation error:', JSON.stringify(cErr, null, 2));
-            throw cErr;
-        }
+        if (error) throw error;
+        if (!data) throw new Error("Failed to create generation record: no data returned");
+        return data.id;
+    },
 
-        // 2. Generate Outline
-        console.log('[API] Generating outline for:', courseName);
-        const outline = await aiClient.generateOutline({
-            courseName,
-            difficultyLevel,
-            courseDescription,
-            targetDuration: targetDuration || 60
-        });
+    async updateGenerationProgress(generationId: string, step: string, percentage: number) {
+        // Create a local client for updates to avoid passing the main client if needed
+        const supabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
+        await supabase
+            .from('course_generation_progress')
+            .update({
+                current_step: step,
+                progress_percentage: percentage,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', generationId);
+    },
 
-        // Update course metadata
-        console.log('[API] Fetching thumbnail...');
-        const thumbnail = await imageService.fetchCourseThumbnail(courseName);
-        await supabase.from('courses').update({
-            thumbnail_url: thumbnail
-        }).eq('id', course.id);
+    async markGenerationComplete(generationId: string, success: boolean, error?: string) {
+        const supabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
+        await supabase
+            .from('course_generation_progress')
+            .update({
+                status: success ? 'completed' : 'failed',
+                progress_percentage: success ? 100 : undefined,
+                error_message: error,
+                completed_at: new Date().toISOString()
+            })
+            .eq('id', generationId);
+    }
+};
 
-        // 3. Generate Topics and Lessons
-        console.log(`[API] Processing ${outline.topics.length} topics...`);
-        for (let i = 0; i < outline.topics.length; i++) {
-            const topic = outline.topics[i];
-            const { data: topicData, error: tErr } = await supabase
-                .from('course_topics')
-                .insert({
-                    course_id: course.id,
-                    title: topic.title,
-                    description: topic.description,
-                    order_index: i
-                })
-                .select()
-                .single();
+export async function POST(req: NextRequest) {
+    // 2. Explicitly use Service Role Key
+    const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
 
-            if (tErr) throw tErr;
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        console.error('[API] CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing! RLS bypass will fail.');
+        return NextResponse.json({ success: false, error: 'Configuration Error' }, { status: 500 });
+    }
 
-            if (topicData) {
-                // Generate Lessons in Parallel
-                console.log(`[API] Topic "${topic.title}": Generating ${topic.lessons.length} lessons...`);
-                await Promise.all(topic.lessons.map(async (lesson, j) => {
-                    const lessonContent = await aiClient.generateLessonContent(
-                        lesson.title,
-                        topic.title,
-                        difficultyLevel
-                    );
+    let body: any;
+    try {
+        body = await req.json();
+    } catch (e) {
+        return NextResponse.json({ success: false, error: 'Invalid JSON' }, { status: 400 });
+    }
 
-                    const images = await imageService.fetchImages(lessonContent.imagePrompts);
+    const validationResult = safeParse(courseGenerationRequestSchema, body);
+    if (!validationResult.success) {
+        return NextResponse.json({ success: false, errors: validationResult.errors }, { status: 400 });
+    }
 
-                    let videoUrl = null;
-                    if (i === 0 && j === 0) {
-                        videoUrl = await imageService.fetchVideo(courseName);
-                    }
+    const input = validationResult.data as CourseGenerationRequest;
+    const DRY_RUN = (body as any).dryRun === true;
 
-                    const fullHtml = generateLessonHTML(courseName, lessonContent, images);
+    // --- STREAMING SETUP ---
+    const encoder = new TextEncoder();
+    const stream = new TransformStream();
+    const writer = stream.writable.getWriter();
 
-                    const { data: lessonData } = await supabase
-                        .from('course_lessons')
-                        .insert({
-                            topic_id: topicData.id,
-                            title: lesson.title,
-                            content_markdown: JSON.stringify(lessonContent),
-                            content_html: fullHtml,
-                            order_index: j,
-                            estimated_duration_minutes: 15,
-                            video_url: videoUrl
-                        })
-                        .select()
-                        .single();
+    const sendEvent = async (data: any) => {
+        const message = `data: ${JSON.stringify(data)}\n\n`;
+        await writer.write(encoder.encode(message));
+    };
 
-                    if (lessonData && images.length > 0) {
-                        const imgPayload = images.map((img, idx) => ({
-                            lesson_id: lessonData.id,
-                            image_url: img.url,
-                            alt_text: img.alt,
-                            caption: img.caption,
-                            order_index: idx
-                        }));
-                        await supabase.from('lesson_images').insert(imgPayload);
-                    }
-                }));
+    // Start background processing
+    (async () => {
+        let generationId: string | null = null;
+        let courseId: string | null = null;
 
-                // 4. Generate Topic Quiz (Post-Lesson)
-                const lessonContexts = topic.lessons.map(l => l.title);
-                console.log(`[API] Generating quiz for topic: ${topic.title}`);
-                const quizData = await aiClient.generateTopicQuiz(topic.title, lessonContexts, difficultyLevel);
+        try {
+            await sendEvent({ stage: 'init', message: 'Initializing generation channel...' });
 
-                const { data: quizRecord } = await supabase
-                    .from('course_quizzes')
+            const { courseName, difficultyLevel, courseDescription, targetDuration } = input;
+
+            // 1. Create Course Record
+            let course = { id: 'mock-course-id', title: courseName };
+            if (!DRY_RUN) {
+                const { data: c, error: cErr } = await supabase
+                    .from('courses')
                     .insert({
-                        topic_id: topicData.id,
-                        title: `${topic.title} Assessment`,
-                        passing_score_percentage: 70
+                        title: courseName,
+                        description: courseDescription || `AI-generated course on ${courseName}`,
+                        difficulty_level: difficultyLevel,
+                        published: false
                     })
                     .select()
                     .single();
 
-                if (quizRecord && quizData.questions) {
-                    const qPayload = quizData.questions.map((q: any, idx: number) => ({
-                        quiz_id: quizRecord.id,
-                        question_text: q.question,
-                        options: q.options,
-                        correct_answer: q.correctAnswer,
-                        explanation: q.explanation,
-                        order_index: idx,
-                        question_type: 'multiple_choice',
-                        points: 10
-                    }));
-                    await supabase.from('quiz_questions').insert(qPayload);
-                }
+                if (cErr) throw cErr;
+                course = c;
             }
+            courseId = course.id;
+
+            // Create generation tracking record
+            if (!DRY_RUN) {
+                generationId = await db.createGenerationRecord(supabase, course.id);
+            }
+
+            await sendEvent({
+                stage: 'setup',
+                progress: 5,
+                message: 'Course shell created.',
+                courseId: course.id,
+                generationId: generationId
+            });
+
+            // 2. Initialize Orchestrator
+            const orchestrator = new AgentOrchestrator();
+
+            // 3. Generate with Progress Callback
+            await sendEvent({ stage: 'planning', progress: 10, message: 'Drafting curriculum structure...' });
+
+            const completeCourse = await orchestrator.generateCourse({
+                courseName,
+                difficultyLevel,
+                courseDescription,
+                targetDuration: targetDuration || 60
+            }, async (progress, message) => {
+                // Bridge Orchestrator progress to Stream
+                // Orchestrator progress 10-90 maps to our stream
+                await sendEvent({
+                    stage: 'generating', // generic stage
+                    progress: progress,
+                    message: message
+                });
+
+                // Also update DB if real run
+                if (generationId && !DRY_RUN) {
+                    // Fire and forget DB update to avoid slowing down stream?
+                    // Better to await to ensure consistency but maybe throttle?
+                    await db.updateGenerationProgress(generationId, message, progress);
+                }
+            });
+
+            // 4. Post-Processing
+            await sendEvent({ stage: 'finalizing', progress: 95, message: 'Finalizing course assets...' });
+
+            if (!DRY_RUN && generationId) {
+                await db.updateGenerationProgress(generationId, 'Fetching course thumbnail...', 96);
+            }
+
+            const thumbnail = !DRY_RUN ? await imageService.fetchCourseThumbnail(courseName) : "dry-run.jpg";
+            if (!DRY_RUN) {
+                const updates: any = { thumbnail_url: thumbnail };
+                if (completeCourse.courseStructure.refinedCourseTitle) {
+                    updates.title = completeCourse.courseStructure.refinedCourseTitle;
+                }
+                await supabase.from('courses').update(updates).eq('id', course.id);
+            }
+
+            // Persist content (Topics/Lessons)
+            // Note: This logic was largely inside POST previously. 
+            // We need to keep the exact same logic (simplified here for brevity of the diff, 
+            // but effectively we must run the whole logic).
+            // Since the logic is long, let's keep the existing logic structure but wrapped.
+
+            // ... [Insert the Topic/Lesson Persistence Logic Here] ...
+            // FOR SAFETY: I will paste the persistence logic from previous view, adapted to use `sendEvent`.
+
+            await processPersistence(completeCourse, course, generationId, supabase, DRY_RUN, sendEvent);
+
+            if (generationId && !DRY_RUN) {
+                await db.markGenerationComplete(generationId, true);
+            }
+
+            await sendEvent({ stage: 'completed', progress: 100, message: 'Course generated successfully!', courseId: course.id });
+
+        } catch (error: any) {
+            console.error('[API] Stream Error:', error);
+            if (generationId && !DRY_RUN) {
+                await db.markGenerationComplete(generationId, false, error.message);
+            }
+            await sendEvent({ stage: 'error', message: error.message || 'Internal Server Error' });
+        } finally {
+            await writer.close();
+        }
+    })();
+
+    return new Response(stream.readable, {
+        headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+        },
+    });
+}
+
+// Helper to keep the main function clean
+async function processPersistence(
+    completeCourse: any,
+    course: any,
+    generationId: string | null,
+    supabase: any,
+    DRY_RUN: boolean,
+    sendEvent: (data: any) => Promise<void>
+) {
+    console.log(`[API] Processing ${completeCourse.courseStructure.topics.length} topics...`);
+    let lessonPointer = 0;
+
+    for (let i = 0; i < completeCourse.courseStructure.topics.length; i++) {
+        const topic = completeCourse.courseStructure.topics[i];
+        const topicTitle = topic.topicName || topic['title'] || `Topic ${i + 1}`;
+
+        let topicData = { id: `mock-topic-${i}` };
+        if (!DRY_RUN) {
+            const { data, error } = await supabase.from('course_topics').insert({
+                course_id: course.id,
+                title: topicTitle,
+                description: topic.description,
+                order_index: i
+            }).select().single();
+            if (error) throw error;
+            topicData = data;
         }
 
-        console.log('[API] Generation completed successfully for course:', course.id);
-        return NextResponse.json({
-            success: true,
-            courseId: course.id,
-            message: 'Course generated successfully'
-        });
+        const lessonPlans = completeCourse.lessons;
+        const topicLessons = lessonPlans.slice(lessonPointer, lessonPointer + topic.lessons.length);
 
-    } catch (error: any) {
-        console.error('[API] Generation failed:', JSON.stringify(error, null, 2));
-        console.error('[API] Error Message:', error.message);
-        console.error('[API] Stack:', error.stack);
-        return NextResponse.json({ error: error.message, stack: error.stack }, { status: 500 });
+        for (let j = 0; j < topicLessons.length; j++) {
+            const lessonContent = topicLessons[j];
+
+            // Progress Update during persistence (Simulated)
+            // It's fast, but good to show activity
+            if (j === 0) await sendEvent({ stage: 'persisting', message: `Saving topic: ${topicTitle}` });
+
+            const fullHtml = generateLessonHTML(lessonContent);
+
+            // Image Persistence Logic (Parallelized)
+            const images: any[] = [];
+            const prompts = DRY_RUN ? [] : (lessonContent.imagePrompts || []); // Removed .slice(0, 3) limit
+
+            console.log(`[API] Processing ${prompts.length} images for lesson: ${lessonContent.lessonTitle}`);
+
+            // Fetch all images in parallel for this lesson
+            const imageResults = await Promise.all(prompts.map(async (p) => {
+                try {
+                    // console.log(`[API] Generating image for prompt: "${p}"`);
+                    const results = await imageService.fetchImages([p]);
+                    return results && results.length > 0 ? results[0] : null;
+                } catch (e) {
+                    console.error(`[API] Image generation failed for prompt: "${p}"`, e);
+                    return null;
+                }
+            }));
+
+            // Filter out failures
+            imageResults.forEach(img => {
+                if (img) images.push(img);
+            });
+
+            let lessonData = { id: `mock-lesson-${j}` };
+            if (!DRY_RUN) {
+                const { data, error } = await supabase.from('course_lessons').insert({
+                    topic_id: topicData.id,
+                    title: lessonContent.lessonTitle,
+                    content_markdown: JSON.stringify(lessonContent),
+                    content_html: fullHtml,
+                    order_index: j,
+                    estimated_duration_minutes: lessonContent.metadata.estimatedDuration,
+                    key_takeaways: lessonContent.metadata.keyTakeaways || []
+                }).select().single();
+                if (error) throw error;
+                lessonData = data;
+            }
+
+            if (!DRY_RUN && images.length > 0) {
+                await supabase.from('lesson_images').insert(images.map((img: any, idx: number) => ({
+                    lesson_id: lessonData.id,
+                    image_url: img.url,
+                    alt_text: img.alt,
+                    caption: img.caption,
+                    order_index: idx,
+                    source: 'ai_generated',
+                    source_attribution: 'Generated by AI'
+                })));
+            }
+        }
+        lessonPointer += topic.lessons.length;
+
+        // Quiz Persistence
+        const assessments = (completeCourse as any).assessments || [];
+        const quizQuestions = assessments.filter((q: any) => q.topicTitle === topicTitle || q.topicTitle === topic.topicName);
+
+        if (quizQuestions.length > 0 && !DRY_RUN) {
+            const { data: quiz } = await supabase.from('course_quizzes').insert({
+                topic_id: topicData.id,
+                title: `${topicTitle} Assessment`,
+                passing_score_percentage: 70
+            }).select().single();
+
+            if (quiz) {
+                await supabase.from('quiz_questions').insert(quizQuestions.map((q: any, idx: number) => ({
+                    quiz_id: quiz.id,
+                    question_text: q.question,
+                    options: q.options,
+                    correct_answer: q.correctAnswer,
+                    explanation: q.explanation,
+                    order_index: idx,
+                    question_type: 'multiple_choice',
+                    points: 10
+                })));
+            }
+        }
     }
 }

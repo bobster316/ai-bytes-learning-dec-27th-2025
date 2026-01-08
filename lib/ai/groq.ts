@@ -31,13 +31,25 @@ export class GroqClient {
       let text = data.candidates[0].content.parts[0].text;
 
       if (isJson) {
-        // Strip markdown fences if present
+        // Aggressive cleaning: strip markdown fences, extra whitespace, and potential prose
         text = text.replace(/```json\n?|```/g, "").trim();
+
+        // Try to extract JSON if it's embedded in text
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          text = jsonMatch[0];
+        }
+
         try {
           return JSON.parse(text);
         } catch (jsonErr) {
-          console.error("JSON Parse Error:", jsonErr, "Text:", text);
-          throw new Error("Failed to parse AI response as JSON");
+          console.error("=== JSON PARSE ERROR ===");
+          console.error("Error:", jsonErr);
+          console.error("Raw text length:", text.length);
+          console.error("First 500 chars:", text.substring(0, 500));
+          console.error("Last 500 chars:", text.substring(Math.max(0, text.length - 500)));
+          console.error("========================");
+          throw new Error(`Failed to parse AI response as JSON: ${jsonErr instanceof Error ? jsonErr.message : String(jsonErr)}`);
         }
       }
       return text;
@@ -57,7 +69,7 @@ export class GroqClient {
   }
 
   async generateOutline(input: CourseGenerationRequest): Promise<AIGeneratedOutline> {
-    const counts = { topics: 4, lessons: 2 };
+    const counts = { topics: 4 };
 
     const prompt = `Act as a Google Learning Experience Designer specialized in AI. Create a Professional Specialization Roadmap for: "${input.courseName}". 
     
@@ -72,7 +84,7 @@ export class GroqClient {
     
     STRUCTURE REQUIREMENTS: 
     - Exactly ${counts.topics} Functional Domains (Topics).
-    - Each Domain contains Exactly ${counts.lessons} specific Growth Modules (Lessons).
+    - Each Domain contains 2-3 specific Growth Modules (Lessons).
     - Titles: Clear, professional, and action-oriented.
     
     TOPIC DESCRIPTION FORMAT (CRITICAL):
@@ -90,7 +102,7 @@ export class GroqClient {
       
       <p>Optional fourth paragraph with learning outcomes or summary.</p>"
     
-    Format your response as VALID JSON. You MUST return ALL ${counts.topics} topics, and each topic MUST contain its ${counts.lessons} lessons:
+    Format your response as VALID JSON. You MUST return ALL ${counts.topics} topics, and each topic MUST contain 2-3 lessons:
     {
       "courseOverview": "A 100-word helpful and encouraging introduction to this AI-focused specialization in British English.",
       "learningObjectives": ["Operational Skill 1", "Technical Competency 2", "Leadership Attribute 3"],
@@ -184,7 +196,7 @@ export class GroqClient {
        - Examples: "ILLUSTRATION: Educational technical diagram showing the flow of data through a neural network, minimalist style with labeled nodes, clean geometric shapes on dark background"
        - Examples: "ILLUSTRATION: Isometric infographic of machine learning pipeline stages, educational diagram style, clean labels, vector aesthetic"
        
-    10. Video Script: A 90-second engaging professional script for an AI avatar in British English.
+    10. Video Strategy: Provide a highly specific YouTube search term to find a relevant educational video for this lesson.
     
     Return VALID JSON ONLY:
     {
@@ -199,7 +211,7 @@ export class GroqClient {
       "resources": [{ "type": "Paper", "label": "Research", "link": "/docs" }],
       "keyTakeaways": ["Point 1"],
       "imagePrompts": ["PHOTOREALISTIC: prompt 1", "ILLUSTRATION: prompt 2", "PHOTOREALISTIC: prompt 3", "ILLUSTRATION: prompt 4", "PHOTOREALISTIC: prompt 5", "ILLUSTRATION: prompt 6"],
-      "videoScript": "Script text..."
+      "videoSearchTerm": "Specific search query to find a relevant educational video on YouTube (e.g. 'Neural Networks explained for beginners')"
     }`;
     return await this.makeRequest(prompt);
   }

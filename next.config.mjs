@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-// Force Rebuild Trigger
+// Force Rebuild Trigger 2
 const nextConfig = {
   reactStrictMode: false,
   images: {
@@ -127,9 +127,6 @@ const nextConfig = {
     ],
     // Allow any HTTPS image as fallback
     unoptimized: false,
-  },
-  env: {
-    NEXT_PUBLIC_GEMINI_API_KEY: process.env.GEMINI_API_KEY,
   },
 };
 

@@ -6,17 +6,40 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     ArrowLeft,
     Save,
     FileText,
     Video,
-    MoreVertical,
     Plus,
     Settings,
-    Eye
+    Eye,
 } from 'lucide-react';
+
+interface Lesson {
+    id: string;
+    title: string;
+    order_index: number;
+    content_type: string;
+    duration_minutes: number;
+}
+
+interface Topic {
+    id: string;
+    title: string;
+    order_index: number;
+    course_lessons: Lesson[];
+}
+
+interface Course {
+    id: string;
+    title: string;
+    description: string;
+    difficulty_level: string;
+    price: number | string;
+    published: boolean;
+    course_topics: Topic[];
+}
 
 export default async function AdminCourseEditPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
@@ -48,9 +71,9 @@ export default async function AdminCourseEditPage(props: { params: Promise<{ id:
     }
 
     // Sort
-    course.course_topics.sort((a: any, b: any) => a.order_index - b.order_index);
-    course.course_topics.forEach((topic: any) => {
-        topic.course_lessons?.sort((a: any, b: any) => a.order_index - b.order_index);
+    course.course_topics.sort((a: Topic, b: Topic) => a.order_index - b.order_index);
+    course.course_topics.forEach((topic: Topic) => {
+        topic.course_lessons?.sort((a: Lesson, b: Lesson) => a.order_index - b.order_index);
     });
 
     return (
@@ -141,7 +164,7 @@ export default async function AdminCourseEditPage(props: { params: Promise<{ id:
                     </div>
 
                     <div className="space-y-4">
-                        {course.course_topics.map((topic: any, idx: number) => (
+                        {course.course_topics.map((topic: Topic, idx: number) => (
                             <div key={topic.id} className="group border border-white/10 rounded-xl bg-[#0A0A0C] overflow-hidden transition-all hover:border-white/20">
                                 <div className="flex items-start justify-between p-4 bg-white/[0.02]">
                                     <div className="flex items-center gap-4">
@@ -162,7 +185,7 @@ export default async function AdminCourseEditPage(props: { params: Promise<{ id:
                                     </div>
                                 </div>
                                 <div className="border-t border-white/5 p-2 space-y-1">
-                                    {topic.course_lessons?.map((lesson: any) => (
+                                    {topic.course_lessons?.map((lesson: Lesson) => (
                                         <div key={lesson.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-white/5 group/lesson transition-colors cursor-pointer">
                                             <div className="flex items-center gap-3">
                                                 <div className="text-white/20">
@@ -179,7 +202,7 @@ export default async function AdminCourseEditPage(props: { params: Promise<{ id:
                         ))}
                     </div>
                 </div>
-            </main>
-        </div>
+            </main >
+        </div >
     );
 }

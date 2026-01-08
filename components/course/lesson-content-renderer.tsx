@@ -1,28 +1,26 @@
 "use client";
 
-import { motion } from "framer-motion";
-import {
-    Activity,
-    BookOpen,
-    CheckCircle2,
-    Lightbulb,
-    ArrowRight,
-    Trophy,
-    AlertCircle,
-    Check,
-    X as CloseIcon
-} from "lucide-react";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { BookOpen } from "lucide-react";
+import { CodePlayground } from "@/components/CodePlayground";
 
-import { useScroll, useSpring } from "framer-motion";
-
-export function LessonContentRenderer({ content, images }: { content: any, images: any[] }) {
+export function LessonContentRenderer({ content, images, pipelineType }: { content: any, images: any[], pipelineType?: string }) {
     if (!content) return null;
 
-    // Helper to strip HTML tags from text (for titles that shouldn't contain HTML)
+    const [execResult, setExecResult] = useState<any>(null);
+    const [activeTab, setActiveTab] = useState<'content' | 'assessment'>('content');
+
+    // DEFENSIVE HELPER: Strip code blocks for conceptual courses
+    const sanitizeForConceptual = (text: string | undefined) => {
+        if (!text) return "";
+        if (pipelineType !== 'conceptual') return text;
+        // Remove ``` blocks but keep the content inside? 
+        // User said: "they should be rendered as plain text... never as code blocks"
+        // So we remove the ``` fencing.
+        return text.replace(/```[\w]*\n?/g, '').replace(/```/g, '');
+    };
+
+    // Helper to strip HTML tags from text
     const stripHtmlTags = (text: string): string => {
         if (!text) return '';
         return text.replace(/<[^>]*>/g, '').trim();
@@ -34,28 +32,102 @@ export function LessonContentRenderer({ content, images }: { content: any, image
         return images[index];
     };
 
-    // "Neural Architect" Card Style
-    const cardClasses = "bg-card border border-border/50 rounded-2xl p-8 shadow-sm hover:shadow-md transition-all duration-300";
+    const SectionHeader = ({ number, title }: { number: string, title: string }) => (
+        <div className="space-y-6 mb-8">
+            <span className="text-5xl font-black text-primary/10 block font-sans select-none">{number}</span>
+            <h2 className="text-3xl font-bold text-foreground tracking-tight font-sans leading-tight">
+                {title}
+            </h2>
+            <div className="h-1 w-12 bg-cyan-500 rounded-full" />
+        </div>
+    );
+
+    const TextRenderer = ({ text }: { text: string }) => (
+        <div className="prose prose-lg dark:prose-invert max-w-none text-foreground/90 [&_p]:leading-relaxed [&_p]:mb-6 marker:text-cyan-400 [&_p]:text-justify">
+            {text.split('\n\n').map((para, i) => (
+                <p key={i}>{para}</p>
+            ))}
+        </div>
+    );
+
+    const ImageDisplay = ({ image, index }: { image: any, index: number }) => (
+        <div className="mt-8 aspect-video relative rounded-xl overflow-hidden shadow-lg bg-muted/20">
+            {image ? (
+                <>
+                    <img
+                        src={image.image_url}
+                        alt={image.alt_text}
+                        className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                        onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                            (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                        }}
+                    />
+                    {image.caption && (
+                        <div className="absolute bottom-0 inset-x-0 bg-black/60 p-2 text-white text-xs backdrop-blur-md opacity-0 hover:opacity-100 transition-opacity">
+                            {image.caption}
+                        </div>
+                    )}
+                </>
+            ) : (
+                <div className="absolute inset-0 flex items-center justify-center bg-muted/30 text-muted-foreground/50 border-2 border-dashed border-muted">
+                    <span className="text-xs font-medium">Visual {index + 1}</span>
+                </div>
+            )}
+        </div>
+    );
 
     return (
         <div className="bg-background text-foreground font-sans selection:bg-cyan-500/30 selection:text-cyan-200 pb-32">
 
             <div className="max-w-[700px] mx-auto px-4 md:px-0 pt-12 space-y-[var(--para-spacing)]">
 
-                {/* Introduction Section */}
-                <div className="space-y-8 text-left">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/10 text-primary text-xs font-mono uppercase tracking-[0.2em] font-bold">
-                        <BookOpen className="w-3 h-3" />
-                        Introduction
+                {/* Introduction Section (NEW SCHEMA ADAPTER) */}
+                {content.content?.hook && (
+                    <div className="bg-gradient-to-br from-card to-background border border-border/50 rounded-2xl p-8 md:p-12 shadow-sm">
+                        <div className="space-y-6">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary text-xs font-bold font-mono uppercase tracking-widest">
+                                <BookOpen className="w-3 h-3" />
+                                Introduction
+                            </div>
+                            <div className="prose prose-lg dark:prose-invert text-foreground/90 font-medium leading-relaxed [&_p]:mb-6 [&_p]:text-justify">
+                                {sanitizeForConceptual(content.content.hook).split('\n\n').map((para, i) => (
+                                    <p key={i}>{para}</p>
+                                ))}
+                            </div>
+                            {/* Visual Hook (Image 0) */}
+                            {getImageForSection(0) && (
+                                <div className="mt-6 aspect-video relative rounded-xl overflow-hidden shadow-md border border-border/50">
+                                    <img
+                                        src={getImageForSection(0).image_url}
+                                        alt={getImageForSection(0).alt_text}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => (e.target as HTMLImageElement).style.display = 'none'}
+                                    />
+                                    <div className="absolute bottom-0 inset-x-0 bg-black/60 p-2 text-white text-xs backdrop-blur-md">
+                                        {getImageForSection(0).caption}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                    {/* Introduction: Standard Sans, readable, justified */}
-                    <div
-                        className="font-sans text-[18px] leading-[32px] text-muted-foreground font-light text-justify [&_p]:mb-12"
-                        dangerouslySetInnerHTML={{ __html: content.introduction }}
-                    />
-                </div>
+                )}
 
-                {/* Video Player (Cinematic) */}
+                {/* Legacy Introduction Support */}
+                {content.introduction && !content.content?.hook && (
+                    <div className="space-y-8 text-left">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/10 text-primary text-xs font-mono uppercase tracking-[0.2em] font-bold">
+                            <BookOpen className="w-3 h-3" />
+                            Introduction
+                        </div>
+                        <div
+                            className="font-sans text-[18px] leading-[32px] text-muted-foreground font-light text-justify [&_p]:mb-12"
+                            dangerouslySetInnerHTML={{ __html: content.introduction }}
+                        />
+                    </div>
+                )}
+
+                {/* Video Player */}
                 {(content.video_url || (content.videoScript && String(content.videoScript).includes('http'))) && (
                     <div className="rounded-2xl overflow-hidden shadow-2xl border border-border bg-black aspect-video relative group ring-1 ring-white/5 my-12">
                         <video
@@ -66,106 +138,98 @@ export function LessonContentRenderer({ content, images }: { content: any, image
                     </div>
                 )}
 
-                {/* Stats / Key Metrics - Visual Break */}
-                {content.stats && content.stats.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-16">
-                        {content.stats.map((stat: any, i: number) => (
-                            <div key={i} className={`${cardClasses} flex flex-col justify-center items-center text-center`}>
-                                <div className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br from-primary to-cyan-400 mb-2 font-sans tracking-tighter">{stat.value}</div>
-                                <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">{stat.label}</div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                {/* Primary Image */}
-                {getImageForSection(0) && (
-                    <div className="rounded-[2rem] overflow-hidden border border-border/50 shadow-2xl my-12">
-                        <img
-                            src={getImageForSection(0).image_url}
-                            className="w-full h-auto max-h-[500px] object-cover"
-                            alt="Lesson Overview"
-                        />
-                    </div>
-                )}
-
-                {/* Content Sections */}
-                <div className="space-y-32">
-                    {content.sections?.map((section: any, idx: number) => {
-                        const img = getImageForSection(idx + 1);
-
-                        return (
-                            <section key={idx} className="space-y-12">
-                                <div className="space-y-6">
-                                    <span className="text-6xl font-black text-muted-foreground/10 block font-sans select-none">{String(idx + 1).padStart(2, '0')}</span>
-                                    {/* H2: Sans-Serif, All-Caps (tracked out) per spec */}
-                                    <h2 className="text-[length:var(--fs-h2)] font-bold text-foreground tracking-[0.05em] uppercase font-sans leading-tight">
-                                        {stripHtmlTags(section.title)}
-                                    </h2>
-                                    <div className="h-0.5 w-12 bg-cyan-500 rounded-full" />
-                                </div>
-
-                                {/* Main Content: The "Golden Grid" Typography */}
-                                <div className="prose prose-base dark:prose-invert max-w-none text-muted-foreground
-                                    [&_p]:!text-[18px] 
-                                    [&_p]:!leading-[32px] 
-                                    [&_p]:!tracking-tight
-                                    [&_p]:!mb-12
-                                    [&_p]:!font-normal
-                                    [&_p]:!text-justify
-                                    [&_p]:block
-                                    prose-headings:text-foreground prose-headings:font-bold
-                                    [&_li]:!text-[18px] 
-                                    [&_li]:!leading-[32px]
-                                    prose-strong:text-foreground prose-strong:font-bold
-                                    
-                                    /* Bullet points override */
-                                    marker:text-cyan-400">
-                                    <div dangerouslySetInnerHTML={{ __html: section.content }} />
-                                </div>
-
-                                {img && (
-                                    <div className="rounded-2xl overflow-hidden shadow-xl border border-border/50 my-16 group relative">
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                                        <img src={img.image_url} alt={section.title} className="w-full h-auto object-cover" />
-                                        {img.caption && (
-                                            <div className="absolute bottom-0 left-0 w-full p-6 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                                <p className="text-xs font-mono uppercase tracking-widest text-white/90">{img.caption}</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {/* Instructor Insight - Visual Break */}
-                                {idx === 0 && content.instructorInsight && (
-                                    <div className="bg-primary/5 border-l-4 border-primary p-8 md:p-12 my-16 relative overflow-hidden backdrop-blur-sm">
-                                        <div className="relative z-10 flex gap-6 items-start">
-                                            <div className="p-3 bg-primary/10 rounded-full shrink-0 text-primary">
-                                                <Lightbulb className="w-6 h-6" />
-                                            </div>
-                                            <div className="space-y-4">
-                                                <div>
-                                                    <div className="font-bold text-foreground text-lg font-sans">{stripHtmlTags(content.instructorInsight.name)}</div>
-                                                    <div className="text-muted-foreground text-xs font-mono uppercase tracking-widest">{stripHtmlTags(content.instructorInsight.title)}</div>
-                                                </div>
-                                                <p className="text-xl text-foreground italic font-sans leading-relaxed">"{stripHtmlTags(content.instructorInsight.wisdom)}"</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
+                {/* Main Content Sections (NEW SCHEMA) */}
+                {content.content && (
+                    <div className="space-y-32">
+                        {/* Intuition Builder */}
+                        {content.content.intuitionBuilder && (
+                            <section className="bg-card border border-border/50 rounded-2xl p-8 md:p-12 shadow-sm">
+                                <SectionHeader number="01" title="Conceptual Intuition" />
+                                <TextRenderer text={sanitizeForConceptual(content.content.intuitionBuilder)} />
+                                <ImageDisplay image={getImageForSection(1)} index={1} />
                             </section>
-                        );
-                    })}
-                </div>
+                        )}
 
-                {/* Hands On Challenge */}
+                        {/* Implementation Guide */}
+                        {content.content.implementationGuide && (
+                            <section className="bg-card border border-border/50 rounded-2xl p-8 md:p-12 shadow-sm">
+                                <SectionHeader number="02" title="Implementation Guide" />
+                                <TextRenderer text={sanitizeForConceptual(content.content.implementationGuide)} />
+                                <ImageDisplay image={getImageForSection(2)} index={2} />
+                            </section>
+                        )}
+
+                        {/* Real-World Case Study */}
+                        {content.content.realWorldCaseStudy && (
+                            <section className="bg-card border border-border/50 rounded-2xl p-8 md:p-12 shadow-sm">
+                                <SectionHeader number="03" title="Real-World Case Study" />
+                                <TextRenderer text={sanitizeForConceptual(content.content.realWorldCaseStudy)} />
+                                <ImageDisplay image={getImageForSection(3)} index={3} />
+                            </section>
+                        )}
+
+                        {/* Industry Variations */}
+                        {content.content.industryVariations && (
+                            <section className="bg-card border border-border/50 rounded-2xl p-8 md:p-12 shadow-sm">
+                                <SectionHeader number="04" title="Industry Variations" />
+                                <TextRenderer text={sanitizeForConceptual(content.content.industryVariations)} />
+                                <ImageDisplay image={getImageForSection(4)} index={4} />
+                            </section>
+                        )}
+
+
+                        {/* Fallback for Legacy Data (conceptExplanation) */}
+                        {content.content.conceptExplanation && !content.content.implementationGuide && (
+                            <section className="bg-card border border-border/50 rounded-2xl p-8 md:p-12 shadow-sm">
+                                <SectionHeader number="02" title="Deep Dive" />
+                                <TextRenderer text={sanitizeForConceptual(content.content.conceptExplanation)} />
+                                <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {[2, 3, 4, 5].map((idx) => (
+                                        <ImageDisplay key={idx} image={getImageForSection(idx)} index={idx} />
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+                    </div>
+                )}
+
+                {/* Legacy Sections Support */}
+                {content.sections?.map((section: any, idx: number) => {
+                    const img = getImageForSection(idx + 1);
+                    return (
+                        <section key={idx} className="space-y-12">
+                            <div className="space-y-6">
+                                <span className="text-6xl font-black text-muted-foreground/10 block font-sans select-none">{String(idx + 1).padStart(2, '0')}</span>
+                                <h2 className="text-[length:var(--fs-h2)] font-bold text-foreground tracking-[0.05em] uppercase font-sans leading-tight">
+                                    {stripHtmlTags(section.title)}
+                                </h2>
+                                <div className="h-0.5 w-12 bg-cyan-500 rounded-full" />
+                            </div>
+
+                            <div className="prose prose-base dark:prose-invert max-w-none text-muted-foreground [&_p]:!text-[18px] [&_p]:!leading-[32px] [&_p]:!tracking-tight [&_p]:!mb-12 [&_p]:!font-normal [&_p]:!text-justify [&_p]:block marker:text-cyan-400">
+                                <div dangerouslySetInnerHTML={{ __html: section.content }} />
+                            </div>
+                        </section>
+                    );
+                })}
+
+                {/* --- DISPLAY-LEVEL SEGMENTATION: DIVIDER --- */}
+                {(content.handsOnChallenge || content.keyTakeaways) && (
+                    <div className="py-16 flex items-center gap-4">
+                        <div className="h-px bg-border/50 flex-1" />
+                        <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">Assessment & Synthesis</span>
+                        <div className="h-px bg-border/50 flex-1" />
+                    </div>
+                )}
+
+                {/* Hands On Challenge (Assessment) - Sanitized if Conceptual */}
                 {content.handsOnChallenge && (
-                    <div className="my-24 bg-card border border-border/50 rounded-[2rem] p-10 md:p-16 relative overflow-hidden shadow-lg">
+                    <div className="my-12 bg-card border border-border/50 rounded-[2rem] p-10 md:p-16 relative overflow-hidden shadow-lg">
                         <div className="relative z-10 space-y-12">
                             <div className="space-y-4">
                                 <span className="text-cyan-500 text-xs font-mono uppercase tracking-[0.3em] font-bold">Practical Application</span>
                                 <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground font-sans">
-                                    {stripHtmlTags(content.handsOnChallenge.objective)}
+                                    {sanitizeForConceptual(stripHtmlTags(content.handsOnChallenge.objective))}
                                 </h3>
                             </div>
 
@@ -175,7 +239,9 @@ export function LessonContentRenderer({ content, images }: { content: any, image
                                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-mono font-bold text-primary mt-1">
                                             {sIdx + 1}
                                         </div>
-                                        <p className="text-lg text-muted-foreground font-light leading-relaxed font-sans">{step}</p>
+                                        <p className="text-lg text-muted-foreground font-light leading-relaxed font-sans text-justify">
+                                            {sanitizeForConceptual(step)}
+                                        </p>
                                     </div>
                                 ))}
                             </div>
@@ -185,11 +251,13 @@ export function LessonContentRenderer({ content, images }: { content: any, image
 
                 {/* Key Takeaways */}
                 {content.keyTakeaways && (
-                    <div className="my-24 bg-gradient-to-b from-muted/10 to-transparent border border-border/50 rounded-[2rem] p-10 md:p-16">
-                        <h3 className="text-2xl font-semibold text-foreground mb-12 flex items-center gap-4 font-sans">
-                            <CheckCircle2 className="w-8 h-8 text-green-500" />
-                            <span className="tracking-tight">Strategic Synthesis</span>
-                        </h3>
+                    <div className="my-12 bg-gradient-to-b from-muted/10 to-transparent border border-border/50 rounded-[2rem] p-10 md:p-16">
+                        <div className="space-y-6 mb-12">
+                            <span className="text-cyan-500 text-xs font-mono uppercase tracking-[0.3em] font-bold">Synthesis</span>
+                            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground font-sans">
+                                Key Takeaways
+                            </h2>
+                        </div>
                         <div className="grid md:grid-cols-2 gap-x-12 gap-y-8">
                             {content.keyTakeaways.map((point: string, idx: number) => (
                                 <div key={idx} className="flex gap-4 items-start">

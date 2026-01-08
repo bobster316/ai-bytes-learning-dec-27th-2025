@@ -39,7 +39,7 @@ export class AudioStreamer {
         }
 
         const buffer = this.context.createBuffer(1, audioData.length, this.sampleRate);
-        buffer.copyToChannel(audioData, 0);
+        buffer.copyToChannel(audioData as any, 0);
 
         try {
             const source = this.context.createBufferSource();

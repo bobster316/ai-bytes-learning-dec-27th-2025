@@ -3,7 +3,7 @@ import Parser from "rss-parser";
 
 let cachedData: any = null;
 let cacheTime: number | null = null;
-const CACHE_DURATION = 6 * 60 * 60 * 1000; // 6 hours cache
+const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes cache (reduced from 1 hour)
 
 const parser = new Parser({
   customFields: {
@@ -17,12 +17,20 @@ const parser = new Parser({
   }
 });
 
-// AI News RSS Feeds (multiple sources for reliability)
+// AI News RSS Feeds (expanded sources for more frequent updates)
 const AI_RSS_FEEDS = [
+  // Primary sources
   { url: 'https://www.artificialintelligence-news.com/feed/', name: 'AI News' },
   { url: 'https://venturebeat.com/category/ai/feed/', name: 'VentureBeat AI' },
   { url: 'https://techcrunch.com/category/artificial-intelligence/feed/', name: 'TechCrunch AI' },
   { url: 'https://www.theverge.com/rss/ai-artificial-intelligence/index.xml', name: 'The Verge AI' },
+  // Additional sources for more coverage
+  { url: 'https://www.wired.com/feed/tag/ai/latest/rss', name: 'Wired AI' },
+  { url: 'https://feeds.arstechnica.com/arstechnica/technology-lab', name: 'Ars Technica' },
+  { url: 'https://www.zdnet.com/topic/artificial-intelligence/rss.xml', name: 'ZDNet AI' },
+  { url: 'https://www.technologyreview.com/feed/', name: 'MIT Tech Review' },
+  { url: 'https://ai.googleblog.com/feeds/posts/default', name: 'Google AI Blog' },
+  { url: 'https://openai.com/blog/rss/', name: 'OpenAI Blog' },
 ];
 
 // Decode HTML entities in URLs
@@ -219,14 +227,58 @@ export async function GET() {
 
     console.log(`After deduplication: ${unique.length} unique articles`);
 
-    // Filter for articles with images only
+    // Trusted image CDN domains - only allow images from these sources
+    const TRUSTED_IMAGE_DOMAINS = [
+      'platform.theverge.com',
+      'cdn.vox-cdn.com',
+      'duet-cdn.vox-cdn.com',
+      'i0.wp.com',
+      'i1.wp.com',
+      'i2.wp.com',
+      'techcrunch.com',
+      'venturebeat.com',
+      'images.unsplash.com',
+      'miro.medium.com',
+      'cdn.openai.com',
+      's.yimg.com',
+      'media.wired.com',
+      'static01.nyt.com',
+      // Additional domains for new sources
+      'cdn.arstechnica.net',
+      'cdn.ars.technica.com',
+      'www.zdnet.com',
+      'zdnet.com',
+      'www.technologyreview.com',
+      'wp.technologyreview.com',
+      'blogger.googleusercontent.com',
+      'storage.googleapis.com',
+      'lh3.googleusercontent.com',
+      'openai.com',
+      'images.openai.com',
+    ];
+
+    // Check if image URL is from a trusted domain
+    const isValidImageUrl = (url: string | null): boolean => {
+      if (!url) return false;
+      try {
+        const imageUrl = new URL(url);
+        return TRUSTED_IMAGE_DOMAINS.some(domain =>
+          imageUrl.hostname === domain || imageUrl.hostname.endsWith(`.${domain}`)
+        );
+      } catch {
+        return false;
+      }
+    };
+
+    // Filter for articles with valid images from trusted sources only
     const finalArticles = unique
       .filter(article =>
         article.title &&
         article.description &&
-        article.urlToImage // Only articles with images
+        article.urlToImage &&
+        isValidImageUrl(article.urlToImage) // Only articles with images from trusted CDNs
       )
-      .slice(0, 12); // Return top 12 articles
+      .slice(0, 30); // Return top 30 articles for Load More functionality
 
     console.log(`Found ${finalArticles.length} articles`);
 

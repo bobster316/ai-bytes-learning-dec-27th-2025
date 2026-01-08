@@ -207,6 +207,7 @@ export default function Home() {
                           alt={item.title}
                           fill
                           className="object-cover group-hover:scale-110 transition-transform duration-500"
+                          sizes="(max-width: 768px) 100vw, 33vw"
                         />
                         {/* Gradient overlay */}
 
@@ -254,6 +255,7 @@ export default function Home() {
                 alt="Trusted by Thousands Worldwide"
                 fill
                 className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 1024px"
               />
               {/* Gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/60 via-primary/60 to-cyan-500/60"></div>
@@ -331,7 +333,7 @@ export default function Home() {
               {
                 image: "/icons/structured_learning.png",
                 title: "Structured Learning",
-                description: "Bite-sized lessons with clear progression paths for maximum retention",
+                description: "Byte-sized lessons with clear progression paths for maximum retention",
                 gradient: "from-primary to-cyan-500",
                 bgGradient: "from-cyan-50 to-blue-50",
                 link: "/features/structured-learning",

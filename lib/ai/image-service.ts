@@ -105,14 +105,21 @@ export class MediaService {
     async fetchImages(prompts: string[]): Promise<LessonImage[]> {
         const results: LessonImage[] = [];
 
-        for (const prompt of prompts) {
+        let index = 0;
+        for (const rawPrompt of prompts) {
+            // Clean up prompt to remove legacy prefixes
+            const prompt = rawPrompt.replace(/^PHOTOREALISTIC:\s*/i, '');
+
             // =========================================================
             // PRIMARY: Try Gemini 2.5 Flash Image first (best quality)
             // =========================================================
             if (geminiImageService.isAvailable()) {
                 console.log(`[MediaService] 🎨 Trying Gemini for: "${prompt.substring(0, 50)}..."`);
 
-                const geminiImage = await geminiImageService.generateImage(prompt);
+                // Pass index for variable seed/temperature generation
+                const geminiImage = await geminiImageService.generateImage(prompt, index);
+                index++;
+
                 if (geminiImage) {
                     results.push({
                         url: geminiImage.url,

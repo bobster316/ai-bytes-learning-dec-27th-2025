@@ -42,6 +42,7 @@ export function LessonSidebar({
                                         <Link
                                             key={lesson.id}
                                             href={`/courses/${params.courseId}/lessons/${lesson.id}`}
+                                            prefetch={true}
                                             className={cn(
                                                 "flex items-start gap-3 p-3 rounded-xl transition-all text-sm group",
                                                 isActive

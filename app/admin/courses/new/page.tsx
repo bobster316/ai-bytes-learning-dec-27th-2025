@@ -2,15 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
     Sparkles,
     Layers,
     Zap,
     BookOpen,
     ArrowLeft,
-    Wand2,
-    Loader2
+    Wand2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -24,24 +23,53 @@ export default function NewCoursePage() {
 
     // Logic for loading screen
     const [progress, setProgress] = useState(0);
+    const [currentStage, setCurrentStage] = useState("Initializing Protocol...");
     const [logs, setLogs] = useState<string[]>([]);
+    const [error, setError] = useState<{ title: string, message: string, details?: string } | null>(null);
+
+    // Heartbeat / "Stuck" Reassurance Effect
+    useEffect(() => {
+        if (!isGenerating || progress >= 100) return;
+
+        const messages = [
+            "Consulting expert knowledge base...",
+            "Refining lesson quality...",
+            "Ensuring pedagogical alignment...",
+            "Validating strict constraints...",
+            "Optimizing media prompts...",
+            "Synthesizing final modules..."
+        ];
+
+        let msgIndex = 0;
+
+        // If no progress update for 6 seconds, cycle reassurance messages
+        const heartbeat = setInterval(() => {
+            setLogs(prev => {
+                const last = prev[0];
+                const nextMsg = messages[msgIndex % messages.length];
+                if (last !== nextMsg) {
+                    return [nextMsg, ...prev].slice(0, 5);
+                }
+                return prev;
+            });
+            msgIndex++;
+        }, 6000);
+
+        return () => clearInterval(heartbeat);
+    }, [progress, isGenerating]);
+
 
     const handleGenerate = async () => {
         setIsGenerating(true);
-        setLogs(["Drafting curriculum structure...", "Consulting expert knowledge base..."]);
+        setError(null); // Reset error
+        setLogs(["Initializing connection..."]);
         setProgress(0);
+        setCurrentStage("Initializing...");
 
         try {
-            // Simulated progress for UX
-            const interval = setInterval(() => {
-                setProgress(p => {
-                    if (p >= 90) return p;
-                    return p + Math.random() * 8;
-                });
-            }, 600);
-
             const res = await fetch("/api/course/generate", {
                 method: "POST",
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     courseName: topic,
                     difficultyLevel: difficulty,
@@ -51,26 +79,105 @@ export default function NewCoursePage() {
                 }),
             });
 
-            if (!res.ok) throw new Error("Generation failed");
+            if (!res.ok) {
+                // Handle non-200 immediate failures
+                throw new Error(`Generation Service Unavailable: ${res.status}`);
+            }
 
-            const data = await res.json();
+            if (!res.body) throw new Error("No response body");
 
-            clearInterval(interval);
-            setProgress(100);
-            setLogs(prev => [...prev, "Finalizing course assets...", "Ready for launch."]);
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let done = false;
 
-            setTimeout(() => {
-                router.push(`/courses/${data.courseId}`);
-            }, 800);
+            while (!done) {
+                const { value, done: doneReading } = await reader.read();
+                done = doneReading;
+                const chunkValue = decoder.decode(value);
+                const lines = chunkValue.split('\n\n');
 
-        } catch (e) {
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const jsonStr = line.slice(6);
+                        try {
+                            const data = JSON.parse(jsonStr);
+
+                            if (data.stage === 'error') {
+                                // TERMINAL ERROR STATE
+                                // TERMINAL ERROR STATE
+                                const sanitizeError = (rawMessage: string) => {
+                                    const safeMessages = [
+                                        "Validation Failed",
+                                        "Content Violation",
+                                        "Safety Policy",
+                                        "Prohibited pattern",
+                                        "Paragraph sentence limit",
+                                        "Hard pipeline violation"
+                                    ];
+
+                                    const isSafe = safeMessages.some(msg => rawMessage.includes(msg));
+
+                                    if (isSafe) return rawMessage;
+
+                                    // If technical/unknown error, log it but show generic to user
+                                    console.error("Technical Failure masked from UI:", rawMessage);
+                                    return "The generated content did not meet strict quality standards after multiple repair attempts. Please try again or adjust your topic.";
+                                };
+
+                                setError({
+                                    title: "Course Generation Failed",
+                                    message: "The system encountered a quality control issue.",
+                                    details: sanitizeError(data.message)
+                                });
+                                // Keep isGenerating=true so NeuralLoom stays mounted to show the error
+                                return; // Stop processing stream
+                            }
+
+                            if (data.message) {
+                                // If stage is explicit, update Header
+                                if (data.stage && data.stage !== 'generating') {
+                                    const map: Record<string, string> = {
+                                        'init': 'Initializing...',
+                                        'setup': 'Creating Shell...',
+                                        'planning': 'Drafting Syllabus...',
+                                        'finalizing': 'Polishing...',
+                                        'completed': 'Ready.'
+                                    };
+                                    setCurrentStage(map[data.stage] || data.stage.toUpperCase());
+                                }
+                                setLogs(prev => [data.message, ...prev].slice(0, 5));
+                            }
+
+                            if (data.progress) setProgress(data.progress);
+
+                            if (data.stage === 'completed') {
+                                setLogs(prev => ["Redirecting to course...", ...prev]);
+                                setCurrentStage("Complete");
+                                setTimeout(() => {
+                                    router.push(`/courses/${data.courseId}`);
+                                }, 1000);
+                            }
+
+                        } catch (parseErr) {
+                            console.warn("Stream parse error:", parseErr);
+                        }
+                    }
+                }
+            }
+
+        } catch (e: any) {
             console.error(e);
-            setIsGenerating(false);
+            setError({
+                title: "System Error",
+                message: "An unexpected error occurred during generation.",
+                details: e.message
+            });
+            // Keep isGenerating=true to show error panel
         }
     };
 
     if (isGenerating) {
-        return <NeuralLoom progress={progress} logs={logs} />;
+        return <NeuralLoom progress={progress} logs={logs} stage={currentStage} error={error} />;
     }
 
     return (

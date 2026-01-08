@@ -26,7 +26,7 @@ import {
     Globe,
     Briefcase,
     Lock,
-    Robot,
+
     MessageSquare,
     Image,
     Layout,
@@ -72,46 +72,21 @@ export function CourseCatalog({ courses }: CourseCatalogProps) {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans selection:bg-cyan-500/30">
-            {/* Hero Section */}
-            <section className="relative h-[45vh] min-h-[450px] flex items-center justify-center overflow-hidden bg-slate-900">
-                {/* Animated Background Elements */}
-                <div className="absolute inset-0 overflow-hidden">
-                    <div className="absolute -top-40 -left-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px] animate-pulse" />
-                    <div className="absolute top-20 right-20 w-72 h-72 bg-purple-500/10 rounded-full blur-[80px] animate-pulse delay-700" />
-                    <div className="absolute -bottom-20 left-1/3 w-80 h-80 bg-blue-500/10 rounded-full blur-[90px] animate-pulse delay-1000" />
-                    <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center bg-[length:40px_40px] opacity-10 [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-900/50 to-slate-900/80" />
-                </div>
-
-                <div className="container relative z-10 px-4 text-center max-w-3xl mx-auto">
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, ease: "easeOut" }}
-                        className="space-y-6"
-                    >
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/50 border border-slate-700/50 backdrop-blur-md mx-auto">
-                            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                            <span className="text-[10px] font-bold text-slate-300 tracking-widest uppercase">Next-Gen Learning</span>
-                        </div>
-
-                        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">
-                            Master the Future of <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 animate-gradient-x">
-                                Artificial Intelligence
-                            </span>
+            {/* Hero Section - Homepage Style */}
+            <section className="relative mx-auto w-[95%] max-w-7xl my-4 rounded-3xl border border-white/5 shadow-2xl py-16 flex items-center overflow-hidden bg-slate-900">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-900/20 via-slate-900 to-slate-900 pointer-events-none rounded-3xl"></div>
+                <div className="container relative z-10 mx-auto px-4 max-w-7xl">
+                    <div className="text-center space-y-6">
+                        <span className="inline-block py-1 px-3 rounded-full bg-white/10 border border-primary/20 text-cyan-300 font-medium text-lg tracking-wide uppercase">
+                            AI COURSES
+                        </span>
+                        <h1 className="text-3xl lg:text-5xl font-black text-white tracking-tight leading-tight">
+                            Master the Future of <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-primary">Artificial Intelligence</span>
                         </h1>
-
-                        <p className="text-lg text-slate-400 max-w-xl mx-auto leading-relaxed font-normal">
+                        <p className="text-lg lg:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
                             Explore our award-winning curriculum designed to take you from beginner to expert in record time.
                         </p>
-
-                        <div className="pt-2">
-                            <Button size="lg" className="h-12 px-8 rounded-full text-base font-semibold bg-white text-slate-900 hover:bg-cyan-50 shadow-lg shadow-cyan-500/20 transition-all hover:scale-105 active:scale-95">
-                                Start Your Journey
-                            </Button>
-                        </div>
-                    </motion.div>
+                    </div>
                 </div>
             </section>
 
