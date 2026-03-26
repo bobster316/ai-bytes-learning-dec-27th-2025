@@ -77,6 +77,13 @@ const WIDE_INNER = new Set([
     'go_deeper', 'punch_quote', 'prediction',
 ]);
 
+// Surface-dark sets mapped to layout density — moved to module scope to avoid per-render allocation
+const SURFACE_DARK_BY_DENSITY: Record<string, Set<string>> = {
+    tight:    new Set(['instructor_insight', 'industry_tabs', 'prediction', 'applied_case', 'interactive_vis', 'quiz', 'video_snippet']),
+    balanced: new Set(['instructor_insight', 'type_cards', 'industry_tabs', 'applied_case', 'interactive_vis', 'quiz', 'video_snippet']),
+    spacious: new Set(['instructor_insight', 'type_cards', 'industry_tabs', 'prediction', 'applied_case', 'interactive_vis', 'quiz', 'video_snippet']),
+};
+
 interface LessonBlockRendererProps {
     blocks: ContentBlock[];
     audioUrl?: string;
@@ -93,12 +100,7 @@ export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewU
     let visualBlockCounter = 0;
     let typeCardsCounter = 0; // track which type_cards block this is (for layout cycling)
 
-    // ── Surface-dark sets mapped to layout density ────────────────────────
-    const SURFACE_DARK_BY_DENSITY: Record<string, Set<string>> = {
-        tight:    new Set(['instructor_insight', 'industry_tabs', 'prediction', 'applied_case', 'interactive_vis', 'quiz', 'video_snippet']),
-        balanced: new Set(['instructor_insight', 'type_cards', 'industry_tabs', 'applied_case', 'interactive_vis', 'quiz', 'video_snippet']),
-        spacious: new Set(['instructor_insight', 'type_cards', 'industry_tabs', 'prediction', 'applied_case', 'interactive_vis', 'quiz', 'video_snippet']),
-    };
+    // Derive surface-dark set from density (uses module-scope SURFACE_DARK_BY_DENSITY)
     const SURFACE_DARK = SURFACE_DARK_BY_DENSITY[courseDNA.layout_density] ?? SURFACE_DARK_BY_DENSITY.balanced;
 
     // ── TypeCards layout offset — derived from palette archetype ─────────
