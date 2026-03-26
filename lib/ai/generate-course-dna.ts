@@ -63,10 +63,19 @@ export function generateCourseDNA(courseId: string, title: string, difficulty: s
 /** Safely parse raw JSONB from DB. Returns defaultRender on any validation failure. */
 export function getCourseDNARender(raw: unknown): CourseDNA["render"] {
     const result = CourseDNASchema.safeParse(raw);
-    return result.success ? result.data.render : defaultRender;
+    if (!result.success) {
+        console.warn("[CourseDNA] Validation failed — using defaultRender. Raw value:", raw, "Errors:", result.error.flatten());
+        return defaultRender;
+    }
+    return result.data.render;
 }
 
-/** Derive fingerprint — always re-derivable from courseId/title/difficulty */
+/**
+ * Derive fingerprint — always re-derivable from courseId/title/difficulty.
+ * Note: if you have already called generateCourseDNA() with the same inputs,
+ * the fingerprint equals the SHA-256 of `${courseId}:${title}:${difficulty}` —
+ * avoid calling both if you only need one.
+ */
 export function deriveDNAFingerprint(courseId: string, title: string, difficulty: string): string {
     return crypto.createHash("sha256")
         .update(`${courseId}:${title}:${difficulty}`)
