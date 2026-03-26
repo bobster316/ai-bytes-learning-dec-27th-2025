@@ -6,6 +6,8 @@ import { RecapBlock } from "@/lib/types/lesson-blocks";
 import { useCourseDNA } from "../course-dna-provider";
 import { archetypeOffset } from "@/lib/ai/generate-course-dna";
 
+const RECAP_STYLES = ["card", "minimal", "striped"] as const;
+
 // ── Style: CARD (classic dark gradient card, numbered circles) ────────────────
 function CardStyle({ title, points, accent }: { title: string; points: string[]; accent: string }) {
     return (
@@ -175,7 +177,6 @@ function BentoStyle({ title, points, accent }: { title: string; points: string[]
 // ── Main export ───────────────────────────────────────────────────────────────
 export function RecapSlide(props: RecapBlock) {
     const { primary_colour, palette_id } = useCourseDNA();
-    const RECAP_STYLES = ["card", "minimal", "striped"] as const;
     const recapStyle = RECAP_STYLES[archetypeOffset(palette_id, 3)];
     const points = props.points || (props as any).items || [];
     const title  = props.title || "If you remember only three things...";
