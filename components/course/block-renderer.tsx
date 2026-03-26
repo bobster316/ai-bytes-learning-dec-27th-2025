@@ -34,6 +34,7 @@ import { OpenExercise } from "./blocks/open-exercise";
 import { InstructorInsight } from "./blocks/instructor-insight";
 import { useCourseDNA } from "@/components/course/course-dna-provider";
 import { archetypeOffset } from "@/lib/ai/generate-course-dna";
+import { SectionDivider } from "./SectionDivider";
 
 const BLOCK_COMPONENTS: Record<string, React.FC<any>> = {
     lesson_header:          LessonHeader,
@@ -77,6 +78,14 @@ const WIDE_INNER = new Set([
     'go_deeper', 'punch_quote', 'prediction',
 ]);
 
+// Blocks that should never have a section divider placed before or after them.
+// Openers (objective, punch_quote) and the ending sequence (recap → quiz → key_terms → completion)
+// flow as a single continuous unit; breaking them with dividers reduces visual clarity.
+const SKIP_DIVIDER_TYPES = new Set([
+    'objective', 'punch_quote', 'callout',
+    'recap', 'quiz', 'key_terms', 'completion', 'audio_recap_prominent',
+]);
+
 // Surface-dark sets mapped to layout density — moved to module scope to avoid per-render allocation
 const SURFACE_DARK_BY_DENSITY: Record<string, Set<string>> = {
     tight:    new Set(['instructor_insight', 'industry_tabs', 'prediction', 'applied_case', 'interactive_vis', 'quiz', 'video_snippet']),
@@ -99,6 +108,7 @@ export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewU
     const courseDNA = useCourseDNA();
     let visualBlockCounter = 0;
     let typeCardsCounter = 0; // track which type_cards block this is (for layout cycling)
+    let sectionDividerCounter = 0; // increments each time a divider is rendered (for bold_number style)
 
     // Derive surface-dark set from density (uses module-scope SURFACE_DARK_BY_DENSITY)
     const SURFACE_DARK = SURFACE_DARK_BY_DENSITY[courseDNA.layout_density] ?? SURFACE_DARK_BY_DENSITY.balanced;
@@ -213,8 +223,19 @@ export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewU
                         ? 'py-8 md:py-10'
                         : 'py-10 md:py-14';
 
+                    // Show a section divider between body blocks, but not adjacent to
+                    // structural openers/closers (objective, punch_quote, recap, quiz, etc.)
+                    const prevBlock = idx > 0 ? bodyBlocks[idx - 1] : null;
+                    const showDivider =
+                        idx > 0 &&
+                        !SKIP_DIVIDER_TYPES.has(block.type) &&
+                        prevBlock != null &&
+                        !SKIP_DIVIDER_TYPES.has(prevBlock.type);
+                    const dividerNumber = showDivider ? ++sectionDividerCounter : undefined;
+
                     return (
                         <React.Fragment key={`${block.id}-${idx}`}>
+                            {showDivider && <SectionDivider sectionNumber={dividerNumber} />}
                             <section
                                 id={`block-${block.id}`}
                                 data-block-type={block.type}

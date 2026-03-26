@@ -1,0 +1,606 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+import { OrchestratorV2 } from '@/lib/ai/agent-system-v2';
+import { sanitizeBlocks } from '@/lib/ai/content-sanitizer';
+import fs from 'fs';
+import path from 'path';
+import { imageService } from '@/lib/ai/image-service';
+import { geminiImageService } from '@/lib/ai/gemini-image-service';
+import { veoVideoService } from '@/lib/ai/veo-video-service';
+import { generateLessonHTML } from '@/lib/utils/lesson-renderer-v2';
+import { videoGenerationService } from '@/lib/services/video-generation';
+import {
+    safeParse,
+    courseGenerationRequestSchema
+} from '@/lib/validations/course-generator';
+import type { CourseGenerationRequest } from '@/lib/types/course-generator';
+import { CourseStateManager } from '@/lib/ai/course-state';
+import { videoService } from '@/lib/ai/video-service';
+import { generateCourseDNA, deriveDNAFingerprint } from "@/lib/ai/generate-course-dna";
+
+export const runtime = 'nodejs';
+export const maxDuration = 300; // 5 minutes
+
+
+// V2 Database Helper Functions
+const dbV2 = {
+    async createGenerationRecord(supabase: any, courseId: string) {
+        const { data, error } = await supabase
+            .from('course_generation_progress')
+            .insert({
+                course_id: courseId,
+                status: 'in_progress',
+                current_step: 'Initializing V2 Pipeline...',
+                progress_percentage: 0
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data.id;
+    },
+
+    async updateGenerationProgress(supabase: any, generationId: string, step: string, percentage: number) {
+        await supabase
+            .from('course_generation_progress')
+            .update({
+                current_step: step,
+                progress_percentage: percentage,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', generationId);
+    },
+
+    async markGenerationComplete(supabase: any, generationId: string, success: boolean, error?: string) {
+        await supabase
+            .from('course_generation_progress')
+            .update({
+                status: success ? 'completed' : 'failed',
+                progress_percentage: success ? 100 : undefined,
+                error_message: error,
+                completed_at: new Date().toISOString()
+            })
+            .eq('id', generationId);
+    },
+
+    // V2 State Machine Specific
+    async updateNodeState(supabase: any, courseId: string, nodeId: string, nodeType: string, status: string, error?: string) {
+        // Upsert state
+        const { error: upsertErr } = await supabase
+            .from('generator_node_state')
+            .upsert({
+                course_id: courseId,
+                node_id: nodeId,
+                node_type: nodeType,
+                status: status,
+                error_message: error
+            }, { onConflict: 'course_id, node_id' });
+
+        if (upsertErr) {
+            console.warn("[API-V2] Failed to update node state:", upsertErr.message);
+        }
+    }
+};
+
+export async function POST(req: NextRequest) {
+    const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        console.error('[API-V2] CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing! RLS bypass will fail.');
+        return NextResponse.json({ success: false, error: 'Configuration Error' }, { status: 500 });
+    }
+
+    let body: any;
+    try {
+        body = await req.json();
+    } catch (e) {
+        return NextResponse.json({ success: false, error: 'Invalid JSON' }, { status: 400 });
+    }
+
+    const validationResult = safeParse(courseGenerationRequestSchema, body);
+    if (!validationResult.success) {
+        return NextResponse.json({ success: false, errors: validationResult.errors }, { status: 400 });
+    }
+
+    const input = validationResult.data as CourseGenerationRequest;
+    const DRY_RUN = (body as any).dryRun === true;
+
+    // --- STREAMING SETUP ---
+    const encoder = new TextEncoder();
+    const stream = new TransformStream();
+    const writer = stream.writable.getWriter();
+
+    const sendEvent = async (data: any) => {
+        const message = `data: ${JSON.stringify(data)}\n\n`;
+        await writer.write(encoder.encode(message));
+    };
+
+    (async () => {
+        let generationId: string | null = null;
+        let courseId: string | null = null;
+        const requestedHost = (input as any).videoSettings?.courseHost || 'sarah';
+        const isGemma = requestedHost === 'gemma';
+
+        try {
+            await sendEvent({ stage: 'init', message: 'Initializing V2 Enterprise Pipeline...' });
+
+            const { courseName, difficultyLevel, courseDescription, targetDuration } = input;
+
+            // 1. Create Course Shell
+            let course = { id: 'mock-course-id-v2', title: courseName };
+            if (!DRY_RUN) {
+                const { data: c, error: cErr } = await supabase
+                    .from('courses')
+                    .insert({
+                        title: courseName,
+                        description: (courseDescription || `A comprehensive course on ${courseName}`) + (isGemma ? ' [gemma]' : ''),
+                        difficulty_level: difficultyLevel,
+                        published: false,
+                        is_micro: true
+                    })
+                    .select()
+                    .single();
+
+                if (cErr) throw cErr;
+                course = c;
+            }
+            courseId = course.id;
+
+            if (!DRY_RUN) {
+                generationId = await dbV2.createGenerationRecord(supabase, course.id);
+            }
+
+            // Generate and persist CourseDNA — deterministic from course identity
+            const courseDNA = generateCourseDNA(course.id, courseName, difficultyLevel);
+            const dnaFingerprint = deriveDNAFingerprint(course.id, courseName, difficultyLevel);
+            if (!DRY_RUN) {
+                const { error: dnaError } = await supabase
+                    .from("courses")
+                    .update({ course_dna: courseDNA, dna_fingerprint: dnaFingerprint })
+                    .eq("id", course.id);
+                if (dnaError) {
+                    console.warn("[API-V2] CourseDNA persist failed (non-blocking):", dnaError.message);
+                }
+            }
+
+            // PHASE 2: Initialize Unique Course State
+            const courseState = CourseStateManager.getState(courseId, courseName);
+
+            await sendEvent({ stage: 'setup', progress: 5, message: 'V2 Course shell created.' });
+
+            // 2. The Orchestrator V2 (Manifest FIRST)
+            const orchestrator = new OrchestratorV2();
+            await sendEvent({ stage: 'planning', progress: 10, message: 'Drafting deterministic Course Manifest...' });
+
+            console.time(`[API-V2] Manifest Generation - ${courseName}`);
+            const manifest = await orchestrator.generateManifest({
+                courseName,
+                difficultyLevel,
+                courseDescription,
+                targetDuration: targetDuration || 60,
+                topicCount: (input as any).topicCount,
+                lessonsPerTopic: (input as any).lessonsPerTopic
+            });
+            console.timeEnd(`[API-V2] Manifest Generation - ${courseName}`);
+
+            // 3. Persist Manifest to Database (Topics & Empty Lessons)
+            await sendEvent({ stage: 'generating', progress: 20, message: 'Manifest locked. Processing Topics & Lessons sequentially...' });
+
+            // Thumbnail Generation
+            const thumbnail = !DRY_RUN && manifest.courseMetadata.thumbnailPrompt
+                ? await imageService.fetchCourseThumbnail(courseName, courseDescription, manifest.courseMetadata.thumbnailPrompt)
+                : "dry-run.jpg";
+
+            if (!DRY_RUN) {
+                const finalDescription = manifest.courseMetadata.description || courseDescription || `A comprehensive course on ${courseName}`;
+                await supabase.from('courses').update({
+                    thumbnail_url: thumbnail,
+                    title: manifest.refinedCourseTitle || courseName,
+                    description: isGemma && !finalDescription.toLowerCase().includes('[gemma]')
+                        ? finalDescription + ' [gemma]'
+                        : finalDescription,
+                    category: manifest.courseMetadata.category || null,
+                }).eq('id', courseId);
+                await dbV2.updateNodeState(supabase, courseId, 'course_root', 'course', 'planned');
+            }
+
+            let totalLessons = manifest.topics.reduce((acc, t) => acc + (t.lessons?.length || 0), 0);
+            let lessonsProcessed = 0;
+            let globalLessonIndex = 1;
+
+            for (let i = 0; i < manifest.topics.length; i++) {
+                const topic = manifest.topics[i];
+                let topicId = `mock-topic-${i}`;
+
+                if (!DRY_RUN) {
+                    const { data: tData, error: tErr } = await supabase.from('course_topics').insert({
+                        course_id: courseId,
+                        title: topic.topicName,
+                        description: topic.description,
+                        order_index: i
+                    }).select().single();
+                    if (tErr) throw tErr;
+                    topicId = tData.id;
+                    await dbV2.updateNodeState(supabase, courseId, (topic as any).id || `mod_${i}`, 'module', 'planned');
+                }
+
+                if (!topic.lessons) continue;
+
+                // Expand Lessons Deterministically
+                for (let j = 0; j < topic.lessons.length; j++) {
+                    const lessonPlan = topic.lessons[j];
+                    const manifestNodeId = (lessonPlan as any).id || `les_${i}_${j}`;
+
+                    await sendEvent({ stage: 'generating', progress: 20 + Math.floor((lessonsProcessed / Math.max(1, totalLessons)) * 60), message: `Expanding Lesson: ${lessonPlan.lessonTitle}...` });
+
+                    if (!DRY_RUN) {
+                        await dbV2.updateNodeState(supabase, courseId, manifestNodeId, 'lesson', 'generating');
+                    }
+
+                    // V2 Single Lesson Expansion
+                    try {
+                        console.time(`[API-V2] Lesson Base Content - ${lessonPlan.lessonTitle}`);
+                        let compiledLesson = await orchestrator.processLesson(lessonPlan, topic, manifest, globalLessonIndex, courseState, courseDNA.content);
+                        
+                        // 2. ENRICH Media Prompts (Block-by-Block Enrichment for 1000w Detail)
+                        await sendEvent({ stage: 'generating', progress: 20 + Math.floor((lessonsProcessed / Math.max(1, totalLessons)) * 45), message: `🎨 Architecting high-fidelity visual blueprints (1000w mandate)...` });
+                        compiledLesson = await orchestrator.enrichLessonMedia(compiledLesson, (compiledLesson as any).analogy_domain || 'Technology');
+                        console.timeEnd(`[API-V2] Lesson Base Content - ${lessonPlan.lessonTitle}`);
+
+                        // Update Phase 2 Statistics
+                        if (compiledLesson.blocks) {
+                            compiledLesson.blocks.forEach((b: any) => {
+                                if (['full_image', 'flow_diagram', 'concept_illustration', 'image_text_row', 'type_cards', 'interactive_vis'].includes(b.type)) {
+                                    courseState.visual_type_counts[b.type] = (courseState.visual_type_counts[b.type] || 0) + 1;
+                                }
+                                if (b.type === 'video_snippet' && b.video_search_query) {
+                                    courseState.video_queries_used.push(b.video_search_query);
+                                }
+                            });
+                        }
+                        courseState.domain_history.push(CourseStateManager.getNextDomain(courseState));
+                        courseState.structure_history.push(CourseStateManager.getStructure(globalLessonIndex).name);
+                        courseState.tone_history.push(CourseStateManager.getTone(globalLessonIndex).name);
+                        CourseStateManager.saveState(courseState);
+
+                        // ═══════════════════════════════════════════════════
+                        // DOMAIN-STRIPPING POST-PROCESSOR
+                        // ═══════════════════════════════════════════════════
+                        // The AI sometimes leaks the analogy domain into image/video prompts
+                        // despite explicit instructions not to. This programmatic guard
+                        // detects and replaces domain-infected prompts with topic-relevant ones.
+                        const DOMAIN_KEYWORDS: Record<string, string[]> = {
+                            'Culinary': ['chef', 'kitchen', 'cooking', 'recipe', 'ingredient', 'seasoning', 'plating', 'sourdough', 'baking', 'sous chef', 'michelin', 'sushi', 'restaurant', 'culinary', 'oven', 'stove', 'frying pan', 'whisk'],
+                            'Nature': ['ecosystem', 'migration', 'erosion', 'forest', 'river', 'ocean', 'wildlife', 'coral reef', 'rainforest', 'savanna', 'sunflower', 'field of flowers', 'beehive', 'pollination', 'waterfall'],
+                            'Architecture': ['blueprint', 'scaffolding', 'cathedral', 'facade', 'architect', 'building construction', 'renovation', 'brick laying', 'masonry'],
+                            'Music': ['musician', 'orchestra', 'crescendo', 'jazz', 'guitar', 'piano', 'symphony', 'conductor', 'audio engineer', 'sound engineer', 'recording studio', 'mixing console', 'audio effects', 'music producer', 'mixing tracks', 'soundboard', 'turntable', 'vinyl record', 'drum kit', 'bass guitar', 'saxophone', 'trumpet'],
+                            'Sports': ['athlete', 'relay race', 'marathon', 'playbook', 'coaching', 'stadium', 'basketball court', 'football field', 'boxing ring', 'swimming pool', 'track field'],
+                            'Gardening': ['pruning', 'greenhouse', 'grafting', 'compost', 'irrigation', 'garden', 'planting seeds', 'flower bed', 'watering can', 'trowel', 'potting soil'],
+                            'Travel': ['compass', 'lighthouse', 'expedition', 'crossroads', 'harbour', 'ship sailing', 'map navigation', 'suitcase', 'passport', 'boarding pass'],
+                            'Craftsmanship': ['potter', 'pottery', 'glassblowing', 'weaving', 'loom', 'mosaic', 'calligraphy', 'calligrapher', 'clay', 'kiln', 'craftsman', 'woodworking', 'ceramic', 'blacksmith', 'forge', 'anvil', 'spinning wheel', 'leather tooling']
+                        };
+
+                        const sanitizeVisualPrompt = (prompt: string, lessonTitle: string, courseTitle: string): string => {
+                            const lower = prompt.toLowerCase();
+                            const MANDATE = "MANDATORY: Use MINIMUM 1000 WORDS of technical description. NO metaphors. NO analogies. Follow the 6-part technical formula (GEOMETRY, PHYSICS, LITE, DATA, MOTION, ALIGNMENT).";
+                            
+                            // Check 1: Domain keyword contamination
+                            for (const [domain, keywords] of Object.entries(DOMAIN_KEYWORDS)) {
+                                const contaminated = keywords.some(kw => lower.includes(kw));
+                                if (contaminated) {
+                                    console.warn(`[V3-Sanitizer] ⚠️ Domain leak "${domain}" detected. Rewriting for: "${lessonTitle}"`);
+                                    return `${MANDATE} Subject: The LITERAL technology, interface, or real-world application of ${lessonTitle}. Describe the subject in EXTREME technical detail. Show actual screens, hardware, data visualizations, dashboards, or code. Composition: 3D isometric render, deep navy and cyan palette, Octane quality. Focus on: ${lessonTitle} in the context of ${courseTitle}.`;
+                                }
+                            }
+                            
+                            // Check 2: Metaphor language detection
+                            const METAPHOR_MARKERS = ['representing', 'symboliz', 'like a ', 'as if ', 'metaphor', 'mirrors ', 'echoes ', 'reminiscent', 'analogous', 'stands for', 'each representing'];
+                            const hasMetaphor = METAPHOR_MARKERS.some(m => lower.includes(m));
+                            if (hasMetaphor) {
+                                console.warn(`[V3-Sanitizer] ⚠️ Metaphor language detected in prompt. Rewriting for: "${lessonTitle}"`);
+                                return `${MANDATE} Subject: The LITERAL technology, interface, or real-world application of ${lessonTitle}. Describe the subject in EXTREME technical detail. Show actual screens, hardware, data visualizations, dashboards, or code. Composition: 3D isometric render, deep navy and cyan palette, Octane quality. Focus on: ${lessonTitle} in the context of ${courseTitle}.`;
+                            }
+                            
+                            // Check 3: Off-topic detection
+                            const STOP_WORDS = new Set(['a','an','the','of','in','to','for','and','or','is','are','how','what','why','when','with','its','from','by','on','at','this','that']);
+                            const topicWords = lessonTitle.toLowerCase().replace(/[^a-z0-9 ]/g, '').split(' ').filter(w => w.length > 2 && !STOP_WORDS.has(w));
+                            const promptHasTopicRef = topicWords.some(tw => lower.includes(tw));
+                            if (!promptHasTopicRef && topicWords.length > 0) {
+                                console.warn(`[V3-Sanitizer] ⚠️ Off-topic prompt detected (no reference to "${lessonTitle}"). Rewriting.`);
+                                return `${MANDATE} Subject: The LITERAL technology, interface, or real-world application of ${lessonTitle}. Describe the subject in EXTREME technical detail. Show actual screens, hardware, data visualizations, dashboards, or code. Composition: 3D isometric render, deep navy and cyan palette, Octane quality. Focus on: ${lessonTitle} in the context of ${courseTitle}.`;
+                            }
+                            
+                            return prompt;
+                        };
+
+                        // Image generation logic (New nested blocks schema)
+                        let rawPrompts: Array<{ ref: any, prompt: string }> = [];
+                        const lt = lessonPlan.lessonTitle;
+                        const ct = courseName;
+
+                        if (!DRY_RUN && compiledLesson.blocks) {
+                            compiledLesson.blocks.forEach((block: any) => {
+                                const type = block.type || block.blockType;
+                                // Lesson Header — hero image
+                                if (type === 'lesson_header' && block.heroPrompt) {
+                                    rawPrompts.push({ ref: block, prompt: sanitizeVisualPrompt(block.heroPrompt, lt, ct), isHero: true } as any);
+                                }
+                                // Full Image Block
+                                else if (type === 'full_image' && block.imagePrompt) {
+                                    rawPrompts.push({ ref: block, prompt: sanitizeVisualPrompt(block.imagePrompt, lt, ct) });
+                                }
+                                // Image Text Row
+                                else if (type === 'image_text_row' && block.imagePrompt) {
+                                    rawPrompts.push({ ref: block, prompt: sanitizeVisualPrompt(block.imagePrompt, lt, ct) });
+                                }
+                                // Concept Illustration
+                                else if (type === 'concept_illustration' && block.imagePrompt) {
+                                    rawPrompts.push({ ref: block, prompt: sanitizeVisualPrompt(block.imagePrompt, lt, ct) });
+                                }
+                                // Type Cards
+                                else if (type === 'type_cards' && block.cards) {
+                                    block.cards.forEach((card: any) => {
+                                        if (card.imagePrompt) rawPrompts.push({ ref: card, prompt: sanitizeVisualPrompt(card.imagePrompt, lt, ct) });
+                                    });
+                                }
+                                // Industry Tabs
+                                else if (type === 'industry_tabs' && block.tabs) {
+                                    block.tabs.forEach((tab: any) => {
+                                        if (tab.imagePrompt) rawPrompts.push({ ref: tab, prompt: sanitizeVisualPrompt(tab.imagePrompt, lt, ct) });
+                                    });
+                                }
+                                // Quiz Context
+                                else if (type === 'quiz' && block.questions) {
+                                    block.questions.forEach((q: any) => {
+                                        if (q.imageContext?.imagePrompt) rawPrompts.push({ ref: q.imageContext, prompt: sanitizeVisualPrompt(q.imageContext.imagePrompt, lt, ct) });
+                                    });
+                                }
+                            });
+                        }
+
+                        // Pure Generative Image strategy:
+                        // ALL static image prompts (full_image, type_cards, etc) go to Gemini quality
+                        let allFetchedImages: any[] = [];
+
+                        if (!DRY_RUN && rawPrompts.length > 0) {
+                            try {
+                                const baseProgress = 20 + Math.floor((lessonsProcessed / Math.max(1, totalLessons)) * 55);
+                                await sendEvent({ stage: 'generating', progress: baseProgress, message: `🖼️ Generating ${rawPrompts.length} bespoke AI images for "${lessonPlan.lessonTitle}"...` });
+                                console.time(`[API-V2] Image Fetching (${rawPrompts.length} total) - ${lessonPlan.lessonTitle}`);
+
+                                // Run all images through Nano Banana concurrently
+                                const generatedImages = await Promise.all(rawPrompts.map(async (p, idx) => {
+                                    const img = await geminiImageService.generateImage(p.prompt, globalLessonIndex * 10 + idx);
+                                    return img ? img : { url: '', alt: p.prompt, caption: '' }; // Fallback to empty if Gemini fails to avoid crash
+                                }));
+
+                                console.timeEnd(`[API-V2] Image Fetching (${rawPrompts.length} total) - ${lessonPlan.lessonTitle}`);
+
+                                // Map URLs back into block objects
+                                generatedImages.forEach((img, idx) => {
+                                    if (rawPrompts[idx] && img.url) {
+                                        rawPrompts[idx].ref.imageUrl = img.url;
+                                        // For lesson_header heroPrompt, also set heroImageUrl for the component
+                                        if ((rawPrompts[idx] as any).isHero) {
+                                            rawPrompts[idx].ref.heroImageUrl = img.url;
+                                        }
+                                    }
+                                });
+
+                                allFetchedImages = [...generatedImages];
+                                
+                                // Save used image URLs to prevent inter-lesson repetition
+                                allFetchedImages.forEach(img => {
+                                    if (img && img.url && !courseState.used_image_urls.includes(img.url)) {
+                                        courseState.used_image_urls.push(img.url);
+                                    }
+                                });
+                                CourseStateManager.saveState(courseState);
+                            }
+                            catch (e) { console.error("[API-V2] Image gen failed:", e); }
+                        }
+
+                        // ═══════════════════════════════════════════════════
+                        // VIDEO GENERATION — Veo 3.1 Primary → Pexels Fallback
+                        // ═══════════════════════════════════════════════════
+                        // Veo 3.1 receives the FULL cinematic videoPrompt and generates
+                        // a contextually accurate 8-second clip. If Veo fails (auth,
+                        // rate limit, RAI filter), we fall back to Pexels stock search.
+
+                        const extractSafePexelsQuery = (block: any, lessonTitle: string): string => {
+                            if (block.video_search_query) {
+                                const q = block.video_search_query.trim();
+                                if (q.split(' ').length <= 5 && !q.includes('.')) return q;
+                            }
+                            const ABSTRACT = new Set(['ai', 'artificial', 'intelligence', 'data', 'technology', 'digital', 'neural', 'algorithm', 'model', 'system', 'process', 'concept', 'network', 'computing', 'machine', 'learning']);
+                            const words = lessonTitle.toLowerCase().replace(/[^a-z0-9 ]/g, '').split(' ').filter(w => w.length > 2 && !ABSTRACT.has(w));
+                            return words.length >= 2 ? words.slice(0, 3).join(' ') : 'people working together';
+                        };
+
+                        const videoBlocks = (!DRY_RUN && compiledLesson.blocks)
+                            ? (compiledLesson.blocks as any[]).filter((b: any) => (b.type === 'video_snippet' || b.blockType === 'video_snippet') && !b.videoUrl)
+                            : [];
+                        
+                        if (videoBlocks.length > 0) {
+                            const baseProgress = 20 + Math.floor((lessonsProcessed / Math.max(1, totalLessons)) * 55);
+                            await sendEvent({ stage: 'generating', progress: baseProgress + 1, message: `🎬 Architecting ${videoBlocks.length} technical video(s)...` });
+                        }
+                        CourseStateManager.saveState(courseState);
+
+
+
+                        // Save lesson
+                        if (!DRY_RUN) {
+                            console.time(`[API-V2] Database Save - ${lessonPlan.lessonTitle}`);
+                            // Ensure the renderer receives the blocks with explicit order
+                            const blocksWithOrder = (compiledLesson.blocks || []).map((b: any, idx: number) => ({
+                                ...b,
+                                order: b.order ?? idx
+                            }));
+
+                            const cleanBlocks = sanitizeBlocks(blocksWithOrder);
+                            const fullHtml = generateLessonHTML({ ...compiledLesson, blocks: cleanBlocks, lessonTitle: lessonPlan.lessonTitle } as any);
+                            const { data: lData, error: lErr } = await supabase.from('course_lessons').insert({
+                                topic_id: topicId,
+                                title: lessonPlan.lessonTitle,
+                                content_blocks: cleanBlocks,
+                                content_markdown: JSON.stringify({
+                                    ...compiledLesson,
+                                    instructor: requestedHost
+                                }),
+                                content_html: fullHtml,
+                                thumbnail_url: allFetchedImages.length > 0 ? allFetchedImages[0].url : null,
+                                order_index: j,
+                                estimated_minutes: lessonPlan.estimatedDuration || 15,
+                                micro_objective: lessonPlan.microObjective
+                            }).select().single();
+                            if (lErr) throw lErr;
+
+                            if (allFetchedImages.length > 0) {
+                                await supabase.from('lesson_images').insert(allFetchedImages.map((img: any, idx: number) => ({
+                                    lesson_id: lData.id,
+                                    image_url: img.url,
+                                    order_index: idx,
+                                    source: 'ai_generated'
+                                })));
+                            }
+
+                            // Audio overview generated on-demand via admin → Generate Audio (ElevenLabs/Sterling)
+                            // gemini-2.5-flash-preview-tts removed — model returns undefined candidates
+
+                            await dbV2.updateNodeState(supabase, courseId, manifestNodeId, 'lesson', 'published');
+                            console.timeEnd(`[API-V2] Database Save - ${lessonPlan.lessonTitle}`);
+
+                            // ═══════════════════════════════════════════════════
+                            // START ROCK-SOLID ASYNC VIDEO GENERATION (Post-Save)
+                            // ═══════════════════════════════════════════════════
+                            if (videoBlocks.length > 0) {
+                                const videoTask = async () => {
+                                    console.log(`[V3-Async] 🚀 Background task started for Lesson ID: ${lData.id} ("${lessonPlan.lessonTitle}")`);
+                                    for (const v of videoBlocks) {
+                                        try {
+                                            const rawVideoPrompt = v.videoPrompt || `Show the LITERAL technology of ${lessonPlan.lessonTitle}.`;
+                                            const videoCaption = v.caption || v.title || v.id || 'Visual insight';
+
+                                            console.log(`[V3-Async] 🎬 Processing video: "${videoCaption}"`);
+                                            const veoResult = await veoVideoService.generateVideo(rawVideoPrompt, videoCaption);
+                                            
+                                            let finalUrl = null;
+                                            let source = 'unknown';
+
+                                            if (veoResult && veoResult.url) {
+                                                finalUrl = veoResult.url;
+                                                source = 'veo-3.1';
+                                            } else {
+                                                // Fallback to Pexels
+                                                console.warn(`[V3-Async] ⚠️ Veo failed — falling back to Pexels`);
+                                                const safeQuery = extractSafePexelsQuery(v, lessonPlan.lessonTitle);
+                                                const pexelsRes = await videoService.fetchVideoWaterfall(safeQuery, (compiledLesson as any).analogy_domain || 'Technology', courseState);
+                                                if (pexelsRes && pexelsRes.url) {
+                                                    finalUrl = pexelsRes.url;
+                                                    source = `pexels-tier${pexelsRes.tier}`;
+                                                }
+                                            }
+
+                                            if (finalUrl) {
+                                                console.log(`[V3-Async] ✅ Success! URL: ${finalUrl}`);
+                                                // Update Lesson in DB immediately
+                                                const { data: currentLesson } = await supabase.from('course_lessons').select('content_blocks').eq('id', lData.id).single();
+                                                if (currentLesson && currentLesson.content_blocks) {
+                                                    const updatedBlocks = currentLesson.content_blocks.map((b: any) => {
+                                                        if (b.id === v.id || (b.title === v.title && b.type === 'video_snippet')) {
+                                                            return { ...b, videoUrl: finalUrl };
+                                                        }
+                                                        return b;
+                                                    });
+                                                    await supabase.from('course_lessons').update({ content_blocks: updatedBlocks }).eq('id', lData.id);
+                                                    console.log(`[V3-Async] 💾 DB Updated for Lesson ${lData.id}, Block ${v.id}`);
+                                                }
+
+                                                if (!courseState.used_video_urls) courseState.used_video_urls = [];
+                                                courseState.used_video_urls.push({ query: rawVideoPrompt.substring(0, 100), url: finalUrl, source } as any);
+                                                CourseStateManager.saveState(courseState);
+                                            }
+                                        } catch (e) {
+                                            console.error('[V3-Async] Individual video error:', e);
+                                        }
+                                    }
+                                    console.log(`[V3-Async] 🏁 Background task complete for Lesson ${lData.id}`);
+                                };
+                                // Start background task
+                                videoTask().catch(e => console.error('[V3-Async] Task crash:', e));
+                            }
+
+                            // Note: No per-lesson avatar videos — only 1 avatar video per course (the course intro).
+                            // Lesson avatar videos are excessive (ElevenLabs + HeyGen credits per lesson) and
+                            // violate the design rule: avatar appears on the course overview page only.
+                        }
+                    } catch (lessonGenErr: any) {
+                        console.error(`[API-V2] Lesson Expansion Failed for ${lessonPlan.lessonTitle}`, lessonGenErr);
+                        if (!DRY_RUN) {
+                            await dbV2.updateNodeState(supabase, courseId, manifestNodeId, 'lesson', 'failed', lessonGenErr.message);
+                        }
+                        // For V2, we continue generating the rest of the manifest, marking this one as failed.
+                        // We do not crash the whole process.
+                    }
+
+                    lessonsProcessed++;
+                    globalLessonIndex++;
+                }
+                if (!DRY_RUN) await dbV2.updateNodeState(supabase, courseId, (topic as any).id || `mod_${i}`, 'module', 'published');
+            }
+
+            if (!DRY_RUN) {
+                await dbV2.updateNodeState(supabase, courseId, 'course_root', 'course', 'published');
+            }
+
+            // 4. AI Avatar Integration - Course Intro Video
+            if (!DRY_RUN && (manifest as any).introVideoScript) {
+                await sendEvent({ stage: 'videos', progress: 95, message: '🎬 Queuing cinematic AI intro video...' });
+                try {
+                    const videoRequests = [{
+                        type: 'course_introduction' as const,
+                        entityId: courseId,
+                        script: (manifest as any).introVideoScript,
+                        avatar: requestedHost as 'sarah' | 'gemma'
+                    }];
+
+                    const videoResults = await videoGenerationService.triggerCourseVideoBatch(courseId, manifest.refinedCourseTitle || courseName, videoRequests, {
+                        useHeyGen: true,
+                        checkQuota: true
+                    });
+
+                    const jobId = videoResults[courseId];
+                    if (jobId) {
+                        await supabase.from('courses').update({
+                            intro_video_job_id: jobId,
+                            intro_video_status: 'queued'
+                        }).eq('id', courseId);
+                        console.log(`[API-V2] ✅ Course Intro Video Job ID saved: ${jobId}`);
+                    }
+                } catch (vErr) {
+                    console.error("[API-V2] Video generation trigger failed:", vErr);
+                }
+            }
+
+            await sendEvent({ stage: 'completed', progress: 100, message: 'V2 Generation Complete!', courseId: courseId });
+
+        } catch (error: any) {
+            console.error('[API-V2] ERROR:', error);
+            try {
+                fs.appendFileSync(path.join(process.cwd(), 'v2-error.log'), new Date().toISOString() + ' ' + (error.stack || error.message) + '\n');
+            } catch (e) { }
+            if (generationId && !DRY_RUN) await dbV2.markGenerationComplete(supabase, generationId, false, error.message);
+            await sendEvent({ stage: 'error', message: error.message || 'Internal Server Error' });
+        } finally {
+            await writer.close();
+        }
+    })();
+
+    return new Response(stream.readable, {
+        headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' },
+    });
+}
