@@ -193,10 +193,13 @@ export async function POST(req: NextRequest) {
             const dnaFingerprint = deriveDNAFingerprint(course.id, courseName, difficultyLevel);
 
             if (!DRY_RUN) {
-                await supabase
+                const { error: dnaError } = await supabase
                     .from("courses")
                     .update({ course_dna: courseDNA, dna_fingerprint: dnaFingerprint })
                     .eq("id", course.id);
+                if (dnaError) {
+                    console.warn("[API] CourseDNA persist failed (non-blocking):", dnaError.message);
+                }
             }
 
             // TODO: pass courseDNA.content to OrchestratorV2.processLesson once route is migrated to v2
