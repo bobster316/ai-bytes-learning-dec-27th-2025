@@ -1,6 +1,7 @@
-export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 import { ContentBlock } from './lesson-blocks';
 import { z } from 'zod';
+
+export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 
 export interface CourseGenerationInput {
     courseName: string;
