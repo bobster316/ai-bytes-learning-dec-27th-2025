@@ -186,9 +186,9 @@ export interface InteractiveVisBlock extends BaseBlock {
 
 export interface AppliedCaseBlock extends BaseBlock {
     type: "applied_case";
-    scenario: string;
-    challenge: string;
-    resolution: string;
+    scenario: string;           // Legacy — used when tabs is absent
+    challenge: string;          // Legacy
+    resolution: string;         // Legacy
     imagePrompt?: string; // Optional visual context
     imageUrl?: string;
     tabs?: Array<{              // New: exactly 3 tabs
@@ -197,7 +197,7 @@ export interface AppliedCaseBlock extends BaseBlock {
         scenario: string;
         challenge: string;
         resolution: string;
-        imageUrl?: string;
+        imageUrl?: string;      // Per-tab image (distinct from outer block-level imageUrl)
     }>;
 }
 
@@ -205,7 +205,7 @@ export interface RecapBlock extends BaseBlock {
     type: "recap";
     style?: "card" | "minimal" | "striped"; // default: "card"
     title: string;          // Usually "If you remember only three things..."
-    points: string[];       // Exactly 3 bullet points
+    points: string[];           // Legacy — used when items is absent
     items?: Array<{             // New: exactly 4 cards
         title: string;          // 4-6 words
         body: string;           // 2 sentences
