@@ -614,6 +614,19 @@ export async function POST(req: NextRequest) {
         } catch (error: any) {
             const isMediaError = error instanceof MediaGenerationError;
 
+            // Client disconnect (curl timeout, browser close, Vercel stream cut) — do NOT rollback.
+            // Any lessons already saved are valid and should stand. The generation simply stopped early.
+            const isClientDisconnect =
+                error?.name === 'ResponseAborted' ||
+                error?.message?.includes('ResponseAborted') ||
+                error?.code === 'ERR_HTTP_HEADERS_SENT' ||
+                error?.message?.includes('write after end');
+
+            if (isClientDisconnect) {
+                console.warn(`[API-V2] Client disconnected mid-generation — preserving saved lessons. Course: ${courseId}`);
+                return;
+            }
+
             // Full internal log — always log the raw error
             console.error('[API-V2] ❌ Generation failed:', error.stack || error.message || error);
             try {
