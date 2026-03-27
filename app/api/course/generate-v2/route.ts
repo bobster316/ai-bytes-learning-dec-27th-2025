@@ -15,12 +15,12 @@ import {
 } from '@/lib/validations/course-generator';
 import type { CourseGenerationRequest } from '@/lib/types/course-generator';
 import { CourseStateManager } from '@/lib/ai/course-state';
-import { videoService } from '@/lib/ai/video-service';
 import { generateCourseDNA, deriveDNAFingerprint } from "@/lib/ai/generate-course-dna";
 import { MediaGenerationError, normaliseProviderError } from '@/lib/ai/media-errors';
 import type { ImageGenerationResult, VideoGenerationResult } from '@/lib/ai/media-errors';
 
 const VIDEO_EXTRA_WAIT_MS = 120_000; // 2 min extra wait after images complete before failing video
+const ROUTE_BUDGET_MS     = 270_000; // 270 s safety net — throws clean error before Vercel 300 s hard kill
 
 function extractStoragePath(publicUrl: string): string | null {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -133,6 +133,7 @@ export async function POST(req: NextRequest) {
         let generationId: string | null = null;
         let courseId: string | null = null;
         const uploadedStoragePaths: string[] = [];
+        const routeStart = Date.now();
         const requestedHost = (input as any).videoSettings?.courseHost || 'sarah';
         const isGemma = requestedHost === 'gemma';
 
@@ -330,16 +331,6 @@ export async function POST(req: NextRequest) {
                         // ═══════════════════════════════════════════════════
                         // VIDEO GENERATION — start Veo early, run in parallel with images
                         // ═══════════════════════════════════════════════════
-                        const extractSafePexelsQuery = (block: any, lessonTitle: string): string => {
-                            if (block.video_search_query) {
-                                const q = block.video_search_query.trim();
-                                if (q.split(' ').length <= 5 && !q.includes('.')) return q;
-                            }
-                            const ABSTRACT = new Set(['ai', 'artificial', 'intelligence', 'data', 'technology', 'digital', 'neural', 'algorithm', 'model', 'system', 'process', 'concept', 'network', 'computing', 'machine', 'learning']);
-                            const words = lessonTitle.toLowerCase().replace(/[^a-z0-9 ]/g, '').split(' ').filter(w => w.length > 2 && !ABSTRACT.has(w));
-                            return words.length >= 2 ? words.slice(0, 3).join(' ') : 'people working together';
-                        };
-
                         // Extract video blocks and kick off ALL Veo calls immediately (non-blocking)
                         const videoBlocks = (!DRY_RUN && compiledLesson.blocks)
                             ? (compiledLesson.blocks as any[]).filter((b: any) => (b.type === 'video_snippet' || b.blockType === 'video_snippet') && !b.videoUrl)
@@ -441,13 +432,28 @@ export async function POST(req: NextRequest) {
                         }
 
                         // ═══════════════════════════════════════════════════
-                        // VIDEO RESOLUTION — await parallel Veo jobs with 2 min extra deadline
+                        // VIDEO RESOLUTION — await both Veo jobs in parallel, 2 min extra deadline
+                        // No Pexels fallback: Veo failure = generation failure (atomic contract)
                         // ═══════════════════════════════════════════════════
                         if (!DRY_RUN && veoJobs.length > 0) {
                             const baseProgress = 20 + Math.floor((lessonsProcessed / Math.max(1, totalLessons)) * 55);
                             await sendEvent({ stage: 'generating', progress: baseProgress + 1, message: `🎬 Resolving ${veoJobs.length} video(s) for "${lessonPlan.lessonTitle}"...` });
 
-                            // Shared deadline: 2 min from now (images are already done at this point)
+                            // Route budget safety net — fail cleanly before Vercel hard-kills the request
+                            const routeElapsed = Date.now() - routeStart;
+                            if (routeElapsed > ROUTE_BUDGET_MS) {
+                                throw new MediaGenerationError(
+                                    'veo',
+                                    'budget_exceeded',
+                                    `Route budget exceeded (${Math.round(routeElapsed / 1000)}s elapsed, ${ROUTE_BUDGET_MS / 1000}s limit)`,
+                                    'video_generation',
+                                    false,
+                                    lessonPlan.lessonTitle,
+                                    'video_snippet',
+                                );
+                            }
+
+                            // Shared deadline: up to 2 min from now (both videos race against same clock)
                             const videoDeadline = Date.now() + VIDEO_EXTRA_WAIT_MS;
 
                             await Promise.all(veoJobs.map(async (job) => {
@@ -463,51 +469,30 @@ export async function POST(req: NextRequest) {
                                     veoResult = { url: null, source: null, errorCode: 'timeout', errorMessage: 'Veo did not complete within the 2-minute extra wait window' };
                                 }
 
-                                let finalUrl: string | null = null;
-                                let videoSource: string = 'unknown';
-
-                                if (veoResult.url) {
-                                    finalUrl = veoResult.url;
-                                    videoSource = 'veo';
-                                } else {
-                                    // Veo failed or timed out — try Pexels waterfall
-                                    console.warn(`[API-V2] ⚠️ Veo failed (${veoResult.errorCode}: ${veoResult.errorMessage}) — falling back to Pexels`);
-                                    await sendEvent({ stage: 'generating', progress: baseProgress + 1, message: `⚠️ Veo unavailable — trying Pexels for "${job.videoCaption}"` });
-
-                                    const safeQuery = extractSafePexelsQuery(job.v, lessonPlan.lessonTitle);
-                                    const pexelsRes = await videoService.fetchVideoWaterfall(safeQuery, (compiledLesson as any).analogy_domain || 'Technology', courseState);
-
-                                    if (pexelsRes?.url) {
-                                        finalUrl = pexelsRes.url;
-                                        videoSource = `pexels-tier${pexelsRes.tier}`;
-                                    } else {
-                                        // Both Veo and Pexels failed — throw to abort course generation
-                                        const { errorCode, errorMessage, retryable } = normaliseProviderError(veoResult.errorMessage || 'unknown');
-                                        throw new MediaGenerationError(
-                                            'veo',
-                                            errorCode,
-                                            `Veo failed and Pexels waterfall exhausted. Veo reason: ${veoResult.errorMessage || 'unknown'}`,
-                                            'fallback',
-                                            retryable,
-                                            lessonPlan.lessonTitle,
-                                            'video_snippet',
-                                            job.v.title || job.v.id || 'video_block',
-                                        );
-                                    }
+                                if (!veoResult.url) {
+                                    const { errorCode, errorMessage, retryable } = normaliseProviderError(veoResult.errorMessage || 'unknown');
+                                    throw new MediaGenerationError(
+                                        'veo',
+                                        errorCode,
+                                        errorMessage,
+                                        'video_generation',
+                                        retryable,
+                                        lessonPlan.lessonTitle,
+                                        'video_snippet',
+                                        job.v.title || job.v.id || 'video_block',
+                                    );
                                 }
 
                                 // Patch the block in-memory with the resolved URL
-                                job.v.videoUrl = finalUrl;
-                                console.log(`[API-V2] ✅ Video resolved via ${videoSource}: ${finalUrl}`);
+                                job.v.videoUrl = veoResult.url;
+                                console.log(`[API-V2] ✅ Video resolved via veo: ${veoResult.url}`);
 
                                 // Track for rollback (Veo uploads to Supabase Storage)
-                                if (videoSource.startsWith('veo') && finalUrl) {
-                                    const storagePath = extractStoragePath(finalUrl);
-                                    if (storagePath) uploadedStoragePaths.push(storagePath);
-                                }
+                                const storagePath = extractStoragePath(veoResult.url);
+                                if (storagePath) uploadedStoragePaths.push(storagePath);
 
                                 if (!courseState.used_video_urls) courseState.used_video_urls = [];
-                                (courseState.used_video_urls as any[]).push({ query: job.rawVideoPrompt.substring(0, 100), url: finalUrl, source: videoSource });
+                                (courseState.used_video_urls as any[]).push({ query: job.rawVideoPrompt.substring(0, 100), url: veoResult.url, source: 'veo' });
                                 CourseStateManager.saveState(courseState);
                             }));
                         }
