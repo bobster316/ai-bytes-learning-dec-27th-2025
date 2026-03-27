@@ -249,6 +249,21 @@ export async function POST(req: NextRequest) {
 
                     await sendEvent({ stage: 'generating', progress: 20 + Math.floor((lessonsProcessed / Math.max(1, totalLessons)) * 60), message: `Expanding Lesson: ${lessonPlan.lessonTitle}...` });
 
+                    // Route budget check — fail clean before Vercel hard-kills at 300 s
+                    {
+                        const elapsed = Date.now() - routeStart;
+                        if (elapsed > ROUTE_BUDGET_MS) {
+                            throw new MediaGenerationError(
+                                'veo',
+                                'budget_exceeded',
+                                `Route budget exceeded before lesson "${lessonPlan.lessonTitle}" (${Math.round(elapsed / 1000)}s elapsed, ${ROUTE_BUDGET_MS / 1000}s limit)`,
+                                'video_generation',
+                                false,
+                                lessonPlan.lessonTitle,
+                            );
+                        }
+                    }
+
                     if (!DRY_RUN) {
                         await dbV2.updateNodeState(supabase, courseId, manifestNodeId, 'lesson', 'generating');
                     }
