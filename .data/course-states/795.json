@@ -1,0 +1,63 @@
+{
+  "course_id": 795,
+  "course_topic": "Introduction to Machine Learning",
+  "domain_history": [
+    "Architecture",
+    "Nature"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "ML pipelines",
+    "ML pipelines"
+  ],
+  "used_image_urls": [
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774199327485-qgez6-3d%20render%20of%20a%20data%20.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774199327160-pk0lii-neural%20network%20visua.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774199329669-x5ewt7f-unlabeled%20data%20point.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774199322004-32fdza-reinforcement%20learni.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774199495759-u6w54g-a%203d%20data%20visualizat.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774199494115-6ld3b-a%203d%20render%20of%20a%20rob.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774199513153-2qacen-labeled%20dataset.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774199496169-wglq9x-clustering%20visualiza.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774199533168-rg5auc-ai%20agent%20learning.jpeg"
+  ],
+  "used_video_urls": [
+    {
+      "query": "SCENE: A data scientist's monitor displaying three ML pipelines side by side – supervised (labeled i",
+      "url": "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/videos/veo-1774199422242-4u83f.mp4",
+      "source": "veo-3.1"
+    },
+    {
+      "query": "SCENE: A data scientist's monitor displaying three ML pipelines side by side — supervised (labeled i",
+      "url": "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/videos/veo-1774199625385-bowgbt.mp4",
+      "source": "veo-3.1"
+    }
+  ],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 0,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 1,
+    "type_cards": 1,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 3,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

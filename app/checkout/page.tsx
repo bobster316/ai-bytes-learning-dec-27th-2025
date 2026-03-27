@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const plan = searchParams.get("plan") || "unlimited";
@@ -70,24 +70,33 @@ export default function CheckoutPage() {
     setError("");
 
     try {
-      // TODO: Integrate Stripe checkout
-      // const response = await fetch("/api/create-checkout-session", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ plan }),
-      // });
-      // const { sessionId } = await response.json();
-      // const stripe = await getStripe();
-      // await stripe.redirectToCheckout({ sessionId });
+      const response = await fetch("/api/stripe/create-checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          plan,
+          billingCycle: selectedPlan.billing === 'one-time' ? 'one-time' : 'monthly'
+        }),
+      });
 
-      // Temporary simulation
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 2000);
-    } catch (err) {
-      setError("Failed to process payment. Please try again.");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create checkout session');
+      }
+
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
+
+    } catch (err: any) {
+      console.error("Checkout error:", err);
+      setError(err.message || "Failed to process payment. Please try again.");
     } finally {
-      setLoading(false);
+      // Don't unset loading if we are navigating away
+      // setLoading(false); 
     }
   };
 
@@ -96,7 +105,7 @@ export default function CheckoutPage() {
       <Header />
 
       <section className="py-20">
-        <div className="container mx-auto px-4 max-w-4xl">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <Badge className="bg-[#00BFA5]/20 text-[#00BFA5] border border-[#00BFA5]/30 mb-4">
               <Lock className="w-4 h-4 mr-1" />
@@ -225,3 +234,12 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#0A1628] text-white">Loading checkout...</div>}>
+      <CheckoutContent />
+    </Suspense>
+  );
+}
+

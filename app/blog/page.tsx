@@ -92,9 +92,9 @@ export default function BlogPage() {
       <Header />
 
       {/* Hero Section - Homepage Style */}
-      <section className="relative mx-auto w-[95%] max-w-7xl my-4 rounded-3xl border border-white/5 shadow-2xl py-16 flex items-center overflow-hidden bg-slate-900">
+      <section className="relative mx-auto w-[95%] max-w-screen-2xl my-4 rounded-3xl border border-white/5 shadow-2xl py-16 flex items-center overflow-hidden bg-slate-900">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-900/20 via-slate-900 to-slate-900 pointer-events-none rounded-3xl"></div>
-        <div className="container relative z-10 mx-auto px-4 max-w-7xl">
+        <div className="container relative z-10 mx-auto px-4 max-w-screen-2xl">
           <div className="text-center space-y-6">
             <span className="inline-block py-1 px-3 rounded-full bg-white/10 border border-primary/20 text-cyan-300 font-medium text-lg tracking-wide uppercase">
               LATEST UPDATES
@@ -126,7 +126,7 @@ export default function BlogPage() {
             </div>
           ) : (
             <>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-screen-2xl mx-auto">
                 {visibleArticles.map((article, index) => (
                   <a
                     href={article.url}
@@ -261,3 +261,4 @@ export default function BlogPage() {
     </div>
   );
 }
+

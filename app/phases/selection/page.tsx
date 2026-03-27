@@ -13,7 +13,7 @@ export default function SelectionPage() {
             <Header />
 
             {/* Hero Section */}
-            <section className="relative mx-auto w-[95%] max-w-7xl my-8 rounded-3xl border border-white/5 shadow-2xl py-20 lg:py-32 bg-slate-900 overflow-hidden">
+            <section className="relative mx-auto w-[95%] max-w-screen-2xl my-8 rounded-3xl border border-white/5 shadow-2xl py-20 lg:py-32 bg-slate-900 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/20 via-slate-900 to-slate-900"></div>
 
                 <div className="container mx-auto px-6 relative z-10">
@@ -32,7 +32,7 @@ export default function SelectionPage() {
             </section>
 
             {/* Main Content */}
-            <section className="mx-auto w-[95%] max-w-7xl my-8 rounded-3xl border border-slate-200 dark:border-white/5 shadow-2xl py-16 bg-white dark:bg-slate-900">
+            <section className="mx-auto w-[95%] max-w-screen-2xl my-8 rounded-3xl border border-slate-200 dark:border-white/5 shadow-2xl py-16 bg-white dark:bg-slate-900">
                 <div className="container mx-auto px-6">
                     {/* Feature Image */}
                     <div className="relative h-[400px] rounded-2xl overflow-hidden mb-12 shadow-2xl">
@@ -60,30 +60,30 @@ export default function SelectionPage() {
                         <div className="grid md:grid-cols-2 gap-6 my-12">
                             {[
                                 {
-                                    icon: Brain,
+                                    thumbnail: "/assets/thumbnails/instruction.png",
                                     title: "AI-Powered Recommendations",
                                     description: "Our algorithm learns from your preferences and skill level to suggest courses that match your exact needs."
                                 },
                                 {
-                                    icon: Target,
+                                    thumbnail: "/assets/thumbnails/target.png",
                                     title: "Goal-Oriented Matching",
                                     description: "Tell us what you want to achieve, and we'll map out the most efficient route to get you there."
                                 },
                                 {
-                                    icon: Sparkles,
+                                    thumbnail: "/assets/thumbnails/visual-dna.png",
                                     title: "Curated Quality Content",
                                     description: "Every course is hand-selected and vetted by AI experts to ensure you learn from the best."
                                 },
                                 {
-                                    icon: CheckCircle2,
+                                    thumbnail: "/assets/thumbnails/assessment.png",
                                     title: "Skill Level Assessment",
                                     description: "Start at exactly the right difficulty level with our intelligent skill assessment."
                                 }
                             ].map((feature, idx) => (
                                 <Card key={idx} className="border-slate-200 dark:border-slate-700 hover:border-primary/50 transition-all">
                                     <CardContent className="p-6 space-y-3">
-                                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                                            <feature.icon className="w-6 h-6 text-primary" />
+                                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center overflow-hidden">
+                                            <img src={feature.thumbnail} className="w-8 h-8 object-contain" alt={feature.title} />
                                         </div>
                                         <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                                             {feature.title}
@@ -154,3 +154,4 @@ export default function SelectionPage() {
         </div>
     );
 }
+

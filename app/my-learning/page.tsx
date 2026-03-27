@@ -23,7 +23,7 @@ export default function MyLearningPage() {
 
       {/* Hero Section */}
       <section className="bg-background-inverse border-b border-border">
-        <div className="container mx-auto px-4 py-12">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="space-y-2">
             <p className="text-sm uppercase tracking-wider text-foreground-inverse/60">
               STUDENT PORTAL
@@ -40,7 +40,7 @@ export default function MyLearningPage() {
 
       {/* Stats Cards */}
       <section className="py-8 bg-card border-b border-border">
-        <div className="container mx-auto px-4">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card className="bg-card border-border shadow-sm">
               <CardContent className="p-6 text-center">
@@ -87,7 +87,7 @@ export default function MyLearningPage() {
 
       {/* Content Section */}
       <section className="py-16">
-        <div className="container mx-auto px-4">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
           {!hasEnrolledCourses ? (
             // Empty State
             <div className="max-w-md mx-auto text-center py-12">
@@ -118,3 +118,4 @@ export default function MyLearningPage() {
     </div>
   );
 }
+

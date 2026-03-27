@@ -1,0 +1,71 @@
+{
+  "course_id": 800,
+  "course_topic": "Building a Neural Network (Verification Test): Neural Network Architecture, Layers, and Backpropagation",
+  "domain_history": [
+    "Nature",
+    "Sports"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "neural network visualization",
+    "algorithm training"
+  ],
+  "used_image_urls": [
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774248058330-03m2ap-3d%20render%20of%20a%20multi.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774248057549-97e953-3d%20render%20of%20a%20neura.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774248059520-vuoljc-create%20a%20photorealis.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774248070200-vnlcu5-diagram%20showing%20data.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774248062919-we4me-create%20a%20photorealis.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774248062092-rmuobr-create%20a%20photorealis.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774248076983-e2sze-create%20a%20photorealis.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774248061467-ti6e9n-neural%20network%20layer.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774248051630-1svf54-single%20layer%20network.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774248063546-3xy6w6-blank%20neural%20network.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774248245927-yctcvtl-create%20a%20photorealis.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774248248360-x5utt-create%20a%20photorealis.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774248237086-lnd7v-diagram%20of%20a%20loss%20fu.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774248239140-4bedxm-create%20a%20photorealis.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774248255870-scojjn-create%20a%20photorealis.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774248251344-wyl6t5-create%20a%20photorealis.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774248246006-h95jfa-create%20a%20photorealis.jpeg"
+  ],
+  "used_video_urls": [
+    {
+      "query": "SCENE: Close-up of a neural network visualization with data pulses traveling through interconnected ",
+      "url": "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/videos/veo-1774248181915-gifp1q.mp4",
+      "source": "veo-3.1"
+    },
+    {
+      "query": "SCENE: A data scientist's monitor displaying a backpropagation algorithm in action, highlighting the",
+      "url": "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/videos/veo-1774248360130-oi4xae.mp4",
+      "source": "veo-3.1"
+    }
+  ],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 2,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 1,
+    "type_cards": 2,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 4,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

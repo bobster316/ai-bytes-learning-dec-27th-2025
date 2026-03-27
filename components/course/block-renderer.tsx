@@ -116,18 +116,49 @@ export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewU
     // ── TypeCards layout offset — derived from palette archetype ─────────
     const typeCardsOffset = archetypeOffset(courseDNA.palette_id, 4);
 
-    const extractedKeyTerms = React.useMemo(() => {
-        if (!blocks) return [];
-        return blocks.filter(b => b.type === 'key_terms').flatMap(b => (b as any).terms || []);
-    }, [blocks]);
-
-    const headerBlock = React.useMemo(() => blocks?.find(b => b.type === 'lesson_header'), [blocks]);
-    const bodyBlocks  = React.useMemo(() =>
-        (blocks || [])
-            .filter(b => b.type !== 'lesson_header')
-            .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0)),
+    // Normalise block types early — generator stores real type in block_type (snake) or blockType (camel)
+    // This must happen before memos that filter/find by type.
+    const normalizedBlocks = React.useMemo(() =>
+        (blocks || []).map(b => {
+            const bAny = b as any;
+            const resolvedType: string = bAny.block_type || bAny.blockType || bAny.type || '';
+            return resolvedType === bAny.type ? b : { ...b, type: resolvedType } as ContentBlock;
+        }),
         [blocks]
     );
+
+    const extractedKeyTerms = React.useMemo(() => {
+        if (!normalizedBlocks) return [];
+        return normalizedBlocks.filter(b => b.type === 'key_terms').flatMap(b => (b as any).terms || []);
+    }, [normalizedBlocks]);
+
+    const headerBlock = React.useMemo(() => normalizedBlocks?.find(b => b.type === 'lesson_header'), [normalizedBlocks]);
+    const bodyBlocks  = React.useMemo(() =>
+        (normalizedBlocks || [])
+            .filter(b => b.type !== 'lesson_header')
+            .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0)),
+        [normalizedBlocks]
+    );
+
+    // Normalise lesson_header fields — AI may use camelCase aliases (lessonTitle, objectiveText, etc.)
+    const normalizedHeaderProps = React.useMemo(() => {
+        if (!headerBlock) return null;
+        const hb = headerBlock as any;
+        const hParas = hb.paragraphs;
+        return {
+            ...hb,
+            title:       (hb.title && hb.title !== 'Untitled Lesson') ? hb.title : (hb.lessonTitle || lessonTitle),
+            tag:         hb.tag        || hb.category   || hb.topic      || 'Core Concept',
+            duration:    hb.duration   || hb.timeEstimate || hb.minutes  || '15 min',
+            difficulty:  hb.difficulty || hb.level       || hb.skillLevel || 'Intermediate',
+            heroType:    hb.heroType   || 'interactive',
+            heroPrompt:  hb.heroPrompt || hb.imagePrompt || hb.background || '',
+            description: hb.description || hb.body || (Array.isArray(hParas) ? hParas[0] : hParas) || hb.subtitle || '',
+            objectives:  (Array.isArray(hb.objectives) && hb.objectives.length > 0)
+                            ? hb.objectives
+                            : hb.learning_objectives || hb.goals || hb.outcomes || [],
+        };
+    }, [headerBlock, lessonTitle]);
 
     if (!blocks || blocks.length === 0) {
         return (
@@ -143,10 +174,9 @@ export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewU
             <LessonProgressRail />
 
             {/* Full-viewport hero — no width constraint */}
-            {headerBlock && (
+            {normalizedHeaderProps && (
                 <LessonHeader
-                    {...headerBlock}
-                    title={(headerBlock.title && headerBlock.title !== 'Untitled Lesson') ? headerBlock.title : lessonTitle}
+                    {...normalizedHeaderProps}
                     audioUrl={audioUrl}
                     videoUrl={videoUrl}
                     videoOverviewUrl={videoOverviewUrl}
@@ -158,30 +188,41 @@ export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewU
             )}
 
             {/* Body blocks — each rendered as a full-width section */}
-            <main className="w-full pb-24">
+            <div className="w-full pb-24">
                 {bodyBlocks.map((block, idx) => {
+                    const resolvedType: string = block.type || '';
+
                     // Resolve Component ───────────────────────────────
-                    const Component = BLOCK_COMPONENTS[(block.type || (block as any).blockType) as keyof typeof BLOCK_COMPONENTS];
+                    const Component = BLOCK_COMPONENTS[resolvedType as keyof typeof BLOCK_COMPONENTS];
                     if (!Component) return null;
+
+                    // ── Skip image-only blocks with no URL ───────────────
+                    // full_image has no content without an image — hide rather than show a broken placeholder.
+                    // image_text_row and concept_illustration still have text so they render their content.
+                    if (resolvedType === 'full_image') {
+                        const b = block as any;
+                        const hasUrl = b.imageUrl || b.image_url || b.url;
+                        if (!hasUrl) return null;
+                    }
 
                     // ── Extra props ──────────────────────────────────────
                     let extraProps: any = {};
-                    if (block.type === 'text' || block.type === 'callout') {
+                    if (resolvedType === 'text' || resolvedType === 'callout') {
                         extraProps = { extractedKeyTerms };
                     }
-                    if (block.type === 'audio_recap_prominent') {
+                    if (resolvedType === 'audio_recap_prominent') {
                         extraProps = { audioUrl, onPlay: () => setIsAudioVisible(true) };
                     }
 
                     // ── Zigzag image_text_row ────────────────────────────
-                    if (block.type === 'image_text_row') {
+                    if (resolvedType === 'image_text_row') {
                         extraProps = { ...extraProps, reverse: visualBlockCounter % 2 !== 0 };
                         visualBlockCounter++;
                     }
 
                     // ── TypeCards layout cycling ──────────────────────────
                     // Each type_cards block in the same lesson gets a different lesson/layout.
-                    if (block.type === 'type_cards') {
+                    if (resolvedType === 'type_cards') {
                         const LAYOUTS = ['bento', 'grid', 'horizontal', 'numbered'] as const;
                         if (!(block as any).layout) {
                             const layoutIdx = (typeCardsCounter + typeCardsOffset) % LAYOUTS.length;
@@ -190,10 +231,70 @@ export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewU
                         typeCardsCounter++;
                     }
 
-                    // ── Normalise prediction block ───────────────────────
+                    // ── Render-time field aliasing ───────────────────────
+                    // Rescues blocks whose content landed in generic field names (heading/paragraphs)
+                    // due to the old generation bug where all blocks were stored as type "text".
                     let renderBlock: any = block;
-                    if (block.type === 'prediction') {
+
+                    if (resolvedType === 'punch_quote') {
                         const b = block as any;
+                        const paras = b.paragraphs;
+                        renderBlock = {
+                            ...b,
+                            quote:  b.quote  || b.text || b.body || b.heading || (Array.isArray(paras) ? paras[0] : paras) || '',
+                            accent: b.accent || 'pulse',
+                        };
+                    } else if (resolvedType === 'objective') {
+                        const b = block as any;
+                        const paras = b.paragraphs;
+                        renderBlock = {
+                            ...b,
+                            label: b.label || b.heading || b.title || 'Learning Objective',
+                            text:  b.text  || b.objectiveText || b.body || b.content
+                                || (Array.isArray(paras) ? paras[0] : paras) || '',
+                        };
+                    } else if (resolvedType === 'recap') {
+                        const b = block as any;
+                        const paras = b.paragraphs;
+                        // Split a single content string into 3 bullet points (sentences)
+                        let points = b.points;
+                        if (!Array.isArray(points) || points.length === 0) {
+                            if (Array.isArray(paras) && paras.length > 0) {
+                                points = paras;
+                            } else if (typeof b.content === 'string' && b.content.trim()) {
+                                // Split on ". " boundaries, cap at 3
+                                points = b.content.split(/\.\s+/).filter(Boolean).slice(0, 3)
+                                    .map((s: string) => s.trim().replace(/\.?$/, '.'));
+                            } else if (Array.isArray(b.items) && b.items.length > 0) {
+                                points = b.items;
+                            }
+                        }
+                        renderBlock = {
+                            ...b,
+                            title:  b.title  || b.heading || 'Key Takeaways',
+                            points: points || [],
+                        };
+                    } else if (resolvedType === 'key_terms') {
+                        const b = block as any;
+                        // If terms is missing but we have a paragraphs list, skip — can't recover
+                        renderBlock = {
+                            ...b,
+                            terms: Array.isArray(b.terms) ? b.terms : [],
+                        };
+                    } else if (resolvedType === 'completion') {
+                        const b = block as any;
+                        const paras = b.paragraphs;
+                        renderBlock = {
+                            ...b,
+                            skillsEarned: Array.isArray(b.skillsEarned) && b.skillsEarned.length > 0
+                                ? b.skillsEarned
+                                : Array.isArray(paras) ? paras : [],
+                        };
+                    }
+
+                    // ── Normalise prediction block ───────────────────────
+                    if (resolvedType === 'prediction') {
+                        const b = renderBlock as any;
                         const raw: any[] = b.options || [];
                         const opts: [string, string, string] = [
                             typeof raw[0] === 'string' ? raw[0] : raw[0]?.text ?? '',
@@ -286,7 +387,7 @@ export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewU
                         </React.Fragment>
                     );
                 })}
-            </main>
+            </div>
         </div>
     );
 }

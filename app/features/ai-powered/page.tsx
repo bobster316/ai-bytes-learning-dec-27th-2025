@@ -28,7 +28,7 @@ export default function AIPoweredPage() {
 
         "By learning on an AI-powered platform, you are also implicitly learning how to work with AI tools. You become comfortable with the interaction paradigms—prompting, refining, verifying—that will define the future of work. The medium itself is part of the message.",
 
-        "Imagine a textbook that rewrites itself to be clearer when you look confused. Imagine a teacher who is always available at 3 AM. Imagine a curriculum that evolves in real-time. This is the reality of AI-Powered learning at AI Bytes.",
+        "Imagine a textbook that rewrites itself to be clearer when you look confused. Imagine a teacher who is always available at 3 AM. Imagine a curriculum that evolves in real-time. This is the reality of AI-Powered learning at AI Bytes Learning.",
 
         "We are building the educational infrastructure of the future. It is responsive, adaptive, and infinitely scalable. It treats you as an individual, not a statistic.",
 
@@ -62,3 +62,4 @@ export default function AIPoweredPage() {
         />
     );
 }
+

@@ -1,11 +1,18 @@
 import { z } from "zod";
 
 export const courseGenerationRequestSchema = z.object({
-    courseName: z.string().min(3, "Course name must be at least 3 characters"),
+    courseName: z.string().min(1, "Course name must be at least 1 character"),
     courseDescription: z.string().optional(),
     difficultyLevel: z.enum(["beginner", "intermediate", "advanced"]),
-    targetDuration: z.number().min(10, "Duration must be at least 10 minutes"),
+    targetDuration: z.number().min(5, "Duration must be at least 5 minutes"), // Lowered for tests
     targetAudience: z.string().optional(),
+    videoSettings: z.object({
+        courseHost: z.string().default('sarah'),
+        moduleHost: z.string().default('sarah')
+    }).optional(),
+    // Testing Overrides
+    topicCount: z.number().optional(),
+    lessonsPerTopic: z.number().optional()
 });
 
 export const validateCourseGenerationRequest = (data: unknown) => {

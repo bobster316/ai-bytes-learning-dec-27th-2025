@@ -9,65 +9,74 @@ import {
     Zap,
     BookOpen,
     ArrowLeft,
-    Wand2
+    Wand2,
+    ChevronDown,
+    ChevronUp
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import NeuralLoom from "@/components/generation/neural-loom";
 
+const LESSONS_PER_MODULE = 2; // fixed — each module always has 2 lessons
+
+const MODULE_OPTIONS = [
+    { count: 1, label: "1 Module",  desc: "2 lessons · Quick intro" },
+    { count: 2, label: "2 Modules", desc: "4 lessons · Core course" },
+    { count: 3, label: "3 Modules", desc: "6 lessons · Extended" },
+    { count: 4, label: "4 Modules", desc: "8 lessons · Full programme" },
+];
+
 export default function NewCoursePage() {
     const router = useRouter();
     const [topic, setTopic] = useState("");
     const [difficulty, setDifficulty] = useState<"beginner" | "intermediate" | "advanced">("intermediate");
+    const [courseHost, setCourseHost] = useState<'sarah' | 'gemma'>('sarah');
+    const [moduleHost, setModuleHost] = useState<'sarah' | 'gemma'>('sarah');
     const [isGenerating, setIsGenerating] = useState(false);
+    const [topicCount, setTopicCount] = useState(2);
+    const [showAdvanced, setShowAdvanced] = useState(false);
 
-    // Logic for loading screen
     const [progress, setProgress] = useState(0);
-    const [currentStage, setCurrentStage] = useState("Initializing Protocol...");
+    const [currentStage, setCurrentStage] = useState("Initialising Protocol...");
     const [logs, setLogs] = useState<string[]>([]);
     const [error, setError] = useState<{ title: string, message: string, details?: string } | null>(null);
 
-    // Heartbeat / "Stuck" Reassurance Effect
     useEffect(() => {
         if (!isGenerating || progress >= 100) return;
-
         const messages = [
             "Consulting expert knowledge base...",
             "Refining lesson quality...",
             "Ensuring pedagogical alignment...",
             "Validating strict constraints...",
-            "Optimizing media prompts...",
-            "Synthesizing final modules..."
+            "Optimising media prompts...",
+            "Synthesising final modules..."
         ];
-
         let msgIndex = 0;
-
-        // If no progress update for 6 seconds, cycle reassurance messages
         const heartbeat = setInterval(() => {
             setLogs(prev => {
-                const last = prev[0];
                 const nextMsg = messages[msgIndex % messages.length];
-                if (last !== nextMsg) {
-                    return [nextMsg, ...prev].slice(0, 5);
-                }
+                if (prev[0] !== nextMsg) return [nextMsg, ...prev].slice(0, 5);
                 return prev;
             });
             msgIndex++;
         }, 6000);
-
         return () => clearInterval(heartbeat);
     }, [progress, isGenerating]);
 
+    const totalLessons = topicCount * LESSONS_PER_MODULE;
 
     const handleGenerate = async () => {
         setIsGenerating(true);
-        setError(null); // Reset error
-        setLogs(["Initializing connection..."]);
+        setError(null);
+        setLogs(["Initialising connection..."]);
         setProgress(0);
-        setCurrentStage("Initializing...");
+        setCurrentStage("Initialising...");
 
         try {
-            const res = await fetch("/api/course/generate", {
+            const useV2 = process.env.NEXT_PUBLIC_USE_V2_GENERATOR === 'true';
+            const endpoint = useV2 ? '/api/course/generate-v2' : '/api/course/generate';
+
+            const res = await fetch(endpoint, {
                 method: "POST",
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -75,13 +84,16 @@ export default function NewCoursePage() {
                     difficultyLevel: difficulty,
                     targetAudience: "Professionals",
                     courseDescription: `A comprehensive ${difficulty} course on ${topic}.`,
-                    targetDuration: 60
+                    targetDuration: 60,
+                    topicCount,
+                    lessonsPerTopic: LESSONS_PER_MODULE,
+                    videoSettings: { courseHost, moduleHost }
                 }),
             });
 
             if (!res.ok) {
-                // Handle non-200 immediate failures
-                throw new Error(`Generation Service Unavailable: ${res.status}`);
+                const errorData = await res.json().catch(() => ({}));
+                throw new Error(`Generation Service Unavailable: ${errorData.message || `Status: ${res.status}`}`);
             }
 
             if (!res.body) throw new Error("No response body");
@@ -98,54 +110,34 @@ export default function NewCoursePage() {
 
                 for (const line of lines) {
                     if (line.startsWith('data: ')) {
-                        const jsonStr = line.slice(6);
                         try {
-                            const data = JSON.parse(jsonStr);
+                            const data = JSON.parse(line.slice(6));
 
                             if (data.stage === 'error') {
-                                // TERMINAL ERROR STATE
-                                // TERMINAL ERROR STATE
-                                const sanitizeError = (rawMessage: string) => {
-                                    const safeMessages = [
-                                        "Validation Failed",
-                                        "Content Violation",
-                                        "Safety Policy",
-                                        "Prohibited pattern",
-                                        "Paragraph sentence limit",
-                                        "Hard pipeline violation"
-                                    ];
-
-                                    const isSafe = safeMessages.some(msg => rawMessage.includes(msg));
-
-                                    if (isSafe) return rawMessage;
-
-                                    // If technical/unknown error, log it but show generic to user
-                                    console.error("Technical Failure masked from UI:", rawMessage);
-                                    return "The generated content did not meet strict quality standards after multiple repair attempts. Please try again or adjust your topic.";
-                                };
-
+                                const safeMessages = [
+                                    "Validation Failed", "Content Violation", "Safety Policy",
+                                    "Prohibited pattern", "Paragraph sentence limit", "Hard pipeline violation"
+                                ];
+                                const isSafe = safeMessages.some(msg => (data.message || '').includes(msg));
                                 setError({
-                                    title: "Course Generation Failed",
+                                    title: "Course Creation Failed",
                                     message: "The system encountered a quality control issue.",
-                                    details: sanitizeError(data.message)
+                                    details: isSafe ? data.message : "The generated content did not meet strict quality standards after multiple repair attempts. Please try again or adjust your topic."
                                 });
-                                // Keep isGenerating=true so NeuralLoom stays mounted to show the error
-                                return; // Stop processing stream
+                                return;
                             }
 
                             if (data.message) {
-                                // If stage is explicit, update Header
-                                if (data.stage && data.stage !== 'generating') {
-                                    const map: Record<string, string> = {
-                                        'init': 'Initializing...',
-                                        'setup': 'Creating Shell...',
-                                        'planning': 'Drafting Syllabus...',
-                                        'finalizing': 'Polishing...',
-                                        'completed': 'Ready.'
-                                    };
-                                    setCurrentStage(map[data.stage] || data.stage.toUpperCase());
-                                }
-                                setLogs(prev => [data.message, ...prev].slice(0, 5));
+                                const stageMap: Record<string, string> = {
+                                    'init': 'Initialising...',
+                                    'setup': 'Creating Shell...',
+                                    'planning': 'Drafting Syllabus...',
+                                    'generating': 'Building Lessons...',
+                                    'finalizing': 'Polishing...',
+                                    'completed': 'Ready.'
+                                };
+                                if (data.stage && stageMap[data.stage]) setCurrentStage(stageMap[data.stage]);
+                                setLogs(prev => [data.message, ...prev].slice(0, 8));
                             }
 
                             if (data.progress) setProgress(data.progress);
@@ -153,26 +145,17 @@ export default function NewCoursePage() {
                             if (data.stage === 'completed') {
                                 setLogs(prev => ["Redirecting to course...", ...prev]);
                                 setCurrentStage("Complete");
-                                setTimeout(() => {
-                                    router.push(`/courses/${data.courseId}`);
-                                }, 1000);
+                                setTimeout(() => router.push(`/courses/${data.courseId}`), 1000);
                             }
-
-                        } catch (parseErr) {
-                            console.warn("Stream parse error:", parseErr);
+                        } catch {
+                            // skip malformed lines
                         }
                     }
                 }
             }
-
         } catch (e: any) {
             console.error(e);
-            setError({
-                title: "System Error",
-                message: "An unexpected error occurred during generation.",
-                details: e.message
-            });
-            // Keep isGenerating=true to show error panel
+            setError({ title: "System Error", message: "An unexpected error occurred during creation.", details: e.message });
         }
     };
 
@@ -192,10 +175,7 @@ export default function NewCoursePage() {
 
             {/* HEADER */}
             <nav className="relative z-50 px-8 py-6 flex items-center justify-between">
-                <Link
-                    href="/admin/courses"
-                    className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors group"
-                >
+                <Link href="/admin/courses" className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors group">
                     <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                     Back to Studio
                 </Link>
@@ -207,18 +187,17 @@ export default function NewCoursePage() {
 
             {/* MAIN CONTENT */}
             <main className="relative z-10 container mx-auto px-4 max-w-4xl min-h-[80vh] flex flex-col items-center justify-center">
-
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, ease: "easeOut" }}
-                    className="w-full"
+                    className="w-full pb-20"
                 >
                     {/* H1 HEADER */}
                     <div className="text-center mb-12 space-y-4">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-sm mb-4">
                             <Sparkles className="w-3.5 h-3.5 text-violet-500 fill-violet-500" />
-                            <span className="text-xs font-semibold text-slate-600 tracking-wide uppercase">AI Course Designer</span>
+                            <span className="text-xs font-semibold text-slate-600 tracking-wide uppercase">Course Designer</span>
                         </div>
                         <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-slate-900">
                             What enters your mind, <br />
@@ -227,21 +206,18 @@ export default function NewCoursePage() {
                             </span>
                         </h1>
                         <p className="text-lg text-slate-500 max-w-2xl mx-auto">
-                            Design professional courses in seconds. Our AI architect crafts the syllabus, content, and diagrams while you focus on the vision.
+                            Design professional courses in seconds. Our curriculum engine crafts the syllabus, content, and diagrams while you focus on the vision.
                         </p>
                     </div>
 
                     {/* INTERACTIVE CARD */}
                     <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-8 md:p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-white space-y-10 relative overflow-hidden group">
 
-                        {/* Shimmer Effect */}
                         <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
-                        {/* INPUT SECTION */}
+                        {/* COURSE SUBJECT */}
                         <div className="space-y-4 relative z-10">
-                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1">
-                                Course Subject
-                            </label>
+                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1">Course Subject</label>
                             <div className="relative group/input">
                                 <div className="absolute -inset-0.5 bg-gradient-to-r from-violet-500 to-cyan-500 rounded-2xl opacity-0 group-focus-within/input:opacity-20 transition-opacity duration-300 blur-sm" />
                                 <input
@@ -257,11 +233,44 @@ export default function NewCoursePage() {
                             </div>
                         </div>
 
-                        {/* DIFFICULTY SECTION */}
+                        {/* COURSE STRUCTURE — module count */}
                         <div className="space-y-4 relative z-10">
                             <label className="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1">
-                                Target Audience
+                                Course Structure
+                                <span className="ml-2 font-normal normal-case text-slate-400">— each module contains 2 lessons</span>
                             </label>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                {MODULE_OPTIONS.map((opt) => {
+                                    const active = topicCount === opt.count;
+                                    return (
+                                        <button
+                                            key={opt.count}
+                                            onClick={() => setTopicCount(opt.count)}
+                                            className={cn(
+                                                "relative rounded-xl border p-4 text-left transition-all duration-200",
+                                                active
+                                                    ? "bg-slate-900 border-slate-900 shadow-xl scale-[1.03] ring-2 ring-violet-500/30"
+                                                    : "bg-white border-slate-100 hover:border-slate-300 hover:shadow-md"
+                                            )}
+                                        >
+                                            <div className={cn("text-2xl font-bold mb-1", active ? "text-white" : "text-slate-900")}>
+                                                {opt.count}
+                                            </div>
+                                            <div className={cn("text-xs font-semibold", active ? "text-violet-300" : "text-slate-500")}>
+                                                {opt.label}
+                                            </div>
+                                            <div className={cn("text-[10px] mt-0.5", active ? "text-slate-400" : "text-slate-400")}>
+                                                {opt.desc}
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* DIFFICULTY */}
+                        <div className="space-y-4 relative z-10">
+                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1">Target Audience</label>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {[
                                     { id: "beginner", label: "Beginner", desc: "Foundational Concepts", icon: BookOpen },
@@ -270,7 +279,6 @@ export default function NewCoursePage() {
                                 ].map((level) => {
                                     const Icon = level.icon;
                                     const active = difficulty === level.id;
-
                                     return (
                                         <button
                                             key={level.id}
@@ -287,12 +295,8 @@ export default function NewCoursePage() {
                                                     <Icon className="w-5 h-5" />
                                                 </div>
                                                 <div>
-                                                    <div className={cn("font-semibold", active ? "text-white" : "text-slate-900")}>
-                                                        {level.label}
-                                                    </div>
-                                                    <div className={cn("text-xs mt-1", active ? "text-slate-400" : "text-slate-500")}>
-                                                        {level.desc}
-                                                    </div>
+                                                    <div className={cn("font-semibold", active ? "text-white" : "text-slate-900")}>{level.label}</div>
+                                                    <div className={cn("text-xs mt-1", active ? "text-slate-400" : "text-slate-500")}>{level.desc}</div>
                                                 </div>
                                             </div>
                                         </button>
@@ -301,8 +305,76 @@ export default function NewCoursePage() {
                             </div>
                         </div>
 
-                        {/* ACTION SECTION */}
-                        <div className="pt-4 relative z-10">
+                        {/* AVATAR SELECTION */}
+                        <div className="space-y-4 relative z-10">
+                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1">Exclusive AI Host</label>
+                            <div className="bg-slate-50/50 p-6 rounded-2xl border border-slate-200/50">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* SARAH */}
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { e.preventDefault(); setCourseHost('sarah'); setModuleHost('sarah'); }}
+                                        className={cn(
+                                            "relative w-full overflow-hidden rounded-xl border text-left transition-all duration-300 group/avatar h-56 z-10 cursor-pointer",
+                                            courseHost === 'sarah'
+                                                ? "border-violet-500 ring-2 ring-violet-500 shadow-xl scale-[1.02] bg-[#0A4F70]"
+                                                : "border-slate-200 bg-slate-100/50 hover:border-slate-300 opacity-80 hover:opacity-100"
+                                        )}
+                                    >
+                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                            <img src="/sarah_host.png?v=2" alt="Sarah" className="h-full w-auto object-contain" />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-80" />
+                                        </div>
+                                        <div className="absolute bottom-0 left-0 p-5 w-full pointer-events-none">
+                                            <div className="flex items-center gap-2 mb-1.5">
+                                                <div className={cn("w-2 h-2 rounded-full", courseHost === 'sarah' ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse" : "bg-slate-400")} />
+                                                <span className={cn("text-[10px] font-bold uppercase tracking-widest", courseHost === 'sarah' ? "text-emerald-400" : "text-slate-400")}>
+                                                    {courseHost === 'sarah' ? "AI HOST ACTIVE" : "SELECT SARAH"}
+                                                </span>
+                                            </div>
+                                            <div className="font-bold text-white text-xl">Sarah</div>
+                                            <div className="text-xs text-slate-300 font-medium opacity-90">Warm, Professional, Insightful</div>
+                                        </div>
+                                    </button>
+
+                                    {/* GEMMA */}
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { e.preventDefault(); setCourseHost('gemma'); setModuleHost('gemma'); }}
+                                        className={cn(
+                                            "relative w-full overflow-hidden rounded-xl border text-left transition-all duration-300 group/avatar h-56 z-10 cursor-pointer",
+                                            courseHost === 'gemma'
+                                                ? "border-cyan-500 ring-2 ring-cyan-500 shadow-xl scale-[1.02] bg-[#3B2C50]"
+                                                : "border-slate-200 bg-slate-100/50 hover:border-slate-300 opacity-80 hover:opacity-100"
+                                        )}
+                                    >
+                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                            <img src="/gemma_host.png?v=2" alt="Gemma" className="h-full w-auto object-contain" />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-cyan-900/40 to-transparent opacity-80" />
+                                        </div>
+                                        <div className="absolute bottom-0 left-0 p-5 w-full pointer-events-none">
+                                            <div className="flex items-center gap-2 mb-1.5">
+                                                <div className={cn("w-2 h-2 rounded-full", courseHost === 'gemma' ? "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)] animate-pulse" : "bg-slate-400")} />
+                                                <span className={cn("text-[10px] font-bold uppercase tracking-widest", courseHost === 'gemma' ? "text-cyan-400" : "text-slate-400")}>
+                                                    {courseHost === 'gemma' ? "AI HOST ACTIVE" : "SELECT GEMMA"}
+                                                </span>
+                                            </div>
+                                            <div className="font-bold text-white text-xl">Gemma</div>
+                                            <div className="text-xs text-slate-300 font-medium opacity-90">Energetic, Professional, Clear</div>
+                                        </div>
+                                    </button>
+                                </div>
+
+                                <div className="mt-4 p-4 rounded-xl bg-violet-50 border border-violet-100">
+                                    <p className="text-[11px] text-violet-700 leading-relaxed font-medium">
+                                        <strong>Selection Tip:</strong> Sarah uses a warm, nurturing tone perfect for soft skills and theory, while Gemma's energetic delivery is ideal for fast-moving technical bytes.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ACTION */}
+                        <div className="pt-4 relative z-10 space-y-4">
                             <button
                                 onClick={handleGenerate}
                                 disabled={!topic}
@@ -327,6 +399,25 @@ export default function NewCoursePage() {
                                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_1.5s_infinite]" />
                                 )}
                             </button>
+
+                            {topic && (
+                                <div className="flex items-center justify-center gap-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                                    <div className="flex items-center gap-1.5">
+                                        <Layers className="w-3 h-3 text-violet-500" />
+                                        {topicCount} module{topicCount > 1 ? 's' : ''} · {totalLessons} lessons
+                                    </div>
+                                    <div className="w-1 h-1 rounded-full bg-slate-200" />
+                                    <div className="flex items-center gap-1.5">
+                                        <Zap className="w-3 h-3 text-amber-500" />
+                                        Est. Cost: ~£{(topicCount * 0.20).toFixed(2)}
+                                    </div>
+                                    <div className="w-1 h-1 rounded-full bg-slate-200" />
+                                    <div className="flex items-center gap-1.5">
+                                        <BookOpen className="w-3 h-3 text-cyan-500" />
+                                        1 AI Intro Video (45s)
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                     </div>

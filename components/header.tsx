@@ -1,23 +1,49 @@
 "use client";
-
 import { Logo } from "@/components/logo";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Settings, User, LogOut } from "lucide-react";
+import { Settings, Menu, X, Home, BookOpen, TreeDeciduous, CreditCard, LayoutDashboard, LogOut, LogIn, UserPlus, Newspaper } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 export function Header() {
   const router = useRouter();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
-  const [user, setUser] = useState<{ email: string; name?: string } | null>(null);
+  const [user, setUser] = useState<{ email: string; name?: string; role?: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     checkUser();
+
+    const handleScroll = () => {
+      const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const currentScroll = window.pageYOffset;
+      setScrollProgress((currentScroll / (totalScroll || 1)) * 100);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Lock body scroll when menu is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+  }, [isMenuOpen]);
+
+  // Close menu on route change
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [pathname]);
 
   const checkUser = async () => {
     try {
@@ -30,9 +56,15 @@ export function Header() {
 
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (authUser) {
+        let role = authUser.app_metadata?.role || authUser.user_metadata?.role || "student";
+        if (authUser.email === "rav.khangurra@gmail.com") {
+          role = "admin";
+        }
+
         setUser({
           email: authUser.email || "",
           name: authUser.user_metadata?.full_name || authUser.email?.split("@")[0],
+          role: role,
         });
       }
     } catch (error) {
@@ -57,204 +89,118 @@ export function Header() {
     }
   };
 
-  if (!mounted) {
-    return null;
-  }
+  if (!mounted) return null;
+
+  const isActive = (path: string) => pathname === path;
+
+  const navLinks = [
+    { href: "/", label: "Home", icon: Home },
+    { href: "/courses", label: "Courses", icon: BookOpen },
+    { href: "/news", label: "The Pulse", icon: Newspaper },
+    { href: "/skill-tree", label: "Skill Tree", icon: TreeDeciduous },
+    { href: "/pricing", label: "Pricing", icon: CreditCard },
+  ];
 
   return (
-    <header className="sticky top-4 z-50 rounded-2xl mx-auto w-[95%] max-w-7xl backdrop-blur-xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/5 shadow-2xl transition-all duration-300">
-      <div className="flex h-28 items-center justify-between px-2 lg:px-6 max-w-full overflow-hidden">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 lg:gap-3 shrink-0 pl-0">
-          <div className="relative h-20 w-64 lg:w-72 xl:w-[26rem] overflow-hidden transition-all duration-300">
-            <Logo className="w-full h-full scale-[2.2] origin-left" />
-          </div>
-        </Link>
+    <>
+      <header className="fixed top-0 left-0 z-[100] w-full transition-all duration-300 backdrop-blur-xl bg-[#080810]/95 border-b border-white/[0.06]">
+        {/* Scroll Progress Bar */}
+        <div
+          className="scroll-progress h-[2px] bg-primary absolute bottom-0 left-0 transition-all duration-150 z-[120]"
+          style={{ width: `${scrollProgress}%` }}
+        />
 
-        {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-4 xl:gap-8 shrink">
-          <Link
-            href="/"
-            className="text-sm font-semibold text-slate-600 dark:text-slate-300 transition-colors hover:text-slate-900 dark:hover:text-white whitespace-nowrap"
-          >
-            Home
-          </Link>
-          <Link
-            href="/courses"
-            className="text-sm font-semibold text-slate-600 dark:text-slate-300 transition-colors hover:text-slate-900 dark:hover:text-white whitespace-nowrap"
-          >
-            Courses
-          </Link>
-          <Link
-            href="/pricing"
-            className="text-sm font-semibold text-slate-600 dark:text-slate-300 transition-colors hover:text-slate-900 dark:hover:text-white whitespace-nowrap"
-          >
-            Pricing
-          </Link>
-          <Link
-            href="/about"
-            className="text-sm font-semibold text-slate-600 dark:text-slate-300 transition-colors hover:text-slate-900 dark:hover:text-white whitespace-nowrap"
-          >
-            About
-          </Link>
-          <Link
-            href="/blog"
-            className="text-sm font-semibold text-slate-600 dark:text-slate-300 transition-colors hover:text-slate-900 dark:hover:text-white whitespace-nowrap"
-          >
-            Blog
-          </Link>
-        </nav>
-
-        {/* Desktop CTA Buttons */}
-        <div className="hidden lg:flex items-center gap-2 xl:gap-4 shrink-0">
-          <Link href="/admin">
-            <Button variant="ghost" size="sm" className="text-slate-600 dark:text-slate-300 font-medium px-2">
-              <Settings className="w-4 h-4 mr-0 lg:mr-2" />
-              <span className="hidden xl:inline">Admin</span>
-            </Button>
-          </Link>
-
-          <div className="h-6 w-px bg-border mx-2" />
-
-          {loading ? (
-            <div className="w-24 h-10 bg-slate-200 dark:bg-slate-700 animate-pulse rounded-lg" />
-          ) : user ? (
-            // Logged in state
-            <div className="flex items-center gap-3">
-              <Link href="/dashboard">
-                <Button variant="ghost" className="text-slate-600 dark:text-slate-300 font-medium px-3">
-                  <User className="w-4 h-4 mr-2" />
-                  Dashboard
-                </Button>
-              </Link>
-              <Button
-                variant="outline"
-                onClick={handleSignOut}
-                className="text-slate-600 dark:text-slate-300 font-medium px-3"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </Button>
-            </div>
-          ) : (
-            // Logged out state
-            <>
-              <Link href="/auth/signin">
-                <Button variant="ghost" className="text-slate-600 dark:text-slate-300 font-bold px-2 xl:px-4 text-xs xl:text-sm whitespace-nowrap">
-                  Sign In
-                </Button>
-              </Link>
-              <Link href="/auth/signup">
-                <Button className="font-bold bg-[#00d3f2] hover:bg-[#00b8d4] text-white shadow-lg hover:shadow-xl transition-all px-4 xl:px-6 text-xs xl:text-sm h-10 whitespace-nowrap">
-                  Start Free Trial
-                </Button>
-              </Link>
-            </>
-          )}
-        </div>
-
-        {/* Mobile Menu Button */}
-        <button
-          className="lg:hidden p-2 -mr-2"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          {mobileMenuOpen ? (
-            <X className="h-6 w-6 text-foreground" />
-          ) : (
-            <Menu className="h-6 w-6 text-foreground" />
-          )}
-        </button>
-      </div>
-
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="border-t border-border bg-background lg:hidden animate-in slide-in-from-top-5 duration-200">
-          <nav className="container mx-auto flex flex-col space-y-4 px-4 py-6">
-            <Link
-              href="/"
-              className="text-lg font-medium text-foreground/80 hover:text-foreground p-2 rounded-md hover:bg-muted"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Home
-            </Link>
-            <Link
-              href="/courses"
-              className="text-lg font-medium text-foreground/80 hover:text-foreground p-2 rounded-md hover:bg-muted"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Courses
-            </Link>
-            <Link
-              href="/pricing"
-              className="text-lg font-medium text-foreground/80 hover:text-foreground p-2 rounded-md hover:bg-muted"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Pricing
-            </Link>
-            <Link
-              href="/about"
-              className="text-lg font-medium text-foreground/80 hover:text-foreground p-2 rounded-md hover:bg-muted"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              About
-            </Link>
-            <Link
-              href="/blog"
-              className="text-lg font-medium text-foreground/80 hover:text-foreground p-2 rounded-md hover:bg-muted"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Blog
-            </Link>
-            <Link
-              href="/admin"
-              className="text-lg font-medium text-foreground/80 hover:text-foreground p-2 rounded-md hover:bg-muted flex items-center"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Settings className="w-5 h-5 mr-2" />
-              Admin
+        <div className="mx-auto w-[1440px] max-w-[98vw] px-[clamp(12px,2.2vw,24px)]">
+          <div className="flex h-[clamp(60px,7vw,80px)] items-center justify-between gap-[clamp(6px,1.2vw,12px)]">
+            {/* Logo */}
+            <Link href="/" className="flex items-center shrink-0 z-[110]">
+              <div className="relative h-[clamp(44px,5vw,56px)] w-[clamp(120px,12vw,150px)] transition-all duration-300">
+                <Logo className="w-full h-full origin-left" />
+              </div>
             </Link>
 
-            <div className="pt-4 space-y-3 border-t border-border mt-2">
-              {user ? (
-                // Logged in mobile
-                <div className="space-y-3">
-                  <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="outline" className="w-full">
-                      <User className="w-4 h-4 mr-2" />
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center gap-[clamp(2px,0.6vw,6px)] flex-nowrap">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "text-[clamp(11px,1.1vw,14px)] font-bold px-[clamp(10px,1.6vw,16px)] py-[clamp(6px,0.8vw,8px)] rounded-full transition-all duration-200",
+                    isActive(link.href)
+                      ? "text-[#4b98ad] bg-[#4b98ad]/10"
+                      : "text-white/65 hover:text-white hover:bg-white/[0.06]"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              ))}
+              {user?.role === "admin" && (
+                <Link
+                  href="/admin"
+                  className={cn(
+                    "text-[clamp(11px,1.1vw,14px)] font-bold px-[clamp(10px,1.6vw,16px)] py-[clamp(6px,0.8vw,8px)] rounded-full transition-all duration-200",
+                    isActive("/admin")
+                      ? "text-[#4b98ad] bg-[#4b98ad]/10"
+                      : "text-white/65 hover:text-white hover:bg-white/[0.06]"
+                  )}
+                >
+                  Admin
+                </Link>
+              )}
+            </nav>
+
+            {/* Desktop Auth */}
+            <div className="hidden md:flex items-center gap-[clamp(6px,1vw,16px)] flex-nowrap">
+              {loading ? (
+                <div className="w-20 h-8 bg-slate-100 animate-pulse rounded-full" />
+              ) : user ? (
+                <div className="flex items-center gap-2">
+                  <Link href="/dashboard">
+                    <Button variant="ghost" size="sm" className="font-bold text-white/70 hover:text-white hover:bg-white/[0.06] text-[clamp(11px,1.05vw,13px)] h-[clamp(28px,3.6vw,36px)] px-[clamp(8px,1.4vw,14px)] rounded-full">
                       Dashboard
                     </Button>
                   </Link>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      handleSignOut();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
+                  <Button variant="outline" size="sm" onClick={handleSignOut} className="font-bold text-white/65 border-white/[0.12] hover:text-white hover:border-white/25 hover:bg-white/[0.06] bg-transparent text-[clamp(11px,1.05vw,13px)] h-[clamp(28px,3.6vw,36px)] px-[clamp(8px,1.4vw,14px)] rounded-full">
                     Sign Out
                   </Button>
                 </div>
               ) : (
-                // Logged out mobile
-                <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center gap-3">
                   <Link href="/auth/signin">
-                    <Button variant="outline" className="w-full">
+                    <Button variant="ghost" size="sm" className="font-bold text-white/65 hover:text-white hover:bg-white/[0.06] text-[clamp(11px,1.05vw,13px)] h-[clamp(28px,3.6vw,36px)] px-[clamp(8px,1.4vw,14px)]">
                       Sign In
                     </Button>
                   </Link>
                   <Link href="/auth/signup">
-                    <Button className="w-full bg-primary text-primary-foreground">
-                      Start Trial
+                    <Button size="sm" className="bg-[#4b98ad] hover:bg-[#4b98ad]/90 text-white font-black rounded-full shadow-lg shadow-[#4b98ad]/20 text-[clamp(11px,1.05vw,13px)] h-[clamp(28px,3.6vw,36px)] px-[clamp(10px,1.6vw,16px)]">
+                      Get Started
                     </Button>
                   </Link>
                 </div>
               )}
             </div>
-          </nav>
+
+            {/* Mobile Auth/Profile - Simplified */}
+            <div className="flex md:hidden items-center gap-2">
+              {user ? (
+                <Link href="/dashboard">
+                  <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 active:scale-90 transition-all">
+                    <LayoutDashboard className="w-5 h-5 text-slate-600" />
+                  </div>
+                </Link>
+              ) : (
+                <Link href="/auth/signin">
+                  <Button size="sm" className="bg-slate-900 hover:bg-slate-800 text-white font-black rounded-full text-xs h-9 px-4">
+                    Sign In
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </div>
         </div>
-      )}
-    </header>
+      </header>
+      <div className="h-[clamp(60px,7vw,80px)] w-full" aria-hidden="true" />
+    </>
   );
 }

@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neural Networks — Lesson 01 | AI Bytes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --pulse:#00FFB3;--iris:#9B8FFF;--amber:#FFB347;--nova:#FF6B6B;
+  --bg:#0a0a0f;--surface:#0f0f1a;--surface2:#141420;
+  --border:rgba(255,255,255,0.07);--text:#f0f0f5;--muted:#6b6b80;
+  --fd:'Syne',sans-serif;--fb:'Instrument Serif',serif;--fm:'DM Mono',monospace;
+}
+html{scroll-behavior:auto}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);font-size:1.05rem;line-height:1.8;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+
+/* ─── NAV ─── */
+.nav{position:fixed;top:0;left:0;right:0;z-index:900;padding:.85rem 2.5rem;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,15,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.nav-brand{font-family:var(--fd);font-weight:800;font-size:.9rem;letter-spacing:-.02em;color:var(--pulse)}
+.nav-meta{font-family:var(--fm);font-size:.6rem;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.nav-right{display:flex;gap:.6rem}
+.nbtn{font-family:var(--fm);font-size:.58rem;letter-spacing:.06em;padding:.32rem .75rem;border-radius:100px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .2s}
+.nbtn:hover,.nbtn.on{border-color:var(--pulse);color:var(--pulse);background:rgba(0,255,179,.06)}
+.nav-prog{position:absolute;bottom:-1px;left:0;height:2px;background:linear-gradient(90deg,var(--pulse),var(--iris));width:0;transition:width .15s}
+
+/* ─── RAIL ─── */
+.rail{position:fixed;right:1.5rem;top:50%;transform:translateY(-50%);z-index:800;display:flex;flex-direction:column;gap:9px}
+.rd{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.1);cursor:pointer;transition:all .35s;position:relative}
+.rd.on{background:var(--pulse);transform:scale(1.7);box-shadow:0 0 12px var(--pulse)}
+.rd:hover::after{content:attr(data-l);position:absolute;right:16px;top:50%;transform:translateY(-50%);white-space:nowrap;font-family:var(--fm);font-size:.58rem;color:var(--text);background:rgba(15,15,26,.95);padding:3px 7px;border-radius:4px;border:1px solid var(--border)}
+
+/* ─── COHORT ─── */
+.cohort{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%);z-index:800;display:flex;align-items:center;gap:.6rem;padding:.5rem 1rem;background:rgba(10,10,20,.92);border:1px solid var(--border);border-radius:100px;font-family:var(--fm);font-size:.58rem;letter-spacing:.05em;color:var(--muted);opacity:0;transition:opacity .5s;white-space:nowrap}
+.cohort.vis{opacity:1}
+.cpulse{width:5px;height:5px;border-radius:50%;background:var(--pulse);animation:cp 2s infinite}
+@keyframes cp{0%,100%{opacity:1;box-shadow:0 0 5px var(--pulse)}50%{opacity:.35}}
+.ccount{color:var(--pulse)}
+
+/* ─── SOUND VIS ─── */
+.svis{position:fixed;bottom:1.4rem;right:4.5rem;z-index:800;display:flex;align-items:flex-end;gap:2.5px;height:18px;opacity:0;transition:opacity .4s}
+.svis.vis{opacity:.55}
+.sb{width:3px;border-radius:2px;background:var(--pulse);animation:sd var(--d,1s) ease-in-out infinite alternate}
+@keyframes sd{from{height:3px}to{height:var(--h,12px)}}
+
+/* ─── COMPANION ─── */
+.companion{position:fixed;bottom:4rem;right:1.5rem;z-index:800;display:flex;flex-direction:column;align-items:flex-end;gap:.45rem}
+.cbubble{max-width:210px;padding:.55rem .9rem;background:rgba(15,15,26,.96);border:1px solid rgba(155,143,255,.3);border-radius:12px 12px 2px 12px;font-family:var(--fm);font-size:.62rem;color:var(--text);line-height:1.5;opacity:0;transform:translateY(6px) scale(.94);transition:all .3s;pointer-events:none}
+.cbubble.vis{opacity:1;transform:translateY(0) scale(1)}
+.corb{width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 38% 36%,rgba(155,143,255,.5),rgba(155,143,255,.08));border:1.5px solid rgba(155,143,255,.25);display:flex;align-items:center;justify-content:center;cursor:pointer;animation:orbidle 3s ease-in-out infinite}
+@keyframes orbidle{0%,100%{box-shadow:0 0 16px rgba(155,143,255,.12)}50%{box-shadow:0 0 28px rgba(155,143,255,.3)}}
+.corb:hover{transform:scale(1.08)}
+.ceyes{display:flex;gap:6px}
+.ceye{width:4px;height:4px;border-radius:50%;background:var(--iris);animation:blink 4.5s ease infinite}
+@keyframes blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+
+/* ─── AHA OVERLAY ─── */
+.ahalay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(5,5,12,.88);backdrop-filter:blur(18px);opacity:0;pointer-events:none;transition:opacity .35s}
+.ahalay.vis{opacity:1;pointer-events:all}
+.ahacard{background:var(--surface);border:1px solid rgba(0,255,179,.18);border-radius:22px;padding:2.25rem 2rem;max-width:400px;width:92%;text-align:center;transform:scale(.88) translateY(18px);transition:all .4s cubic-bezier(.34,1.56,.64,1)}
+.ahalay.vis .ahacard{transform:scale(1) translateY(0)}
+.ahaglow{width:58px;height:58px;border-radius:50%;background:radial-gradient(circle,rgba(0,255,179,.25),transparent);border:1.5px solid rgba(0,255,179,.35);display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto 1.1rem;animation:ahap 2s ease-in-out infinite}
+@keyframes ahap{0%,100%{box-shadow:0 0 18px rgba(0,255,179,.12)}50%{box-shadow:0 0 36px rgba(0,255,179,.35)}}
+.ahat{font-family:var(--fd);font-weight:800;font-size:1.3rem;letter-spacing:-.03em;color:#fff;margin-bottom:.45rem}
+.ahab{font-family:var(--fb);font-style:italic;color:rgba(240,240,245,.7);font-size:.9rem;line-height:1.65;margin-bottom:1.3rem}
+.ahaq{background:linear-gradient(135deg,rgba(0,255,179,.07),rgba(155,143,255,.05));border:1px solid rgba(0,255,179,.13);border-radius:12px;padding:.9rem 1.1rem;margin-bottom:1.3rem;font-family:var(--fb);font-style:italic;font-size:.88rem;color:#d8d8ee;line-height:1.6}
+.ahaqm{font-family:var(--fm);font-size:.52rem;letter-spacing:.09em;color:var(--muted);margin-top:.4rem}
+.ahabtns{display:flex;gap:.45rem;justify-content:center}
+.abtn{font-family:var(--fm);font-size:.6rem;letter-spacing:.06em;padding:.45rem .9rem;border-radius:100px;border:1px solid;cursor:pointer;transition:all .2s}
+.abtn-share{border-color:rgba(0,255,179,.4);color:var(--pulse);background:rgba(0,255,179,.05)}
+.abtn-share:hover{background:rgba(0,255,179,.1)}
+.abtn-close{border-color:var(--border);color:var(--muted);background:transparent}
+.abtn-close:hover{border-color:var(--nova);color:var(--nova)}
+
+/* ═══════════════════════════════════════
+   SCENE 1 — HOOK
+═══════════════════════════════════════ */
+.scene{position:relative;overflow:hidden}
+.hook-wrap{position:relative;min-height:100vh}
+.mesh{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.mesh::before,.mesh::after{content:'';position:absolute;border-radius:50%;filter:blur(90px);pointer-events:none}
+.mesh::before{width:550px;height:550px;background:radial-gradient(circle,rgba(155,143,255,.13),transparent 70%);top:-8%;left:-4%;animation:mdrift 13s ease-in-out infinite}
+.mesh::after{width:450px;height:450px;background:radial-gradient(circle,rgba(0,255,179,.09),transparent 70%);bottom:0;right:-3%;animation:mdrift 16s ease-in-out infinite reverse}
+.mblob{position:absolute;width:380px;height:380px;border-radius:50%;filter:blur(90px);background:radial-gradient(circle,rgba(255,179,71,.07),transparent 70%);top:42%;left:38%;animation:mdrift 19s ease-in-out infinite 4s}
+@keyframes mdrift{0%,100%{transform:translate(0,0)}40%{transform:translate(22px,-18px)}70%{transform:translate(-15px,20px)}}
+
+.hook-grid{position:relative;z-index:2;max-width:1320px;margin:0 auto;display:grid;grid-template-columns:1fr 52px 1fr;min-height:100vh}
+.hook-l{display:flex;flex-direction:column;justify-content:center;padding:calc(80px + 7vh) 3.5vw 7vh 5.5vw}
+.hook-r{display:flex;flex-direction:column;gap:1.25rem;justify-content:center;padding:calc(80px + 7vh) 5.5vw 7vh 3.5vw}
+.hook-mid{display:flex;flex-direction:column;align-items:center;padding:calc(80px + 11vh) 0 7vh}
+.hml{width:1px;flex:1;background:linear-gradient(180deg,transparent,rgba(155,143,255,.18) 40%,rgba(155,143,255,.18) 60%,transparent)}
+.hmn{font-family:var(--fm);font-size:.46rem;letter-spacing:.18em;text-transform:uppercase;padding:.22rem .48rem;border-radius:100px;border:1px solid rgba(155,143,255,.28);color:var(--iris);background:rgba(10,10,15,.6);white-space:nowrap;writing-mode:vertical-rl;margin:.8rem 0}
+
+.hook-tag{font-family:var(--fm);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--iris);margin-bottom:.9rem;display:flex;align-items:center;gap:.45rem}
+.hook-tag::before{content:'';width:20px;height:1px;background:var(--iris)}
+.hook-h1{font-family:var(--fd);font-weight:800;font-size:clamp(2.2rem,4.2vw,3.6rem);letter-spacing:-.04em;line-height:.9;color:#fff;margin-bottom:1.3rem}
+.hook-h1 em{font-style:italic;color:var(--pulse)}
+.hook-lede{font-family:var(--fb);font-style:italic;color:rgba(240,240,245,.7);font-size:1rem;line-height:1.72;margin-bottom:1.4rem}
+.chips{display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:1.75rem}
+.chip{font-family:var(--fm);font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;padding:.28rem .68rem;border-radius:100px;border:1px solid}
+.cp{border-color:rgba(0,255,179,.3);color:var(--pulse);background:rgba(0,255,179,.06)}
+.ci{border-color:rgba(155,143,255,.3);color:var(--iris);background:rgba(155,143,255,.06)}
+.ca{border-color:rgba(255,179,71,.3);color:var(--amber);background:rgba(255,179,71,.06)}
+
+.stat-card{padding:1.35rem 1.6rem;background:rgba(0,255,179,.035);border:1px solid rgba(0,255,179,.12);border-radius:14px;margin-bottom:1.2rem}
+.stat-n{font-family:var(--fd);font-weight:800;font-size:2.6rem;letter-spacing:-.04em;color:var(--pulse);line-height:1;margin-bottom:.2rem}
+.stat-l{font-family:var(--fm);font-size:.6rem;letter-spacing:.08em;color:var(--muted)}
+
+.outcomes{padding:1.1rem 1.4rem;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:12px}
+.out-title{font-family:var(--fm);font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:var(--pulse);margin-bottom:.8rem}
+.out-row{display:flex;gap:.65rem;align-items:flex-start;font-family:var(--fm);font-size:.74rem;color:#b0b0c8;padding:.35rem 0;border-bottom:1px solid rgba(255,255,255,.04);line-height:1.45}
+.out-row:last-child{border-bottom:none}
+.out-arr{color:var(--pulse);flex-shrink:0;margin-top:.08rem;opacity:.7}
+
+.hook-vid{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--border)}
+.hook-vid video{width:100%;height:200px;object-fit:cover;display:block;filter:brightness(.55) saturate(.7)}
+.hook-vid::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(10,10,15,.9))}
+.hook-vid-cap{position:absolute;bottom:.85rem;left:1rem;z-index:2;font-family:var(--fm);font-size:.58rem;letter-spacing:.06em;color:rgba(240,240,245,.7)}
+
+.chart-box{background:rgba(15,15,26,.8);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.chart-box-title{font-family:var(--fm);font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:.65rem 1rem;border-bottom:1px solid var(--border)}
+
+.scroll-cue{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;gap:.35rem;font-family:var(--fm);font-size:.52rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.scroll-arr{animation:bounce .95s ease-in-out infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+
+/* ═══════════════════════════════════════
+   SCENE 2 — 3D NETWORK
+═══════════════════════════════════════ */
+.s3d{padding:11vh 5vw;background:radial-gradient(ellipse at 50% 60%,rgba(155,143,255,.05),transparent 70%)}
+.s3d-inner{max-width:1140px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:3.5rem;align-items:center}
+.slabel{font-family:var(--fm);font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;color:var(--iris);margin-bottom:.8rem;display:flex;align-items:center;gap:.45rem}
+.slabel::before{content:'';width:18px;height:1px;background:var(--iris)}
+.sh2{font-family:var(--fd);font-weight:800;font-size:clamp(1.7rem,2.8vw,2.4rem);letter-spacing:-.03em;line-height:.94;margin-bottom:1.1rem;color:#fff}
+.sh2 em{font-style:italic;color:var(--iris)}
+.sbody{font-family:var(--fb);font-style:italic;color:rgba(240,240,245,.68);font-size:.95rem;line-height:1.72;margin-bottom:1.3rem}
+
+.nn-wrap{border-radius:18px;overflow:hidden;border:1px solid rgba(155,143,255,.14);background:#05050c;position:relative}
+#nn-canvas{display:block;width:100%;height:440px}
+.nn-overlay-hint{position:absolute;bottom:.75rem;right:.9rem;font-family:var(--fm);font-size:.52rem;letter-spacing:.06em;color:rgba(155,143,255,.45)}
+
+.nn-btns{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1.1rem}
+.nbt{font-family:var(--fm);font-size:.58rem;letter-spacing:.06em;padding:.38rem .85rem;border-radius:100px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .2s}
+.nbt:hover,.nbt.on{border-color:var(--iris);color:var(--iris);background:rgba(155,143,255,.07)}
+.nn-info{margin-top:1.1rem;padding:.85rem 1.1rem;background:rgba(155,143,255,.04);border:1px solid rgba(155,143,255,.1);border-radius:11px;font-family:var(--fm);font-size:.68rem;line-height:1.6;color:#9898b8;min-height:62px}
+.nn-info strong{color:var(--iris)}
+.nn-leg{display:flex;gap:1.1rem;margin-top:.85rem;flex-wrap:wrap}
+.nleg{display:flex;align-items:center;gap:.35rem;font-family:var(--fm);font-size:.56rem;color:var(--muted)}
+.nlegdot{width:7px;height:7px;border-radius:50%}
+
+/* ═══════════════════════════════════════
+   SCENE 3 — ANATOMY (STICKY LEFT)
+═══════════════════════════════════════ */
+.sanat{background:linear-gradient(180deg,transparent,rgba(0,255,179,.015),transparent)}
+.anat-inner{max-width:1140px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr}
+.anat-sticky{position:sticky;top:80px;height:calc(100vh - 80px);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:3rem 2.5rem 3rem 1.5rem}
+.anat-viz{width:100%;max-width:380px}
+
+/* CSS-only layer diagram — no JS needed */
+.layer-diagram{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:1.5rem}
+.ld-col{display:flex;flex-direction:column;align-items:center;gap:.65rem}
+.ld-label{font-family:var(--fm);font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;margin-top:.35rem}
+.neuron{width:36px;height:36px;border-radius:50%;border:1.5px solid;display:flex;align-items:center;justify-content:center;transition:all .4s;position:relative}
+.ni{border-color:rgba(0,255,179,.35);background:rgba(0,255,179,.07)}
+.ni .nd{background:var(--pulse)}
+.nh{border-color:rgba(155,143,255,.35);background:rgba(155,143,255,.07)}
+.nh .nd{background:var(--iris)}
+.no{border-color:rgba(255,179,71,.35);background:rgba(255,179,71,.07)}
+.no .nd{background:var(--amber)}
+.nd{width:9px;height:9px;border-radius:50%}
+.neuron.lit{transform:scale(1.3)}
+.ni.lit{box-shadow:0 0 18px rgba(0,255,179,.5);border-color:var(--pulse);background:rgba(0,255,179,.15)}
+.nh.lit{box-shadow:0 0 18px rgba(155,143,255,.5);border-color:var(--iris);background:rgba(155,143,255,.15)}
+.no.lit{box-shadow:0 0 18px rgba(255,179,71,.5);border-color:var(--amber);background:rgba(255,179,71,.15)}
+
+/* Connection lines via SVG overlay */
+.ld-svg{position:absolute;inset:0;pointer-events:none}
+
+.anat-viz-wrap{position:relative;border:1px solid var(--border);border-radius:16px;background:rgba(10,10,20,.6);overflow:hidden}
+.anat-cap{font-family:var(--fm);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:1rem;text-align:center}
+.anat-active-label{font-family:var(--fd);font-weight:800;font-size:1.05rem;letter-spacing:-.02em;color:#fff;margin-top:.6rem;text-align:center;transition:all .3s}
+.anat-active-sub{font-family:var(--fm);font-size:.65rem;letter-spacing:.06em;color:var(--muted);text-align:center;margin-top:.25rem;transition:all .3s}
+
+.anat-steps{padding:10vh 2rem 10vh 4rem}
+.astep{padding:3.25rem 0;border-bottom:1px solid rgba(255,255,255,.04);opacity:.3;transition:opacity .45s,transform .45s;transform:translateX(10px)}
+.astep.in{opacity:1;transform:translateX(0)}
+.astep-num{font-family:var(--fm);font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--iris);margin-bottom:.65rem}
+.astep-h{font-family:var(--fd);font-weight:800;font-size:1.5rem;letter-spacing:-.03em;line-height:1;color:#fff;margin-bottom:.8rem}
+.astep-body{font-family:var(--fb);font-style:italic;color:rgba(240,240,245,.7);font-size:.97rem;line-height:1.75}
+.atag{display:inline-flex;margin-top:.75rem;font-family:var(--fm);font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;padding:.26rem .65rem;border-radius:100px}
+
+/* ═══════════════════════════════════════
+   SCENE 4 — BENTO
+═══════════════════════════════════════ */
+.sbento{padding:11vh 5vw;background:linear-gradient(180deg,transparent,rgba(155,143,255,.025),transparent)}
+.sbento-in{max-width:1140px;margin:0 auto}
+.scene-hdr{margin-bottom:2.75rem}
+.bento{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:auto auto;gap:1px;background:var(--border);border-radius:18px;overflow:hidden}
+.bc{background:var(--surface);padding:1.85rem 1.65rem;transition:background .3s}
+.bc:hover{background:var(--surface2)}
+.bc.span2{grid-column:span 2}
+.bc.tall{grid-row:span 2}
+.bico{font-size:1.7rem;margin-bottom:.9rem;display:block}
+.bh{font-family:var(--fd);font-weight:800;font-size:1rem;letter-spacing:-.02em;color:#fff;margin-bottom:.45rem}
+.bb{font-family:var(--fm);font-size:.7rem;line-height:1.62;color:#8080a0}
+.btag{display:inline-flex;margin-top:.65rem;font-family:var(--fm);font-size:.56rem;letter-spacing:.08em;padding:.24rem .6rem;border-radius:100px}
+.bc-feat{background:linear-gradient(135deg,rgba(155,143,255,.1),rgba(155,143,255,.03))}
+
+/* ═══════════════════════════════════════
+   SCENE 5 — FLOW
+═══════════════════════════════════════ */
+.sflow{padding:11vh 5vw}
+.sflow-in{max-width:1140px;margin:0 auto}
+.flow-row{display:flex;align-items:flex-start;justify-content:space-between;gap:0;margin-top:2.75rem;position:relative}
+/* connecting lines between flow nodes */
+.flow-row::before{content:'';position:absolute;top:36px;left:calc(10% + 36px);right:calc(10% + 36px);height:1.5px;background:linear-gradient(90deg,rgba(0,255,179,.15),rgba(155,143,255,.15),rgba(255,179,71,.15),rgba(255,107,107,.15),rgba(0,255,179,.15));z-index:0}
+.fnode{flex:1;display:flex;flex-direction:column;align-items:center;gap:.65rem;cursor:pointer;position:relative;z-index:1;transition:all .25s}
+.fnode:hover{transform:translateY(-3px)}
+.fcirc{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:.54rem;letter-spacing:.04em;text-align:center;line-height:1.35;border:1.5px solid;transition:all .25s;background:var(--surface)}
+.fnode:hover .fcirc,.fnode.sel .fcirc{transform:scale(1.1)}
+.fn1 .fcirc{border-color:rgba(0,255,179,.4);color:var(--pulse)}
+.fn1.sel .fcirc,.fn1:hover .fcirc{box-shadow:0 0 24px rgba(0,255,179,.3);background:rgba(0,255,179,.06)}
+.fn2 .fcirc{border-color:rgba(155,143,255,.4);color:var(--iris)}
+.fn2.sel .fcirc,.fn2:hover .fcirc{box-shadow:0 0 24px rgba(155,143,255,.3);background:rgba(155,143,255,.06)}
+.fn3 .fcirc{border-color:rgba(255,179,71,.4);color:var(--amber)}
+.fn3.sel .fcirc,.fn3:hover .fcirc{box-shadow:0 0 24px rgba(255,179,71,.3);background:rgba(255,179,71,.06)}
+.fn4 .fcirc{border-color:rgba(255,107,107,.4);color:var(--nova)}
+.fn4.sel .fcirc,.fn4:hover .fcirc{box-shadow:0 0 24px rgba(255,107,107,.3);background:rgba(255,107,107,.06)}
+.fn5 .fcirc{border-color:rgba(0,255,179,.4);color:var(--pulse)}
+.fn5.sel .fcirc,.fn5:hover .fcirc{box-shadow:0 0 24px rgba(0,255,179,.3);background:rgba(0,255,179,.06)}
+.flabel{font-family:var(--fm);font-size:.58rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-align:center;max-width:80px;line-height:1.4}
+.fdetail{margin-top:2.25rem;padding:1.1rem 1.35rem;background:rgba(155,143,255,.04);border:1px solid rgba(155,143,255,.1);border-radius:13px;font-family:var(--fm);font-size:.7rem;line-height:1.65;color:#9898b8;min-height:56px;transition:all .3s}
+.fdetail strong{color:var(--iris)}
+.fdetail em{color:var(--pulse);font-style:normal}
+
+/* ═══════════════════════════════════════
+   SCENE 6 — QUIZ
+═══════════════════════════════════════ */
+.squiz{padding:11vh 5vw;background:radial-gradient(ellipse at 50% 50%,rgba(0,255,179,.04),transparent 70%)}
+.squiz-in{max-width:820px;margin:0 auto}
+.qcard{background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden;margin-top:2rem}
+.qhead{padding:1.3rem 1.8rem .9rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.65rem}
+.qeye{font-size:1.1rem}
+.qlabel{font-family:var(--fm);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--pulse)}
+.qq{padding:1.6rem 1.8rem 1.1rem;font-family:var(--fd);font-weight:700;font-size:1.15rem;letter-spacing:-.02em;line-height:1.3;color:#fff}
+.qopts{padding:0 1.4rem 1.4rem;display:flex;flex-direction:column;gap:.55rem}
+.qopt{padding:.85rem 1.15rem;border:1.5px solid var(--border);border-radius:11px;cursor:pointer;display:flex;align-items:flex-start;gap:.65rem;transition:all .22s;background:transparent;width:100%;text-align:left}
+.qopt:hover{border-color:rgba(0,255,179,.3);background:rgba(0,255,179,.03)}
+.qopt.correct{border-color:var(--pulse);background:rgba(0,255,179,.07)}
+.qopt.wrong{border-color:var(--nova);background:rgba(255,107,107,.07)}
+.qopt.disabled{pointer-events:none}
+.qletter{font-family:var(--fm);font-size:.56rem;width:19px;height:19px;border-radius:50%;border:1px solid var(--border);color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.1rem}
+.qopt.correct .qletter{border-color:var(--pulse);color:var(--pulse);background:rgba(0,255,179,.1)}
+.qopt.wrong .qletter{border-color:var(--nova);color:var(--nova)}
+.qtext{font-family:var(--fm);font-size:.75rem;line-height:1.55;color:#b8b8d0}
+
+.qreveal{max-height:0;overflow:hidden;transition:max-height .55s cubic-bezier(.16,1,.3,1)}
+.qreveal.open{max-height:500px}
+.qrev-in{padding:1.4rem 1.8rem 1.8rem;border-top:1px solid var(--border);background:rgba(0,255,179,.025)}
+.qrev-title{font-family:var(--fm);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--pulse);margin-bottom:.55rem}
+.qrev-body{font-family:var(--fb);font-style:italic;color:rgba(240,240,245,.8);font-size:.92rem;line-height:1.72}
+.conf-row{display:flex;gap:.45rem;margin-top:1rem;align-items:center;flex-wrap:wrap}
+.conf-label{font-family:var(--fm);font-size:.58rem;letter-spacing:.07em;color:var(--muted)}
+.conf-btn{font-family:var(--fm);font-size:.56rem;padding:.28rem .65rem;border-radius:100px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .18s}
+.conf-btn:hover{border-color:var(--iris);color:var(--iris)}
+.conf-btn.sel{border-color:var(--pulse);color:var(--pulse);background:rgba(0,255,179,.07)}
+
+/* ═══════════════════════════════════════
+   SCENE 7 — MINDMAP
+═══════════════════════════════════════ */
+.smind{padding:11vh 5vw}
+.smind-in{max-width:1140px;margin:0 auto}
+#mindmap-svg{width:100%;height:400px;display:block;margin-top:2.25rem;border-radius:16px;background:rgba(10,10,18,.5);border:1px solid var(--border)}
+.mind-tip{font-family:var(--fm);font-size:.6rem;letter-spacing:.08em;color:var(--muted);margin-top:.75rem;text-align:center}
+.mind-info{margin-top:1.25rem;max-width:680px;margin-left:auto;margin-right:auto;padding:.9rem 1.2rem;background:rgba(155,143,255,.04);border:1px solid rgba(155,143,255,.1);border-radius:11px;font-family:var(--fm);font-size:.68rem;line-height:1.6;color:#9898b8;min-height:50px;text-align:center;transition:all .3s}
+.mind-info strong{color:var(--iris)}
+
+/* ═══════════════════════════════════════
+   SCENE 8 — TABS
+═══════════════════════════════════════ */
+.stabs{padding:11vh 5vw;background:linear-gradient(180deg,transparent,rgba(0,255,179,.018),transparent)}
+.stabs-in{max-width:1140px;margin:0 auto}
+.tab-nav{display:flex;gap:.45rem;border-bottom:1px solid var(--border);padding-bottom:0;margin-top:2rem;margin-bottom:2rem}
+.tb{font-family:var(--fm);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.5rem .95rem;border:none;background:transparent;color:var(--muted);cursor:pointer;transition:all .2s;position:relative;border-radius:6px 6px 0 0}
+.tb.on{color:var(--pulse)}
+.tb.on::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--pulse)}
+.tpanel{display:none}
+.tpanel.on{display:grid;grid-template-columns:1fr 1fr;gap:2.75rem;align-items:start;animation:tfade .3s ease}
+@keyframes tfade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.tformula{font-family:var(--fm);font-size:.95rem;color:var(--pulse);background:rgba(0,255,179,.05);border:1px solid rgba(0,255,179,.14);border-radius:9px;padding:.9rem 1.1rem;margin:1rem 0;text-align:center;letter-spacing:.02em}
+.tbody{font-family:var(--fb);font-style:italic;color:rgba(240,240,245,.72);font-size:.97rem;line-height:1.75;margin-bottom:.9rem}
+.tpc{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-top:.9rem}
+.pros,.cons{padding:.8rem .95rem;border-radius:9px;font-family:var(--fm);font-size:.66rem;line-height:1.6}
+.pros{background:rgba(0,255,179,.04);border:1px solid rgba(0,255,179,.1);color:#88c8a8}
+.pros strong,.cons strong{display:block;font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem}
+.cons{background:rgba(255,107,107,.04);border:1px solid rgba(255,107,107,.1);color:#c88888}
+.act-wrap{background:rgba(10,10,18,.5);border:1px solid var(--border);border-radius:14px;overflow:hidden;padding:1.25rem}
+
+/* ═══════════════════════════════════════
+   SCENE 9 — ENDING
+═══════════════════════════════════════ */
+.send{padding:13vh 5vw 16vh;text-align:center}
+.send-in{max-width:720px;margin:0 auto}
+.end-rule{width:44px;height:1px;background:linear-gradient(90deg,transparent,var(--pulse),transparent);margin:0 auto 2.75rem}
+.end-sub{font-family:var(--fm);font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;color:var(--pulse);margin-bottom:.9rem}
+.end-h{font-family:var(--fd);font-weight:800;font-size:clamp(1.9rem,3.2vw,2.6rem);letter-spacing:-.04em;line-height:.93;color:#fff;margin-bottom:.7rem}
+.end-body{font-family:var(--fb);font-style:italic;color:rgba(240,240,245,.6);font-size:.97rem;line-height:1.7;margin-bottom:2.75rem}
+.end-stats{display:flex;gap:2rem;justify-content:center;margin-bottom:2.5rem;flex-wrap:wrap}
+.estat{text-align:center;opacity:0;transform:translateY(8px);transition:all .45s cubic-bezier(.34,1.56,.64,1)}
+.estat.vis{opacity:1;transform:translateY(0)}
+.estat-n{font-family:var(--fd);font-weight:800;font-size:2rem;letter-spacing:-.04em;color:var(--iris)}
+.estat-l{font-family:var(--fm);font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:.15rem}
+.end-skills{display:flex;flex-direction:column;gap:.65rem;margin-bottom:2.75rem;max-width:400px;margin-left:auto;margin-right:auto;text-align:left}
+.eskill{display:flex;align-items:center;gap:.9rem;padding:.75rem .95rem;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px;opacity:0;transform:translateY(10px);transition:all .5s cubic-bezier(.34,1.56,.64,1)}
+.eskill.vis{opacity:1;transform:translateY(0)}
+.echeck{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--pulse);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.58rem;color:var(--pulse)}
+.etext{font-family:var(--fm);font-size:.68rem;letter-spacing:.02em;color:#c0c0da;line-height:1.45}
+.end-cta{display:inline-flex;align-items:center;gap:.6rem;padding:.8rem 1.85rem;background:linear-gradient(135deg,var(--pulse),#00d896);border-radius:100px;font-family:var(--fd);font-weight:700;font-size:.82rem;letter-spacing:-.01em;color:#05080a;cursor:pointer;border:none;transition:all .3s;box-shadow:0 6px 28px rgba(0,255,179,.22)}
+.end-cta:hover{transform:translateY(-2px);box-shadow:0 10px 36px rgba(0,255,179,.38)}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:960px){
+  .hook-grid,.s3d-inner,.anat-inner{grid-template-columns:1fr}
+  .hook-mid{display:none}
+  .hook-r{padding-top:1.5rem}
+  .anat-sticky{position:relative;height:auto;padding:2.5rem 1.5rem 1rem}
+  .anat-steps{padding:3rem 1.5rem}
+  .tpanel.on{grid-template-columns:1fr}
+  .bento{grid-template-columns:1fr 1fr}
+  .bc.span2{grid-column:span 2}
+  .s3d-inner{gap:2rem}
+  .flow-row{flex-wrap:wrap;justify-content:center;gap:1.5rem}
+  .flow-row::before{display:none}
+}
+@media(max-width:600px){
+  .nav{padding:.75rem 1.1rem}
+  .rail{display:none}
+  .bento{grid-template-columns:1fr}
+  .bc.span2{grid-column:span 1}
+  .end-stats{gap:1.25rem}
+  .hook-h1{font-size:2rem}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand">AI Bytes</div>
+  <div class="nav-meta">Module 1 · Neural Networks</div>
+  <div class="nav-right">
+    <button class="nbtn" id="sound-btn" onclick="toggleSound()">♪ Sound Off</button>
+    <button class="nbtn" onclick="showAha()">★ Aha Moment</button>
+  </div>
+  <div class="nav-prog" id="nprog"></div>
+</nav>
+
+<!-- PROGRESS RAIL -->
+<nav class="rail" id="rail">
+  <div class="rd on" data-l="Hook"></div>
+  <div class="rd" data-l="3D Network"></div>
+  <div class="rd" data-l="Anatomy"></div>
+  <div class="rd" data-l="Compare"></div>
+  <div class="rd" data-l="How It Learns"></div>
+  <div class="rd" data-l="Prediction"></div>
+  <div class="rd" data-l="Mindmap"></div>
+  <div class="rd" data-l="Techniques"></div>
+  <div class="rd" data-l="Complete"></div>
+</nav>
+
+<!-- COHORT BAR -->
+<div class="cohort" id="cohort">
+  <div class="cpulse"></div>
+  <span><span class="ccount" id="ccount">5</span> others learning with you</span>
+</div>
+
+<!-- SOUND VIS -->
+<div class="svis" id="svis">
+  <div class="sb" style="--d:.7s;--h:7px"></div>
+  <div class="sb" style="--d:.55s;--h:13px"></div>
+  <div class="sb" style="--d:1s;--h:9px"></div>
+  <div class="sb" style="--d:.65s;--h:15px"></div>
+  <div class="sb" style="--d:.85s;--h:6px"></div>
+</div>
+
+<!-- COMPANION -->
+<div class="companion">
+  <div class="cbubble" id="cbubble"></div>
+  <div class="corb" onclick="dismissComp()" title="Your AI companion">
+    <div class="ceyes"><div class="ceye"></div><div class="ceye"></div></div>
+  </div>
+</div>
+
+<!-- AHA OVERLAY -->
+<div class="ahalay" id="ahalay">
+  <div class="ahacard">
+    <div class="ahaglow">⚡</div>
+    <div class="ahat">Aha Moment Captured</div>
+    <div class="ahab">You just understood how neural networks learn. This is the breakthrough concept that made modern AI possible.</div>
+    <div class="ahaq">
+      <div id="ahaquote">"Neural networks learn by adjusting weights backwards from their mistakes — like correcting a recipe after tasting it."</div>
+      <div class="ahaqm">— Your insight · Neural Networks · AI Bytes Learning</div>
+    </div>
+    <div class="ahabtns">
+      <button class="abtn abtn-share" id="share-btn" onclick="copyAha()">Copy &amp; Share</button>
+      <button class="abtn abtn-close" onclick="closeAha()">Continue Learning</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════
+     SCENE 1 — HOOK
+════════════════════════ -->
+<section class="scene" id="s-hook">
+  <div class="hook-wrap">
+    <div class="mesh"><div class="mblob"></div></div>
+    <div class="hook-grid">
+
+      <div class="hook-l">
+        <div class="hook-tag">Module 1 · Lesson 01</div>
+        <h1 class="hook-h1"><span class="scr" data-t="How Machines">How Machines</span><br><em>Learn to See</em></h1>
+        <p class="hook-lede">Before ChatGPT. Before image recognition. Before self-driving cars. There was one simple idea borrowed from biology. You're about to understand it completely.</p>
+        <div class="chips">
+          <span class="chip cp">12 min</span>
+          <span class="chip ci">Foundation</span>
+          <span class="chip ca">+150 XP</span>
+        </div>
+        <div class="stat-card">
+          <div class="stat-n" id="stat-num">1.7T</div>
+          <div class="stat-l">parameters in GPT-4 — all trained by one principle you're learning today</div>
+        </div>
+        <div class="outcomes">
+          <div class="out-title">After this lesson you will</div>
+          <div class="out-row"><span class="out-arr">→</span>Explain exactly what a neuron does</div>
+          <div class="out-row"><span class="out-arr">→</span>Trace a signal through three network layers</div>
+          <div class="out-row"><span class="out-arr">→</span>Describe how backpropagation corrects mistakes</div>
+        </div>
+      </div>
+
+      <div class="hook-mid">
+        <div class="hml"></div>
+        <div class="hmn">L · E · A · R · N</div>
+        <div class="hml"></div>
+        <div class="hmn">A · I</div>
+        <div class="hml"></div>
+      </div>
+
+      <div class="hook-r">
+        <div class="hook-vid">
+          <video autoplay muted loop playsinline>
+            <source src="https://assets.mixkit.co/videos/preview/mixkit-hands-typing-on-a-computer-keyboard-486-large.mp4" type="video/mp4">
+            <source src="https://assets.mixkit.co/videos/preview/mixkit-girl-typing-on-a-laptop-computer-2579-large.mp4" type="video/mp4">
+          </video>
+          <div class="hook-vid-cap">Neural networks training in real time →</div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-box-title">ImageNet accuracy — AI evolution 2011→2024</div>
+          <canvas id="acc-chart" width="520" height="150"></canvas>
+        </div>
+        <div class="chart-box">
+          <div class="chart-box-title">Training loss curve — typical neural network run</div>
+          <canvas id="loss-chart" width="520" height="120"></canvas>
+        </div>
+      </div>
+
+    </div>
+    <div class="scroll-cue">
+      <span>Scroll to explore</span>
+      <span class="scroll-arr">↓</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════
+     SCENE 2 — 3D NETWORK
+════════════════════════ -->
+<section class="scene s3d" id="s-3d">
+  <div class="s3d-inner">
+    <div>
+      <div class="slabel">Innovation · 3D Visualisation</div>
+      <h2 class="sh2">Step <em>inside</em><br>the network</h2>
+      <p class="sbody">This is a real neural network — not a diagram. Drag to rotate. Hover neurons to inspect. Watch signals propagate layer by layer in real time.</p>
+      <div class="nn-btns">
+        <button class="nbt on" id="bt-idle" onclick="nnMode('idle',this)">Idle</button>
+        <button class="nbt" id="bt-fwd" onclick="nnMode('fwd',this)">▶ Forward Pass</button>
+        <button class="nbt" id="bt-back" onclick="nnMode('back',this)">◀ Backprop</button>
+        <button class="nbt" id="bt-train" onclick="nnMode('train',this)">⟳ Training</button>
+      </div>
+      <div class="nn-info" id="nn-info">
+        <strong>Explore the network.</strong> Hover neurons to see their connections highlighted. Drag to rotate the 3D view. Try Forward Pass to watch data flow through.
+      </div>
+      <div class="nn-leg">
+        <div class="nleg"><div class="nlegdot" style="background:var(--pulse)"></div>Input</div>
+        <div class="nleg"><div class="nlegdot" style="background:var(--iris)"></div>Hidden</div>
+        <div class="nleg"><div class="nlegdot" style="background:var(--amber)"></div>Output</div>
+        <div class="nleg"><div class="nlegdot" style="background:var(--nova)"></div>Active signal</div>
+      </div>
+    </div>
+    <div>
+      <div class="nn-wrap">
+        <canvas id="nn-canvas" width="540" height="440"></canvas>
+        <div class="nn-overlay-hint">Drag to rotate · Hover to inspect</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════
+     SCENE 3 — ANATOMY
+════════════════════════ -->
+<section class="scene sanat" id="s-anat">
+  <div class="anat-inner">
+
+    <div class="anat-sticky">
+      <div class="slabel" style="justify-content:center">Layer by Layer</div>
+      <div class="anat-viz">
+        <div class="anat-viz-wrap">
+          <div style="position:relative;padding:1.5rem 1rem 1rem">
+            <svg id="conn-svg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible"></svg>
+            <div class="layer-diagram" id="layer-diag">
+              <div class="ld-col" id="ld-input">
+                <div class="neuron ni" data-g="i"><div class="nd"></div></div>
+                <div class="neuron ni" data-g="i"><div class="nd"></div></div>
+                <div class="neuron ni" data-g="i"><div class="nd"></div></div>
+                <div class="neuron ni" data-g="i"><div class="nd"></div></div>
+                <div class="ld-label" style="color:var(--pulse)">Input</div>
+              </div>
+              <div class="ld-col" id="ld-h1">
+                <div class="neuron nh" data-g="h"><div class="nd"></div></div>
+                <div class="neuron nh" data-g="h"><div class="nd"></div></div>
+                <div class="neuron nh" data-g="h"><div class="nd"></div></div>
+                <div class="neuron nh" data-g="h"><div class="nd"></div></div>
+                <div class="neuron nh" data-g="h"><div class="nd"></div></div>
+                <div class="ld-label" style="color:var(--iris)">Hidden 1</div>
+              </div>
+              <div class="ld-col" id="ld-h2">
+                <div class="neuron nh" data-g="h2"><div class="nd"></div></div>
+                <div class="neuron nh" data-g="h2"><div class="nd"></div></div>
+                <div class="neuron nh" data-g="h2"><div class="nd"></div></div>
+                <div class="neuron nh" data-g="h2"><div class="nd"></div></div>
+                <div class="ld-label" style="color:var(--iris)">Hidden 2</div>
+              </div>
+              <div class="ld-col" id="ld-out">
+                <div class="neuron no" data-g="o"><div class="nd"></div></div>
+                <div class="neuron no" data-g="o"><div class="nd"></div></div>
+                <div class="ld-label" style="color:var(--amber)">Output</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="anat-cap">Current focus</div>
+        <div class="anat-active-label" id="anat-label">All layers</div>
+        <div class="anat-active-sub" id="anat-sub">Scroll through the steps →</div>
+      </div>
+    </div>
+
+    <div class="anat-steps">
+      <div class="astep" data-grp="i">
+        <div class="astep-num">01 / INPUT LAYER</div>
+        <h3 class="astep-h">Raw data enters here</h3>
+        <p class="astep-body">The input layer receives the raw numbers that represent your data. For an image, each pixel becomes one input neuron. For text, each token. These neurons don't calculate anything — they simply pass values forward into the network.</p>
+        <span class="atag" style="background:rgba(0,255,179,.07);border:1px solid rgba(0,255,179,.18);color:var(--pulse)">Passive receivers</span>
+      </div>
+      <div class="astep" data-grp="h">
+        <div class="astep-num">02 / HIDDEN LAYERS</div>
+        <h3 class="astep-h">Where understanding forms</h3>
+        <p class="astep-body">Hidden layers do the actual work. Each neuron multiplies its inputs by learned weights, sums them, then passes the result through an activation function. Early layers detect edges. Middle layers detect shapes. Deep layers recognise full concepts like "cat" or "fraud".</p>
+        <span class="atag" style="background:rgba(155,143,255,.07);border:1px solid rgba(155,143,255,.18);color:var(--iris)">Active computation</span>
+      </div>
+      <div class="astep" data-grp="h2">
+        <div class="astep-num">03 / SECOND HIDDEN LAYER</div>
+        <h3 class="astep-h">Higher-level abstraction</h3>
+        <p class="astep-body">Each additional hidden layer learns increasingly abstract representations. The first hidden layer of an image model might detect edges. The second detects textures. The third detects object parts. This hierarchical feature learning is why depth matters.</p>
+        <span class="atag" style="background:rgba(155,143,255,.07);border:1px solid rgba(155,143,255,.18);color:var(--iris)">Abstraction hierarchy</span>
+      </div>
+      <div class="astep" data-grp="o">
+        <div class="astep-num">04 / OUTPUT LAYER</div>
+        <h3 class="astep-h">The decision</h3>
+        <p class="astep-body">The output layer produces the final answer. In a classifier, each output neuron represents one class. The neuron with the highest activation wins. In GPT, the output is a probability distribution over every word in the vocabulary — choosing the most likely next token.</p>
+        <span class="atag" style="background:rgba(255,179,71,.07);border:1px solid rgba(255,179,71,.18);color:var(--amber)">Final prediction</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════
+     SCENE 4 — BENTO
+════════════════════════ -->
+<section class="scene sbento" id="s-bento">
+  <div class="sbento-in">
+    <div class="scene-hdr">
+      <div class="slabel">Comparison</div>
+      <h2 class="sh2">Biology vs <em>Silicon</em></h2>
+    </div>
+    <div class="bento">
+      <div class="bc bc-feat tall">
+        <span class="bico">🧠</span>
+        <div class="bh">Biological Neuron</div>
+        <div class="bb">Your brain has 86 billion neurons, each forming up to 10,000 synaptic connections. Signals travel via electrochemical pulses at around 100m/s. Learning happens through synaptic strengthening — use a connection repeatedly, and it grows stronger. This is Hebb's Rule: neurons that fire together, wire together.</div>
+        <div class="bb" style="margin-top:.6rem">Neural networks are a simplified mathematical abstraction of exactly this mechanism.</div>
+        <span class="btag" style="background:rgba(0,255,179,.07);border:1px solid rgba(0,255,179,.18);color:var(--pulse)">86B neurons · 100T synapses</span>
+      </div>
+      <div class="bc">
+        <span class="bico">⚡</span>
+        <div class="bh">Artificial Neuron</div>
+        <div class="bb">Takes a list of numbers (inputs), multiplies each by a weight, adds a bias term, passes through an activation function. The entire computation is: <em>output = f(Σwᵢxᵢ + b)</em>. That's it.</div>
+        <span class="btag" style="background:rgba(155,143,255,.07);border:1px solid rgba(155,143,255,.18);color:var(--iris)">y = f(Σwx + b)</span>
+      </div>
+      <div class="bc">
+        <span class="bico">🔗</span>
+        <div class="bh">Weights = Synapses</div>
+        <div class="bb">Where biology uses synapse strength, AI uses a floating point number called a weight. Positive weights excite. Negative weights inhibit. Training adjusts all weights using backpropagation.</div>
+        <span class="btag" style="background:rgba(255,179,71,.07);border:1px solid rgba(255,179,71,.18);color:var(--amber)">Learned from data</span>
+      </div>
+      <div class="bc span2">
+        <div style="display:flex;gap:2rem;align-items:flex-start;flex-wrap:wrap">
+          <div style="flex:1;min-width:180px">
+            <span class="bico">📈</span>
+            <div class="bh">Training Accuracy Over Time</div>
+            <div class="bb">A network starts with random weights — essentially guessing. With each batch of data and weight update, accuracy climbs. The chart shows a real training run — random → expert over thousands of steps.</div>
+          </div>
+          <div style="flex:2;min-width:220px">
+            <canvas id="train-chart" width="380" height="110" style="display:block;width:100%"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="bc">
+        <span class="bico">🚀</span>
+        <div class="bh">Speed Difference</div>
+        <div class="bb">A biological neuron fires ~200 times/second. An A100 GPU performs 312 trillion FP16 operations per second. This raw computational speed enables what biology cannot do in real time.</div>
+        <span class="btag" style="background:rgba(255,107,107,.07);border:1px solid rgba(255,107,107,.18);color:var(--nova)">10⁹× faster</span>
+      </div>
+      <div class="bc">
+        <span class="bico">🎯</span>
+        <div class="bh">What They Share</div>
+        <div class="bb">Both learn from experience. Both form hierarchical representations. Both generalise from specific examples to new situations. The mathematical inspiration from neuroscience runs deep.</div>
+        <span class="btag" style="background:rgba(0,255,179,.07);border:1px solid rgba(0,255,179,.18);color:var(--pulse)">Parallel processing</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════
+     SCENE 5 — FLOW
+════════════════════════ -->
+<section class="scene sflow" id="s-flow">
+  <div class="sflow-in">
+    <div class="scene-hdr">
+      <div class="slabel">Process</div>
+      <h2 class="sh2">How a network <em>learns</em></h2>
+      <p style="font-family:var(--fb);font-style:italic;color:rgba(240,240,245,.62);max-width:520px;margin-top:.7rem;line-height:1.7">Click any step to understand what's happening. This loop runs millions of times during training.</p>
+    </div>
+    <div class="flow-row">
+      <div class="fnode fn1" onclick="flowStep(1,this)">
+        <div class="fcirc">Forward<br>Pass</div>
+        <div class="flabel">Data flows through layers</div>
+      </div>
+      <div class="fnode fn2" onclick="flowStep(2,this)">
+        <div class="fcirc">Loss<br>Calc</div>
+        <div class="flabel">How wrong was it?</div>
+      </div>
+      <div class="fnode fn3" onclick="flowStep(3,this)">
+        <div class="fcirc">Back-<br>prop</div>
+        <div class="flabel">Blame flows backwards</div>
+      </div>
+      <div class="fnode fn4" onclick="flowStep(4,this)">
+        <div class="fcirc">Weight<br>Update</div>
+        <div class="flabel">Each weight nudged</div>
+      </div>
+      <div class="fnode fn5" onclick="flowStep(5,this)">
+        <div class="fcirc">Repeat<br>×M</div>
+        <div class="flabel">Millions of iterations</div>
+      </div>
+    </div>
+    <div class="fdetail" id="fdetail">Click any step above to see exactly what happens during training.</div>
+
+    <!-- Training dynamics chart -->
+    <div style="margin-top:2.5rem;display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+      <div class="chart-box">
+        <div class="chart-box-title">Loss decreasing over epochs</div>
+        <canvas id="epoch-loss" width="480" height="140"></canvas>
+      </div>
+      <div class="chart-box">
+        <div class="chart-box-title">Accuracy vs epochs</div>
+        <canvas id="epoch-acc" width="480" height="140"></canvas>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════
+     SCENE 6 — QUIZ
+════════════════════════ -->
+<section class="scene squiz" id="s-quiz">
+  <div class="squiz-in">
+    <div class="scene-hdr" style="text-align:center">
+      <div class="slabel" style="justify-content:center">Prediction Check</div>
+      <h2 class="sh2">Test your <em>model</em></h2>
+    </div>
+    <div class="qcard">
+      <div class="qhead">
+        <span class="qeye">👁</span>
+        <span class="qlabel">Inline Prediction</span>
+      </div>
+      <div class="qq">A neural network encounters an image it has <em>never seen before</em>. What actually happens inside it?</div>
+      <div class="qopts" id="qopts">
+        <button class="qopt" onclick="pickAnswer(this,'wrong')">
+          <span class="qletter">A</span>
+          <span class="qtext">It refuses — the network can only process images it was trained on exactly</span>
+        </button>
+        <button class="qopt" onclick="pickAnswer(this,'correct')">
+          <span class="qletter">B</span>
+          <span class="qtext">The image passes through layers as numbers — activating patterns learned during training to produce a best prediction</span>
+        </button>
+        <button class="qopt" onclick="pickAnswer(this,'wrong')">
+          <span class="qletter">C</span>
+          <span class="qtext">It memorises the new image and will recognise it exactly next time</span>
+        </button>
+      </div>
+      <div class="qreveal" id="qreveal">
+        <div class="qrev-in">
+          <div class="qrev-title">Why B is correct</div>
+          <div class="qrev-body">A trained neural network has learned <em>feature detectors</em> — not a lookup table of memorised images. It detects edges, textures, shapes, and high-level semantics regardless of whether the exact image appeared in training. This generalisation is the fundamental power of neural networks, and why they work on data they've never seen before.</div>
+          <div class="conf-row">
+            <span class="conf-label">How confident were you?</span>
+            <button class="conf-btn" onclick="setConf(this)">Very</button>
+            <button class="conf-btn" onclick="setConf(this)">Somewhat</button>
+            <button class="conf-btn" onclick="setConf(this)">Guessed</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════
+     SCENE 7 — MINDMAP
+════════════════════════ -->
+<section class="scene smind" id="s-mind">
+  <div class="smind-in">
+    <div class="scene-hdr">
+      <div class="slabel">Concept Map</div>
+      <h2 class="sh2">How the ideas <em>connect</em></h2>
+    </div>
+    <svg id="mindmap-svg" viewBox="0 0 900 390"></svg>
+    <div class="mind-tip">Click any concept to see its definition</div>
+    <div class="mind-info" id="mind-info">Click a node above to explore how each concept relates to neural networks.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════
+     SCENE 8 — TABS
+════════════════════════ -->
+<section class="scene stabs" id="s-tabs">
+  <div class="stabs-in">
+    <div class="scene-hdr">
+      <div class="slabel">Activation Functions</div>
+      <h2 class="sh2">Choosing the right <em>switch</em></h2>
+      <p style="font-family:var(--fb);font-style:italic;color:rgba(240,240,245,.62);max-width:500px;margin-top:.7rem;line-height:1.7">Every neuron needs a non-linear activation. Without one, the whole network — regardless of depth — collapses into a single linear equation.</p>
+    </div>
+    <div class="tab-nav">
+      <button class="tb on" onclick="setTab(0,this)">ReLU</button>
+      <button class="tb" onclick="setTab(1,this)">Sigmoid</button>
+      <button class="tb" onclick="setTab(2,this)">Tanh</button>
+      <button class="tb" onclick="setTab(3,this)">GELU</button>
+    </div>
+
+    <div class="tpanel on" id="tp-0">
+      <div>
+        <h3 style="font-family:var(--fd);font-weight:800;font-size:1.35rem;letter-spacing:-.03em;color:#fff;margin-bottom:.7rem">Rectified Linear Unit</h3>
+        <p class="tbody">The workhorse of modern deep learning. Brutally simple: if the input is negative, output zero. If positive, pass it through unchanged. This rule alone solved the vanishing gradient problem that stopped neural networks from getting deep.</p>
+        <div class="tformula">f(x) = max(0, x)</div>
+        <div class="tpc">
+          <div class="pros"><strong>Strengths</strong>Computationally cheap · No vanishing gradients · Sparse activations improve efficiency</div>
+          <div class="cons"><strong>Weakness</strong>Dying ReLU — if weights go very negative, neurons permanently stop firing</div>
+        </div>
+      </div>
+      <div class="act-wrap"><canvas id="act-0" width="420" height="220"></canvas></div>
+    </div>
+
+    <div class="tpanel" id="tp-1">
+      <div>
+        <h3 style="font-family:var(--fd);font-weight:800;font-size:1.35rem;letter-spacing:-.03em;color:#fff;margin-bottom:.7rem">Sigmoid</h3>
+        <p class="tbody">The original activation function — squashes any value between 0 and 1. Perfect for binary classification output layers. Problematic in deep networks because gradients shrink exponentially as they travel backwards through layers.</p>
+        <div class="tformula">f(x) = 1 / (1 + e⁻ˣ)</div>
+        <div class="tpc">
+          <div class="pros"><strong>Strengths</strong>Smooth gradient · Output interpretable as probability</div>
+          <div class="cons"><strong>Weakness</strong>Vanishing gradients · Slow convergence in deep nets · Not zero-centred</div>
+        </div>
+      </div>
+      <div class="act-wrap"><canvas id="act-1" width="420" height="220"></canvas></div>
+    </div>
+
+    <div class="tpanel" id="tp-2">
+      <div>
+        <h3 style="font-family:var(--fd);font-weight:800;font-size:1.35rem;letter-spacing:-.03em;color:#fff;margin-bottom:.7rem">Tanh</h3>
+        <p class="tbody">Hyperbolic tangent — squashes to -1 to +1. Zero-centred unlike sigmoid, which means gradients don't push all weights in the same direction simultaneously. Often outperforms sigmoid in hidden layers as a result.</p>
+        <div class="tformula">f(x) = (eˣ - e⁻ˣ) / (eˣ + e⁻ˣ)</div>
+        <div class="tpc">
+          <div class="pros"><strong>Strengths</strong>Zero-centred · Stronger gradients than sigmoid</div>
+          <div class="cons"><strong>Weakness</strong>Still saturates at extremes — vanishing gradients persist</div>
+        </div>
+      </div>
+      <div class="act-wrap"><canvas id="act-2" width="420" height="220"></canvas></div>
+    </div>
+
+    <div class="tpanel" id="tp-3">
+      <div>
+        <h3 style="font-family:var(--fd);font-weight:800;font-size:1.35rem;letter-spacing:-.03em;color:#fff;margin-bottom:.7rem">GELU</h3>
+        <p class="tbody">Gaussian Error Linear Unit — the activation function used in GPT, BERT, and most modern transformers. Smoother than ReLU: rather than a hard zero cutoff, it smoothly weights inputs by their probability under a Gaussian. Current state-of-the-art for large language models.</p>
+        <div class="tformula">f(x) ≈ 0.5x · (1 + tanh(√(2/π)(x + 0.044715x³)))</div>
+        <div class="tpc">
+          <div class="pros"><strong>Strengths</strong>Smooth · No dying neurons · Best empirical results on transformers</div>
+          <div class="cons"><strong>Weakness</strong>More expensive to compute than ReLU</div>
+        </div>
+      </div>
+      <div class="act-wrap"><canvas id="act-3" width="420" height="220"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════
+     SCENE 9 — ENDING
+════════════════════════ -->
+<section class="scene send" id="s-end">
+  <div class="send-in">
+    <div class="end-rule"></div>
+    <div class="end-sub">Lesson Complete</div>
+    <h2 class="end-h">You understand<br>neural networks</h2>
+    <p class="end-body">Not the surface version. The real version — the one practitioners use every day. Everything else in modern AI is built on this foundation.</p>
+
+    <div class="end-stats">
+      <div class="estat"><div class="estat-n" id="end-min">12</div><div class="estat-l">Minutes</div></div>
+      <div class="estat"><div class="estat-n">1</div><div class="estat-l">Quiz Correct</div></div>
+      <div class="estat"><div class="estat-n">+150</div><div class="estat-l">XP Earned</div></div>
+    </div>
+
+    <div class="end-skills">
+      <div class="eskill"><div class="echeck">✓</div><div class="etext">Explain neuron architecture and the role of each layer</div></div>
+      <div class="eskill"><div class="echeck">✓</div><div class="etext">Trace forward pass and backpropagation through a network</div></div>
+      <div class="eskill"><div class="echeck">✓</div><div class="etext">Compare activation functions and know when to use each</div></div>
+    </div>
+
+    <button class="end-cta">Next Lesson →</button>
+  </div>
+</section>
+
+<script>
+/* ══════════════════════════════════════
+   LENIS
+══════════════════════════════════════ */
+let lenis;
+try{ lenis=new Lenis({lerp:.1,smoothWheel:true}); function raf(t){lenis.raf(t);requestAnimationFrame(raf)} requestAnimationFrame(raf); }catch(e){}
+
+/* ══════════════════════════════════════
+   SCROLL — NAV PROGRESS + RAIL
+══════════════════════════════════════ */
+const sIds=['s-hook','s-3d','s-anat','s-bento','s-flow','s-quiz','s-mind','s-tabs','s-end'];
+const rds=document.querySelectorAll('.rd');
+let lastSec='', tStart=Date.now();
+
+window.addEventListener('scroll',()=>{
+  const st=scrollY, dh=document.body.scrollHeight-innerHeight;
+  document.getElementById('nprog').style.width=(st/dh*100)+'%';
+  sIds.forEach((id,i)=>{
+    const el=document.getElementById(id); if(!el) return;
+    const r=el.getBoundingClientRect();
+    if(r.top<innerHeight*.5&&r.bottom>0){
+      rds.forEach(d=>d.classList.remove('on')); if(rds[i]) rds[i].classList.add('on');
+      if(id!==lastSec){ lastSec=id; onSection(id); }
+    }
+  });
+});
+
+/* ══════════════════════════════════════
+   SECTION EVENTS (sound + companion)
+══════════════════════════════════════ */
+const compMsgs={
+  's-hook':'Ready? This lesson will change how you see every AI product you use.',
+  's-3d':'Drag to rotate. Click Forward Pass to watch data flow through the network.',
+  's-anat':'Notice how each layer builds on the previous — this is the key insight.',
+  's-bento':'The biological parallel is real — neural networks were literally inspired by your brain.',
+  's-flow':'Backpropagation was the breakthrough that made deep learning possible.',
+  's-quiz':'Take your time. Read each option carefully before selecting.',
+  's-mind':'Click any concept node to see its definition.',
+  's-tabs':'GELU is what GPT uses. ReLU is what most other networks use.',
+  's-end':'Exceptional. You have the foundation everything else builds from.',
+};
+function onSection(id){
+  if(compMsgs[id]) setTimeout(()=>showComp(compMsgs[id]),700);
+  updateSound(id);
+  if(id==='s-end') revealEnding();
+}
+
+/* ══════════════════════════════════════
+   TEXT SCRAMBLE
+══════════════════════════════════════ */
+const CHARS='!<>-_\\/[]{}—=+*^?#αβγδ';
+function scramble(el){
+  const target=el.dataset.t||el.textContent; let frame=0;
+  const q=target.split('').map((to,i)=>({to,start:Math.floor(Math.random()*18),end:Math.floor(Math.random()*18)+18}));
+  const run=()=>{
+    let out='',done=0;
+    q.forEach(({to,start,end})=>{
+      if(frame>=end){out+=to;done++;}
+      else if(frame>=start) out+=`<span style="color:var(--iris);opacity:.45">${CHARS[Math.floor(Math.random()*CHARS.length)]}</span>`;
+      else out+=to;
+    });
+    el.innerHTML=out;
+    if(done<q.length){frame++;requestAnimationFrame(run);}
+  };
+  run();
+}
+const scrEl=document.querySelector('.scr');
+if(scrEl){const o=new IntersectionObserver(e=>{if(e[0].isIntersecting){scramble(scrEl);o.disconnect();}});o.observe(scrEl);}
+
+/* ══════════════════════════════════════
+   CANVAS CHART UTILS
+══════════════════════════════════════ */
+function drawLine(id,data,labels,color,yMin,yMax,anim){
+  const c=document.getElementById(id); if(!c) return;
+  const ctx=c.getContext('2d'), W=c.width, H=c.height, p=30;
+  function render(prog){
+    ctx.clearRect(0,0,W,H);
+    // grid lines
+    ctx.strokeStyle='rgba(255,255,255,.045)'; ctx.lineWidth=1;
+    for(let i=0;i<=4;i++){ const y=p+(H-2*p)*i/4; ctx.beginPath();ctx.moveTo(p,y);ctx.lineTo(W-p,y);ctx.stroke(); }
+    // axis labels
+    ctx.fillStyle='rgba(130,130,160,.5)'; ctx.font='9px DM Mono,monospace'; ctx.textAlign='center';
+    if(labels) labels.forEach((l,i)=>ctx.fillText(l,p+(W-2*p)*i/(labels.length-1),H-6));
+    // gradient fill
+    const cutIdx=Math.floor(prog*(data.length-1));
+    const grad=ctx.createLinearGradient(0,p,0,H-p);
+    grad.addColorStop(0,color+'28'); grad.addColorStop(1,'transparent');
+    ctx.fillStyle=grad;
+    ctx.beginPath();
+    data.slice(0,cutIdx+1).forEach((v,i)=>{
+      const x=p+(W-2*p)*i/(data.length-1), y=H-p-(v-yMin)/(yMax-yMin)*(H-2*p);
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.lineTo(p+(W-2*p)*cutIdx/(data.length-1),H-p); ctx.lineTo(p,H-p); ctx.closePath(); ctx.fill();
+    // line
+    ctx.strokeStyle=color; ctx.lineWidth=2.2; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.shadowColor=color; ctx.shadowBlur=5;
+    ctx.beginPath();
+    data.slice(0,cutIdx+2).forEach((v,i)=>{
+      const x=p+(W-2*p)*i/(data.length-1), y=H-p-(v-yMin)/(yMax-yMin)*(H-2*p);
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.stroke(); ctx.shadowBlur=0;
+    // dots at last point
+    const lx=p+(W-2*p)*cutIdx/(data.length-1), lv=data[cutIdx], ly=H-p-(lv-yMin)/(yMax-yMin)*(H-2*p);
+    ctx.beginPath(); ctx.arc(lx,ly,3.5,0,Math.PI*2); ctx.fillStyle=color; ctx.fill();
+  }
+  if(anim){
+    let start=null;
+    function step(ts){ if(!start)start=ts; const p=Math.min((ts-start)/1400,1); render(p); if(p<1)requestAnimationFrame(step); }
+    requestAnimationFrame(step);
+  } else render(1);
+}
+
+function drawAct(id,fn){
+  const c=document.getElementById(id); if(!c) return;
+  const ctx=c.getContext('2d'),W=c.width,H=c.height,cx=W/2,cy=H/2,sc=55;
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle='rgba(255,255,255,.07)'; ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,H);ctx.stroke();
+  // zero lines grid
+  for(let y=0;y<=1;y+=.5){ const yp=cy-y*sc; ctx.strokeStyle='rgba(255,255,255,.04)'; ctx.beginPath();ctx.moveTo(0,yp);ctx.lineTo(W,yp);ctx.stroke(); if(y>0){const yn=cy+y*sc;ctx.beginPath();ctx.moveTo(0,yn);ctx.lineTo(W,yn);ctx.stroke();} }
+  const col={'relu':'#00FFB3','sigmoid':'#9B8FFF','tanh':'#FFB347','gelu':'#FF6B6B'};
+  ctx.strokeStyle=col[fn]||'#fff'; ctx.lineWidth=2.5; ctx.lineCap='round';
+  ctx.shadowColor=col[fn]; ctx.shadowBlur=7;
+  ctx.beginPath();
+  for(let px=0;px<W;px++){
+    const x=(px-cx)/sc, y=actFn(x,fn), py=cy-y*sc;
+    px===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+  }
+  ctx.stroke(); ctx.shadowBlur=0;
+  ctx.fillStyle='rgba(130,130,160,.45)'; ctx.font='bold 10px DM Mono,monospace'; ctx.textAlign='left';
+  ctx.fillText(fn.toUpperCase(),10,18);
+  ctx.fillStyle=col[fn]+'88'; ctx.font='9px DM Mono,monospace';
+  ctx.fillText('f(x)→',10,H-10);
+}
+function actFn(x,fn){
+  if(fn==='relu') return Math.max(0,x);
+  if(fn==='sigmoid') return 1/(1+Math.exp(-x));
+  if(fn==='tanh') return Math.tanh(x);
+  const t=Math.tanh(Math.sqrt(2/Math.PI)*(x+0.044715*x*x*x)); return 0.5*x*(1+t);
+}
+
+/* draw all charts once DOM is settled */
+setTimeout(()=>{
+  drawLine('acc-chart',[74.3,83.6,92.1,96.4,98.0,98.7,99.0],['2011','2013','2015','2017','2019','2021','2024'],'#9B8FFF',70,100,false);
+  drawLine('loss-chart',[2.8,2.4,1.9,1.3,.9,.55,.3,.18,.1,.07],null,'#FF6B6B',0,3,false);
+  drawLine('train-chart',[8,14,22,33,45,57,67,75,82,87,91,93,95,96.2],null,'#00FFB3',0,100,false);
+  drawLine('epoch-loss',[2.6,2.1,1.7,1.3,1.0,.78,.6,.45,.33,.25,.19,.15,.12,.10],null,'#FF6B6B',0,2.8,false);
+  drawLine('epoch-acc',[15,28,42,54,64,71,78,83,87,90,92,94,95,96],null,'#00FFB3',0,100,false);
+  drawAct('act-0','relu');
+  drawAct('act-1','sigmoid');
+  drawAct('act-2','tanh');
+  drawAct('act-3','gelu');
+},200);
+
+/* animate charts when scrolled into view */
+['acc-chart','loss-chart','train-chart','epoch-loss','epoch-acc'].forEach((id,i)=>{
+  const el=document.getElementById(id); if(!el) return;
+  const data=[
+    [74.3,83.6,92.1,96.4,98.0,98.7,99.0],[2.8,2.4,1.9,1.3,.9,.55,.3,.18,.1,.07],
+    [8,14,22,33,45,57,67,75,82,87,91,93,95,96.2],
+    [2.6,2.1,1.7,1.3,1.0,.78,.6,.45,.33,.25,.19,.15,.12,.10],
+    [15,28,42,54,64,71,78,83,87,90,92,94,95,96]
+  ];
+  const colors=['#9B8FFF','#FF6B6B','#00FFB3','#FF6B6B','#00FFB3'];
+  const mins=[70,0,0,0,0], maxs=[100,3,100,2.8,100];
+  const labels=[['2011','2013','2015','2017','2019','2021','2024'],null,null,null,null];
+  const obs=new IntersectionObserver(e=>{
+    if(e[0].isIntersecting){ drawLine(id,data[i],labels[i],colors[i],mins[i],maxs[i],true); obs.disconnect(); }
+  },{threshold:.3});
+  obs.observe(el);
+});
+
+/* ══════════════════════════════════════
+   THREE.JS — 3D NEURAL NETWORK
+══════════════════════════════════════ */
+let nnS,nnC,nnR,nnNeurons=[],nnConns=[],nnSigs=[],nnMode_='idle',nnIv;
+let isDragging=false,prevMX=0,nnGroup;
+
+function initNN(){
+  const canvas=document.getElementById('nn-canvas');
+  const W=canvas.width||540, H=canvas.height||440;
+
+  nnS=new THREE.Scene();
+  nnC=new THREE.PerspectiveCamera(48,W/H,.1,1000);
+  nnC.position.set(0,0,15);
+
+  nnR=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false});
+  nnR.setSize(W,H); nnR.setClearColor(0x05050c,1); nnR.setPixelRatio(Math.min(devicePixelRatio,2));
+
+  nnS.add(new THREE.AmbientLight(0xffffff,.25));
+  const pl1=new THREE.PointLight(0x00FFB3,2,30); pl1.position.set(-7,4,7); nnS.add(pl1);
+  const pl2=new THREE.PointLight(0x9B8FFF,2,30); pl2.position.set(7,-3,7); nnS.add(pl2);
+
+  nnGroup=new THREE.Group(); nnS.add(nnGroup);
+
+  const layers=[{x:-6,c:0x00FFB3,n:4},{x:-2,c:0x9B8FFF,n:6},{x:2,c:0x9B8FFF,n:6},{x:6,c:0xFFB347,n:3}];
+  const allL=[];
+  layers.forEach((ly,li)=>{
+    const L=[];
+    for(let i=0;i<ly.n;i++){
+      const y=(i-(ly.n-1)/2)*1.38;
+      const m=new THREE.Mesh(
+        new THREE.SphereGeometry(.3,18,18),
+        new THREE.MeshStandardMaterial({color:ly.c,emissive:ly.c,emissiveIntensity:.12,metalness:.2,roughness:.5})
+      );
+      m.position.set(ly.x,y,0);
+      m.userData={li,ni:i,bc:ly.c};
+      nnGroup.add(m); L.push(m); nnNeurons.push(m);
+    }
+    allL.push(L);
+  });
+
+  for(let l=0;l<allL.length-1;l++){
+    allL[l].forEach(a=>allL[l+1].forEach(b=>{
+      const ln=new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([a.position.clone(),b.position.clone()]),
+        new THREE.LineBasicMaterial({color:0x223355,transparent:true,opacity:.18})
+      );
+      ln.userData={a,b}; nnGroup.add(ln); nnConns.push(ln);
+    }));
+  }
+
+  // Mouse drag rotation
+  canvas.addEventListener('mousedown',e=>{isDragging=true;prevMX=e.clientX});
+  window.addEventListener('mouseup',()=>isDragging=false);
+  window.addEventListener('mousemove',e=>{ if(isDragging){ nnGroup.rotation.y+=(e.clientX-prevMX)*.008; prevMX=e.clientX; } });
+
+  // Hover
+  const ray=new THREE.Raycaster(), mouse=new THREE.Vector2();
+  canvas.addEventListener('mousemove',e=>{
+    const r=canvas.getBoundingClientRect();
+    mouse.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);
+    ray.setFromCamera(mouse,nnC);
+    const hits=ray.intersectObjects(nnNeurons);
+    nnNeurons.forEach(n=>{n.material.emissiveIntensity=.12;n.scale.setScalar(1);});
+    nnConns.forEach(c=>c.material.opacity=.18);
+    if(hits.length){
+      const n=hits[0].object;
+      n.material.emissiveIntensity=.9; n.scale.setScalar(1.3);
+      nnConns.forEach(c=>{ c.material.opacity=(c.userData.a===n||c.userData.b===n)?.6:.04; });
+      document.getElementById('nn-info').innerHTML=`<strong>Layer ${n.userData.li}, Neuron ${n.userData.ni}</strong> — In a real network this neuron has a learned weight vector and activation value. Brighter connections = strong influence.`;
+    }
+  });
+
+  (function loop(){ requestAnimationFrame(loop);
+    if(nnMode_==='idle') nnGroup.rotation.y+=.004;
+    nnSigs=nnSigs.filter(s=>{ s.t+=s.sp; if(s.t>=1){nnGroup.remove(s.m);s.m.geometry.dispose();return false;} s.m.position.lerpVectors(s.f,s.to,s.t); return true; });
+    nnR.render(nnS,nnC);
+  })();
+}
+
+function spawnSig(from,to,col,sp=.022){
+  const m=new THREE.Mesh(new THREE.SphereGeometry(.13,7,7),new THREE.MeshStandardMaterial({color:col,emissive:col,emissiveIntensity:1.4}));
+  m.position.copy(from); nnGroup.add(m); nnSigs.push({m,f:from.clone(),to:to.clone(),t:0,sp:sp+Math.random()*.01});
+}
+function fwdPass(){
+  const byLayer=[[],[],[]];
+  nnConns.forEach(c=>{ const li=c.userData.a.userData.li; if(byLayer[li])byLayer[li].push(c); });
+  byLayer.forEach((lc,i)=>setTimeout(()=>lc.forEach(c=>Math.random()>.45&&spawnSig(c.userData.a.position,c.userData.b.position,0x00FFB3)),i*380));
+}
+function bkProp(){
+  const byLayer=[[],[],[]];
+  nnConns.forEach(c=>{ const li=c.userData.a.userData.li; if(byLayer[li])byLayer[li].push(c); });
+  [2,1,0].forEach((idx,i)=>setTimeout(()=>byLayer[idx].forEach(c=>Math.random()>.45&&spawnSig(c.userData.b.position,c.userData.a.position,0xFF6B6B,.028)),i*380));
+}
+
+function nnMode(m,btn){
+  nnMode_=m; clearInterval(nnIv);
+  document.querySelectorAll('.nbt').forEach(b=>b.classList.remove('on')); btn.classList.add('on');
+  const inf=document.getElementById('nn-info');
+  if(m==='idle') inf.innerHTML='<strong>Idle.</strong> Drag to rotate. Hover neurons to inspect connections.';
+  if(m==='fwd'){ inf.innerHTML='<strong>Forward Pass</strong> — green pulses carry input data through each layer toward the output.'; fwdPass(); nnIv=setInterval(fwdPass,2100); }
+  if(m==='back'){ inf.innerHTML='<strong>Backpropagation</strong> — red pulses carry error gradient <em>backwards</em> from output to input, adjusting weights.'; bkProp(); nnIv=setInterval(bkProp,2100); }
+  if(m==='train'){
+    inf.innerHTML='<strong>Training</strong> — forward pass then backprop, cycling continuously. This loop runs millions of times.';
+    let st=0; nnIv=setInterval(()=>{ if(st++%2===0)fwdPass(); else bkProp(); },850);
+  }
+}
+
+const nnObs=new IntersectionObserver(e=>{if(e[0].isIntersecting){initNN();nnObs.disconnect();}},{threshold:.1});
+nnObs.observe(document.getElementById('s-3d'));
+
+/* ══════════════════════════════════════
+   ANATOMY — SVG CONNECTIONS + STEPS
+══════════════════════════════════════ */
+function drawAnatConnections(){
+  const svg=document.getElementById('conn-svg'); if(!svg) return;
+  const cols=[
+    document.getElementById('ld-input'),
+    document.getElementById('ld-h1'),
+    document.getElementById('ld-h2'),
+    document.getElementById('ld-out')
+  ];
+  const wrap=svg.closest('.anat-viz-wrap');
+  if(!wrap||!cols[0]) return;
+  const wRect=wrap.getBoundingClientRect();
+  let lines='';
+  for(let l=0;l<cols.length-1;l++){
+    const srcNodes=cols[l].querySelectorAll('.neuron');
+    const dstNodes=cols[l+1].querySelectorAll('.neuron');
+    srcNodes.forEach(a=>{
+      dstNodes.forEach(b=>{
+        const ar=a.getBoundingClientRect(), br=b.getBoundingClientRect();
+        const x1=ar.left-wRect.left+ar.width/2, y1=ar.top-wRect.top+ar.height/2;
+        const x2=br.left-wRect.left+br.width/2, y2=br.top-wRect.top+br.height/2;
+        lines+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="rgba(255,255,255,.07)" stroke-width="1"/>`;
+      });
+    });
+  }
+  svg.innerHTML=lines;
+}
+// Draw after layout
+setTimeout(drawAnatConnections,400);
+window.addEventListener('resize',drawAnatConnections);
+
+// Anatomy step scroll observer
+const astepMap={i:'Input Layer',h:'Hidden Layer 1',h2:'Hidden Layer 2',o:'Output Layer'};
+const astepSub={i:'Passive receivers — no computation',h:'Active computation — learning happens here',h2:'Higher-order abstraction forms',o:'Final prediction produced'};
+const stepObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    e.target.classList.toggle('in',e.isIntersecting);
+    if(e.isIntersecting){
+      const g=e.target.dataset.grp;
+      document.querySelectorAll('.neuron').forEach(n=>{
+        n.classList.remove('lit');
+        if(!g||g==='all'||n.dataset.g===g) n.classList.add('lit');
+      });
+      document.getElementById('anat-label').textContent=astepMap[g]||'All layers';
+      document.getElementById('anat-sub').textContent=astepSub[g]||'';
+    }
+  });
+},{threshold:.45,rootMargin:'0px 0px -15% 0px'});
+document.querySelectorAll('.astep').forEach(s=>stepObs.observe(s));
+
+/* ══════════════════════════════════════
+   FLOW STEPS
+══════════════════════════════════════ */
+const flowInfo=[
+  '',
+  '<strong>Forward Pass:</strong> Raw input data flows through every layer. Each neuron computes <em>output = f(Σwx + b)</em>. The final layer produces a prediction. This takes milliseconds.',
+  '<strong>Loss Calculation:</strong> We compare the prediction to the ground truth using a loss function (e.g. cross-entropy for classification). The result is a single number — how wrong the network was. Lower is better.',
+  '<strong>Backpropagation:</strong> Using the chain rule of calculus, we calculate how much each weight contributed to the error. The gradient signal flows <em>backwards</em> from output to input — the deeper the layer, the harder this computation.',
+  '<strong>Weight Update:</strong> Each weight is nudged: <em>w = w − η∇L</em>. The learning rate η controls step size. Too large: oscillate and never converge. Too small: training takes forever.',
+  '<strong>Repeat × Millions:</strong> A full training run processes the dataset many times (epochs), performing millions of weight updates. Training GPT-4 reportedly cost over $100M in GPU compute — same loop, vastly larger scale.'
+];
+function flowStep(n,node){
+  document.getElementById('fdetail').innerHTML=flowInfo[n];
+  document.querySelectorAll('.fnode').forEach(f=>f.classList.remove('sel'));
+  node.classList.add('sel');
+  if(navigator.vibrate) navigator.vibrate(28);
+}
+
+/* ══════════════════════════════════════
+   QUIZ
+══════════════════════════════════════ */
+let answered=false;
+function pickAnswer(btn,result){
+  if(answered) return; answered=true;
+  document.querySelectorAll('.qopt').forEach(o=>o.classList.add('disabled'));
+  btn.classList.add(result);
+  if(result==='correct'){
+    document.getElementById('qreveal').classList.add('open');
+    if(navigator.vibrate) navigator.vibrate([35,25,50]);
+    setTimeout(showAha,1600);
+  } else {
+    setTimeout(()=>{ document.querySelectorAll('.qopt')[1].classList.add('correct'); document.getElementById('qreveal').classList.add('open'); },500);
+  }
+}
+function setConf(btn){ document.querySelectorAll('.conf-btn').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); }
+
+/* ══════════════════════════════════════
+   TABS
+══════════════════════════════════════ */
+function setTab(i,btn){
+  document.querySelectorAll('.tpanel').forEach((p,j)=>p.classList.toggle('on',j===i));
+  document.querySelectorAll('.tb').forEach((b,j)=>b.classList.toggle('on',j===i));
+  setTimeout(()=>drawAct('act-'+i,['relu','sigmoid','tanh','gelu'][i]),60);
+}
+
+/* ══════════════════════════════════════
+   MINDMAP
+══════════════════════════════════════ */
+function buildMindmap(){
+  const svg=document.getElementById('mindmap-svg');
+  const nodes=[
+    {id:'nn',x:450,y:195,r:44,color:'#9B8FFF',label:'Neural\nNetwork'},
+    {id:'n',x:200,y:90,r:34,color:'#00FFB3',label:'Neuron'},
+    {id:'w',x:195,y:300,r:32,color:'#00FFB3',label:'Weight'},
+    {id:'l',x:700,y:90,r:34,color:'#FFB347',label:'Layer'},
+    {id:'a',x:705,y:300,r:34,color:'#FFB347',label:'Activation\nFn'},
+    {id:'bp',x:450,y:345,r:36,color:'#FF6B6B',label:'Back-\nprop'},
+    {id:'lf',x:120,y:195,r:32,color:'#FF6B6B',label:'Loss\nFn'},
+    {id:'lr',x:780,y:195,r:30,color:'#9B8FFF',label:'Learning\nRate'},
+    {id:'g',x:450,y:52,r:30,color:'#00FFB3',label:'Gradient'},
+  ];
+  const edges=[['nn','n'],['nn','w'],['nn','l'],['nn','a'],['nn','bp'],['bp','lf'],['bp','w'],['bp','lr'],['bp','g'],['l','n'],['a','n']];
+  const mindDefs={
+    nn:'A neural network is layers of connected artificial neurons that transform inputs to outputs through learned weights.',
+    n:'A neuron computes: output = activation(Σ(input × weight) + bias). It\'s the fundamental unit.',
+    w:'Weights are learnable parameters. They start random and are adjusted by backpropagation to minimise loss.',
+    l:'Layers stack computation. More layers = more abstract representations of the input data.',
+    a:'Activation functions add non-linearity, enabling networks to learn complex patterns. Without them, any depth collapses to one linear equation.',
+    bp:'Backpropagation uses the chain rule to calculate how much each weight contributed to the error.',
+    lf:'The loss function measures how wrong the prediction is. Training minimises this single number.',
+    lr:'Learning rate η controls how large each weight update is. Critical hyperparameter — too large: diverge. Too small: slow.',
+    g:'The gradient is the direction of steepest ascent in loss. We step in the opposite direction to minimise it.',
+  };
+
+  let h=`<defs><filter id="gf"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
+  edges.forEach(([a,b])=>{
+    const na=nodes.find(n=>n.id===a), nb=nodes.find(n=>n.id===b);
+    h+=`<line x1="${na.x}" y1="${na.y}" x2="${nb.x}" y2="${nb.y}" stroke="rgba(255,255,255,.07)" stroke-width="1.5" stroke-dasharray="5 5"/>`;
+  });
+  nodes.forEach(n=>{
+    const isC=n.id==='nn', ls=n.label.split('\n');
+    h+=`<g onclick="mindClick('${n.id}')" style="cursor:pointer">
+      <circle cx="${n.x}" cy="${n.y}" r="${n.r}" fill="${n.color}15" stroke="${n.color}" stroke-width="${isC?2:1.5}" filter="url(#gf)"/>
+      ${ls.map((l,i)=>`<text x="${n.x}" y="${n.y+(i-(ls.length-1)/2)*14+4}" text-anchor="middle" font-family="DM Mono,monospace" font-size="${isC?11:9}" fill="${n.color}" letter-spacing="0.3">${l}</text>`).join('')}
+    </g>`;
+  });
+  svg.innerHTML=h;
+
+  window.mindClick=function(id){
+    document.getElementById('mind-info').innerHTML=`<strong style="color:var(--iris)">${id.toUpperCase()}:</strong> ${mindDefs[id]||''}`;
+  };
+}
+const mmObs=new IntersectionObserver(e=>{if(e[0].isIntersecting){buildMindmap();mmObs.disconnect();}},{threshold:.15});
+mmObs.observe(document.getElementById('s-mind'));
+
+/* ══════════════════════════════════════
+   ENDING
+══════════════════════════════════════ */
+function revealEnding(){
+  const mins=Math.max(1,Math.round((Date.now()-tStart)/60000));
+  document.getElementById('end-min').textContent=mins;
+  const stats=document.querySelectorAll('.estat');
+  stats.forEach((s,i)=>setTimeout(()=>s.classList.add('vis'),i*200));
+  document.querySelectorAll('.eskill').forEach((s,i)=>setTimeout(()=>s.classList.add('vis'),600+i*220));
+}
+const endObs=new IntersectionObserver(e=>{if(e[0].isIntersecting){revealEnding();endObs.disconnect();}},{threshold:.25});
+endObs.observe(document.getElementById('s-end'));
+
+/* ══════════════════════════════════════
+   AHA MOMENT
+══════════════════════════════════════ */
+function showAha(){ document.getElementById('ahalay').classList.add('vis'); if(navigator.vibrate)navigator.vibrate([50,35,75]); }
+function closeAha(){ document.getElementById('ahalay').classList.remove('vis'); }
+function copyAha(){
+  const q=document.getElementById('ahaquote').textContent;
+  navigator.clipboard?.writeText(q+' — AI Bytes Learning').catch(()=>{});
+  const b=document.getElementById('share-btn'); b.textContent='Copied!';
+  setTimeout(()=>b.textContent='Copy & Share',2000);
+}
+
+/* ══════════════════════════════════════
+   AI COMPANION
+══════════════════════════════════════ */
+let compTimer;
+function showComp(msg){
+  const b=document.getElementById('cbubble'); b.textContent=msg; b.classList.add('vis');
+  clearTimeout(compTimer); compTimer=setTimeout(()=>b.classList.remove('vis'),5500);
+}
+function dismissComp(){ document.getElementById('cbubble').classList.remove('vis'); }
+setTimeout(()=>showComp('Ready? This lesson will change how you see every AI product you use.'),1800);
+
+/* ══════════════════════════════════════
+   COHORT
+══════════════════════════════════════ */
+setTimeout(()=>document.getElementById('cohort').classList.add('vis'),3200);
+setInterval(()=>{
+  const el=document.getElementById('ccount'), v=parseInt(el.textContent)||5;
+  el.textContent=Math.max(2,Math.min(14,v+(Math.random()>.5?1:-1)));
+},7000);
+
+/* ══════════════════════════════════════
+   WEB AUDIO SOUNDSCAPE
+══════════════════════════════════════ */
+let actx,mgain,curOsc=[],soundOn_=false,curSec_='';
+const secSounds={'s-hook':{f:220,t:'sine',g:.04},'s-3d':{f:80,t:'sawtooth',g:.022},'s-anat':{f:330,t:'sine',g:.035},'s-bento':{f:440,t:'triangle',g:.028},'s-flow':{f:165,t:'sine',g:.038},'s-quiz':{f:528,t:'sine',g:.042},'s-mind':{f:396,t:'triangle',g:.03},'s-tabs':{f:262,t:'sine',g:.035},'s-end':{f:528,t:'sine',g:.055}};
+
+function initAudio(){
+  if(actx)return;
+  actx=new(window.AudioContext||window.webkitAudioContext)();
+  mgain=actx.createGain(); mgain.gain.value=0; mgain.connect(actx.destination);
+}
+function updateSound(sec){
+  if(!soundOn_||!actx||sec===curSec_)return; curSec_=sec;
+  const cfg=secSounds[sec]; if(!cfg)return;
+  mgain.gain.setTargetAtTime(0,actx.currentTime,.4);
+  setTimeout(()=>{
+    curOsc.forEach(o=>{try{o.stop()}catch(e){}});curOsc=[];
+    const o1=actx.createOscillator(),g1=actx.createGain();
+    o1.type=cfg.t; o1.frequency.value=cfg.f; g1.gain.value=cfg.g;
+    const o2=actx.createOscillator(),g2=actx.createGain();
+    o2.type='sine'; o2.frequency.value=cfg.f*2.008; g2.gain.value=cfg.g*.35;
+    o1.connect(g1);g1.connect(mgain);o2.connect(g2);g2.connect(mgain);
+    o1.start();o2.start(); curOsc=[o1,o2];
+    mgain.gain.setTargetAtTime(1,actx.currentTime,.7);
+  },500);
+}
+function toggleSound(){
+  initAudio();
+  soundOn_=!soundOn_;
+  const btn=document.getElementById('sound-btn'), vis=document.getElementById('svis');
+  if(soundOn_){
+    btn.textContent='♪ Sound On'; btn.classList.add('on'); vis.classList.add('vis');
+    mgain.gain.setTargetAtTime(1,actx.currentTime,.4);
+    updateSound(lastSec||'s-hook');
+  } else {
+    btn.textContent='♪ Sound Off'; btn.classList.remove('on'); vis.classList.remove('vis');
+    mgain.gain.setTargetAtTime(0,actx.currentTime,.5);
+  }
+}
+
+/* ══════════════════════════════════════
+   GSAP SCROLL ANIMATIONS
+══════════════════════════════════════ */
+try{
+  gsap.registerPlugin(ScrollTrigger);
+  gsap.utils.toArray('.bc').forEach((el,i)=>{
+    gsap.from(el,{opacity:0,y:24,duration:.65,delay:i*.06,scrollTrigger:{trigger:el,start:'top 90%'}});
+  });
+  gsap.utils.toArray('.fnode').forEach((el,i)=>{
+    gsap.from(el,{opacity:0,y:18,duration:.55,delay:i*.09,scrollTrigger:{trigger:el,start:'top 92%'}});
+  });
+}catch(e){}
+</script>
+</body>
+</html>

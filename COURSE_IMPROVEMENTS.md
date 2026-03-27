@@ -1,7 +1,7 @@
 # Course Content & Structure Improvements
 
 ## Overview
-This document describes the comprehensive improvements made to the AI Bytes Learning platform to achieve **best-in-class e-learning standards**.
+This document describes the comprehensive improvements made to the AI Bytes Learning platform to achieve **High-Velocity Mastery** standards.
 
 ## Key Improvements
 
@@ -37,23 +37,23 @@ This document describes the comprehensive improvements made to the AI Bytes Lear
 - ✅ **Learning Objectives** - Displays course and topic-level objectives
 - ✅ **Duration Calculation** - Accurate time estimates from database
 
-### 3. Content Quality Standards 📝
+### 3. Content Quality Standards (DNA-Driven) 📝
 
-#### Topics Requirements:
-- **Minimum 200 words** of descriptive content
-- **4-5 specific learning objectives**
-- **Comprehensive descriptions** that tell a story
-- **Rich context** about what students will learn
+#### Topics Requirements (The Core):
+- **Minimum 200 words** of descriptive content.
+- **DNA Anchor**: Must lead with a Metaphor-First explanation.
+- **4-5 specific learning objectives** that focus on practical capability.
 
-#### Lessons Requirements:
-- **Minimum 500 words** of substantive content
-- **2+ high-quality images** per lesson (automatically sourced)
-- **5-7 key takeaways** for each lesson
+#### Lessons Requirements (The Byte):
+- **High-Velocity Content**: 800 - 1000 words per lesson (Zero Rambling).
+- **Rule of 4**: Exactly 4 high-fidelity visuals (Hook, Engine, Proof, Recap).
+- **5-7 key takeaways** for each lesson.
+- **Outcome-First**: Every lesson ends with a "Try This" practical application.
 - **Structured format**:
-  - Introduction (100-150 words)
-  - Main Content (300-400 words, 4-6 sections)
-  - Practical Examples (100-150 words)
-  - Summary & Conclusion (50-75 words)
+  - The Hook (Metaphor-First)
+  - The Engine (Technical Mechanism)
+  - The Proof (Real-World Case)
+  - The Recap (High-Velocity Summary)
 
 ### 4. AI Prompt Enhancements 🤖
 **File**: `/lib/ai/groq.ts`

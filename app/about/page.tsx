@@ -3,7 +3,8 @@
 import { Header } from "@/components/header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Target, Users, Lightbulb, Award, Brain, Rocket, Globe, Zap, ArrowRight, CheckCircle2, BookOpen, GraduationCap, Heart } from "lucide-react";
+import { Target, Users, Lightbulb, Award, Brain, Rocket, Globe, Zap, ArrowRight, CheckCircle2, BookOpen, GraduationCap, Heart, Gauge } from "lucide-react";
+import { MomentumMetaphor } from "@/components/momentum-metaphor";
 import Link from "next/link";
 
 export default function AboutPage() {
@@ -12,9 +13,9 @@ export default function AboutPage() {
       <Header />
 
       {/* Hero Section - Homepage Style */}
-      <section className="relative mx-auto w-[95%] max-w-7xl my-4 rounded-3xl border border-white/5 shadow-2xl py-16 flex items-center overflow-hidden bg-slate-900">
+      <section className="relative mx-auto w-[95%] max-w-screen-2xl my-4 rounded-3xl border border-white/5 shadow-2xl py-16 flex items-center overflow-hidden bg-slate-900">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-900/20 via-slate-900 to-slate-900 pointer-events-none rounded-3xl"></div>
-        <div className="container relative z-10 mx-auto px-4 max-w-7xl">
+        <div className="container relative z-10 mx-auto px-4 max-w-screen-2xl">
           <div className="text-center space-y-6">
             <span className="inline-block py-1 px-3 rounded-full bg-white/10 border border-primary/20 text-cyan-300 font-medium text-lg tracking-wide uppercase">
               ABOUT US
@@ -23,7 +24,7 @@ export default function AboutPage() {
               Making AI Education <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-primary">Accessible</span>
             </h1>
             <p className="text-lg lg:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
-              AI Bytes Learning is dedicated to demystifying artificial intelligence and making it accessible to learners of all backgrounds.
+              AI Bytes Learning is a UK-based organisation dedicated to simplifying artificial intelligence and making it accessible to learners of all backgrounds.
             </p>
           </div>
         </div>
@@ -31,7 +32,7 @@ export default function AboutPage() {
 
       {/* Who We Are Section with Image */}
       <section className="py-20 bg-card">
-        <div className="container mx-auto px-4 max-w-7xl">
+        <div className="container mx-auto px-4 max-w-screen-2xl">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <span className="inline-block py-1 px-3 rounded-full bg-primary/10 text-primary font-medium text-sm tracking-wide uppercase">
@@ -44,7 +45,7 @@ export default function AboutPage() {
                 At AI Bytes Learning, we&apos;re more than just an education platform—we&apos;re a movement dedicated to democratizing artificial intelligence knowledge. Founded by a team of AI researchers, educators, and industry experts, we understand both the technical depths and the real-world applications of AI.
               </p>
               <p className="text-lg text-foreground/80 leading-relaxed">
-                Our unique &quot;bytes&quot; approach breaks down complex AI concepts into digestible 60-minute modules, making it possible for anyone—regardless of their technical background—to understand and apply AI in their work and life.
+                Our unique &quot;bytes&quot; approach is a direct response to the rambling, time-consuming methods of traditional education. We break down complex AI concepts into focused, zero-fluff micro courses, allowing anyone to gain true understanding in the most time-efficient way possible.
               </p>
               <div className="flex flex-wrap gap-4 pt-4">
                 <div className="flex items-center gap-2 text-foreground/80">
@@ -85,7 +86,7 @@ export default function AboutPage() {
 
       {/* Mission & Vision Section */}
       <section className="py-20 bg-background">
-        <div className="container mx-auto px-4 max-w-7xl">
+        <div className="container mx-auto px-4 max-w-screen-2xl">
           <div className="grid lg:grid-cols-2 gap-12">
             {/* Mission */}
             <div className="relative group">
@@ -96,7 +97,7 @@ export default function AboutPage() {
                 </div>
                 <h3 className="text-2xl lg:text-3xl font-bold text-white mb-4">Our Mission</h3>
                 <p className="text-lg text-slate-300 leading-relaxed mb-6">
-                  We believe that understanding AI is no longer optional—it&apos;s essential for thriving in the modern world. Our mission is to empower every individual with the knowledge and skills they need to harness AI effectively.
+                  We believe that understanding AI is no longer optional—it&apos;s essential for thriving in the modern world. Our mission is to empower every individual with the knowledge and skills they need to use AI effectively.
                 </p>
                 <ul className="space-y-3">
                   <li className="flex items-start gap-3 text-slate-300">
@@ -124,7 +125,7 @@ export default function AboutPage() {
                 </div>
                 <h3 className="text-2xl lg:text-3xl font-bold text-white mb-4">Our Vision</h3>
                 <p className="text-lg text-slate-300 leading-relaxed mb-6">
-                  We envision a future where AI literacy is universal—where people from all walks of life can confidently understand, evaluate, and leverage artificial intelligence in their work and daily lives.
+                  We envision a future where AI literacy is universal—where people from all walks of life can confidently understand, evaluate, and use artificial intelligence in their work and daily lives.
                 </p>
                 <ul className="space-y-3">
                   <li className="flex items-start gap-3 text-slate-300">
@@ -148,7 +149,7 @@ export default function AboutPage() {
 
       {/* What Sets Us Apart Section with Image */}
       <section className="py-20 bg-card">
-        <div className="container mx-auto px-4 max-w-7xl">
+        <div className="container mx-auto px-4 max-w-screen-2xl">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="relative order-2 lg:order-1">
               <img
@@ -162,8 +163,8 @@ export default function AboutPage() {
                     <Brain className="w-7 h-7 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-white">60 min</p>
-                    <p className="text-sm text-white/80">Per Module</p>
+                    <p className="text-2xl font-bold text-white">Micro</p>
+                    <p className="text-sm text-white/80">Lessons</p>
                   </div>
                 </div>
               </div>
@@ -185,7 +186,7 @@ export default function AboutPage() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground mb-1">Micro-Learning Modules</h4>
-                    <p className="text-sm text-foreground/70">Each concept is broken down into 60-minute digestible sessions</p>
+                    <p className="text-sm text-foreground/70">Each concept is broken down into digestible micro-sessions</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4 p-4 rounded-xl bg-background border border-border">
@@ -209,12 +210,35 @@ export default function AboutPage() {
               </div>
             </div>
           </div>
+
+          {/* New Momentum Section */}
+          <div className="mt-20 border-t border-border pt-20">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div className="space-y-6">
+                <span className="inline-block py-1 px-3 rounded-full bg-cyan-500/10 text-cyan-600 font-medium text-sm tracking-wide uppercase">
+                  OUR PHILOSOPHY
+                </span>
+                <h2 className="text-3xl lg:text-4xl font-bold text-foreground leading-tight">
+                  The Physics of Learning: Momentum
+                </h2>
+                <p className="text-lg text-foreground/80 leading-relaxed">
+                  We don&apos;t just track your progress; we measure your intellectual momentum. We believe learning AI is like starting a high-performance engine. It requires a specific initial force, a transition into a flow state, and sustained consistency to reach peak velocity.
+                </p>
+                <p className="text-lg text-foreground/80 leading-relaxed italic">
+                  &quot;In the world of AI, speed is good, but velocity is better. Speed is just how fast you move; velocity is speed with a clear direction.&quot; — Sterling
+                </p>
+              </div>
+              <div className="max-w-md mx-auto lg:ml-auto w-full">
+                <MomentumMetaphor />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Values Grid */}
       <section className="py-20 bg-background">
-        <div className="container mx-auto px-4 max-w-7xl">
+        <div className="container mx-auto px-4 max-w-screen-2xl">
           <div className="text-center mb-12">
             <span className="inline-block py-1 px-3 rounded-full bg-primary/10 text-primary font-medium text-sm tracking-wide uppercase mb-4">
               OUR VALUES
@@ -277,7 +301,7 @@ export default function AboutPage() {
 
       {/* Our Story Section with Image */}
       <section className="py-20 bg-card">
-        <div className="container mx-auto px-4 max-w-7xl">
+        <div className="container mx-auto px-4 max-w-screen-2xl">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <span className="inline-block py-1 px-3 rounded-full bg-primary/10 text-primary font-medium text-sm tracking-wide uppercase">
@@ -314,7 +338,7 @@ export default function AboutPage() {
 
       {/* Stats Section */}
       <section className="py-20 bg-slate-900">
-        <div className="container mx-auto px-4 max-w-7xl">
+        <div className="container mx-auto px-4 max-w-screen-2xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl lg:text-4xl font-bold text-white">
               Impact by the Numbers
@@ -348,7 +372,7 @@ export default function AboutPage() {
             Ready to Start Your AI Journey?
           </h2>
           <p className="text-lg text-foreground/80 mb-8 max-w-2xl mx-auto">
-            Join thousands of learners who are already mastering AI with our byte-sized, practical courses.
+            Join thousands of learners who are already growing with AI through our byte-sized, practical courses.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/courses">
@@ -367,3 +391,4 @@ export default function AboutPage() {
     </div>
   );
 }
+

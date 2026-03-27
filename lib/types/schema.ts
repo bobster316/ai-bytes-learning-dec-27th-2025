@@ -66,6 +66,8 @@ export interface Course {
     price: number;
     learning_objectives: string[];
     thumbnail_url?: string;
+    category?: string;
+    categories?: string[];
     thumbnail_prompt: string;
     published: boolean;
     created_at: string;

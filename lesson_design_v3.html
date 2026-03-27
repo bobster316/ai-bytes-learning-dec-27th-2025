@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt Engineering — AI Bytes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+/* ─────────────────────────────────────────────────
+   RESET & TOKENS
+───────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+:root {
+  --void:   #04040E;
+  --deep:   #08081C;
+  --mid:    #0D0D26;
+  --lift:   #16163A;
+  --mist:   #2C2C56;
+  --dim:    #48488A;
+  --lo:     #8888B8;
+  --hi:     #EAEAFF;
+  --signal: #00FFB3;
+  --iris:   #9B8FFF;
+  --amber:  #FFB347;
+  --nova:   #FF6B6B;
+  --border: rgba(255,255,255,0.055);
+}
+
+html { scroll-behavior: auto; /* GSAP handles scroll */ }
+
+body {
+  background: var(--void);
+  color: var(--hi);
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 19px;
+  line-height: 1.75;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  cursor: none;
+}
+
+/* ─────────────────────────────────────────────────
+   CUSTOM CURSOR
+───────────────────────────────────────────────── */
+#cur {
+  position: fixed;
+  width: 8px; height: 8px;
+  background: var(--signal);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%,-50%);
+  transition: width .18s ease, height .18s ease, opacity .2s ease;
+  will-change: left, top;
+}
+#cur.big {
+  width: 44px; height: 44px;
+  background: transparent;
+  border: 1px solid rgba(0,255,179,0.4);
+}
+#cur-ring {
+  position: fixed;
+  width: 36px; height: 36px;
+  border: 1px solid rgba(0,255,179,0.15);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%,-50%);
+  will-change: left, top;
+}
+
+/* ─────────────────────────────────────────────────
+   PROGRESS LINE
+───────────────────────────────────────────────── */
+#prog {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 1px; z-index: 600;
+  background: var(--border);
+}
+#prog-fill {
+  height: 100%; width: 0%;
+  background: var(--signal);
+  transition: width .08s linear;
+}
+
+/* ─────────────────────────────────────────────────
+   NAV
+───────────────────────────────────────────────── */
+#nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 22px 56px;
+  z-index: 500;
+}
+.nav-brand {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: .3em; text-transform: uppercase;
+  color: var(--dim);
+  display: flex; align-items: center; gap: 8px;
+}
+.nav-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--signal);
+  box-shadow: 0 0 8px rgba(0,255,179,.6);
+  animation: nb 2.5s ease-in-out infinite;
+}
+@keyframes nb { 0%,100%{opacity:1;} 50%{opacity:.25;} }
+
+.nav-right {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--dim);
+}
+.nav-right b { color: var(--signal); font-weight: 400; }
+
+/* ─────────────────────────────────────────────────
+   SCENE 0 — TERMINAL HOOK
+   Full viewport. A bad prompt types in. We see the result.
+   The problem is set before a single word of lesson content.
+───────────────────────────────────────────────── */
+#s0 {
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  padding: 0 56px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  gap: 60px;
+}
+
+/* Subtle ambient light */
+#s0::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 60% at 20% 50%, rgba(155,143,255,.03) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 50% at 80% 50%, rgba(0,255,179,.02) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.term-left {
+  display: flex; flex-direction: column; gap: 0;
+}
+
+.term-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; letter-spacing: .35em; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 16px;
+}
+
+/* The mock chat window */
+.term-win {
+  background: var(--mid);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 32px 64px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.04);
+}
+.term-bar {
+  background: var(--lift);
+  padding: 11px 16px;
+  display: flex; align-items: center; gap: 7px;
+  border-bottom: 1px solid var(--border);
+}
+.term-dot { width: 10px; height: 10px; border-radius: 50%; }
+.term-bar-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--dim); margin-left: 4px;
+}
+.term-body { padding: 24px 24px 28px; }
+
+.term-prompt-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px; text-transform: uppercase; letter-spacing: .25em;
+  color: var(--dim); margin-bottom: 8px;
+}
+.term-prompt-box {
+  background: var(--deep);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-family: 'DM Mono', monospace;
+  font-size: .82rem; color: var(--lo);
+  line-height: 1.6;
+  min-height: 46px;
+  margin-bottom: 18px;
+}
+.term-cursor {
+  display: inline-block;
+  width: 2px; height: .9em;
+  background: var(--lo);
+  vertical-align: middle;
+  margin-left: 1px;
+  animation: blink .85s step-end infinite;
+}
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
+
+.term-response-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px; text-transform: uppercase; letter-spacing: .25em;
+  color: var(--dim); margin-bottom: 8px;
+}
+.term-response-box {
+  font-family: 'Instrument Serif', serif;
+  font-size: .88rem; color: var(--dim);
+  line-height: 1.65;
+  padding-left: 12px;
+  border-left: 2px solid var(--mist);
+  opacity: 0;
+  transition: opacity .4s ease;
+  min-height: 56px;
+}
+.term-response-box.show { opacity: 1; }
+
+.term-right {
+  opacity: 0;
+}
+.term-verdict {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2.2rem, 4vw, 3.8rem);
+  font-weight: 800;
+  line-height: 1.0;
+  letter-spacing: -.04em;
+  color: var(--hi);
+  margin-bottom: 20px;
+}
+.term-verdict em {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic; font-weight: 400;
+  color: var(--lo);
+}
+.term-sub {
+  font-size: .95rem; color: var(--lo);
+  line-height: 1.7; max-width: 380px;
+  margin-bottom: 32px;
+}
+.term-scroll-cue {
+  display: flex; align-items: center; gap: 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; text-transform: uppercase; letter-spacing: .3em;
+  color: var(--signal);
+}
+.term-scroll-line {
+  width: 48px; height: 1px;
+  background: linear-gradient(to right, var(--signal), transparent);
+  animation: grow .8s ease-in-out infinite alternate;
+}
+@keyframes grow { from{width:24px;} to{width:60px;} }
+
+/* ─────────────────────────────────────────────────
+   SCENE 1 — HERO
+   Text anchors to BOTTOM. Big watermark number.
+   This alone is unlike any LMS on earth.
+───────────────────────────────────────────────── */
+#s1 {
+  height: 100vh;
+  display: flex; flex-direction: column;
+  justify-content: flex-end; /* BOTTOM — not center */
+  padding: 0 56px 72px;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+
+.s1-watermark {
+  position: absolute;
+  right: -10px; top: -40px;
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(22rem, 55vw, 52rem);
+  font-weight: 800;
+  line-height: .85;
+  letter-spacing: -.07em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255,255,255,.025);
+  pointer-events: none; user-select: none;
+  z-index: 0;
+}
+
+.s1-content { position: relative; z-index: 1; }
+
+.s1-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; letter-spacing: .35em; text-transform: uppercase;
+  color: var(--signal);
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 28px;
+  opacity: 0;
+}
+.s1-label::before {
+  content: ''; display: block;
+  width: 32px; height: 1px; background: var(--signal);
+}
+
+.s1-h {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2.8rem, 5.5vw, 5.2rem);
+  font-weight: 800;
+  line-height: 1.0;
+  letter-spacing: -.04em;
+  color: var(--hi);
+  max-width: 860px;
+  opacity: 0;
+}
+.s1-h em {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic; font-weight: 400;
+  color: var(--signal);
+}
+
+.s1-foot {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-top: 44px;
+  opacity: 0;
+}
+.s1-chips { display: flex; gap: 8px; }
+.chip {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; text-transform: uppercase; letter-spacing: .08em;
+  padding: 6px 14px; border-radius: 100px;
+  border: 1px solid var(--border); color: var(--dim);
+}
+.chip.on {
+  border-color: rgba(0,255,179,.22);
+  background: rgba(0,255,179,.05);
+  color: var(--signal);
+}
+.s1-scroll {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px; text-transform: uppercase; letter-spacing: .35em;
+  color: var(--mist);
+}
+
+/* ─────────────────────────────────────────────────
+   SCENE 2 — MEGA STAT
+   One number. Fills the screen. Nothing else.
+───────────────────────────────────────────────── */
+#s2 {
+  height: 100vh;
+  display: flex; flex-direction: column;
+  justify-content: center;
+  padding: 0 56px;
+  background: var(--deep);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.s2-num {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(16rem, 32vw, 30rem);
+  font-weight: 800;
+  line-height: .82;
+  letter-spacing: -.06em;
+  color: var(--signal);
+  opacity: 0; transform: translateY(24px);
+}
+
+.s2-label {
+  font-family: 'DM Mono', monospace;
+  font-size: clamp(.9rem, 2vw, 1.4rem);
+  letter-spacing: .2em; text-transform: uppercase;
+  color: var(--lo);
+  margin-top: 20px;
+  opacity: 0; transform: translateY(16px);
+}
+
+.s2-aside {
+  position: absolute;
+  right: 56px; bottom: 72px;
+  max-width: 340px; text-align: right;
+  opacity: 0;
+}
+.s2-aside-body {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic; font-size: 1.05rem;
+  color: var(--lo); line-height: 1.7;
+}
+.s2-aside-source {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px; text-transform: uppercase; letter-spacing: .2em;
+  color: var(--dim); margin-top: 8px;
+}
+
+/* ─────────────────────────────────────────────────
+   SCENE 3 — PINNED ANATOMY (GSAP ScrollTrigger)
+   THE showstopper. No e-learning platform does this.
+───────────────────────────────────────────────── */
+#s3-wrap { /* height set by JS */ }
+
+#s3 {
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.s3-left {
+  position: relative;
+  border-right: 1px solid var(--border);
+  background: var(--deep);
+  overflow: hidden;
+}
+
+/* Each stage: position absolute, fade in/out */
+.s3-stage {
+  position: absolute; inset: 0;
+  padding: 80px 52px;
+  display: flex; flex-direction: column;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity .55s cubic-bezier(.16,1,.3,1),
+              transform .55s cubic-bezier(.16,1,.3,1);
+  pointer-events: none;
+}
+.s3-stage.on {
+  opacity: 1; transform: translateY(0);
+  pointer-events: all;
+}
+
+.s3-step {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; letter-spacing: .3em; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 22px;
+}
+.s3-h {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.7rem, 2.8vw, 2.4rem);
+  font-weight: 800; line-height: 1.1;
+  letter-spacing: -.025em; color: var(--hi);
+  margin-bottom: 20px;
+}
+.s3-h em { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; }
+.s3-body { font-size: .93rem; color: var(--lo); line-height: 1.75; max-width: 440px; }
+.s3-body strong { color: var(--hi); }
+
+/* Stage progress — 4 dots in bottom left */
+.s3-dots {
+  position: absolute; left: 52px; bottom: 36px;
+  display: flex; gap: 6px; align-items: center;
+}
+.s3-dot {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--mist);
+  transition: all .35s ease;
+}
+.s3-dot.on { width: 18px; border-radius: 2px; background: var(--signal); }
+
+.s3-scroll-hint {
+  position: absolute; right: 24px; bottom: 36px;
+  font-family: 'DM Mono', monospace;
+  font-size: 8px; letter-spacing: .25em; text-transform: uppercase;
+  color: var(--mist);
+  writing-mode: vertical-rl;
+  letter-spacing: .3em;
+}
+
+/* Right panel — the prompt */
+.s3-right {
+  padding: 80px 52px;
+  background: var(--void);
+  display: flex; flex-direction: column;
+  justify-content: center; gap: 24px;
+}
+
+.s3-prompt-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px; text-transform: uppercase; letter-spacing: .25em;
+  color: var(--dim);
+}
+
+.s3-prompt {
+  background: var(--deep);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 20px 48px rgba(0,0,0,.35);
+}
+.s3-prompt-bar {
+  background: var(--lift);
+  padding: 10px 16px;
+  display: flex; gap: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.s3b-dot { width: 9px; height: 9px; border-radius: 50%; }
+.s3-prompt-body {
+  padding: 22px 22px;
+  font-family: 'DM Mono', monospace;
+  font-size: .78rem; line-height: 2;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.ap {
+  padding: 3px 9px; border-radius: 5px;
+  color: var(--dim);
+  transition: all .5s cubic-bezier(.16,1,.3,1);
+  align-self: flex-start;
+}
+.ap.r { background: rgba(0,255,179,.1);   color: var(--signal); }
+.ap.c { background: rgba(155,143,255,.1); color: var(--iris); }
+.ap.t { background: rgba(255,179,71,.1);  color: var(--amber); }
+.ap.f { background: rgba(255,107,107,.1); color: var(--nova); }
+
+/* Legend row */
+.s3-legend {
+  display: flex; flex-wrap: wrap; gap: 14px;
+}
+.s3-leg {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; text-transform: uppercase; letter-spacing: .1em;
+  display: flex; align-items: center; gap: 6px;
+  opacity: .3; transition: opacity .4s ease;
+}
+.s3-leg.on { opacity: 1; }
+.s3-leg-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+/* ─────────────────────────────────────────────────
+   SCENE 4 — CONTRAST
+───────────────────────────────────────────────── */
+#s4 {
+  padding: 112px 56px;
+  border-bottom: 1px solid var(--border);
+  position: relative; overflow: hidden;
+}
+
+.s4-watermark {
+  position: absolute;
+  right: 30px; top: -30px;
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(12rem, 24vw, 22rem);
+  font-weight: 800; letter-spacing: -.05em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255,255,255,.03);
+  pointer-events: none;
+}
+
+.s4-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; letter-spacing: .3em; text-transform: uppercase;
+  color: var(--signal);
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 20px;
+}
+.s4-label::before { content:''; width:28px; height:1px; background:var(--signal); }
+
+.s4-h {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  font-weight: 800; line-height: 1.08;
+  letter-spacing: -.03em; color: var(--hi);
+  max-width: 680px; margin-bottom: 60px;
+}
+.s4-h em { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; color: var(--lo); }
+
+.s4-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1px; background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+}
+
+.s4-col {
+  background: var(--void); padding: 40px 36px;
+}
+
+.s4-col-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; letter-spacing: .25em; text-transform: uppercase;
+  margin-bottom: 20px;
+  display: flex; align-items: center; gap: 8px;
+}
+.s4-col.bad  .s4-col-label { color: var(--nova); }
+.s4-col.good .s4-col-label { color: var(--signal); }
+.s4-col-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.bad  .s4-col-dot { background: var(--nova); }
+.good .s4-col-dot { background: var(--signal); }
+
+.s4-prompt {
+  font-family: 'DM Mono', monospace;
+  font-size: .78rem; line-height: 1.65;
+  padding: 14px 16px; border-radius: 10px;
+  background: var(--deep); border: 1px solid var(--border);
+  color: var(--lo); margin-bottom: 20px;
+}
+.bad  .s4-prompt { border-color: rgba(255,107,107,.15); }
+.good .s4-prompt { border-color: rgba(0,255,179,.15); }
+
+.s4-output {
+  font-family: 'Instrument Serif', serif;
+  font-size: .95rem; line-height: 1.7;
+  padding-left: 14px; border-left: 2px solid;
+}
+.bad  .s4-output { border-color: rgba(255,107,107,.3); color: var(--dim); }
+.good .s4-output { border-color: var(--signal); color: var(--hi); }
+
+.s4-meter {
+  margin-top: 24px;
+  display: flex; align-items: center; gap: 12px;
+}
+.s4-meter-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px; letter-spacing: .15em; text-transform: uppercase;
+  color: var(--dim); white-space: nowrap;
+}
+.s4-meter-track {
+  flex: 1; height: 3px; background: var(--border);
+  border-radius: 2px; overflow: hidden;
+}
+.s4-meter-fill {
+  height: 100%; border-radius: 2px; width: 0%;
+  transition: width 1.4s cubic-bezier(.16,1,.3,1);
+}
+.bad  .s4-meter-fill { background: var(--nova); }
+.good .s4-meter-fill { background: var(--signal); }
+.s4-meter-pct {
+  font-family: 'DM Mono', monospace; font-size: 9px; white-space: nowrap;
+}
+.bad  .s4-meter-pct { color: var(--nova); }
+.good .s4-meter-pct { color: var(--signal); }
+
+/* ─────────────────────────────────────────────────
+   SCENE 5 — PREDICTION (full viewport, left-aligned)
+───────────────────────────────────────────────── */
+#s5 {
+  min-height: 100vh;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 100px 56px;
+  background: var(--deep);
+  border-bottom: 1px solid var(--border);
+}
+
+.s5-inner { max-width: 700px; }
+
+.s5-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; letter-spacing: .3em; text-transform: uppercase;
+  color: var(--iris); margin-bottom: 20px;
+}
+.s5-q {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.5rem, 2.8vw, 2.4rem);
+  font-weight: 700; line-height: 1.2;
+  letter-spacing: -.025em; color: var(--hi);
+  margin-bottom: 40px;
+}
+.s5-q em { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; color: var(--iris); }
+
+.s5-opts { display: flex; flex-direction: column; gap: 8px; }
+
+.s5-opt {
+  display: flex; align-items: center; gap: 16px;
+  padding: 17px 20px; border-radius: 12px;
+  border: 1px solid var(--border); background: transparent;
+  cursor: pointer; transition: all .22s ease;
+  font-family: 'Instrument Serif', serif;
+  font-size: .95rem; color: var(--lo); text-align: left;
+}
+.s5-opt:hover { border-color: rgba(155,143,255,.35); color: var(--hi); background: rgba(155,143,255,.04); }
+.s5-opt.correct { border-color: var(--signal); background: rgba(0,255,179,.04); color: var(--hi); }
+.s5-opt.wrong   { border-color: rgba(255,255,255,.03); color: var(--mist); }
+.s5-opt-key {
+  font-family: 'DM Mono', monospace; font-size: 9px;
+  width: 24px; height: 24px; border-radius: 50%;
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all .22s ease;
+}
+.s5-opt.correct .s5-opt-key { border-color: var(--signal); color: var(--signal); }
+.s5-opt.wrong   .s5-opt-key { color: var(--mist); }
+
+.s5-reveal {
+  margin-top: 24px; padding: 22px 26px;
+  border-radius: 12px; background: var(--mid);
+  border: 1px solid rgba(0,255,179,.14);
+  display: none;
+}
+.s5-reveal.show { display: block; animation: up .4s ease forwards; }
+.s5-reveal-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--signal); margin-bottom: 10px;
+}
+.s5-reveal p { font-size: .9rem; color: var(--lo); line-height: 1.7; }
+.s5-reveal strong { color: var(--hi); }
+
+@keyframes up { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+
+/* ─────────────────────────────────────────────────
+   SCENE 6 — TECHNIQUES (horizontal rows — NO cards)
+───────────────────────────────────────────────── */
+#s6 {
+  border-bottom: 1px solid var(--border);
+  position: relative; overflow: hidden;
+}
+
+.s6-header {
+  padding: 80px 56px 56px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.s6-watermark {
+  position: absolute; right: 30px; top: -30px;
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(12rem, 24vw, 22rem);
+  font-weight: 800; letter-spacing: -.05em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255,255,255,.03);
+  pointer-events: none;
+}
+.s6-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; letter-spacing: .3em; text-transform: uppercase;
+  color: var(--signal);
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 20px;
+}
+.s6-label::before { content:''; width:28px; height:1px; background:var(--signal); }
+.s6-h {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  font-weight: 800; line-height: 1.08;
+  letter-spacing: -.03em; color: var(--hi);
+  max-width: 680px;
+}
+.s6-h em { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; }
+
+/* Each technique is a horizontal row — 3 columns */
+.s6-row {
+  display: grid;
+  grid-template-columns: 72px 1fr 1.1fr;
+  align-items: start; gap: 48px;
+  padding: 52px 56px;
+  border-bottom: 1px solid var(--border);
+  transition: background .2s ease;
+}
+.s6-row:hover { background: var(--deep); }
+.s6-row:last-child { border-bottom: none; }
+
+.s6-row-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 3.2rem; font-weight: 800;
+  letter-spacing: -.04em; line-height: 1;
+  color: var(--mist); padding-top: 6px;
+}
+
+.s6-row-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.25rem; font-weight: 800;
+  color: var(--hi); margin-bottom: 6px;
+  letter-spacing: -.015em;
+}
+.s6-row-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px; text-transform: uppercase; letter-spacing: .15em;
+  padding: 3px 10px; border-radius: 100px;
+  display: inline-block; margin-bottom: 14px;
+}
+.s6-row-body {
+  font-size: .9rem; color: var(--lo); line-height: 1.75;
+  max-width: 380px;
+}
+
+.s6-row-right { display: flex; flex-direction: column; gap: 14px; padding-top: 6px; }
+.s6-example {
+  font-family: 'DM Mono', monospace;
+  font-size: .78rem; line-height: 1.65;
+  padding: 15px 17px; border-radius: 10px;
+  background: var(--mid); border: 1px solid var(--border);
+}
+.s6-svg { opacity: .65; }
+
+/* ─────────────────────────────────────────────────
+   SCENE 7 — ENDING (stark — no confetti, no trophy)
+───────────────────────────────────────────────── */
+#s7 {
+  min-height: 100vh;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 100px 56px;
+  background: var(--deep);
+}
+
+.s7-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; letter-spacing: .35em; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 60px;
+}
+
+.s7-skills { max-width: 620px; margin-bottom: 72px; }
+
+.s7-skill {
+  display: flex; align-items: flex-start; gap: 20px;
+  padding: 26px 0; border-bottom: 1px solid var(--border);
+}
+.s7-skill:first-child { border-top: 1px solid var(--border); }
+.s7-check {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  color: var(--signal); flex-shrink: 0; padding-top: 4px;
+}
+.s7-skill-text {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.05rem; color: var(--lo); line-height: 1.6;
+}
+.s7-skill-text strong {
+  color: var(--hi);
+  font-family: 'Syne', sans-serif; font-size: .88em;
+}
+
+.s7-cta {
+  display: inline-flex; align-items: center; gap: 14px;
+  padding: 16px 34px; border-radius: 10px;
+  background: var(--signal); color: var(--void);
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: .95rem;
+  border: none; cursor: none; letter-spacing: -.01em;
+  transition: all .25s ease;
+}
+.s7-cta:hover { box-shadow: 0 8px 32px rgba(0,255,179,.3); transform: translateY(-2px); }
+.s7-next {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; text-transform: uppercase; letter-spacing: .2em;
+  color: var(--dim); margin-top: 20px;
+}
+
+/* ─────────────────────────────────────────────────
+   SHARED REVEAL
+───────────────────────────────────────────────── */
+.rv {
+  opacity: 0; transform: translateY(22px);
+  transition: opacity .7s cubic-bezier(.16,1,.3,1),
+              transform .7s cubic-bezier(.16,1,.3,1);
+}
+.rv.in { opacity: 1; transform: translateY(0); }
+.rv-d1 { transition-delay: .1s; }
+.rv-d2 { transition-delay: .22s; }
+.rv-d3 { transition-delay: .36s; }
+
+/* ─────────────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  #s0, #s1, #s2, #s4, #s5, #s7 { padding-left: 28px; padding-right: 28px; }
+  .s6-header, .s6-row { padding-left: 28px; padding-right: 28px; }
+  #s0 { grid-template-columns: 1fr; }
+  .term-right { display: none; }
+  #s3 { grid-template-columns: 1fr; }
+  .s3-right { display: none; }
+  .s4-grid { grid-template-columns: 1fr; }
+  .s6-row { grid-template-columns: 48px 1fr; }
+  .s6-row-right { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Custom cursor -->
+<div id="cur"></div>
+<div id="cur-ring"></div>
+
+<!-- Progress line -->
+<div id="prog"><div id="prog-fill"></div></div>
+
+<!-- Nav -->
+<nav id="nav">
+  <div class="nav-brand"><div class="nav-dot"></div>AI Bytes Learning</div>
+  <div class="nav-right"><b>Prompt Engineering</b> · Lesson 01</div>
+</nav>
+
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SCENE 0 — TERMINAL HOOK                   -->
+<!-- A bad prompt types itself. Result appears. -->
+<!-- User sees the PROBLEM before any content.  -->
+<!-- ══════════════════════════════════════════ -->
+<section id="s0">
+  <div class="term-left">
+    <div class="term-eyebrow">A real prompt. Sent right now. Every day.</div>
+    <div class="term-win">
+      <div class="term-bar">
+        <div class="term-dot" style="background:#FF6B6B"></div>
+        <div class="term-dot" style="background:#FFB347"></div>
+        <div class="term-dot" style="background:#00FFB3"></div>
+        <span class="term-bar-label">ChatGPT-4o</span>
+      </div>
+      <div class="term-body">
+        <div class="term-prompt-label">Your message</div>
+        <div class="term-prompt-box">
+          <span id="t-in"></span><span class="term-cursor" id="t-cur"></span>
+        </div>
+        <div class="term-response-label">AI response</div>
+        <div class="term-response-box" id="t-resp"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="term-right" id="term-right">
+    <div class="term-verdict">
+      Sound<br><em>familiar?</em>
+    </div>
+    <div class="term-sub">Generic. Technically correct. Could have been written for anyone — which means it was written for no one.</div>
+    <div class="term-scroll-cue">
+      <span class="term-scroll-line"></span>Scroll to change this
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SCENE 1 — HERO                            -->
+<!-- Text lives at the BOTTOM of the viewport. -->
+<!-- The "01" watermark fills the background.  -->
+<!-- ══════════════════════════════════════════ -->
+<section id="s1">
+  <div class="s1-watermark">01</div>
+  <div class="s1-content">
+    <div class="s1-label" id="s1-label">Prompt Engineering · Lesson 01</div>
+    <h1 class="s1-h" id="s1-h">
+      The difference between<br>
+      a mediocre answer<br>
+      and <em>an expert one</em><br>
+      is your question.
+    </h1>
+    <div class="s1-foot" id="s1-foot">
+      <div class="s1-chips">
+        <div class="chip">12 min</div>
+        <div class="chip">3 concepts</div>
+        <div class="chip on">No prior experience needed</div>
+      </div>
+      <div class="s1-scroll">Scroll to explore →</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SCENE 2 — MEGA STAT                       -->
+<!-- "47" fills the viewport. Nothing else.    -->
+<!-- Simplicity IS the impact.                 -->
+<!-- ══════════════════════════════════════════ -->
+<section id="s2">
+  <div class="s2-num" id="s2-num">47%</div>
+  <div class="s2-label rv" id="s2-label">Average improvement in output quality</div>
+  <div class="s2-aside rv rv-d1" id="s2-aside">
+    <div class="s2-aside-body">Structured prompts improve AI output quality by an average of 47% — not because the model got smarter, but because the human got clearer.</div>
+    <div class="s2-aside-source">— OpenAI internal research</div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SCENE 3 — PINNED ANATOMY                  -->
+<!-- GSAP pins this panel. As user scrolls     -->
+<!-- through 400vh, the prompt progressively   -->
+<!-- lights up. Nothing like this exists in    -->
+<!-- any e-learning platform today.            -->
+<!-- ══════════════════════════════════════════ -->
+<div id="s3-wrap">
+  <div id="s3">
+
+    <div class="s3-left" id="s3-left">
+
+      <div class="s3-stage on" data-n="0">
+        <div class="s3-step">Concept 01 · Step 1 of 4</div>
+        <div class="s3-h">At first glance,<br>it looks like <em>any other message.</em></div>
+        <div class="s3-body">A prompt has parts — like a good brief, a good legal argument, a good recipe. Most people skip three of them. On the right is a well-built prompt. We're going to take it apart, piece by piece.</div>
+      </div>
+
+      <div class="s3-stage" data-n="1">
+        <div class="s3-step">Concept 01 · Step 2 of 4</div>
+        <div class="s3-h">The <em style="color:var(--signal)">Role</em> tells the model whose mind to borrow.</div>
+        <div class="s3-body">Without a role, the model defaults to an average of every voice it has ever read — nobody in particular. <strong>Five words change everything.</strong> "You are a senior UX researcher" focuses knowledge, vocabulary, and perspective immediately.</div>
+      </div>
+
+      <div class="s3-stage" data-n="2">
+        <div class="s3-step">Concept 01 · Step 3 of 4</div>
+        <div class="s3-h"><em style="color:var(--iris)">Context</em> turns a general tool into a specific expert.</div>
+        <div class="s3-body">Telling the model your situation is like handing a contractor the blueprints before work begins. Without it, they build something plausible but generic. <strong>With it, every word is calibrated to your specific reality.</strong></div>
+      </div>
+
+      <div class="s3-stage" data-n="3">
+        <div class="s3-step">Concept 01 · Step 4 of 4</div>
+        <div class="s3-h"><em style="color:var(--amber)">Task</em> and <em style="color:var(--nova)">Format</em> eliminate the guesswork.</div>
+        <div class="s3-body">The task is what you want produced. The format is how you want it delivered. Without both, the model guesses conservatively — defaulting to paragraphs, generalities, and hedging. <strong>With both, it knows exactly what success looks like.</strong></div>
+      </div>
+
+      <!-- Progress dots -->
+      <div class="s3-dots">
+        <div class="s3-dot on" id="sd0"></div>
+        <div class="s3-dot" id="sd1"></div>
+        <div class="s3-dot" id="sd2"></div>
+        <div class="s3-dot" id="sd3"></div>
+      </div>
+
+      <div class="s3-scroll-hint">Keep scrolling</div>
+    </div>
+
+    <div class="s3-right">
+      <div class="s3-prompt-eyebrow">The prompt — watch it reveal</div>
+      <div class="s3-prompt">
+        <div class="s3-prompt-bar">
+          <div class="s3b-dot" style="background:#FF6B6B"></div>
+          <div class="s3b-dot" style="background:#FFB347"></div>
+          <div class="s3b-dot" style="background:#00FFB3"></div>
+        </div>
+        <div class="s3-prompt-body">
+          <span class="ap" id="ap-r">You are a senior UX researcher with 10 years of B2B SaaS experience.</span>
+          <span class="ap" id="ap-c">We are redesigning our onboarding flow for enterprise clients.</span>
+          <span class="ap" id="ap-t">Identify the three most common failure points in SaaS onboarding and suggest one specific fix for each.</span>
+          <span class="ap" id="ap-f">Format as a numbered list. Keep each point under 60 words. No buzzwords.</span>
+        </div>
+      </div>
+      <div class="s3-legend">
+        <div class="s3-leg" id="leg-r"><div class="s3-leg-dot" style="background:var(--signal)"></div><span style="color:var(--signal)">Role</span></div>
+        <div class="s3-leg" id="leg-c"><div class="s3-leg-dot" style="background:var(--iris)"></div><span style="color:var(--iris)">Context</span></div>
+        <div class="s3-leg" id="leg-t"><div class="s3-leg-dot" style="background:var(--amber)"></div><span style="color:var(--amber)">Task</span></div>
+        <div class="s3-leg" id="leg-f"><div class="s3-leg-dot" style="background:var(--nova)"></div><span style="color:var(--nova)">Format</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SCENE 4 — THE CONTRAST                    -->
+<!-- Same question. Two different results.     -->
+<!-- Quality bars animate in on scroll.        -->
+<!-- ══════════════════════════════════════════ -->
+<section id="s4">
+  <div class="s4-watermark">02</div>
+  <div class="s4-label rv">See the difference</div>
+  <h2 class="s4-h rv rv-d1">The exact same question.<br><em>Two completely different results.</em></h2>
+
+  <div class="s4-grid rv rv-d2" id="s4-grid">
+    <div class="s4-col bad">
+      <div class="s4-col-label"><div class="s4-col-dot"></div>Before this lesson</div>
+      <div class="s4-prompt">"Write something about AI for my team."</div>
+      <div class="s4-output">Here is a general overview of artificial intelligence and its applications across various industries. AI has become an increasingly important technology in recent years…</div>
+      <div class="s4-meter">
+        <div class="s4-meter-label">Quality</div>
+        <div class="s4-meter-track"><div class="s4-meter-fill" data-w="18"></div></div>
+        <div class="s4-meter-pct">18%</div>
+      </div>
+    </div>
+    <div class="s4-col good">
+      <div class="s4-col-label"><div class="s4-col-dot"></div>After this lesson</div>
+      <div class="s4-prompt">"You are a senior tech director. My team handles customer support. Write 3 bullets on how AI reduces ticket volume by next quarter. Under 25 words each. No jargon."</div>
+      <div class="s4-output"><strong>1.</strong> Auto-route tickets by intent before a human reads them.<br><strong>2.</strong> Draft replies in seconds from your existing knowledge base.<br><strong>3.</strong> Flag anomalies so escalations happen before customers complain.</div>
+      <div class="s4-meter">
+        <div class="s4-meter-label">Quality</div>
+        <div class="s4-meter-track"><div class="s4-meter-fill" data-w="94"></div></div>
+        <div class="s4-meter-pct">94%</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SCENE 5 — PREDICTION                      -->
+<!-- Left-aligned. Full viewport. Minimal.     -->
+<!-- ══════════════════════════════════════════ -->
+<section id="s5">
+  <div class="s5-inner">
+    <div class="s5-eyebrow rv">Quick check — before we continue</div>
+    <div class="s5-q rv rv-d1">You send <em>"Help me write an email."</em> to GPT-4.<br>What's the most likely problem?</div>
+    <div class="s5-opts rv rv-d2" id="s5-opts">
+      <button class="s5-opt" onclick="pick(this,false)"><span class="s5-opt-key">A</span>The model will refuse — emails are outside its scope</button>
+      <button class="s5-opt" onclick="pick(this,false)"><span class="s5-opt-key">B</span>The email will be too long with excessive detail</button>
+      <button class="s5-opt" onclick="pick(this,true)"><span class="s5-opt-key">C</span>The response will be generic — it doesn't know who, what, or why</button>
+    </div>
+    <div class="s5-reveal" id="s5-reveal">
+      <div class="s5-reveal-label">Exactly right</div>
+      <p>Without a recipient, purpose, or tone, the model has no contract to work from. It produces a <strong>placeholder email</strong> — technically correct, practically useless. Four more words — "to my CEO, requesting budget approval" — changes everything.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SCENE 6 — TECHNIQUES                      -->
+<!-- Horizontal rows. Not a card grid.         -->
+<!-- Each technique: number / info / example   -->
+<!-- ══════════════════════════════════════════ -->
+<section id="s6">
+  <div class="s6-header">
+    <div class="s6-watermark">03</div>
+    <div class="s6-label rv">Concept 03</div>
+    <h2 class="s6-h rv rv-d1">Three techniques that separate<br><em>experts from everyone else</em></h2>
+  </div>
+
+  <div class="s6-row rv">
+    <div class="s6-row-num">01</div>
+    <div>
+      <div class="s6-row-name">Chain of Thought</div>
+      <span class="s6-row-tag" style="background:rgba(0,255,179,.07);color:var(--signal)">Reasoning</span>
+      <div class="s6-row-body">Tell the model to think step by step before answering. Forces reasoning over pattern-matching. Works especially well for analysis, decisions, and multi-step calculations.</div>
+    </div>
+    <div class="s6-row-right">
+      <div class="s6-example" style="color:var(--signal)">"…Think through this step by step before giving your final answer."</div>
+      <svg class="s6-svg" viewBox="0 0 280 50" width="280" fill="none">
+        <defs><marker id="a1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0L0,6L6,3z" fill="#00FFB3" opacity=".4"/></marker></defs>
+        <rect x="0" y="5" width="56" height="40" rx="7" fill="rgba(0,255,179,.06)" stroke="#00FFB3" stroke-opacity=".25" stroke-width="1"/>
+        <text x="28" y="22" font-family="DM Mono" font-size="7" fill="#00FFB3" text-anchor="middle" opacity=".8">Question</text>
+        <text x="28" y="35" font-family="Instrument Serif" font-size="7" fill="#5A5A90" text-anchor="middle" font-style="italic">the prompt</text>
+        <line x1="57" y1="25" x2="72" y2="25" stroke="#00FFB3" stroke-opacity=".3" stroke-width="1" marker-end="url(#a1)"/>
+        <rect x="74" y="5" width="40" height="40" rx="7" fill="rgba(0,255,179,.05)" stroke="#00FFB3" stroke-opacity=".2" stroke-width="1"/>
+        <text x="94" y="28" font-family="DM Mono" font-size="7" fill="#00FFB3" text-anchor="middle" opacity=".6">Step 1</text>
+        <line x1="115" y1="25" x2="130" y2="25" stroke="#00FFB3" stroke-opacity=".3" stroke-width="1" marker-end="url(#a1)"/>
+        <rect x="132" y="5" width="40" height="40" rx="7" fill="rgba(0,255,179,.05)" stroke="#00FFB3" stroke-opacity=".2" stroke-width="1"/>
+        <text x="152" y="28" font-family="DM Mono" font-size="7" fill="#00FFB3" text-anchor="middle" opacity=".6">Step 2</text>
+        <line x1="173" y1="25" x2="188" y2="25" stroke="#00FFB3" stroke-opacity=".3" stroke-width="1" marker-end="url(#a1)"/>
+        <rect x="190" y="5" width="90" height="40" rx="7" fill="rgba(0,255,179,.1)" stroke="#00FFB3" stroke-opacity=".4" stroke-width="1.5"/>
+        <text x="235" y="22" font-family="DM Mono" font-size="7" fill="#00FFB3" text-anchor="middle" font-weight="500">Answer</text>
+        <text x="235" y="35" font-family="Instrument Serif" font-size="7" fill="#00FFB3" text-anchor="middle" font-style="italic" opacity=".7">precise output</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="s6-row rv rv-d1">
+    <div class="s6-row-num">02</div>
+    <div>
+      <div class="s6-row-name">Persona Anchoring</div>
+      <span class="s6-row-tag" style="background:rgba(155,143,255,.07);color:var(--iris)">Tone</span>
+      <div class="s6-row-body">Give the model a specific person to emulate, not just a job title. "Write like a CFO presenting to a sceptical board" is 10× more effective than "write professionally."</div>
+    </div>
+    <div class="s6-row-right">
+      <div class="s6-example" style="color:var(--iris)">"You are a CFO explaining this to a non-technical board who will challenge every assumption…"</div>
+      <svg class="s6-svg" viewBox="0 0 120 50" width="120" fill="none">
+        <ellipse cx="60" cy="22" rx="22" ry="16" stroke="#9B8FFF" stroke-opacity=".4" stroke-width="1.2" fill="rgba(155,143,255,.07)"/>
+        <circle cx="53" cy="18" r="2.5" fill="#9B8FFF" opacity=".5"/>
+        <circle cx="67" cy="18" r="2.5" fill="#9B8FFF" opacity=".5"/>
+        <path d="M50 26 Q60 33 70 26" stroke="#9B8FFF" stroke-opacity=".4" stroke-width="1.2" fill="none"/>
+        <path d="M40 46 Q60 38 80 46" stroke="#9B8FFF" stroke-opacity=".25" stroke-width="1.2" fill="none"/>
+        <text x="60" y="50" font-family="DM Mono" font-size="6.5" fill="#9B8FFF" text-anchor="middle" opacity=".4" letter-spacing="1">PERSONA</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="s6-row rv rv-d2">
+    <div class="s6-row-num">03</div>
+    <div>
+      <div class="s6-row-name">Constraint Stacking</div>
+      <span class="s6-row-tag" style="background:rgba(255,179,71,.07);color:var(--amber)">Quality</span>
+      <div class="s6-row-body">Add what NOT to do alongside what to do. Constraints eliminate the model's default behaviours — corporate speak, vague hedging, bullet overuse. More constraints, tighter output.</div>
+    </div>
+    <div class="s6-row-right">
+      <div class="s6-example" style="color:var(--amber)">"…Do NOT use buzzwords. Do NOT hedge. Do NOT exceed 100 words."</div>
+      <svg class="s6-svg" viewBox="0 0 180 58" width="180" fill="none">
+        <rect x="4" y="4"  width="172" height="14" rx="4" fill="rgba(255,179,71,.08)" stroke="#FFB347" stroke-opacity=".4" stroke-width="1"/>
+        <rect x="4" y="22" width="172" height="14" rx="4" fill="rgba(255,179,71,.06)" stroke="#FFB347" stroke-opacity=".3" stroke-width="1"/>
+        <rect x="4" y="40" width="172" height="14" rx="4" fill="rgba(255,179,71,.04)" stroke="#FFB347" stroke-opacity=".2" stroke-width="1"/>
+        <text x="90" y="14" font-family="DM Mono" font-size="6.5" fill="#FFB347" text-anchor="middle" opacity=".8">DO NOT use buzzwords</text>
+        <text x="90" y="32" font-family="DM Mono" font-size="6.5" fill="#FFB347" text-anchor="middle" opacity=".65">DO NOT hedge with "it depends"</text>
+        <text x="90" y="50" font-family="DM Mono" font-size="6.5" fill="#FFB347" text-anchor="middle" opacity=".5">DO NOT exceed 100 words</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SCENE 7 — ENDING                          -->
+<!-- Stark. Minimal. No confetti. No trophy.   -->
+<!-- Three lines. One button.                  -->
+<!-- ══════════════════════════════════════════ -->
+<section id="s7">
+  <div class="s7-label rv">Lesson complete</div>
+  <div class="s7-skills rv rv-d1">
+    <div class="s7-skill">
+      <div class="s7-check">✓</div>
+      <div class="s7-skill-text">You can explain why <strong>vague prompts produce vague results</strong> — and exactly what to do instead</div>
+    </div>
+    <div class="s7-skill">
+      <div class="s7-check">✓</div>
+      <div class="s7-skill-text">You know the <strong>four-part structure</strong> — Role, Context, Task, Format — that makes any prompt work</div>
+    </div>
+    <div class="s7-skill">
+      <div class="s7-check">✓</div>
+      <div class="s7-skill-text">You have <strong>three expert techniques</strong> you can apply in your next AI interaction today</div>
+    </div>
+  </div>
+  <button class="s7-cta rv rv-d2">Next Lesson →</button>
+  <div class="s7-next rv rv-d3">Prompt Engineering · Lesson 2 of 4</div>
+</section>
+
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+/* ── CURSOR ──────────────────────────────────────── */
+const cur  = document.getElementById('cur');
+const ring = document.getElementById('cur-ring');
+let mx = -200, my = -200, rx = -200, ry = -200;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cur.style.left = mx + 'px'; cur.style.top = my + 'px';
+});
+
+// Ring lags behind — creates depth feel
+(function ringLoop() {
+  rx += (mx - rx) * 0.11;
+  ry += (my - ry) * 0.11;
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(ringLoop);
+})();
+
+document.querySelectorAll('button, a').forEach(el => {
+  el.addEventListener('mouseenter', () => cur.classList.add('big'));
+  el.addEventListener('mouseleave', () => cur.classList.remove('big'));
+});
+
+/* ── PROGRESS BAR ────────────────────────────────── */
+window.addEventListener('scroll', () => {
+  const t = document.documentElement.scrollHeight - window.innerHeight;
+  document.getElementById('prog-fill').style.width = (window.scrollY / t * 100) + '%';
+}, { passive: true });
+
+/* ── SCROLL REVEAL ───────────────────────────────── */
+const rvObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); rvObs.unobserve(e.target); } });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.rv').forEach(el => rvObs.observe(el));
+
+/* ── TERMINAL HOOK ───────────────────────────────── */
+const tIn   = document.getElementById('t-in');
+const tCur  = document.getElementById('t-cur');
+const tResp = document.getElementById('t-resp');
+const tRgt  = document.getElementById('term-right');
+
+const INPUT = '"Write something about AI for my team."';
+const RESP  = 'Here is a general overview of artificial intelligence and its potential applications across industries. AI encompasses machine learning, natural language processing, and more…';
+
+function typeIt(el, str, speed, done) {
+  let i = 0;
+  const iv = setInterval(() => {
+    el.textContent += str[i++];
+    if (i >= str.length) { clearInterval(iv); done && done(); }
+  }, speed);
+}
+
+setTimeout(() => {
+  typeIt(tIn, INPUT, 42, () => {
+    tCur.style.display = 'none';
+    setTimeout(() => {
+      tResp.classList.add('show');
+      typeIt(tResp, RESP, 18, () => {
+        setTimeout(() => {
+          gsap.to(tRgt, { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out' });
+        }, 600);
+      });
+    }, 500);
+  });
+}, 400);
+
+// Initial position for verdict
+gsap.set(tRgt, { opacity: 0, y: 20 });
+
+/* ── HERO ENTRANCE ───────────────────────────────── */
+setTimeout(() => {
+  gsap.to('#s1-label', { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out' });
+  gsap.to('#s1-h',     { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', delay: 0.15 });
+  gsap.to('#s1-foot',  { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out', delay: 0.3 });
+}, 200);
+gsap.set(['#s1-label','#s1-h','#s1-foot'], { y: 24 });
+
+/* ── MEGA STAT ───────────────────────────────────── */
+ScrollTrigger.create({
+  trigger: '#s2',
+  start: 'top 65%',
+  onEnter: () => {
+    gsap.to('#s2-num',   { opacity: 1, y: 0, duration: 1,   ease: 'power3.out' });
+    gsap.to('#s2-label', { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', delay: 0.25 });
+    gsap.to('#s2-aside', { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out', delay: 0.4 });
+  },
+  once: true
+});
+
+/* ── PINNED ANATOMY (GSAP ScrollTrigger) ─────────── */
+const wrap    = document.getElementById('s3-wrap');
+const panel   = document.getElementById('s3');
+const stages  = document.querySelectorAll('.s3-stage');
+const sdots   = [0,1,2,3].map(i => document.getElementById('sd' + i));
+const apEls   = { r: document.getElementById('ap-r'), c: document.getElementById('ap-c'), t: document.getElementById('ap-t'), f: document.getElementById('ap-f') };
+const legEls  = { r: document.getElementById('leg-r'), c: document.getElementById('leg-c'), t: document.getElementById('leg-t'), f: document.getElementById('leg-f') };
+
+wrap.style.height = (window.innerHeight * 5) + 'px';
+
+let curStage = -1;
+
+function setStage(n) {
+  if (n === curStage) return;
+  curStage = n;
+  stages.forEach((s, i) => s.classList.toggle('on', i === n));
+  sdots.forEach((d, i)  => d.classList.toggle('on', i === n));
+  Object.values(apEls).forEach(el => el.className = 'ap');
+  Object.values(legEls).forEach(el => el.classList.remove('on'));
+  if (n >= 1) { apEls.r.classList.add('ap','r'); legEls.r.classList.add('on'); }
+  if (n >= 2) { apEls.c.classList.add('ap','c'); legEls.c.classList.add('on'); }
+  if (n >= 3) { apEls.t.classList.add('ap','t'); legEls.t.classList.add('on'); apEls.f.classList.add('ap','f'); legEls.f.classList.add('on'); }
+}
+
+setStage(0);
+
+ScrollTrigger.create({
+  trigger: wrap,
+  start: 'top top',
+  end: 'bottom bottom',
+  pin: panel,
+  onUpdate: self => {
+    const p = self.progress;
+    setStage(p < 0.25 ? 0 : p < 0.5 ? 1 : p < 0.75 ? 2 : 3);
+  }
+});
+
+/* ── CONTRAST BARS ───────────────────────────────── */
+ScrollTrigger.create({
+  trigger: '#s4-grid',
+  start: 'top 70%',
+  onEnter: () => {
+    document.querySelectorAll('.s4-meter-fill').forEach(el => {
+      gsap.to(el, { width: el.dataset.w + '%', duration: 1.4, ease: 'power3.out', delay: 0.3 });
+    });
+  },
+  once: true
+});
+
+/* ── PREDICTION ──────────────────────────────────── */
+let done = false;
+function pick(btn, ok) {
+  if (done) return; done = true;
+  document.querySelectorAll('.s5-opt').forEach(o => {
+    if (o === btn) o.classList.add(ok ? 'correct' : 'wrong');
+    else if (o.getAttribute('onclick').includes('true')) o.classList.add('correct');
+    else o.classList.add('wrong');
+  });
+  document.getElementById('s5-reveal').classList.add('show');
+}
+</script>
+</body>
+</html>

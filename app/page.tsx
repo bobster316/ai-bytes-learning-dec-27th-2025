@@ -1,780 +1,1336 @@
-import { Footer } from "@/components/footer";
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { FlipWords } from "@/components/ui/flip-words";
-import { MathBackground } from "@/components/ui/math-background";
-import { VoiceAvatar } from "@/components/voice/voice-avatar";
+import { NewsTicker } from "@/components/ui/news-ticker";
+import { useEffect, useRef, useState } from "react";
 import {
-  Sparkles,
-  PlayCircle,
+  motion,
+  useScroll,
+  useTransform,
+  useInView,
+  AnimatePresence,
+} from "framer-motion";
+import {
   ArrowRight,
+  CheckCircle2,
+  Clock,
+  Play,
   Zap,
-  BookOpen,
-  Award,
   Brain,
+  Shield,
   MessageSquare,
   Database,
-  Code,
-  Compass,
-  Target,
-  Rocket,
-  CheckCircle2,
-  Users,
+  Smartphone,
   TrendingUp,
-  Clock,
-  BarChart3,
-  Shield,
-  Briefcase,
   Bot,
-  Eye,
   Building2,
-  Lightbulb,
-  Wand2,
-  MessageCircle
+  Layout,
+  Image as ImageIcon,
+  ChevronRight,
+  Star,
+  BookOpen,
+  Award,
+  Sparkles,
+  ChevronDown,
 } from "lucide-react";
 import { Header } from "@/components/header";
-import { TrendingNews } from "@/components/trending-news";
-import { NewsletterSignup } from "@/components/newsletter-signup";
-import { NeuralNetworkAnimation } from "@/components/ui/neural-network-animation";
+import { Footer } from "@/components/footer";
+import { VoiceAvatar } from "@/components/voice/voice-avatar";
 import { AICompaniesGrid } from "@/components/ui/ai-companies-grid";
+import { TrendingNews } from "@/components/trending-news";
+import { WordSwitcher } from "@/components/ui/word-switcher";
+import { NeuralNetworkAnimation } from "@/components/ui/neural-network-animation";
+import { Logo } from "@/components/logo";
 
+// ── Hero word switcher words ────────────────────────────────────────────────
+const HERO_WORDS = [
+  "15-Min Bytes.", 
+  "Daily Habits.", 
+  "Real Skills.", 
+  "Plain English.", 
+  "Clear Ideas.", 
+  "Quick Wins.", 
+  "AHA Moments.", 
+  "Less Fluff.", 
+  "Core Concepts.",
+  "Small Steps.",
+  "Pure Logic.",
+  "Smart Moves.",
+  "Your Terms.",
+  "Fast Facts.",
+  "Easy Wins."
+];
+
+// ── Animated counter hook ──────────────────────────────────────────────────
+function useCounter(target: number, duration = 2000) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true });
+  useEffect(() => {
+    if (!inView) return;
+    const start = Date.now();
+    const tick = () => {
+      const elapsed = Date.now() - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.floor(eased * target));
+      if (progress < 1) requestAnimationFrame(tick);
+      else setCount(target);
+    };
+    requestAnimationFrame(tick);
+  }, [inView, target, duration]);
+  return { count, ref };
+}
+
+// ── Category data ──────────────────────────────────────────────────────────
+const CATEGORIES = [
+  { id: "ai-foundations",     label: "AI Foundations",          icon: Brain,         colour: "#4b98ad", wide: true  },
+  { id: "generative-ai",      label: "Generative AI & LLMs",    icon: Sparkles,      colour: "#4b98ad", wide: false },
+  { id: "prompt-engineering", label: "Prompt Engineering",      icon: MessageSquare, colour: "#FFB347", wide: false },
+  { id: "ai-tools",           label: "AI Tools & Apps",         icon: Smartphone,    colour: "#4b98ad", wide: false },
+  { id: "business-ai",        label: "AI for Business",         icon: TrendingUp,    colour: "#4b98ad", wide: false },
+  { id: "ai-agents",          label: "AI Agents & Automation",  icon: Bot,           colour: "#4b98ad", wide: true  },
+  { id: "nlp",                label: "NLP & Conversational AI", icon: MessageSquare, colour: "#4b98ad", wide: false },
+  { id: "computer-vision",    label: "Computer Vision",         icon: ImageIcon,     colour: "#FFB347", wide: false },
+  { id: "industry-ai",        label: "AI in Industry",          icon: Building2,     colour: "#4b98ad", wide: false },
+  { id: "data-ai",            label: "Data & AI Fundamentals",  icon: Database,      colour: "#4b98ad", wide: false },
+  { id: "ai-ethics",          label: "AI Ethics & Governance",  icon: Shield,        colour: "#FF6B6B", wide: true  },
+  { id: "ai-product",         label: "AI Product Dev",          icon: Layout,        colour: "#FFB347", wide: true  },
+];
+
+// ── Marquee course names ────────────────────────────────────────────────────
+const MARQUEE_ROW_1 = [
+  { label: "ChatGPT Mastery",         colour: "#4b98ad" },
+  { label: "Neural Networks",         colour: "#4b98ad" },
+  { label: "Prompt Engineering",      colour: "#FFB347" },
+  { label: "AI for Marketing",        colour: "#4b98ad" },
+  { label: "LangChain Fundamentals",  colour: "#4b98ad" },
+  { label: "Computer Vision",         colour: "#FF6B6B" },
+  { label: "AI Product Strategy",     colour: "#FFB347" },
+  { label: "Fine-tuning LLMs",        colour: "#4b98ad" },
+  { label: "Generative AI",           colour: "#4b98ad" },
+  { label: "AI in Healthcare",        colour: "#FFB347" },
+  { label: "Autonomous Agents",       colour: "#4b98ad" },
+  { label: "RAG Systems",             colour: "#FF6B6B" },
+];
+
+const MARQUEE_ROW_2 = [
+  { label: "AI Ethics & Governance",  colour: "#FF6B6B" },
+  { label: "Midjourney Mastery",      colour: "#4b98ad" },
+  { label: "AI for Finance",          colour: "#FFB347" },
+  { label: "Embeddings & Vectors",    colour: "#4b98ad" },
+  { label: "Stable Diffusion",        colour: "#4b98ad" },
+  { label: "NLP Fundamentals",        colour: "#FFB347" },
+  { label: "AI Sales Automation",     colour: "#4b98ad" },
+  { label: "Gemini for Business",     colour: "#4b98ad" },
+  { label: "AI in Education",         colour: "#FF6B6B" },
+  { label: "Multimodal AI",           colour: "#FFB347" },
+  { label: "AI Workflow Design",      colour: "#4b98ad" },
+  { label: "Data Science Basics",     colour: "#4b98ad" },
+];
+
+// ── Testimonials ───────────────────────────────────────────────────────────
+const TESTIMONIALS = [
+  {
+    name: "Priya S.",
+    role: "Marketing Manager · London",
+    quote:
+      "I went from knowing nothing about AI to confidently using it in my campaigns — in a weekend. The 15-minute format is the only reason I actually finished a course.",
+    stars: 5,
+    rotation: "-1.2deg",
+  },
+  {
+    name: "James T.",
+    role: "Operations Lead · Manchester",
+    quote:
+      "Every other AI course I tried was either too shallow or too technical. AI Bytes hits the exact right level. I've completed 4 courses in a month.",
+    stars: 5,
+    rotation: "0.5deg",
+  },
+  {
+    name: "Aisha K.",
+    role: "Founder · Birmingham",
+    quote:
+      "The micro-lesson format is genius. I learn during my commute and actually retain it. The certificates have been great conversation starters too.",
+    stars: 5,
+    rotation: "1.8deg",
+  },
+];
+
+// ── Pricing tiers ──────────────────────────────────────────────────────────
+const PLANS = [
+  {
+    name: "Free",
+    price: "£0",
+    period: "forever",
+    description: "Start learning immediately. No card needed.",
+    features: [
+      "Access to free courses",
+      "Progress tracking",
+      "Course certificates",
+      "Mobile access",
+    ],
+    cta: "Start Free",
+    href: "/auth/signup",
+    highlight: false,
+    accentColour: "#4b98ad",
+  },
+  {
+    name: "Standard",
+    price: "£15",
+    period: "/month",
+    description: "Unlimited access for committed learners.",
+    features: [
+      "All 50+ courses",
+      "Unlimited certificates",
+      "Priority support",
+      "Offline access",
+    ],
+    cta: "Get Standard",
+    href: "/pricing",
+    highlight: true,
+    accentColour: "#4b98ad",
+  },
+  {
+    name: "Unlimited",
+    price: "£35",
+    period: "/month",
+    description: "Everything, for serious professionals.",
+    features: [
+      "Everything in Standard",
+      "AI tutor Sterling",
+      "Team seats (up to 5)",
+      "LinkedIn certificates",
+    ],
+    cta: "Go Unlimited",
+    href: "/pricing",
+    highlight: false,
+    accentColour: "#FFB347",
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────
 export default function Home() {
-  const words = [
-    "The Future", "ML Systems", "Statistical Learning", "AI Optimization", "Neural Architectures", "Scaled Deep Learning", "Probabilistic AI", "Causal Inference", "Causal AI", "Continual Learning", "Lifelong Learning",
-    "AI Benchmarking", "Supervised Learning", "Unsupervised ML", "Semi-Supervised ML", "Self-Supervised ML", "Reinforcement Learn.", "Offline RL", "Multi-Agent RL", "Meta-Learning", "Few-Shot Learning", "Zero-Shot Learning", "Transfer Learning", "Curriculum Learning", "Active Learning",
-    "Foundation Models", "Large Lang Models", "Multimodal Models", "Multimodal AI", "Generative AI", "Diffusion Models", "Autoregressive Mods", "World Models", "Video Models", "Audio Models", "Agentic Models", "Transformers", "Mixture of Experts", "State Space Models", "Graph Neural Nets", "CNNs", "RNNs", "Energy-Based Models", "GANs", "Neuro-Symbolic AI",
-    "AI Agents", "Autonomous Agents", "Tool-Using Agents", "Multi-Agent Systems", "Agent Orchestration", "Planning Agents", "Reasoning Agents", "Memory Agents", "Reflective Agents", "Swarm Intelligence", "Simulated Societies", "HITL Systems",
-    "Reasoning Models", "Chain-of-Thought", "Tree-of-Thought", "Program-of-Thought", "Planning and Search", "Model Alignment", "Constitutional AI", "Interpretability", "Explainable AI", "Model Evaluation",
-    "AI Data Engineering", "Synthetic Data", "Data Curation", "Knowledge Graphs", "Retrieval-Augmented", "Advanced RAG", "Multimodal RAG", "Embeddings", "Vector Databases", "Long-Context AI",
-    "AI Engineering", "MLOps", "LLMOps", "Model Deployment", "Model Serving", "Inference Optimize", "Model Distillation", "Model Compression", "Quantization", "Fine-Tuning", "LoRA", "QLoRA", "Adapters", "Evaluation Pipeline", "Model Monitoring", "Drift Detection", "Cost-Aware AI",
-    "Computer Vision", "Vision-Lang Models", "Video Generation", "3D Generation", "World Simulation", "Speech Recognition", "Text-to-Speech", "Voice Cloning", "Music Generation", "Comp. Creativity", "Conversational AI",
-    "Coding AI", "Software Eng AI", "Robotics", "Embodied AI", "Automation", "RPA", "Autonomous Vehicles", "Healthcare AI", "BioAI", "Drug Discovery AI", "Finance AI", "Trading AI", "Marketing AI", "Personalization AI", "Education AI", "Legal AI", "Compliance AI", "Cybersecurity AI",
-    "Smart Cities", "Smart Infra", "Digital Twins", "Simulation Systems", "Spatial Computing", "XR AI", "Edge AI", "On-Device AI", "IoT AI", "Neuromorphic Comp", "AI Accelerators", "Distributed AI", "Cloud-Native AI", "Eco-Friendly AI", "Real-Time AI",
-    "AI Safety", "AI Alignment", "Responsible AI", "Bias Detection", "Bias Mitigation", "Data Privacy", "AI Security", "AI Governance", "AI Regulation", "Risk Management", "Secure AI Systems", "Deepfake Detection", "Identity Verify",
-    "AGI", "Superintelligence", "Emergent Intel", "Collective Intel", "Self-Improving AI", "AI for Science", "Quantum ML", "Hybrid Intelligence",
-    "GPT-5.2", "Claude 4.5", "Gemini 3 Pro", "Llama 3", "Mistral Large", "Falcon", "Midjourney", "Stable Diffusion", "DALL-E 3", "Sora", "Runway Gen-3", "Pika"
-  ];
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const bigNumScale  = useTransform(scrollYProgress, [0, 1], [1, 1.18]);
+  const bigNumOpacity = useTransform(scrollYProgress, [0, 0.7], [0.07, 0.02]);
+
+  // Stat counters
+  const stat1 = useCounter(94);
+  const stat3 = useCounter(15);
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 selection:text-primary-foreground">
+    <div className="min-h-screen bg-[#080810] text-[#f5f5f7] selection:bg-[#4b98ad]/30 selection:text-[#4b98ad] overflow-x-hidden">
+      {/* CSS for marquee keyframes */}
+      <style>{`
+        @keyframes marquee-left {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
+        }
+        @keyframes marquee-right {
+          from { transform: translateX(-50%); }
+          to   { transform: translateX(0); }
+        }
+        .marquee-left  { animation: marquee-left  30s linear infinite; }
+        .marquee-right { animation: marquee-right 35s linear infinite; }
+        .marquee-left:hover,
+        .marquee-right:hover { animation-play-state: paused; }
+
+        @keyframes blob-drift-a {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33%       { transform: translate(40px, -30px) scale(1.05); }
+          66%       { transform: translate(-20px, 20px) scale(0.97); }
+        }
+        @keyframes blob-drift-b {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33%       { transform: translate(-50px, 20px) scale(1.04); }
+          66%       { transform: translate(30px, -40px) scale(0.96); }
+        }
+        @keyframes blob-drift-c {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50%       { transform: translate(20px, 30px) scale(1.06); }
+        }
+        .blob-a { animation: blob-drift-a 18s ease-in-out infinite; }
+        .blob-b { animation: blob-drift-b 22s ease-in-out infinite; }
+        .blob-c { animation: blob-drift-c 14s ease-in-out infinite; }
+
+        @keyframes scroll-bounce {
+          0%, 100% { transform: translateY(0); opacity: 0.5; }
+          50%       { transform: translateY(6px); opacity: 1; }
+        }
+        .scroll-bounce { animation: scroll-bounce 2s ease-in-out infinite; }
+
+        @keyframes pulse-ring {
+          0%   { transform: scale(1); opacity: 0.6; }
+          100% { transform: scale(1.8); opacity: 0; }
+        }
+        .pulse-ring { animation: pulse-ring 2s ease-out infinite; }
+      `}</style>
+
       <Header />
 
-      {/* HERO SECTION - RESTRUCTURED */}
-      <section className="relative mx-auto w-[95%] max-w-7xl my-4 rounded-3xl border border-white/5 shadow-2xl py-8 lg:py-0 min-h-[clamp(30rem,60vh,50rem)] flex items-center overflow-hidden bg-slate-900">
+      {/* ═══════════════════════════════════════════════════════════════════
+          HERO — The 15 Promise
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section
+        ref={heroRef}
+        className="relative min-h-screen flex items-center overflow-hidden pt-20"
+      >
+        {/* Animated mesh gradient blobs */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="blob-a absolute top-[-12%] right-[-8%] w-[680px] h-[680px] rounded-full bg-[#4b98ad]/[0.18] blur-[130px]" />
+          <div className="blob-b absolute bottom-[-10%] left-[-6%] w-[520px] h-[520px] rounded-full bg-[#4b98ad]/[0.10] blur-[110px]" />
+          <div className="blob-c absolute top-[38%] left-[32%] w-[420px] h-[420px] rounded-full bg-[#FFB347]/[0.05] blur-[120px]" />
+        </div>
 
-        <MathBackground />
+        {/* Grain overlay — inline SVG, no external URL */}
+        <div
+          className="absolute inset-0 opacity-[0.032] pointer-events-none select-none"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+            backgroundSize: "256px 256px",
+          }}
+        />
 
-        <div className="container relative z-20 mx-auto px-4 max-w-7xl h-full">
-          <div className="grid lg:grid-cols-2 gap-8 items-center h-full">
+        {/* Giant "15" typographic background art */}
+        <motion.div
+          style={{ scale: bigNumScale, opacity: bigNumOpacity }}
+          className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
+          aria-hidden="true"
+        >
+          <span
+            className="font-black text-[#4b98ad] leading-none"
+            style={{ fontSize: "clamp(18rem, 45vw, 60rem)", letterSpacing: "-0.06em" }}
+          >
+            15
+          </span>
+        </motion.div>
 
-            {/* Left Content */}
-            <div className="space-y-6 text-left animate-fade-in relative z-20 pt-8 lg:pt-0 pb-12 lg:pb-0">
+        {/* Hero content grid */}
+        <div className="relative z-10 mx-auto w-[88%] max-w-screen-xl px-6 lg:px-12 py-20 lg:py-32 -translate-y-[8vh] lg:-translate-y-[10vh]">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-16 items-center">
 
+            {/* LEFT: Copy */}
+            <div className="md:col-span-7 space-y-8">
 
-
-              <h1 className="font-black tracking-tight leading-[1.1] text-white text-[clamp(2.25rem,4.5vw,4.5rem)]">
-                Learn <br />
-                <span className="block min-h-[1.2em] w-full text-cyan-400">
-                  <FlipWords words={words} className="text-cyan-400 drop-shadow-md whitespace-nowrap" />
+              {/* Brand + badge row */}
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="flex flex-wrap items-center gap-3"
+              >
+                <span className="px-4 py-1.5 rounded-full bg-[#4b98ad]/[0.12] border border-[#4b98ad]/30 font-black text-[14px] text-[#4b98ad] uppercase tracking-widest">
+                  AI Bytes Learning
                 </span>
-                <span className="block mt-2 text-white opacity-90 text-[clamp(1.8rem,3.6vw,3.15rem)]">in 60 Minutes</span>
-              </h1>
+                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.05] border border-white/[0.10]">
+                  <span className="relative flex h-2 w-2">
+                    <span className="pulse-ring absolute inline-flex h-full w-full rounded-full bg-emerald-400" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                  </span>
+                  <span className="font-mono text-[13px] text-white/50 uppercase tracking-[0.2em]">No experience needed</span>
+                </span>
+              </motion.div>
 
-              <p className="font-light text-neutral-400 tracking-wide font-mono mt-4 max-w-lg text-[clamp(1rem,1.5vw,1.5rem)]">
-                complex technology, decoded<span className="animate-pulse text-primary font-bold">_</span>
-              </p>
+              {/* Headline */}
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.75, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <h1
+                  className="font-black tracking-tight leading-[0.95] text-white"
+                  style={{ fontSize: "clamp(2.5rem, 6.3vw, 5rem)", letterSpacing: "-0.03em" }}
+                >
+                  Complex AI<br />
+                  <span className="text-white/80">Simplified into </span>
+                  <WordSwitcher words={HERO_WORDS} duration={7000} className="text-[#4b98ad] whitespace-nowrap" />
+                </h1>
+              </motion.div>
 
-              <div className="flex flex-col sm:flex-row gap-3 pt-4">
+              {/* Sub */}
+              <motion.p
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.65, delay: 0.25 }}
+                className="text-lg md:text-xl text-white/55 leading-relaxed max-w-[540px]"
+              >
+                AI Bytes Learning gives you{" "}
+                <span className="text-white font-semibold">real, job-ready AI skills</span>{" "}
+                — not theory. Every course is broken into focused 15-minute lessons that fit your day and build your career.
+              </motion.p>
+
+              {/* CTAs */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.38 }}
+                className="flex flex-col sm:flex-row gap-4"
+              >
+                <Link href="/auth/signup">
+                  <motion.button
+                    whileHover={{ scale: 1.03, boxShadow: "0 0 50px rgba(75,152,173,0.28)" }}
+                    whileTap={{ scale: 0.97 }}
+                    className="inline-flex items-center gap-2.5 h-14 px-8 rounded-full bg-[#4b98ad] text-[#080810] font-black text-[15px] uppercase tracking-wider shadow-[0_0_30px_rgba(75,152,173,0.18)] transition-shadow"
+                  >
+                    Start Learning Free
+                    <ArrowRight className="w-4 h-4" />
+                  </motion.button>
+                </Link>
                 <Link href="/courses">
-                  <Button size="lg" className="w-full sm:w-auto h-[clamp(3rem,4vw,4.5rem)] px-[clamp(1.5rem,2vw,2.5rem)] text-[clamp(1rem,1.2vw,1.25rem)] rounded-full bg-white text-slate-900 hover:bg-slate-200 shadow-xl transition-all hover:scale-105 font-bold">
-                    Start Learning
-                    <ArrowRight className="ml-2 w-[clamp(1rem,1.2vw,1.5rem)] h-[clamp(1rem,1.2vw,1.5rem)]" />
-                  </Button>
+                  <motion.button
+                    whileHover={{ scale: 1.02, borderColor: "rgba(255,255,255,0.22)" }}
+                    whileTap={{ scale: 0.98 }}
+                    className="inline-flex items-center gap-2.5 h-14 px-8 rounded-full bg-white/[0.06] border border-white/[0.12] text-white font-bold text-[15px] tracking-wide hover:bg-white/[0.09] transition-all"
+                  >
+                    <Play className="w-4 h-4 text-[#4b98ad]" />
+                    Browse Library
+                  </motion.button>
                 </Link>
-                <Link href="#how-it-works">
-                  <Button size="lg" variant="ghost" className="w-full sm:w-auto h-[clamp(3rem,4vw,4.5rem)] px-[clamp(1.5rem,2vw,2.5rem)] text-[clamp(1rem,1.2vw,1.25rem)] rounded-full text-white hover:bg-white/10 gap-2 border border-white/20 hover:border-white/40">
-                    <PlayCircle className="w-[clamp(1.2rem,1.5vw,1.5rem)] h-[clamp(1.2rem,1.5vw,1.5rem)]" />
-                    How it works
-                  </Button>
-                </Link>
-              </div>
+              </motion.div>
 
-              {/* Social Proof Mini */}
-              <div className="pt-6 flex items-center gap-3 text-sm lg:text-base font-medium text-slate-500 dark:text-slate-400">
-                <div className="flex -space-x-2">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="w-8 h-8 rounded-full border-2 border-white dark:border-slate-900 bg-slate-200 dark:bg-slate-700" />
-                  ))}
-                </div>
-                <div>Joined by 12,000+ Learners</div>
-              </div>
-
-            </div>
-
-            {/* Right Content - The Avatar */}
-            <div className="relative h-full flex items-end justify-center lg:justify-end animate-fade-in animate-delay-200 lg:mt-0">
-              <div className="relative w-full max-w-[38rem] h-[clamp(25rem,60vh,45rem)]">
-                {/* Back Glow */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-radial-gradient from-primary/20 to-transparent blur-3xl pointer-events-none" />
-
-                <VoiceAvatar
-                  className="w-full h-full object-contain object-bottom mx-auto"
-                  src="/ai_avatar/ai_avatar_no_back_ground.mp4"
-                  transparent={false}
-                />
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* Three-Phase Approach */}
-      <section className="mx-auto w-[95%] max-w-7xl my-4 rounded-3xl border border-slate-200 dark:border-white/5 shadow-2xl py-20 lg:py-32 bg-slate-50 dark:bg-[#0B101E] relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute top-0 left-0 w-full h-full opacity-30 pointer-events-none">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-primary rounded-full blur-3xl opacity-20 dark:opacity-10"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary rounded-full blur-3xl opacity-20 dark:opacity-10"></div>
-        </div>
-
-        <div className="container mx-auto px-4 relative z-10 max-w-7xl">
-          <div className="text-center mb-12 space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full text-primary font-semibold text-xs tracking-wider uppercase mb-2">
-              <Compass className="w-3.5 h-3.5" />
-              <span>Learning Approach</span>
-            </div>
-            <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white leading-tight">
-              Your Journey to <span className="text-primary">AI Success</span>
-            </h2>
-            <p className="text-[clamp(1rem,1.4vw,1.35rem)] text-slate-900 dark:text-slate-100 max-w-2xl mx-auto font-medium">
-              A structured, proven methodology designed to take you from beginner to expert
-            </p>
-          </div>
-
-          {/* Three Phase Cards */}
-          <div className="grid md:grid-cols-3 gap-6 mb-16 max-w-6xl mx-auto">
-            {[
-              {
-                phase: "01",
-                icon: Target,
-                title: "Selection",
-                description: "Browse curated content with AI-powered course selection to match your goals and skill level.",
-                color: "from-primary to-cyan-500",
-                bgColor: "bg-cyan-50 dark:bg-primary/10",
-                iconColor: "text-primary",
-                image: "/mastery/Phase 1.png"
-              },
-              {
-                phase: "02",
-                icon: Rocket,
-                title: "Execution",
-                description: "Engage with world-class lessons, practical exercises, and AI tutoring for optimal learning outcomes.",
-                color: "from-cyan-500 to-emerald-500",
-                bgColor: "bg-emerald-50 dark:bg-emerald-900/20",
-                iconColor: "text-emerald-600",
-                image: "/mastery/Phase 2.png"
-              },
-              {
-                phase: "03",
-                icon: Award,
-                title: "Validation",
-                description: "Complete assessments and earn verified certificates to showcase your expertise to employers worldwide.",
-                color: "from-primary to-blue-500",
-                bgColor: "bg-blue-50 dark:bg-blue-900/20",
-                iconColor: "text-blue-600",
-                image: "/mastery/Phase 3.png"
-              },
-            ].map((item, index) => {
-              const phaseLinks = ['selection', 'execution', 'validation'];
-              return (
-                <Link href={`/phases/${phaseLinks[index]}`} key={index}>
-                  <div className="group relative h-full">
-                    {/* Connecting line (hidden on mobile) */}
-                    {index < 2 && (
-                      <div className="hidden md:block absolute top-14 left-full w-8 h-0.5 bg-gradient-to-r from-slate-200 to-slate-200/50 dark:from-slate-700 dark:to-slate-700/50 z-0">
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
-                      </div>
-                    )}
-
-                    <Card className="relative h-full bg-white dark:bg-slate-800 border-none shadow-lg hover:shadow-2xl hover:ring-2 hover:ring-primary/50 transition-all duration-300 group-hover:-translate-y-2 overflow-hidden cursor-pointer">
-                      {/* Image Header */}
-                      <div className="relative h-48 overflow-hidden">
-                        <Image
-                          src={item.image}
-                          alt={item.title}
-                          fill
-                          className="object-cover group-hover:scale-110 transition-transform duration-500"
-                          sizes="(max-width: 768px) 100vw, 33vw"
-                        />
-                        {/* Gradient overlay */}
-
-
-                        {/* Phase number badge */}
-                        <div className="absolute top-4 left-4 z-10">
-                          <div className="inline-block px-3 py-1.5 rounded-lg bg-white/20 backdrop-blur-md text-white font-bold text-base shadow-lg border border-white/30">
-                            PHASE {item.phase}
-                          </div>
-                        </div>
-                      </div>
-
-                      <CardContent className="p-6 space-y-5">
-                        {/* Icon */}
-                        <div className={`w-14 h-14 rounded-2xl ${item.bgColor} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                          <item.icon className={`w-7 h-7 ${item.iconColor}`} />
-                        </div>
-
-                        {/* Content */}
-                        <div className="space-y-3">
-                          <h3 className="text-[14pt] font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">
-                            {item.title}
-                          </h3>
-                          <p className="text-slate-900 dark:text-slate-100 leading-relaxed font-medium text-[12pt]">
-                            {item.description}
-                          </p>
-                        </div>
-
-                        {/* Decorative element */}
-                        <div className={`h-1 w-12 rounded-full bg-gradient-to-r ${item.color} group-hover:w-full transition-all duration-500`}></div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* Stats Section - Enhanced with Image */}
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden max-w-5xl mx-auto">
-            {/* Image Header */}
-            <div className="relative h-64 overflow-hidden">
-              <Image
-                src="/mastery/Phase 1.png"
-                alt="Trusted by Thousands Worldwide"
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 1024px"
-              />
-              {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/60 via-primary/60 to-cyan-500/60"></div>
-              <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-slate-800 via-white/50 dark:via-slate-800/50 to-transparent"></div>
-            </div>
-
-            {/* Content */}
-            <div className="p-8 lg:p-12 -mt-16 relative z-10">
-              <div className="text-center mb-10">
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">
-                  Trusted by Thousands Worldwide
-                </h3>
-                <p className="text-base text-slate-600 dark:text-slate-400">
-                  Join a growing community of AI enthusiasts and professionals
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {/* Trust badges — matches original */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.56 }}
+                className="flex flex-wrap items-center gap-6 pt-1"
+              >
                 {[
-                  { value: "500+", label: "Completed", icon: CheckCircle2, color: "bg-green-500" },
-                  { value: "150+", label: "Courses", icon: BookOpen, color: "bg-blue-500" },
-                  { value: "5000+", label: "Students", icon: Users, color: "bg-indigo-500" },
-                  { value: "99.5%", label: "Uptime", icon: TrendingUp, color: "bg-cyan-500" },
-                ].map((stat, index) => (
-                  <div key={index} className="text-center group">
-                    <div className={`w-16 h-16 ${stat.color} rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg`}>
-                      <stat.icon className="w-8 h-8 text-white" />
-                    </div>
-                    <p className="text-[clamp(1.5rem,2vw,2.5rem)] font-bold text-slate-900 dark:text-white mb-2">
-                      {stat.value}
-                    </p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">
-                      {stat.label}
-                    </p>
+                  { icon: CheckCircle2, text: "Build AI Tools" },
+                  { icon: Award,        text: "Get Certified" },
+                  { icon: Brain,        text: "Lead with AI" },
+                ].map(({ icon: Icon, text }) => (
+                  <div key={text} className="flex items-center gap-2 text-white/40">
+                    <Icon className="w-4 h-4 text-[#4b98ad]" />
+                    <span className="font-semibold text-sm">{text}</span>
                   </div>
                 ))}
+              </motion.div>
+            </div>
+
+            {/* RIGHT: Avatar */}
+            <motion.div
+              initial={{ opacity: 0, scale: 1.25, y: 20 }}
+              animate={{ opacity: 1, scale: 1.3, y: 0 }}
+              transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="relative hidden md:block md:col-span-5 origin-center"
+            >
+              {/* Ambient glow behind card */}
+              <div className="absolute -inset-8 bg-[#4b98ad]/12 rounded-full blur-[70px] -z-10" />
+
+              <div className="relative rounded-[2rem] overflow-hidden border border-white/[0.10] shadow-2xl aspect-video bg-[#0c0c1a]">
+                <VoiceAvatar
+                  key="hero-intro-v11"
+                  className="w-full h-full"
+                  src="/videos/intro.mp4"
+                  poster="/sarah_host.png"
+                  transparent={false}
+                  overlayControls={true}
+                />
+
+                {/* Gradient overlay at bottom of video */}
+                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#080810]/60 to-transparent pointer-events-none" />
               </div>
+
+            </motion.div>
+
+          </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 scroll-bounce">
+          <span className="font-mono text-[12px] uppercase tracking-[0.25em] text-white/25">Scroll</span>
+          <ChevronDown className="w-4 h-4 text-white/25" />
+        </div>
+
+        {/* Bottom fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#080810] to-transparent pointer-events-none" />
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECTION 1B — Watch AI Think
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="relative border-b border-white/[0.06] py-20 md:py-28 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[400px] bg-[#4b98ad]/[0.04] blur-[120px] rounded-full" />
+        </div>
+        <div className="relative mx-auto w-[95%] max-w-screen-2xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.65 }}
+            className="text-center max-w-2xl mx-auto mb-14"
+          >
+            <span className="font-mono text-[13px] uppercase tracking-[0.28em] text-[#4b98ad] mb-4 block">
+              Interactive Simulation
+            </span>
+            <h2
+              className="font-black text-white mb-4"
+              style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)", letterSpacing: "-0.03em" }}
+            >
+              Watch AI <span className="text-[#4b98ad]">Think</span>
+            </h2>
+            <p className="text-white/45 text-base md:text-lg leading-relaxed">
+              Visualise the inner workings of a neural network. Watch how data flows through layers of artificial neurons to make predictions in real-time.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="flex justify-center"
+          >
+            <NeuralNetworkAnimation />
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECTION 2 — The Numbers Don't Lie
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="relative border-t border-b border-white/[0.06] py-20 md:py-28 overflow-hidden">
+        {/* Subtle background accent */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-[#4b98ad]/[0.04] blur-[100px] rounded-full" />
+        </div>
+
+        <div className="relative mx-auto w-[95%] max-w-screen-2xl">
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center font-mono text-[13px] uppercase tracking-[0.25em] text-white/25 mb-14"
+          >
+            The numbers don&apos;t lie
+          </motion.p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/[0.06]">
+            {/* Stat 1 */}
+            <motion.div
+              initial={{ opacity: 0, y: 32 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.65, delay: 0 }}
+              className="bg-[#080810] px-10 py-16 md:py-20 flex flex-col gap-4"
+            >
+              <div className="font-black leading-none text-[#FF6B6B]"
+                   style={{ fontSize: "clamp(4rem, 10vw, 7rem)" }}>
+                <span ref={stat1.ref}>{stat1.count}</span>%
+              </div>
+              <div className="w-8 h-[2px] bg-[#FF6B6B]/40" />
+              <p className="text-white/45 text-base md:text-lg leading-snug max-w-[240px]">
+                Of traditional course takers quit before finishing
+              </p>
+            </motion.div>
+
+            {/* Stat 2 */}
+            <motion.div
+              initial={{ opacity: 0, y: 32 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.65, delay: 0.12 }}
+              className="bg-[#080810] px-10 py-16 md:py-20 flex flex-col gap-4"
+            >
+              <div className="font-black leading-none text-[#FFB347]"
+                   style={{ fontSize: "clamp(4rem, 10vw, 7rem)" }}>
+                40 hrs
+              </div>
+              <div className="w-8 h-[2px] bg-[#FFB347]/40" />
+              <p className="text-white/45 text-base md:text-lg leading-snug max-w-[240px]">
+                Average AI course length. Most people have 15 minutes.
+              </p>
+            </motion.div>
+
+            {/* Stat 3 */}
+            <motion.div
+              initial={{ opacity: 0, y: 32 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.65, delay: 0.24 }}
+              className="bg-[#080810] px-10 py-16 md:py-20 flex flex-col gap-4"
+            >
+              <div className="font-black leading-none text-[#4b98ad]"
+                   style={{ fontSize: "clamp(4rem, 10vw, 7rem)" }}>
+                <span ref={stat3.ref}>{stat3.count}</span> min
+              </div>
+              <div className="w-8 h-[2px] bg-[#4b98ad]/40" />
+              <p className="text-white/45 text-base md:text-lg leading-snug max-w-[240px]">
+                All you need. Per lesson. Per day. That&apos;s the whole promise.
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECTION 3 — AI Companies (trust logos)
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="py-14 border-b border-white/[0.06]">
+        <div className="mx-auto w-[88%] max-w-6xl px-6 lg:px-12">
+          <p className="text-center font-mono text-[12px] uppercase tracking-[0.28em] text-white/22 mb-10">
+            Learn to use tools from the world&apos;s leading AI companies
+          </p>
+          <AICompaniesGrid />
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECTION 4 — Velocity Ticker (Marquee)
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="py-10 bg-[#0a0a0f] border-b border-white/[0.05] overflow-hidden">
+        <div className="mb-4 overflow-hidden">
+          {/* Row 1 — scrolls left */}
+          <div className="flex whitespace-nowrap">
+            <div className="marquee-left flex gap-3 items-center">
+              {[...MARQUEE_ROW_1, ...MARQUEE_ROW_1].map((item, i) => (
+                <span
+                  key={i}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.04] border border-white/[0.07] font-mono text-[14px] uppercase tracking-wider shrink-0"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: item.colour }} />
+                  <span className="text-white/55">{item.label}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Row 2 — scrolls right */}
+        <div className="overflow-hidden">
+          <div className="flex whitespace-nowrap">
+            <div className="marquee-right flex gap-3 items-center">
+              {[...MARQUEE_ROW_2, ...MARQUEE_ROW_2].map((item, i) => (
+                <span
+                  key={i}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.04] border border-white/[0.07] font-mono text-[14px] uppercase tracking-wider shrink-0"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: item.colour }} />
+                  <span className="text-white/55">{item.label}</span>
+                </span>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Built for Performance Section */}
-      <section className="mx-auto w-[95%] max-w-7xl my-4 rounded-3xl border border-slate-200 dark:border-white/5 shadow-2xl py-20 lg:py-32 bg-white dark:bg-[#020617] relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute inset-0 opacity-40 pointer-events-none">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-primary rounded-full blur-3xl opacity-10"></div>
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary rounded-full blur-3xl opacity-10"></div>
-        </div>
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECTION 5 — Old World vs New World (Manifesto)
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="py-28 md:py-40 border-b border-white/[0.06]">
+        <div className="mx-auto w-[88%] max-w-6xl px-6 lg:px-12">
 
-        <div className="container mx-auto px-4 relative z-10 max-w-7xl">
-          {/* Section Header */}
-          <div className="text-center mb-16 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-primary/10 to-primary/10 rounded-full border border-primary/20">
-              <Sparkles className="w-3.5 h-3.5 text-primary" />
-              <span className="text-sm text-primary font-semibold uppercase tracking-wider">
-                Features
-              </span>
+          {/* Provocative statement */}
+          <motion.div
+            initial={{ opacity: 0, y: 36 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="mb-16"
+          >
+            <span className="font-mono text-[13px] uppercase tracking-[0.28em] text-[#FF6B6B] mb-5 block">The truth</span>
+            <h2
+              className="font-black text-white leading-[0.92]"
+              style={{ fontSize: "clamp(2.8rem, 7vw, 5.5rem)", letterSpacing: "-0.03em" }}
+            >
+              AI education was broken.<br />
+              <span className="text-white/35">We fixed it.</span>
+            </h2>
+            <div className="mt-10">
+              <Link href="/auth/signup">
+                <motion.button
+                  whileHover={{ scale: 1.04, boxShadow: "0 0 50px rgba(75,152,173,0.30)" }}
+                  whileTap={{ scale: 0.97 }}
+                  className="inline-flex items-center gap-3 h-14 px-8 rounded-full bg-[#4b98ad] text-[#080810] font-black text-base uppercase tracking-wider shadow-[0_0_30px_rgba(75,152,173,0.18)] transition-shadow"
+                >
+                  Join Free — Start Today
+                  <ArrowRight className="w-4 h-4" />
+                </motion.button>
+              </Link>
             </div>
+          </motion.div>
 
-            <div className="space-y-4">
-              <h2 className="text-2xl lg:text-4xl font-bold text-slate-900 dark:text-white">
-                Built for <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-700 to-cyan-500">Performance</span>
-              </h2>
-              <p className="text-base lg:text-lg text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed">
-                Enterprise-grade learning infrastructure designed for modern professionals seeking excellence
-              </p>
-            </div>
+          {/* Comparison cards */}
+          <div className="grid md:grid-cols-2 gap-4">
+
+            {/* Old way */}
+            <motion.div
+              initial={{ opacity: 0, x: -24 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.65 }}
+              className="rounded-2xl bg-white/[0.02] border border-white/[0.06] p-8 md:p-10"
+            >
+              <p className="font-mono text-[12px] uppercase tracking-[0.25em] text-white/25 mb-8">Old way</p>
+              <ul className="space-y-5">
+                {[
+                  "Rambling 40-hour video lectures",
+                  "Theory-first, practice never",
+                  "Irrelevant academic bloat",
+                  "Outdated content within months",
+                  "No practical takeaways whatsoever",
+                ].map(item => (
+                  <li key={item} className="flex items-start gap-3.5 text-white/35">
+                    <span className="mt-[5px] w-1.5 h-1.5 rounded-full bg-[#FF6B6B]/60 shrink-0" />
+                    <span className="text-[15px] leading-snug">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+
+            {/* AI Bytes way */}
+            <motion.div
+              initial={{ opacity: 0, x: 24 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.65, delay: 0.1 }}
+              className="rounded-2xl bg-[#4b98ad]/[0.04] border border-[#4b98ad]/[0.18] p-8 md:p-10 relative overflow-hidden"
+            >
+              {/* Top accent line */}
+              <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#4b98ad]/60 to-transparent" />
+              <p className="font-mono text-[12px] uppercase tracking-[0.25em] text-[#4b98ad] mb-8">AI Bytes Learning way</p>
+              <ul className="space-y-5">
+                {[
+                  "15-minute, high-impact micro-lessons",
+                  "Instant, practical understanding",
+                  "Zero fluff — outcome-focused only",
+                  "AI-generated, always current content",
+                  "Skills you can use tomorrow morning",
+                ].map(item => (
+                  <li key={item} className="flex items-start gap-3.5 text-white">
+                    <CheckCircle2 className="mt-[2px] w-4 h-4 text-[#4b98ad] shrink-0" />
+                    <span className="text-[15px] leading-snug">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
           </div>
+        </div>
+      </section>
 
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECTION 6 — Three Steps. Then You're Dangerous.
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="py-28 md:py-40 border-b border-white/[0.06] overflow-hidden">
+        <div className="mx-auto w-[88%] max-w-6xl px-6 lg:px-12">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="mb-20"
+          >
+            <span className="font-mono text-[13px] uppercase tracking-[0.28em] text-[#4b98ad] mb-5 block">How it works</span>
+            <h2
+              className="font-black text-white leading-[0.92]"
+              style={{ fontSize: "clamp(2.6rem, 6vw, 5rem)", letterSpacing: "-0.03em" }}
+            >
+              Three steps.<br />
+              <span className="text-white/30">Then you&apos;re dangerous.</span>
+            </h2>
+          </motion.div>
 
-          {/* Features Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-6 relative">
+            {/* Connector line — desktop only */}
+            <div className="hidden md:block absolute top-[3.5rem] left-[calc(33.33%+1rem)] right-[calc(33.33%+1rem)] h-[1px] bg-gradient-to-r from-[#4b98ad]/30 via-[#4b98ad]/30 to-[#FFB347]/30" />
+
             {[
               {
-                image: "/icons/structured_learning.png",
-                title: "Structured Learning",
-                description: "Byte-sized lessons with clear progression paths for maximum retention",
-                gradient: "from-primary to-cyan-500",
-                bgGradient: "from-cyan-50 to-blue-50",
-                link: "/features/structured-learning",
+                step: "01",
+                title: "Pick your path",
+                desc: "Choose from 12 AI learning categories — foundations, generative AI, business strategy, and more. No prerequisites. No gatekeeping.",
+                colour: "#4b98ad",
+                icon: BookOpen,
               },
               {
-                image: "/icons/time_optimised.png",
-                title: "Time-Optimised",
-                description: "60-minute courses designed for busy professionals who value their time",
-                gradient: "from-[#06b6d4] to-primary",
-                bgGradient: "from-cyan-50 to-teal-50",
-                link: "/features/time-optimised",
+                step: "02",
+                title: "Learn in Bytes",
+                desc: "Each lesson is a focused 15-minute block. Real examples, interactive exercises, no filler. Finish one on your lunch break.",
+                colour: "#4b98ad",
+                icon: Zap,
               },
               {
-                image: "/icons/ai_powered.png",
-                title: "AI-Powered",
-                description: "Intelligent study companion and adaptive learning recommendations",
-                gradient: "from-emerald-500 to-primary",
-                bgGradient: "from-emerald-50 to-teal-50",
-                link: "/features/ai-powered",
+                step: "03",
+                title: "Get certified",
+                desc: "Pass a short knowledge check and earn a verified certificate. Add it to LinkedIn — it&apos;s proof you did the work.",
+                colour: "#FFB347",
+                icon: Award,
               },
-              {
-                image: "/icons/analytics.png",
-                title: "Progress Analytics",
-                description: "Track your learning journey with detailed completion and performance insights",
-                gradient: "from-primary to-[#0e7490]",
-                bgGradient: "from-teal-50 to-cyan-50",
-                link: "/features/progress-analytics",
-              },
-              {
-                image: "/icons/certification.png",
-                title: "Verified Certification",
-                description: "Industry-recognised certificates with blockchain verification and LinkedIn integration",
-                gradient: "from-primary to-emerald-500",
-                bgGradient: "from-teal-50 to-emerald-50",
-                link: "/features/verified-certification",
-              },
-              {
-                image: "/icons/enterprise.png",
-                title: "Enterprise Ready",
-                description: "Team management with bulk certificate generation and comprehensive admin dashboards",
-                gradient: "from-cyan-500 to-teal-500",
-                bgGradient: "from-cyan-50 to-teal-50",
-                link: "/features/enterprise-ready",
-              },
-            ].map((feature, index) => (
-              <Link href={feature.link} key={index} className="block group h-full">
-                <Card
-                  className="group relative bg-white dark:bg-slate-800 border-none shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden h-full"
+            ].map((item, i) => (
+              <motion.div
+                key={item.step}
+                initial={{ opacity: 0, y: 28 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.65, delay: i * 0.12 }}
+                className="relative rounded-2xl bg-white/[0.03] border border-white/[0.07] p-8 overflow-hidden group hover:border-white/[0.14] transition-colors duration-300"
+              >
+                {/* Decorative step number */}
+                <span
+                  className="absolute -top-4 -left-2 font-black leading-none pointer-events-none select-none"
+                  style={{ fontSize: "8rem", color: item.colour, opacity: 0.05 }}
                 >
-                  {/* Gradient border on hover */}
-                  <div className={`absolute inset-0 bg-gradient-to-r ${feature.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10`}></div>
-                  <div className="absolute inset-[2px] bg-white dark:bg-slate-800 rounded-lg -z-5"></div>
+                  {item.step}
+                </span>
+                {/* Top accent */}
+                <div className="absolute top-0 left-0 right-0 h-[1.5px]"
+                     style={{ background: `linear-gradient(90deg, transparent, ${item.colour}55, transparent)` }} />
 
-                  {/* Background gradient */}
-                  <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${feature.bgGradient} rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
+                <div className="relative">
+                  <div
+                    className="w-11 h-11 rounded-xl flex items-center justify-center mb-5"
+                    style={{ background: item.colour + "18" }}
+                  >
+                    <item.icon className="w-5 h-5" style={{ color: item.colour }} />
+                  </div>
+                  <h3
+                    className="font-black text-xl text-white mb-3 tracking-tight"
+                  >
+                    {item.title}
+                  </h3>
+                  <p className="text-white/48 text-[15px] leading-relaxed">{item.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
 
-                  <CardContent className="relative p-8 space-y-5">
-                    {/* Icon/Thumbnail Image */}
-                    <div className="relative mx-auto w-40">
-                      <div className={`w-40 h-40 rounded-2xl bg-gradient-to-r ${feature.gradient} p-[2px] shadow-lg group-hover:scale-105 group-hover:rotate-1 transition-all duration-500`}>
-                        <div className="w-full h-full bg-slate-900 rounded-2xl overflow-hidden relative">
-                          <Image
-                            src={feature.image}
-                            alt={feature.title}
-                            fill
-                            className="object-cover"
-                            sizes="256px"
-                            unoptimized
-                          />
-                        </div>
-                      </div>
-                      {/* Glow effect */}
-                      <div className={`absolute inset-0 w-40 h-40 rounded-2xl bg-gradient-to-r ${feature.gradient} blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-500 -z-10`}></div>
+          <div className="mt-14">
+            <Link href="/auth/signup">
+              <motion.button
+                whileHover={{ scale: 1.03, boxShadow: "0 0 40px rgba(155,143,255,0.22)" }}
+                whileTap={{ scale: 0.97 }}
+                className="inline-flex items-center gap-2.5 h-13 px-8 py-3.5 rounded-full bg-[#4b98ad] text-[#080810] font-black text-[14px] uppercase tracking-wider transition-shadow"
+              >
+                Start your first Byte
+                <ArrowRight className="w-4 h-4" />
+              </motion.button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECTION 6B — Meet Sterling
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="relative py-28 md:py-40 border-b border-white/[0.06] overflow-hidden">
+        {/* Background: iris blob left, pulse blob right */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -left-64 top-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-[#4b98ad]/[0.07] blur-[120px]" />
+          <div className="absolute -right-40 bottom-0 w-[500px] h-[500px] rounded-full bg-[#4b98ad]/[0.05] blur-[100px]" />
+        </div>
+
+        <div className="relative mx-auto w-[95%] max-w-screen-2xl grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+
+          {/* LEFT — Sterling orb visual */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            className="relative flex items-center justify-center"
+          >
+            {/* Outer pulse ring */}
+            <div className="absolute w-[340px] h-[340px] md:w-[420px] md:h-[420px] rounded-full border border-[#4b98ad]/[0.15] animate-[pulse-ring_3s_ease-in-out_infinite]" />
+            <div className="absolute w-[280px] h-[280px] md:w-[350px] md:h-[350px] rounded-full border border-[#4b98ad]/[0.10] animate-[pulse-ring_3s_ease-in-out_infinite_0.5s]" />
+
+            {/* Core orb */}
+            <div className="relative w-[220px] h-[220px] md:w-[270px] md:h-[270px] rounded-full flex items-center justify-center"
+              style={{
+                background: "radial-gradient(ellipse at 35% 35%, #4b98ad33 0%, #4b98ad11 50%, #080810 100%)",
+                boxShadow: "0 0 80px rgba(155,143,255,0.18), inset 0 0 60px rgba(155,143,255,0.08)",
+              }}
+            >
+              {/* Inner glow ring */}
+              <div className="absolute inset-3 rounded-full"
+                style={{ border: "1px solid rgba(155,143,255,0.25)", boxShadow: "inset 0 0 40px rgba(155,143,255,0.12)" }} />
+
+              {/* Sterling wordmark */}
+              <div className="text-center relative z-10">
+                <p className="font-mono text-[12px] uppercase tracking-[0.28em] text-[#4b98ad]/60 mb-2">AI Tutor</p>
+                <p className="font-black text-white tracking-tight" style={{ fontSize: "clamp(1.8rem, 4vw, 2.6rem)", letterSpacing: "-0.03em" }}>Sterling</p>
+                {/* Live indicator */}
+                <div className="flex items-center justify-center gap-1.5 mt-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#4b98ad]" style={{ boxShadow: "0 0 6px #4b98ad" }} />
+                  <span className="font-mono text-[12px] text-[#4b98ad]/80 uppercase tracking-widest">Always On</span>
+                </div>
+              </div>
+
+              {/* Orbiting ring 1 — iris dot */}
+              <motion.div
+                className="absolute inset-0 rounded-full"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+              >
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1.5 w-3 h-3 rounded-full bg-[#4b98ad]"
+                  style={{ boxShadow: "0 0 10px #4b98ad" }} />
+              </motion.div>
+
+              {/* Orbiting ring 2 — pulse dot */}
+              <motion.div
+                className="absolute inset-0 rounded-full"
+                animate={{ rotate: -360 }}
+                transition={{ duration: 13, repeat: Infinity, ease: "linear" }}
+              >
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-2 h-2 rounded-full bg-[#4b98ad]/80"
+                  style={{ boxShadow: "0 0 8px #4b98ad" }} />
+              </motion.div>
+            </div>
+
+            {/* Floating capability chips around the orb */}
+            {[
+              { label: "Explains concepts",    colour: "#4b98ad", x: "-90%", y: "-25%",  delay: 0    },
+              { label: "Answers questions",     colour: "#4b98ad", x: "35%",   y: "-85%", delay: 0.1  },
+              { label: "Gives examples",        colour: "#FFB347", x: "65%",   y: "25%",   delay: 0.2  },
+              { label: "Quizzes you",           colour: "#FF6B6B", x: "-75%",  y: "60%",   delay: 0.3  },
+              { label: "Always available",      colour: "#4b98ad", x: "15%",   y: "90%",  delay: 0.4  },
+            ].map((chip) => (
+              <motion.div
+                key={chip.label}
+                initial={{ opacity: 0, scale: 0.7 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.6 + chip.delay, duration: 0.5 }}
+                className="absolute hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full border backdrop-blur-sm whitespace-nowrap"
+                style={{
+                  left: `calc(50% + ${chip.x})`,
+                  top: `calc(50% + ${chip.y})`,
+                  borderColor: chip.colour + "30",
+                  background: chip.colour + "0D",
+                  transform: "translate(-50%, -50%)",
+                }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: chip.colour }} />
+                <span className="font-mono text-[13px] text-white/60 uppercase tracking-wider">{chip.label}</span>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* RIGHT — Copy */}
+          <motion.div
+            initial={{ opacity: 0, x: 32 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col gap-8"
+          >
+            <div>
+              <span className="font-mono text-[13px] uppercase tracking-[0.28em] text-[#4b98ad] mb-5 block">Your AI tutor</span>
+              <h2
+                className="font-black leading-tight mb-6"
+                style={{ fontSize: "clamp(2.4rem, 5vw, 4.2rem)", letterSpacing: "-0.03em" }}
+              >
+                <span className="text-white/50">Meet</span> <span className="text-white">Sterling.</span><br />
+                <span className="text-white/30">He knows everything.</span>
+              </h2>
+              <p className="text-white/50 text-lg leading-relaxed max-w-md">
+                Sterling is your always-on British AI tutor. Not a chatbot. Not a FAQ page.
+                An actual intelligent guide who adapts to you — explaining concepts in your words,
+                answering your real questions, and pushing you further when you&apos;re ready.
+              </p>
+            </div>
+
+            {/* Capability list */}
+            <ul className="space-y-4">
+              {[
+                {
+                  icon: MessageSquare,
+                  label: "Explains any concept",
+                  desc: "Ask Sterling to break down anything — from attention mechanisms to boardroom AI strategy.",
+                  colour: "#4b98ad",
+                },
+                {
+                  icon: Brain,
+                  label: "Knows your progress",
+                  desc: "Sterling tracks what you've learned and focuses on what you're still fuzzy on.",
+                  colour: "#4b98ad",
+                },
+                {
+                  icon: Sparkles,
+                  label: "Available mid-lesson",
+                  desc: "Stuck on a slide? Hit the Sterling button. He's right there, always in context.",
+                  colour: "#FFB347",
+                },
+                {
+                  icon: Zap,
+                  label: "Sharp, not sycophantic",
+                  desc: "Sterling doesn't just tell you what you want to hear. He'll challenge you. That's the point.",
+                  colour: "#FF6B6B",
+                },
+              ].map((item, i) => (
+                <motion.li
+                  key={item.label}
+                  initial={{ opacity: 0, x: 16 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.2 + i * 0.1, duration: 0.5 }}
+                  className="flex items-start gap-4"
+                >
+                  <div
+                    className="mt-0.5 w-9 h-9 rounded-xl shrink-0 flex items-center justify-center"
+                    style={{ background: item.colour + "16" }}
+                  >
+                    <item.icon className="w-4 h-4" style={{ color: item.colour }} />
+                  </div>
+                  <div>
+                    <p className="font-black text-white text-[15px] tracking-tight mb-0.5">{item.label}</p>
+                    <p className="text-white/40 text-[14px] leading-snug">{item.desc}</p>
+                  </div>
+                </motion.li>
+              ))}
+            </ul>
+
+            {/* CTA */}
+            <div className="flex items-center gap-4 pt-2">
+              <motion.button
+                whileHover={{ scale: 1.03, boxShadow: "0 0 40px rgba(155,143,255,0.28)" }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => window.dispatchEvent(new CustomEvent('open-sterling'))}
+                className="inline-flex items-center gap-2.5 h-12 px-7 rounded-full bg-[#4b98ad] text-[#080810] font-black text-[13px] uppercase tracking-wider transition-shadow cursor-pointer border-0"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-[#080810]/40 animate-pulse" />
+                Talk to Sterling
+              </motion.button>
+              <span className="font-mono text-[14px] text-white/25 uppercase tracking-wider">Free with every account</span>
+            </div>
+          </motion.div>
+
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECTION 7 — Categories Bento Grid
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="py-28 md:py-40 border-b border-white/[0.06]">
+        <div className="mx-auto w-[95%] max-w-screen-2xl">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-14">
+            <div>
+              <motion.span
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                className="font-mono text-[13px] uppercase tracking-[0.28em] text-[#4b98ad] mb-4 block"
+              >
+                Explore
+              </motion.span>
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.65 }}
+                className="font-black text-white leading-[0.92]"
+                style={{ fontSize: "clamp(2.4rem, 5.5vw, 4.5rem)", letterSpacing: "-0.03em" }}
+              >
+                12 learning paths.<br />
+                <span className="text-white/30">One platform.</span>
+              </motion.h2>
+            </div>
+            <Link
+              href="/courses"
+              className="inline-flex items-center gap-2 font-mono text-[14px] text-white/35 uppercase tracking-widest hover:text-white/65 hover:gap-3 transition-all group"
+            >
+              View all courses
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          </div>
+
+          {/* Uniform Square Layout */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+            {CATEGORIES.map((cat, i) => (
+                <motion.div
+                  key={cat.id}
+                  initial={{ opacity: 0, scale: 0.9, y: 16 }}
+                  whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-20px" }}
+                  transition={{ duration: 0.5, delay: i * 0.04 }}
+                  className="aspect-square"
+                >
+                  <Link
+                    href={`/courses?category=${cat.id}`}
+                    className="group relative flex flex-col items-center justify-center text-center p-4 md:p-6 rounded-2xl bg-white/[0.03] border border-white/[0.07] hover:bg-white/[0.08] hover:border-white/[0.18] hover:shadow-[0_0_40px_rgba(75,152,173,0.15)] transition-all duration-500 h-full overflow-hidden"
+                  >
+                    {/* Hover glow */}
+                    <div
+                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl pointer-events-none"
+                      style={{ background: `radial-gradient(ellipse at top center, ${cat.colour}12 0%, transparent 70%)` }}
+                    />
+
+                    <div
+                      className="relative w-14 h-14 md:w-20 md:h-20 rounded-2xl flex items-center justify-center mb-3 md:mb-5 transition-transform duration-500 group-hover:scale-110"
+                      style={{ background: cat.colour + "16" }}
+                    >
+                      <cat.icon className="w-7 h-7 md:w-10 md:h-10 transition-transform duration-500" style={{ color: cat.colour }} />
                     </div>
 
-                    {/* Content */}
-                    <div className="space-y-3 text-center">
-                      <h3 className="text-base lg:text-lg font-bold text-slate-900 dark:text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:bg-clip-text group-hover:from-slate-900 group-hover:to-slate-600 dark:group-hover:from-white dark:group-hover:to-slate-300 transition-all duration-300">
-                        {feature.title}
-                      </h3>
-                      <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-sm lg:text-base">
-                        {feature.description}
-                      </p>
-                    </div>
+                    <p className="relative font-black text-[15px] md:text-[17px] text-white/70 group-hover:text-white leading-tight transition-colors px-1 w-full truncate">
+                      {cat.label}
+                    </p>
 
-                    {/* Decorative element */}
-                    <div className="flex items-center gap-2 pt-2">
-                      <div className={`h-1 rounded-full bg-gradient-to-r ${feature.gradient} w-8 group-hover:w-full transition-all duration-700`}></div>
+                    <div
+                      className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1.5 font-mono text-[10px] md:text-[11px] uppercase tracking-widest opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 w-full"
+                      style={{ color: cat.colour }}
+                    >
+                      Explore
+                      <ChevronRight className="w-3 h-3 md:w-3.5 md:h-3.5" />
                     </div>
-
-                    {/* Hover shine effect */}
-                    <div className="absolute top-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:left-full transition-all duration-1000"></div>
-                  </CardContent>
-                </Card>
-              </Link>
+                  </Link>
+                </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 
-        NEURAL NETWORK ANIMATION SECTION
-        "Visualizing Intelligence"
-      */}
-      <section className="mx-auto w-[95%] max-w-7xl my-4 rounded-3xl border border-slate-200 dark:border-white/5 shadow-2xl py-12 bg-slate-900 text-white overflow-hidden relative">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-900/20 via-slate-900 to-slate-900 pointer-events-none"></div>
-        <div className="container mx-auto px-4 max-w-7xl relative z-10">
-          <div className="text-center max-w-3xl mx-auto mb-8">
-            <Badge variant="outline" className="mb-4 border-primary/50 text-cyan-400">
-              <Sparkles className="w-3 h-3 mr-1" />
-              INTERACTIVE SIMULATION
-            </Badge>
-            <h2 className="text-2xl lg:text-4xl font-bold mb-4">
-              Watch AI <span className="text-cyan-400">Think</span>
-            </h2>
-            <p className="text-base lg:text-lg text-slate-400">
-              Visualize the inner workings of a neural network. Watch how data flows through layers of artificial neurons to make predictions in real-time.
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECTION 7.5 — News Ticker
+      ═══════════════════════════════════════════════════════════════════ */}
+      <NewsTicker />
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECTION 8 — Testimonials (rotated cards)
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="py-28 md:py-40 border-b border-white/[0.06] bg-[#09090f]">
+        <div className="mx-auto w-[95%] max-w-screen-2xl">
+          <div className="text-center mb-16">
+            <motion.span
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="font-mono text-[13px] uppercase tracking-[0.28em] text-[#FFB347] mb-4 block"
+            >
+              What learners say
+            </motion.span>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.65 }}
+              className="font-black text-white leading-[0.92]"
+              style={{ fontSize: "clamp(2.4rem, 5vw, 4rem)", letterSpacing: "-0.03em" }}
+            >
+              Real people.<br />
+              <span className="text-white/30">Real results.</span>
+            </motion.h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {TESTIMONIALS.map((t, i) => (
+              <motion.div
+                key={t.name}
+                initial={{ opacity: 0, y: 28 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.55, delay: i * 0.1 }}
+                whileHover={{ rotate: 0, y: -6, transition: { duration: 0.3 } }}
+                style={{ rotate: t.rotation } as React.CSSProperties}
+                className="rounded-2xl bg-white/[0.04] border border-white/[0.09] p-7 flex flex-col gap-5 cursor-default transition-shadow hover:shadow-[0_20px_60px_rgba(0,0,0,0.4)]"
+              >
+                <div className="flex gap-0.5">
+                  {Array.from({ length: t.stars }).map((_, s) => (
+                    <Star key={s} className="w-3.5 h-3.5 fill-[#FFB347] text-[#FFB347]" />
+                  ))}
+                </div>
+                <p className="text-white/65 text-[15px] leading-relaxed flex-1">
+                  &ldquo;{t.quote}&rdquo;
+                </p>
+                <div className="border-t border-white/[0.07] pt-4">
+                  <p className="font-bold text-white text-[14px]">{t.name}</p>
+                  <p className="font-mono text-[12px] text-white/32 uppercase tracking-wider mt-0.5">{t.role}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECTION 9 — Pricing
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="py-28 md:py-40 border-b border-white/[0.06]">
+        <div className="mx-auto w-[95%] max-w-screen-2xl">
+          <div className="text-center mb-16">
+            <motion.span
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="font-mono text-[13px] uppercase tracking-[0.28em] text-[#4b98ad] mb-4 block"
+            >
+              Pricing
+            </motion.span>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.65 }}
+              className="font-black text-white leading-[0.92]"
+              style={{ fontSize: "clamp(2.4rem, 5vw, 4rem)", letterSpacing: "-0.03em" }}
+            >
+              Start free.<br />
+              <span className="text-white/30">Scale when ready.</span>
+            </motion.h2>
+            <p className="text-white/35 text-base mt-5">
+              7-day free trial · No credit card for free tier · Cancel anytime
             </p>
           </div>
 
-          <div className="flex justify-center">
-            <NeuralNetworkAnimation />
-          </div>
-        </div>
-      </section>
+          <div className="grid md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+            {PLANS.map((plan, i) => (
+              <motion.div
+                key={plan.name}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.55, delay: i * 0.1 }}
+                className={`relative rounded-2xl border p-8 flex flex-col gap-7 ${
+                  plan.highlight
+                    ? "bg-[#4b98ad]/[0.07] border-[#4b98ad]/35"
+                    : "bg-white/[0.025] border-white/[0.08]"
+                }`}
+              >
+                {/* Top accent line */}
+                <div
+                  className="absolute top-0 left-0 right-0 h-[1.5px] rounded-t-2xl"
+                  style={{ background: `linear-gradient(90deg, transparent, ${plan.accentColour}60, transparent)` }}
+                />
 
-      {/* 
-        TRUST SECTION
-        Minimal Logos 
-      */}
-      <section className="mx-auto w-[95%] max-w-7xl my-4 rounded-3xl border border-slate-200 dark:border-white/5 shadow-2xl py-16 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4">
-          <p className="text-center text-lg font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-10">
-            Master the tools from industry leaders
-          </p>
+                {/* Most popular badge */}
+                {plan.highlight && (
+                  <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3.5 py-1 rounded-full bg-[#4b98ad] text-[#080810] font-mono font-black text-[12px] uppercase tracking-widest">
+                    Most Popular
+                  </span>
+                )}
 
-          <div className="max-w-7xl mx-auto">
-            <AICompaniesGrid />
-          </div>
-
-
-        </div>
-      </section>
-
-      {/* 
-        TOP CATEGORIES SECTION 
-        Re-integrated from previous design, updated with new theme 
-      */}
-      <section className="mx-auto w-[95%] max-w-7xl my-4 rounded-3xl border border-slate-200 dark:border-white/5 shadow-2xl py-12 lg:py-16 bg-slate-50 dark:bg-[#020617]">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <div className="text-center mb-10">
-            <div className="space-y-3 max-w-2xl mx-auto">
-              <Badge variant="secondary" className="mb-2 bg-blue-100 text-primary dark:bg-primary/20 dark:text-cyan-200 border-none text-xs px-2.5 py-0.5">
-                <BookOpen className="w-3.5 h-3.5 mr-1" />
-                EXPLORE PATHS
-              </Badge>
-              <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white">
-                Course <span className="text-gradient">Categories</span>
-              </h2>
-              <p className="text-base text-slate-600 dark:text-slate-400">
-                Explore our comprehensive range of AI learning paths - from foundations to advanced applications.
-              </p>
-            </div>
-          </div>
-          <div className="text-center mb-6">
-            <Link href="/courses">
-              <Button variant="outline" size="sm" className="rounded-full px-6 h-10 text-base border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-primary hover:border-primary">
-                View All Categories <ArrowRight className="ml-2 w-4 h-4" />
-              </Button>
-            </Link>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {[
-              {
-                icon: Brain,
-                label: "AI Foundations & Fundamentals",
-                desc: "The essential starting point - AI concepts, terminology, and real-world applications.",
-                color: "text-primary",
-                bg: "bg-cyan-50 dark:bg-primary/20",
-                image: "/categories/AI Foundations & Fundamentals.png"
-              },
-              {
-                icon: Wand2,
-                label: "Generative AI & LLMs",
-                desc: "Master ChatGPT, Claude, Gemini and text, image, video generation.",
-                color: "text-purple-600",
-                bg: "bg-purple-50 dark:bg-purple-900/20",
-                image: "/categories/Generative AI & Large Language Models (LLMs).png"
-              },
-              {
-                icon: MessageSquare,
-                label: "Prompt Engineering",
-                desc: "Write effective prompts and master AI communication techniques.",
-                color: "text-blue-600",
-                bg: "bg-blue-50 dark:bg-blue-900/20",
-                image: "/categories/Prompt Engineering & AI Communication.png"
-              },
-              {
-                icon: Code,
-                label: "AI Tools & Applications",
-                desc: "Hands-on with ChatGPT, Midjourney, and AI productivity platforms.",
-                color: "text-emerald-600",
-                bg: "bg-emerald-50 dark:bg-emerald-900/20",
-                image: "/categories/AI Tools & Practical Applications.png"
-              },
-              {
-                icon: Briefcase,
-                label: "AI for Business & Strategy",
-                desc: "AI transformation, ROI, implementation roadmaps for leaders.",
-                color: "text-orange-600",
-                bg: "bg-orange-50 dark:bg-orange-900/20",
-                image: "/categories/AI for Business & Strategy.png"
-              },
-              {
-                icon: Shield,
-                label: "AI Ethics & Governance",
-                desc: "Responsible AI, bias, privacy, regulation, and compliance.",
-                color: "text-red-600",
-                bg: "bg-red-50 dark:bg-red-900/20",
-                image: "/categories/AI Ethics, Governance & Responsible AI.png"
-              },
-              {
-                icon: Bot,
-                label: "AI Agents & Automation",
-                desc: "Agentic AI systems, RAG, and multi-agent workflow automation.",
-                color: "text-indigo-600",
-                bg: "bg-indigo-50 dark:bg-indigo-900/20",
-                image: "/categories/AI Agents & Automation.png"
-              },
-              {
-                icon: MessageCircle,
-                label: "NLP & Conversational AI",
-                desc: "Text analysis, chatbots, sentiment analysis, and voice AI.",
-                color: "text-teal-600",
-                bg: "bg-teal-50 dark:bg-teal-900/20",
-                image: "/categories/Natural Language Processing (NLP) & Conversational AI.png"
-              },
-              {
-                icon: Eye,
-                label: "Computer Vision & Image AI",
-                desc: "Image recognition, object detection, and visual analysis.",
-                color: "text-pink-600",
-                bg: "bg-pink-50 dark:bg-pink-900/20",
-                image: "/categories/Computer Vision & Image AI.png"
-              },
-              {
-                icon: Building2,
-                label: "AI in Industry Applications",
-                desc: "Sector-specific AI: Healthcare, Finance, Marketing, Manufacturing.",
-                color: "text-slate-600",
-                bg: "bg-slate-50 dark:bg-slate-900/20",
-                image: "/categories/AI in Industry Applications.png"
-              },
-              {
-                icon: Database,
-                label: "Data & AI Fundamentals",
-                desc: "Data literacy, preparation, quality, and privacy for AI.",
-                color: "text-cyan-600",
-                bg: "bg-cyan-50 dark:bg-cyan-900/20",
-                image: "/categories/Data & AI Fundamentals.png"
-              },
-              {
-                icon: Lightbulb,
-                label: "AI Product Development",
-                desc: "Build AI applications, prototyping, testing, and project management.",
-                color: "text-yellow-600",
-                bg: "bg-yellow-50 dark:bg-yellow-900/20",
-                image: "/categories/Photorealistic image of a diverse product team collaborating around a large table covered with AI product prototypes, sketches, tablets showing no-code AI builders, and holographic product mockups floating above the su.png"
-              }
-            ].map((cat, idx) => (
-              <div key={idx} className="group flex flex-col rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-primary/50 dark:hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 transition-all cursor-pointer bg-white dark:bg-slate-900 relative overflow-hidden h-full">
-                {/* Image Header */}
-                <div className="relative h-48 w-full overflow-hidden">
-                  <Image
-                    src={cat.image}
-                    alt={cat.label}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
-
-                  {/* Floating Icon overlapping image */}
-                  <div className={`absolute bottom-3 left-5 w-10 h-10 rounded-xl flex items-center justify-center backdrop-blur-md bg-white/90 dark:bg-slate-900/90 ${cat.color} shadow-lg shadow-black/10`}>
-                    <cat.icon className="w-5 h-5" />
+                <div>
+                  <p className="font-mono text-[12px] uppercase tracking-[0.22em] text-white/35 mb-3">{plan.name}</p>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="font-black text-5xl text-white">{plan.price}</span>
+                    <span className="font-mono text-[14px] text-white/32">{plan.period}</span>
                   </div>
+                  <p className="text-white/40 text-sm mt-2.5">{plan.description}</p>
                 </div>
 
-                {/* Text Content */}
-                <div className="p-5 flex-1 flex flex-col">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-primary transition-colors">{cat.label}</h3>
-                  <p className="text-slate-500 dark:text-slate-400 mb-4 flex-1 text-sm">{cat.desc}</p>
-                  <div className="flex items-center text-sm font-bold text-primary opacity-0 transform translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all mt-auto">
-                    Explore Courses <ArrowRight className="ml-1 w-4 h-4" />
-                  </div>
-                </div>
-              </div>
+                <ul className="space-y-3.5 flex-1">
+                  {plan.features.map(f => (
+                    <li key={f} className="flex items-center gap-3 text-white/65 text-[14px]">
+                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" style={{ color: plan.accentColour }} />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+
+                <Link href={plan.href}>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`w-full h-12 rounded-xl font-bold text-[13px] uppercase tracking-wider transition-all ${
+                      plan.highlight
+                        ? "bg-[#4b98ad] text-[#080810] hover:bg-[#8b7fff]"
+                        : "bg-white/[0.07] text-white hover:bg-white/[0.12] border border-white/[0.09]"
+                    }`}
+                  >
+                    {plan.cta}
+                  </motion.button>
+                </Link>
+              </motion.div>
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* TRENDING COURSES SECTION */}
-      <section className="mx-auto w-[95%] max-w-7xl my-4 rounded-3xl border border-slate-200 dark:border-white/5 shadow-2xl py-12 lg:py-16 bg-white dark:bg-[#0B101E]">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <div className="text-center mb-10">
-            <div className="space-y-3 max-w-2xl mx-auto">
-              <Badge variant="secondary" className="mb-2 bg-primary/10 text-primary dark:bg-primary/20 dark:text-cyan-200 border-none text-xs px-2.5 py-0.5">
-                <TrendingUp className="w-3.5 h-3.5 mr-1" />
-                MOST POPULAR
-              </Badge>
-              <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white">
-                Trending <span className="text-gradient">Courses</span>
-              </h2>
-              <p className="text-base text-slate-600 dark:text-slate-400">
-                Join thousands learning these highly-rated AI courses right now.
-              </p>
-            </div>
-          </div>
-          <div className="text-center mb-6">
-            <Link href="/courses">
-              <Button variant="outline" size="sm" className="rounded-full px-6 h-10 text-base border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-primary hover:border-primary">
-                View All Courses <ArrowRight className="ml-2 w-4 h-4" />
-              </Button>
+          <div className="text-center mt-10">
+            <Link
+              href="/pricing"
+              className="inline-flex items-center gap-2 font-mono text-[13px] text-white/28 uppercase tracking-widest hover:text-white/55 transition-colors group"
+            >
+              See full pricing details
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                title: "Mastering ChatGPT & Prompt Engineering",
-                description: "Learn to write powerful prompts and unlock the full potential of ChatGPT, Claude, and other LLMs.",
-                image: "/course_title_images/Mastering ChatGPT & Prompt Engineering.png",
-                level: "Beginner",
-                duration: "60 min",
-                students: "12,540",
-                rating: "4.9"
-              },
-              {
-                title: "Generative AI for Business Leaders",
-                description: "Strategic guide to implementing AI transformation and driving ROI in your organization.",
-                image: "/course_title_images/Generative AI for Business Leaders.png",
-                level: "Intermediate",
-                duration: "75 min",
-                students: "8,320",
-                rating: "4.8"
-              },
-              {
-                title: "Building AI Agents & Automation",
-                description: "Create intelligent AI agents with RAG, function calling, and multi-agent orchestration.",
-                image: "/course_title_images/Building AI Agents & Automation.png",
-                level: "Advanced",
-                duration: "90 min",
-                students: "6,890",
-                rating: "4.9"
-              }
-            ].map((course, idx) => (
-              <Link href={`/courses/${idx + 1}`} key={idx} className="block group">
-                <Card className="h-full bg-white dark:bg-slate-800 border-none shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden">
-                  {/* Course Image */}
-                  <div className="relative h-48 overflow-hidden">
-                    <Image
-                      src={course.image}
-                      alt={course.title}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute top-4 left-4">
-                      <Badge className="bg-primary text-white">{course.level}</Badge>
-                    </div>
-                  </div>
-
-                  <CardContent className="p-6 space-y-4">
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">
-                      {course.title}
-                    </h3>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-                      {course.description}
-                    </p>
-
-                    {/* Course Meta */}
-                    <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-700">
-                      <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" />
-                          {course.duration}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Users className="w-3.5 h-3.5" />
-                          {course.students}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 text-sm font-bold text-yellow-600">
-                        ⭐ {course.rating}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
         </div>
       </section>
 
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECTION 10 — Trending News
+      ═══════════════════════════════════════════════════════════════════ */}
       <TrendingNews />
 
-      {/* CTA Section */}
-      <section className="mx-auto w-[95%] max-w-7xl my-4 rounded-3xl border border-slate-200 dark:border-white/5 shadow-2xl py-12 lg:py-16 bg-slate-900 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECTION 11 — Final CTA (cinematic)
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="relative min-h-[80vh] flex items-center overflow-hidden py-28">
+        {/* Atmospheric blobs */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="blob-a absolute top-[-20%] left-[5%] w-[700px] h-[700px] rounded-full bg-[#4b98ad]/[0.12] blur-[140px]" />
+          <div className="blob-b absolute bottom-[-20%] right-[5%] w-[600px] h-[600px] rounded-full bg-[#4b98ad]/[0.08] blur-[120px]" />
+          <div className="blob-c absolute top-[40%] left-[40%] w-[400px] h-[400px] rounded-full bg-[#FFB347]/[0.04] blur-[100px]" />
+        </div>
 
-        {/* Floating shapes */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-[100px] animate-pulse" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-[100px]" />
+        {/* Grain */}
+        <div
+          className="absolute inset-0 opacity-[0.025] pointer-events-none select-none"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+            backgroundSize: "256px 256px",
+          }}
+        />
 
-        <div className="container mx-auto px-4 text-center relative z-10">
-          <Badge className="mb-4 bg-primary text-white border-primary/50 py-1 px-4 text-sm font-medium">Limited Time Offer</Badge>
-          <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight leading-tight">
-            Ready to Future-Proof <br className="hidden md:block" /> Your Career?
-          </h2>
-          <p className="text-lg md:text-xl text-slate-300 mb-8 max-w-2xl mx-auto font-light leading-relaxed">
-            Join thousands of learners of all ages mastering AI. Start your free trial today and get unlimited access to all courses.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link href="/auth/signup">
-              <Button size="lg" className="bg-white text-primary hover:bg-blue-50 border-none font-bold h-12 px-8 text-base rounded-full shadow-xl shadow-primary/20 hover:scale-105 transition-transform">
-                Start Free Trial
-              </Button>
-            </Link>
-            <Link href="/pricing">
-              <Button size="lg" variant="outline" className="border border-white/30 text-white hover:bg-white/10 hover:border-white h-12 px-8 text-base rounded-full bg-transparent backdrop-blur-sm">
-                View Pricing
-              </Button>
-            </Link>
-          </div>
-          <p className="mt-6 text-sm text-slate-400 font-medium opacity-80">
-            7 day free trial • No credit card required • Cancel anytime
-          </p>
+        {/* Thin horizontal rule motif */}
+        <div className="absolute top-0 left-[5%] right-[5%] h-[1px] bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
+
+        <div className="relative z-10 mx-auto w-[95%] max-w-3xl text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 36 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            className="space-y-6"
+          >
+            <span className="font-mono text-[12px] uppercase tracking-[0.3em] text-white/22 block">
+              Your move
+            </span>
+
+            <div>
+              <h2
+                className="font-black text-white block leading-[0.9]"
+                style={{ fontSize: "clamp(2.8rem, 7vw, 5.5rem)", letterSpacing: "-0.04em" }}
+              >
+                Your AI future
+              </h2>
+              <h2
+                className="font-black text-[#4b98ad] block leading-[0.9]"
+                style={{ fontSize: "clamp(2.8rem, 7vw, 5.5rem)", letterSpacing: "-0.04em" }}
+              >
+                starts now.
+              </h2>
+            </div>
+
+            <p className="text-lg md:text-xl text-white/40 leading-relaxed max-w-lg mx-auto pt-2">
+              It takes 15 minutes. You already have 15 minutes.
+            </p>
+
+            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link href="/auth/signup">
+                <motion.button
+                  whileHover={{ scale: 1.04, boxShadow: "0 0 70px rgba(75,152,173,0.30)" }}
+                  whileTap={{ scale: 0.97 }}
+                  className="inline-flex items-center gap-3 h-16 px-10 rounded-full bg-[#4b98ad] text-[#080810] font-black text-lg uppercase tracking-wider shadow-[0_0_40px_rgba(75,152,173,0.18)] transition-shadow"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  Start Free Today
+                  <ArrowRight className="w-4 h-4" />
+                </motion.button>
+              </Link>
+            </div>
+
+            <p className="font-mono text-[12px] text-white/20 uppercase tracking-[0.22em] pt-1">
+              Free to start · No credit card required · Cancel anytime
+            </p>
+          </motion.div>
         </div>
       </section>
 
-      {/* FOOTER - Minimalist & Clean */}
       <Footer />
     </div>
   );

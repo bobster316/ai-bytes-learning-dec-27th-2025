@@ -12,11 +12,11 @@ interface PageProps {
 
 export default async function TopicQuizPage(props: { params: Promise<{ courseId: string; topicId: string; quizId: string }> }) {
     const params = await props.params;
-    const { courseId, quizId } = params;
+    const { courseId, topicId, quizId } = params;
 
-    // We can't access canvas-confetti in server components, so logic is in Renderer (Client)
     const supabase = await createClient();
 
+    // 1. Fetch Quiz Data
     const { data: quiz, error } = await supabase
         .from('course_quizzes')
         .select('*')
@@ -27,10 +27,8 @@ export default async function TopicQuizPage(props: { params: Promise<{ courseId:
         notFound();
     }
 
-    // Try the main quiz_questions table first, then fall back to course_quiz_questions
+    // 2. Fetch Questions (Primary or Fallback)
     let questionsData = null;
-
-    // Try primary table
     const { data: primaryQuestions } = await supabase
         .from('quiz_questions')
         .select('*')
@@ -39,7 +37,6 @@ export default async function TopicQuizPage(props: { params: Promise<{ courseId:
     if (primaryQuestions && primaryQuestions.length > 0) {
         questionsData = primaryQuestions;
     } else {
-        // Fallback to course_quiz_questions (used by newer generation)
         const { data: courseQuestions } = await supabase
             .from('course_quiz_questions')
             .select('*')
@@ -47,14 +44,53 @@ export default async function TopicQuizPage(props: { params: Promise<{ courseId:
         questionsData = courseQuestions;
     }
 
-    // Attach questions to quiz object manually
+    // Attach questions manually
     (quiz as any).questions = questionsData || [];
 
-    if (error || !quiz) {
-        notFound();
+    // 3. Determine Next Step (Next Module or Course Complete)
+    // Fetch minimal structure: Topics ordered by index
+    const { data: course } = await supabase
+        .from('courses')
+        .select(`
+            id,
+            topics:course_topics(
+                id,
+                title,
+                order_index,
+                lessons:course_lessons(
+                    id,
+                    order_index
+                )
+            )
+        `)
+        .eq('id', courseId)
+        .single();
+
+    let nextUrl: string | null = null;
+    let nextLabel: string = "Finish Course";
+
+    if (course && course.topics) {
+        const sortedTopics = course.topics.sort((a, b) => a.order_index - b.order_index);
+        // Find current topic index. Note: topicId from params is string, DB might be number (bigint)
+        // We should compare loosely or parse.
+        const currentTopicIndex = sortedTopics.findIndex(t => String(t.id) === String(topicId));
+
+        if (currentTopicIndex !== -1 && currentTopicIndex < sortedTopics.length - 1) {
+            // There is a next topic
+            const nextTopic = sortedTopics[currentTopicIndex + 1];
+            // Get first lesson of next topic
+            if (nextTopic.lessons && nextTopic.lessons.length > 0) {
+                const sortedLessons = nextTopic.lessons.sort((a: any, b: any) => a.order_index - b.order_index);
+                nextUrl = `/courses/${courseId}/lessons/${sortedLessons[0].id}`;
+                nextLabel = `Next: ${nextTopic.title}`;
+            }
+        } else {
+            // Last topic -> Finish Course
+            nextUrl = `/courses/${courseId}/complete`; // New completion page we need to build
+            nextLabel = "Finish Course";
+        }
     }
 
-    // Sort questions by order_index
     const questions = quiz.questions?.sort((a: any, b: any) => a.order_index - b.order_index) || [];
 
     return (
@@ -62,6 +98,11 @@ export default async function TopicQuizPage(props: { params: Promise<{ courseId:
             quizTitle={quiz.title}
             questions={questions}
             courseId={courseId}
+            topicId={topicId} // Pass topicId for attempts
+            quizId={quizId}   // Pass quizId for attempts
+            nextUrl={nextUrl}
+            nextLabel={nextLabel}
         />
     );
 }
+

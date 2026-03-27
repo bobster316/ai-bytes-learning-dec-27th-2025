@@ -1,0 +1,57 @@
+{
+  "course_id": 823,
+  "course_topic": "AI Back Propagation",
+  "domain_history": [
+    "Gardening",
+    "Music"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [],
+  "used_image_urls": [
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774559157614-btm5b7-a%20detailed%20visualisa.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774559161256-no059-a%20highly%20detailed,%20a.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774559158542-lue6m-a%20detailed%20diagram%20o.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774559159398-2b5ear-a%20complex,%20abstract%20.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774559156940-1mba9d-a%20detailed%20diagram%20o.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774559323601-ieu0yn-mandatory:%20use%20minim.jpeg"
+  ],
+  "used_video_urls": [
+    {
+      "query": "A high-resolution cinematic animation visualising the forward and backward passes in a simple neural",
+      "url": "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/videos/veo-1774559266087-sv48p.mp4",
+      "source": "veo-3.1"
+    },
+    {
+      "query": "A high-resolution cinematic animation visualising the weight adjustment process during the backward ",
+      "url": "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/videos/veo-1774559384477-n2ppnc.mp4",
+      "source": "veo-3.1"
+    }
+  ],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 0,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 0,
+    "type_cards": 0,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 0,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

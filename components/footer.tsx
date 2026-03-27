@@ -1,101 +1,141 @@
+"use client";
+
 import Link from "next/link";
 import { Logo } from "@/components/logo";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Twitter, Linkedin, Github, Instagram, Mail, Send } from "lucide-react";
+import { Linkedin, Github, Instagram, Mail, Send } from "lucide-react";
 
 export function Footer() {
     return (
-        <footer className="relative w-full mt-10 bg-slate-50 dark:bg-[#0B1120] transition-colors duration-300">
-            {/* ... background elements ... */}
-            <div className="absolute inset-x-0 bottom-0 top-20 bg-white dark:bg-[#0B1120] rounded-t-[2.5rem] overflow-hidden -z-10 shadow-2xl border-t border-slate-200 dark:border-white/5 mx-auto w-[98%] max-w-[1400px] pointer-events-none">
-                <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
-                {/* subtle glow - dark mode only or adjusted for light */}
-                <div className="absolute -top-[200px] left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/5 dark:bg-primary/10 blur-[100px] rounded-full opacity-50 pointer-events-none"></div>
-                <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-blue-600/5 blur-[120px] rounded-full pointer-events-none"></div>
-            </div>
+        <footer className="relative w-full bg-[#080810] border-t border-white/[0.06]">
 
-            <div className="container mx-auto px-6 lg:px-12 pt-40 pb-12 max-w-7xl relative z-10 text-slate-600 dark:text-slate-300">
+            {/* Subtle top gradient line */}
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#4b98ad]/30 to-transparent" />
+
+            <div className="max-w-[1140px] mx-auto px-[4vw] pt-20 pb-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-16">
 
-                    {/* Brand Column */}
-                    <div className="lg:col-span-4 space-y-8">
-                        {/* Logo - Clickable, links to homepage */}
-                        <Link href="/" className="relative h-[4.6rem] w-56 md:h-[5.75rem] md:w-64 overflow-hidden transition-all duration-300 flex items-center hover:opacity-80">
-                            <Logo className="w-full h-full scale-[2.1] origin-left" />
+                    {/* Brand */}
+                    <div className="lg:col-span-4 space-y-6">
+                        <Link href="/" className="block hover:opacity-80 transition-opacity">
+                            <div className="relative h-[48px] w-[150px]">
+                                <Logo className="w-full h-full" />
+                            </div>
                         </Link>
-                        <p className="text-slate-600 dark:text-slate-400 text-base leading-relaxed max-w-sm font-medium">
-                            Democratizing AI education for everyone. Master complex topics in 60-minute byte-sized lessons designed for all ages and backgrounds.
+
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] font-mono text-[0.55rem] uppercase tracking-[0.18em] text-white/40">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#00FFB3] animate-pulse" />
+                            UK-Based Organisation
+                        </div>
+
+                        <p className="font-body text-sm text-white/45 leading-relaxed max-w-sm">
+                            We explain AI in plain English, breaking down complex topics into micro lessons anyone can understand. No tech background required.
                         </p>
-                        <div className="flex gap-3">
-                            {/* Socials */}
-                            {[
-                                { icon: Twitter, href: "#" },
-                                { icon: Linkedin, href: "#" },
-                                { icon: Github, href: "#" },
-                                { icon: Instagram, href: "#" }
-                            ].map((social, i) => (
-                                <a
-                                    key={i}
-                                    href={social.href}
-                                    className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-white/5 border border-slate-300 dark:border-white/10 flex items-center justify-center hover:bg-primary hover:border-primary hover:text-white hover:scale-110 hover:-translate-y-1 transition-all duration-300 group shadow-md"
-                                >
-                                    <social.icon className="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-white transition-colors" />
-                                </a>
-                            ))}
+
+                        <div className="flex gap-2.5">
+                            {/* X */}
+                            <a href="https://x.com/aibyteslearning" target="_blank" rel="noopener noreferrer"
+                               className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center hover:bg-[#4b98ad]/15 hover:border-[#4b98ad]/30 transition-all duration-200 group">
+                                <svg className="w-3.5 h-3.5 text-white/40 group-hover:text-[#4b98ad] transition-colors" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                                </svg>
+                            </a>
+                            {/* LinkedIn */}
+                            <a href="https://www.linkedin.com/company/ai-bytes-learning" target="_blank" rel="noopener noreferrer"
+                               className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center hover:bg-[#4b98ad]/15 hover:border-[#4b98ad]/30 transition-all duration-200 group">
+                                <Linkedin className="w-4 h-4 text-white/40 group-hover:text-[#4b98ad] transition-colors" />
+                            </a>
+                            {/* GitHub */}
+                            <a href="https://github.com/aibyteslearning" target="_blank" rel="noopener noreferrer"
+                               className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center hover:bg-[#4b98ad]/15 hover:border-[#4b98ad]/30 transition-all duration-200 group">
+                                <Github className="w-4 h-4 text-white/40 group-hover:text-[#4b98ad] transition-colors" />
+                            </a>
+                            {/* Instagram */}
+                            <a href="https://www.instagram.com/aibyteslearning" target="_blank" rel="noopener noreferrer"
+                               className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center hover:bg-[#4b98ad]/15 hover:border-[#4b98ad]/30 transition-all duration-200 group">
+                                <Instagram className="w-4 h-4 text-white/40 group-hover:text-[#4b98ad] transition-colors" />
+                            </a>
                         </div>
                     </div>
 
-                    {/* Links Columns */}
+                    {/* Platform links */}
                     <div className="lg:col-span-2">
-                        <h4 className="font-bold text-slate-900 dark:text-white mb-6 text-lg tracking-tight">Platform</h4>
-                        <ul className="space-y-4 text-sm font-medium">
-                            <li><Link href="/courses" className="text-slate-600 dark:text-slate-400 hover:text-primary hover:pl-2 transition-all duration-300 block">Browse Courses</Link></li>
-                            <li><Link href="/paths" className="text-slate-600 dark:text-slate-400 hover:text-primary hover:pl-2 transition-all duration-300 block">Learning Paths</Link></li>
-                            <li><Link href="/pricing" className="text-slate-600 dark:text-slate-400 hover:text-primary hover:pl-2 transition-all duration-300 block">Pricing</Link></li>
-                            <li><Link href="/enterprise" className="text-slate-600 dark:text-slate-400 hover:text-primary hover:pl-2 transition-all duration-300 block">Enterprise</Link></li>
+                        <h4 className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-white/40 mb-5">Platform</h4>
+                        <ul className="space-y-3.5">
+                            {[
+                                { href: "/courses",    label: "Browse Courses" },
+                                { href: "/paths",      label: "Learning Paths" },
+                                { href: "/pricing",    label: "Pricing" },
+                                { href: "/enterprise", label: "Enterprise" },
+                            ].map(l => (
+                                <li key={l.href}>
+                                    <Link href={l.href} className="font-body text-sm text-white/50 hover:text-white transition-colors duration-200">
+                                        {l.label}
+                                    </Link>
+                                </li>
+                            ))}
                         </ul>
                     </div>
 
+                    {/* Company links */}
                     <div className="lg:col-span-2">
-                        <h4 className="font-bold text-slate-900 dark:text-white mb-6 text-lg tracking-tight">Company</h4>
-                        <ul className="space-y-4 text-sm font-medium">
-                            <li><Link href="/about" className="text-slate-600 dark:text-slate-400 hover:text-primary hover:pl-2 transition-all duration-300 block">About Us</Link></li>
-                            <li><Link href="/careers" className="text-slate-600 dark:text-slate-400 hover:text-primary hover:pl-2 transition-all duration-300 block">Careers</Link></li>
-                            <li><Link href="/blog" className="text-slate-600 dark:text-slate-400 hover:text-primary hover:pl-2 transition-all duration-300 block">Blog</Link></li>
-                            <li><Link href="/contact" className="text-slate-600 dark:text-slate-400 hover:text-primary hover:pl-2 transition-all duration-300 block">Contact</Link></li>
+                        <h4 className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-white/40 mb-5">Company</h4>
+                        <ul className="space-y-3.5">
+                            {[
+                                { href: "/about",   label: "About Us" },
+                                { href: "/careers", label: "Careers" },
+                                { href: "/blog",    label: "Blog" },
+                                { href: "/contact", label: "Contact" },
+                            ].map(l => (
+                                <li key={l.href}>
+                                    <Link href={l.href} className="font-body text-sm text-white/50 hover:text-white transition-colors duration-200">
+                                        {l.label}
+                                    </Link>
+                                </li>
+                            ))}
                         </ul>
                     </div>
 
                     {/* Newsletter */}
-                    <div className="lg:col-span-4 space-y-4">
-                        <div className="bg-slate-100 dark:bg-white/5 rounded-3xl p-6 border border-slate-200 dark:border-white/10 shadow-xl backdrop-blur-sm">
-                            <h4 className="font-bold text-slate-900 dark:text-white mb-2 text-lg flex items-center gap-2">
-                                <Mail className="w-5 h-5 text-primary" />
+                    <div className="lg:col-span-4">
+                        <div className="bg-white/[0.03] rounded-2xl p-6 border border-white/[0.07]">
+                            <h4 className="font-display font-bold text-white text-base mb-1.5 flex items-center gap-2">
+                                <Mail className="w-4 h-4 text-[#4b98ad]" />
                                 Stay Updated
                             </h4>
-                            <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">Get the latest AI news and tutorials delivered straight to your inbox.</p>
+                            <p className="font-body text-sm text-white/40 mb-4 leading-relaxed">
+                                Get the latest AI news and tutorials delivered to your inbox.
+                            </p>
                             <div className="flex gap-2">
-                                <Input
+                                <input
+                                    type="email"
                                     placeholder="Enter your email"
-                                    className="bg-white dark:bg-slate-900/50 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl h-10 focus-visible:ring-primary focus-visible:border-primary"
+                                    className="flex-1 h-10 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 text-sm text-white/80 placeholder:text-white/25 focus:outline-none focus:border-[#4b98ad]/40 transition-colors"
                                 />
-                                <Button size="sm" className="rounded-xl h-10 px-4 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25 text-white">
-                                    <Send className="w-4 h-4" />
-                                </Button>
+                                <button className="w-10 h-10 rounded-xl bg-[#4b98ad] hover:bg-[#4b98ad]/90 flex items-center justify-center shrink-0 transition-colors">
+                                    <Send className="w-4 h-4 text-white" />
+                                </button>
                             </div>
                         </div>
                     </div>
 
                 </div>
 
-                {/* Bottom Bar */}
-                <div className="border-t border-slate-200 dark:border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-slate-500 font-medium">
-                    <p>&copy; {new Date().getFullYear()} AI Bytes Learning. All rights reserved.</p>
-                    <div className="flex gap-8 mt-4 md:mt-0">
-                        <Link href="/privacy" className="hover:text-primary dark:hover:text-white transition-colors">Privacy Policy</Link>
-                        <Link href="/terms" className="hover:text-primary dark:hover:text-white transition-colors">Terms of Service</Link>
-                        <Link href="/cookies" className="hover:text-primary dark:hover:text-white transition-colors">Cookie Policy</Link>
+                {/* Bottom bar */}
+                <div className="border-t border-white/[0.06] pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <p className="font-mono text-[0.6rem] text-white/30 uppercase tracking-[0.1em]">
+                        &copy; {new Date().getFullYear()} AI Bytes Learning. All rights reserved.
+                    </p>
+                    <div className="flex gap-6">
+                        {[
+                            { href: "/privacy", label: "Privacy Policy" },
+                            { href: "/terms",   label: "Terms of Service" },
+                            { href: "/cookies", label: "Cookie Policy" },
+                        ].map(l => (
+                            <Link key={l.href} href={l.href}
+                                  className="font-mono text-[0.6rem] uppercase tracking-[0.1em] text-white/30 hover:text-white/60 transition-colors">
+                                {l.label}
+                            </Link>
+                        ))}
                     </div>
                 </div>
             </div>

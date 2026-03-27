@@ -200,7 +200,7 @@ const NeuralLoom = ({ progress, logs, stage = "Synthesizing", error }: { progres
                                 </svg>
                             </div>
                         </div>
-                        <h2 className="text-2xl font-bold text-red-100 mb-2 font-mono tracking-tight">{error.title || "Course Generation Failed"}</h2>
+                        <h2 className="text-2xl font-bold text-red-100 mb-2 font-mono tracking-tight">{error.title || "Course Creation Failed"}</h2>
                         <p className="text-red-200/80 mb-6 leading-relaxed">
                             {error.message}
                         </p>

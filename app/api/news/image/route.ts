@@ -26,6 +26,9 @@ const ALLOWED_DOMAINS = [
   'img.youtube.com',
   'technologyreview.com',
   'www.technologyreview.com',
+  'cdn.arstechnica.net',
+  'arstechnica.com',
+  'www.arstechnica.com',
 ];
 
 export async function GET(request: NextRequest) {

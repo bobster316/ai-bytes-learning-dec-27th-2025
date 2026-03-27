@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What Is Generative AI? — AI Bytes Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+<style>
+:root{--pulse:#00FFB3;--iris:#9B8FFF;--amber:#FFB347;--nova:#FF6B6B;--bg:#080810;--surface:#0f0f1a;--border:rgba(255,255,255,0.06);--text:#e8e8f0;--muted:#6b6b80}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:auto}
+body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;line-height:1.7;overflow-x:hidden}
+
+/* NAV */
+#top-nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(8,8,16,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-inner{max-width:1140px;margin:0 auto;padding:0 4vw;height:52px;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.nav-brand{font-family:'DM Mono',monospace;font-size:.85rem;color:var(--pulse);letter-spacing:.1em;flex-shrink:0}
+.nav-title{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--muted);letter-spacing:.05em;text-align:center}
+.nav-chip{font-family:'DM Mono',monospace;font-size:.7rem;color:var(--muted);border:1px solid var(--border);padding:4px 10px;border-radius:20px;flex-shrink:0;letter-spacing:.05em}
+#nav-progress{position:absolute;bottom:0;left:0;height:2px;width:0%;background:linear-gradient(90deg,var(--pulse),var(--iris));transition:width .1s linear}
+
+/* RAIL */
+#rail{position:fixed;right:20px;top:50%;transform:translateY(-50%);z-index:99;display:flex;flex-direction:column;gap:10px}
+.rdot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15);cursor:pointer;transition:all .3s ease;position:relative}
+.rdot.active{background:var(--pulse);box-shadow:0 0 8px var(--pulse);transform:scale(1.5)}
+.rdot:hover .rtip{opacity:1;transform:translateY(-50%) translateX(0)}
+.rtip{position:absolute;right:calc(100% + 10px);top:50%;transform:translateY(-50%) translateX(6px);background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:.65rem;padding:4px 8px;border-radius:4px;white-space:nowrap;opacity:0;transition:all .2s;pointer-events:none}
+
+/* LAYOUT */
+section{padding:10vh 4vw}
+.ct {max-width:1140px;margin:0 auto}
+.ctn{max-width:840px;margin:0 auto}
+.cte{max-width:760px;margin:0 auto}
+
+/* ANIMATE IN */
+.ai{opacity:1;transform:none}
+.ai.v{animation:fadeUp .65s ease forwards}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+
+/* LABELS + HEADINGS */
+.slbl{font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.15em;color:var(--iris);text-transform:uppercase;margin-bottom:1.2rem;display:flex;align-items:center;gap:10px}
+.slbl::before{content:'';display:block;width:3px;height:14px;background:var(--iris);border-radius:2px;flex-shrink:0}
+.sh{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(1.6rem,3vw,2.4rem);letter-spacing:-.03em;color:#f5f5f5;margin-bottom:.5rem;line-height:1.1}
+.ssub{font-family:'Plus Jakarta Sans',sans-serif;color:var(--muted);font-size:1rem;margin-bottom:2.5rem}
+
+/* HOOK */
+#hook{min-height:100vh;padding-top:calc(52px + 8vh);display:flex;align-items:center;position:relative;overflow:hidden}
+.mesh{position:absolute;inset:0;pointer-events:none;z-index:0}
+.blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.18;animation:drift 12s ease-in-out infinite alternate}
+.b1{width:480px;height:480px;background:var(--iris);top:-100px;left:-80px;animation-delay:0s}
+.b2{width:360px;height:360px;background:var(--pulse);top:30%;right:-60px;animation-delay:-4s}
+.b3{width:300px;height:300px;background:var(--amber);bottom:-60px;left:35%;animation-delay:-8s}
+@keyframes drift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(30px,20px) scale(1.08)}}
+.hgrid{display:grid;grid-template-columns:1fr 2px 1fr;gap:0 3rem;align-items:center;position:relative;z-index:1;width:100%;max-width:1140px;margin:0 auto}
+.hdiv{width:2px;height:340px;background:linear-gradient(180deg,transparent,var(--iris),transparent);align-self:center}
+.htag{font-family:'DM Mono',monospace;font-size:.7rem;color:var(--iris);letter-spacing:.15em;margin-bottom:1.2rem}
+.hh1{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(2.4rem,5vw,3.8rem);line-height:1.05;letter-spacing:-.03em;color:#f5f5f5;margin-bottom:1.5rem}
+.hh1 em{color:var(--iris);font-family:'Plus Jakarta Sans',sans-serif}
+.hrule{height:1px;background:linear-gradient(90deg,var(--iris),transparent);margin-bottom:1.2rem;width:60%}
+.hobj{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.05rem;color:var(--muted);line-height:1.7;margin-bottom:1.8rem;max-width:480px}
+.pcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:1.5rem;display:flex;align-items:center;gap:14px}
+.pclbl{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--muted);white-space:nowrap}
+.ptk{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.pfill{height:100%;width:20%;background:linear-gradient(90deg,var(--pulse),var(--iris));border-radius:2px}
+.hbuild{list-style:none}
+.hbuild li{font-size:.9rem;color:var(--text);padding:6px 0;display:flex;align-items:center;gap:10px}
+.hbuild li::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--pulse);flex-shrink:0}
+.himgc{border-radius:16px;overflow:hidden;border:1px solid var(--border);margin-bottom:1.2rem}
+.himgc img{width:100%;height:260px;object-fit:cover;display:block}
+.kfg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kf{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.kfn{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.6rem;color:var(--pulse);line-height:1;margin-bottom:4px;display:block}
+.kfl{font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);letter-spacing:.08em}
+
+/* VIDEO */
+#vi{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.vig{display:grid;grid-template-columns:380px 1fr;gap:3rem;align-items:center}
+.vlbl{font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.12em;color:var(--iris);margin-bottom:.8rem}
+.vwrap{max-width:380px;border-radius:16px;overflow:hidden;border:1px solid rgba(155,143,255,.3)}
+.vwrap video{width:100%;aspect-ratio:16/9;display:block;object-fit:cover}
+.icards{display:flex;flex-direction:column;gap:14px}
+.icard{background:rgba(15,15,26,.8);border:1px solid rgba(155,143,255,.25);border-radius:12px;padding:16px 20px;display:flex;align-items:flex-start;gap:14px;transition:border-color .3s}
+.icard:hover{border-color:var(--iris)}
+.iico{font-size:1.4rem;flex-shrink:0;margin-top:2px}
+.icard h4{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:.95rem;color:var(--text);margin-bottom:4px}
+.icard p{font-size:.85rem;color:var(--muted);line-height:1.5}
+
+/* FOUNDATION */
+.fbody{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.12rem;line-height:1.85;color:var(--text);margin-bottom:1.5rem}
+.fbody strong{color:var(--pulse);font-weight:600}
+.tipc{border-left:3px solid var(--pulse);background:rgba(0,255,179,.05);border-radius:0 10px 10px 0;padding:18px 22px;margin:2rem 0}
+.tipc .tlbl{font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.12em;color:var(--pulse);margin-bottom:8px}
+.tipc p{font-family:'Plus Jakarta Sans',sans-serif;font-size:1rem;color:var(--text);line-height:1.7}
+
+/* TYPE CARDS */
+.tcg{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.tc{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:transform .25s,box-shadow .25s;cursor:default}
+.tc:hover{transform:translateY(-4px)}
+.tc:nth-child(1):hover{box-shadow:0 8px 32px rgba(0,255,179,.15)}
+.tc:nth-child(2):hover{box-shadow:0 8px 32px rgba(155,143,255,.15)}
+.tc:nth-child(3):hover{box-shadow:0 8px 32px rgba(255,179,71,.15)}
+.tca{height:3px}
+.tcb{padding:22px}
+.tbdg{display:inline-block;font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;padding:4px 10px;border-radius:20px;margin-bottom:12px}
+.bp{background:rgba(0,255,179,.12);color:var(--pulse)}
+.bi{background:rgba(155,143,255,.12);color:var(--iris)}
+.ba{background:rgba(255,179,71,.12);color:var(--amber)}
+.tc h3{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:1rem;color:#f5f5f5;margin-bottom:10px}
+.tc p{font-size:.88rem;color:var(--muted);line-height:1.65;margin-bottom:14px}
+.csnp{background:#060610;border:1px solid var(--border);border-radius:8px;padding:12px;font-family:'DM Mono',monospace;font-size:.7rem;color:var(--pulse);line-height:1.6;overflow-x:auto;white-space:pre}
+
+/* ANATOMY */
+#anat{padding:0;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.aout{max-width:1140px;margin:0 auto;padding:10vh 4vw}
+.agrid{display:grid;grid-template-columns:40% 1fr;gap:4rem;align-items:start}
+.astk{position:sticky;top:80px}
+.anath{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(1.6rem,3vw,2.4rem);letter-spacing:-.03em;color:#f5f5f5;margin-bottom:.5rem}
+.anatsub{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--muted);margin-bottom:2rem}
+.tfbx{fill:var(--surface);stroke:rgba(255,255,255,.12);stroke-width:1;transition:fill .4s,stroke .4s,stroke-width .4s}
+.tflbl{font-family:'DM Mono',monospace;font-size:11px;fill:var(--muted);text-anchor:middle;dominant-baseline:middle;transition:fill .4s}
+.tfarr{stroke:rgba(255,255,255,.15);stroke-width:1.5;fill:none}
+.aslist{display:flex;flex-direction:column;gap:0}
+.astep{padding:32px 0;border-bottom:1px solid var(--border);opacity:.35;transition:opacity .4s}
+.astep.on{opacity:1}
+.snum{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--pulse);letter-spacing:.1em;margin-bottom:10px}
+.stit{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:1.15rem;color:#f5f5f5;margin-bottom:10px}
+.sbdy{font-family:'Plus Jakarta Sans',sans-serif;font-size:1rem;color:var(--muted);line-height:1.75;margin-bottom:12px}
+.sex{font-family:'DM Mono',monospace;font-size:.78rem;color:var(--iris);background:rgba(155,143,255,.08);border-radius:6px;padding:10px 14px}
+
+/* PUNCH */
+#punch{text-align:center}
+.prule{height:1px;background:linear-gradient(90deg,transparent,var(--iris),transparent);margin-bottom:2.5rem}
+.ptxt{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(1.8rem,3.5vw,2.5rem);line-height:1.2;letter-spacing:-.03em;color:var(--iris);margin-bottom:1.5rem}
+.pattr{font-family:'Plus Jakarta Sans',sans-serif;font-size:.95rem;color:var(--muted)}
+
+/* PREDICTION */
+#pred{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.preq{font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:1.15rem;color:#f5f5f5;margin-bottom:1.5rem;line-height:1.5}
+.propts{display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem}
+.popt{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:12px;font-size:.95rem;color:var(--text);transition:border-color .25s,background .25s;text-align:left}
+.popt:hover{border-color:rgba(255,255,255,.2)}
+.popt.ok{border-color:var(--pulse);background:rgba(0,255,179,.06);color:var(--pulse)}
+.popt.no{border-color:rgba(255,107,107,.3);color:var(--muted);opacity:.6}
+.pltr{font-family:'DM Mono',monospace;font-size:.75rem;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.prev{max-height:0;overflow:hidden;transition:max-height .5s ease}
+.prev.open{max-height:220px}
+.previn{border-left:3px solid var(--pulse);padding:16px 20px;background:rgba(0,255,179,.04);border-radius:0 10px 10px 0;font-family:'Plus Jakarta Sans',sans-serif;font-size:1rem;color:var(--text);line-height:1.7}
+
+/* MINDMAP */
+.mmw{margin-top:2rem;display:flex;justify-content:center}
+#mmsvg{width:100%;max-width:900px;height:500px}
+.mmp{fill:none;stroke-width:2;stroke-dasharray:320;stroke-dashoffset:320;transition:stroke-dashoffset 1s ease}
+.mmp.d{stroke-dashoffset:0}
+.mmnt{font-family:'DM Mono',monospace;font-size:11px;text-anchor:middle;dominant-baseline:middle}
+.mmct{font-family:'DM Mono',monospace;font-size:9.5px;fill:var(--muted);text-anchor:middle;dominant-baseline:middle}
+
+/* FLOW */
+.fstps{display:flex;align-items:stretch;gap:0;margin-top:2.5rem;overflow-x:auto;padding-bottom:1rem}
+.fstp{flex:1;min-width:155px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 16px;text-align:center}
+.fnum{font-family:'DM Mono',monospace;font-size:.65rem;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px}
+.fstp h4{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:.85rem;color:#f5f5f5;margin-bottom:6px;line-height:1.3}
+.fstp p{font-size:.75rem;color:var(--muted);line-height:1.5}
+.farr{flex-shrink:0;display:flex;align-items:center;padding:0 4px;color:var(--muted);font-size:1.1rem}
+
+/* TABS */
+.tbar{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:2rem;overflow-x:auto}
+.tbtn{font-family:'DM Mono',monospace;font-size:.72rem;letter-spacing:.06em;color:var(--muted);padding:12px 18px;border:none;background:none;cursor:pointer;white-space:nowrap;position:relative;transition:color .25s}
+.tbtn::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--pulse);transform:scaleX(0);transition:transform .25s}
+.tbtn.on{color:#f5f5f5}
+.tbtn.on::after{transform:scaleX(1)}
+.tpnl{display:none}
+.tpnl.on{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:center}
+.timg{border-radius:14px;overflow:hidden;border:1px solid var(--border)}
+.timg img{width:100%;height:220px;object-fit:cover;display:block}
+.tcnt h3{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:1.2rem;color:#f5f5f5;margin-bottom:12px}
+.tcnt p{font-family:'Plus Jakarta Sans',sans-serif;font-size:1rem;color:var(--muted);line-height:1.75}
+
+/* CODE SECTION */
+.csg{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;margin-top:2rem;align-items:start}
+pre.apc{background:#060610;border:1px solid var(--border);border-radius:12px;padding:22px;font-family:'DM Mono',monospace;font-size:.78rem;color:var(--text);line-height:1.7;overflow-x:auto;white-space:pre}
+.anno{display:none;flex-direction:column;gap:10px}
+.anno.vis{display:flex}
+.anitem{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--iris);border-radius:0 10px 10px 0;padding:12px 16px;animation:sli .3s ease both}
+@keyframes sli{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:translateX(0)}}
+.ank{font-family:'DM Mono',monospace;font-size:.7rem;color:var(--iris);margin-bottom:4px}
+.anv{font-size:.85rem;color:var(--text)}
+.decbtn{margin-top:1rem;font-family:'DM Mono',monospace;font-size:.75rem;letter-spacing:.08em;padding:10px 22px;border-radius:8px;border:1px solid var(--iris);background:rgba(155,143,255,.1);color:var(--iris);cursor:pointer;transition:all .25s}
+.decbtn:hover{background:rgba(155,143,255,.2)}
+
+/* APPLIED */
+.apc2{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--iris);border-radius:0 16px 16px 0;padding:32px 36px}
+.aplbl{font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.12em;color:var(--iris);margin-bottom:1.2rem}
+.apc2 h3{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:1.1rem;color:#f5f5f5;margin-bottom:1rem;line-height:1.4}
+.apblk{margin-bottom:1rem}
+.apblkl{font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);letter-spacing:.08em;margin-bottom:6px}
+.apblk p{font-family:'Plus Jakarta Sans',sans-serif;font-size:1rem;color:var(--text);line-height:1.7}
+.rchips{display:flex;gap:10px;flex-wrap:wrap;margin-top:1.5rem}
+.rchip{font-family:'DM Mono',monospace;font-size:.72rem;padding:6px 14px;border-radius:20px;background:rgba(0,255,179,.1);color:var(--pulse);border:1px solid rgba(0,255,179,.25)}
+
+/* WARNING */
+.warnd{border-left:3px solid var(--nova);background:rgba(255,107,107,.05);border-radius:0 10px 10px 0;padding:20px 24px}
+.wlbl{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--nova);letter-spacing:.1em;margin-bottom:10px}
+.warnd p{font-family:'Plus Jakarta Sans',sans-serif;font-size:1rem;color:var(--text);line-height:1.75}
+
+/* EXERCISE */
+#ex{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.exturn{font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.15em;color:var(--amber);margin-bottom:1rem}
+.exinst{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.05rem;color:var(--text);margin-bottom:1.5rem;line-height:1.7}
+.weakp{background:#060610;border:1px solid rgba(255,107,107,.35);border-radius:8px;padding:14px 18px;font-family:'DM Mono',monospace;font-size:.85rem;color:var(--nova);margin-bottom:1.5rem}
+.scfs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.5rem}
+.scf{display:flex;flex-direction:column;gap:6px}
+.scf label{font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);letter-spacing:.06em}
+.scf input{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-family:'DM Mono',monospace;font-size:.8rem;color:var(--text);outline:none;transition:border-color .25s}
+.scf input:focus{border-color:var(--amber)}
+.scf input::placeholder{color:var(--muted)}
+.seebtn{font-family:'DM Mono',monospace;font-size:.75rem;letter-spacing:.08em;padding:12px 24px;border-radius:8px;border:1px solid var(--amber);background:rgba(255,179,71,.08);color:var(--amber);cursor:pointer;transition:all .25s;margin-bottom:1rem}
+.seebtn:hover{background:rgba(255,179,71,.16)}
+.ansrev{max-height:0;overflow:hidden;transition:max-height .5s ease}
+.ansrev.open{max-height:200px}
+.ansin{background:var(--bg);border:1px solid rgba(255,179,71,.3);border-radius:10px;padding:16px 20px;font-family:'DM Mono',monospace;font-size:.82rem;color:var(--amber);line-height:1.7}
+
+/* RECAP */
+.reclbl{font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.12em;color:var(--muted);margin-bottom:2rem}
+.recits{display:flex;flex-direction:column;gap:2rem}
+.recit{display:flex;gap:1.5rem;align-items:flex-start}
+.recn{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:3rem;color:var(--iris);line-height:1;flex-shrink:0;min-width:48px;opacity:.7}
+.rect h4{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:1.05rem;color:#f5f5f5;margin-bottom:6px}
+.rect p{font-family:'Plus Jakarta Sans',sans-serif;font-size:.97rem;color:var(--muted);line-height:1.7}
+
+/* QUIZ */
+#quiz{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.qprog{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--muted);letter-spacing:.1em;margin-bottom:1.5rem}
+.qqw{display:none}
+.qqw.on{display:block}
+.qqt{font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:1.1rem;color:#f5f5f5;margin-bottom:1.5rem;line-height:1.5}
+.qopts{display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem}
+.qopt{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;cursor:pointer;display:flex;gap:12px;align-items:center;font-size:.92rem;color:var(--text);transition:all .25s;text-align:left}
+.qopt:hover:not(.dis){border-color:rgba(255,255,255,.2)}
+.qopt.ok{border-color:var(--pulse);background:rgba(0,255,179,.06);color:var(--pulse)}
+.qopt.no{border-color:rgba(255,107,107,.3);color:var(--muted);opacity:.6}
+.qopt.dis{cursor:default}
+.qltr{font-family:'DM Mono',monospace;font-size:.72rem;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.qfb{max-height:0;overflow:hidden;transition:max-height .4s ease;margin-bottom:1rem}
+.qfb.open{max-height:130px}
+.qfbi{padding:14px 18px;border-radius:10px;font-size:.9rem;font-family:'Plus Jakarta Sans',sans-serif;line-height:1.65}
+.qfbi.ok{background:rgba(0,255,179,.06);border:1px solid rgba(0,255,179,.2);color:var(--pulse)}
+.qfbi.no{background:rgba(255,107,107,.06);border:1px solid rgba(255,107,107,.2);color:var(--nova)}
+.nxtb{font-family:'DM Mono',monospace;font-size:.75rem;letter-spacing:.08em;padding:10px 24px;border-radius:8px;border:1px solid var(--iris);background:rgba(155,143,255,.1);color:var(--iris);cursor:pointer;transition:all .25s;display:none}
+.nxtb.show{display:inline-flex;align-items:center;gap:8px}
+.nxtb:hover{background:rgba(155,143,255,.2)}
+.qsc{display:none;text-align:center;padding:2rem 0}
+.qsc.show{display:block}
+.qscn{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:4rem;color:var(--pulse);line-height:1;margin-bottom:.5rem}
+.qscl{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--muted)}
+
+/* ACCORDION */
+.accl{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:2rem}
+.acci{border-bottom:1px solid var(--border)}
+.acci:last-child{border-bottom:none}
+.acct{width:100%;display:flex;justify-content:space-between;align-items:center;padding:18px 22px;background:none;border:none;cursor:pointer;text-align:left;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:.95rem;transition:background .2s}
+.acct:hover{background:rgba(255,255,255,.02)}
+.accch{transition:transform .3s;color:var(--muted);flex-shrink:0}
+.acci.open .accch{transform:rotate(180deg)}
+.accb{max-height:0;overflow:hidden;transition:max-height .4s ease}
+.acci.open .accb{max-height:220px}
+.accbi{padding:0 22px 18px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.97rem;color:var(--muted);line-height:1.75}
+
+/* COMPLETION */
+#comp{text-align:center;padding:14vh 4vw}
+.complbl{font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.2em;color:var(--pulse);margin-bottom:1.2rem}
+.compt{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(1.5rem,3vw,2.2rem);letter-spacing:-.03em;color:#f5f5f5;margin-bottom:2rem;line-height:1.15}
+.sbdgs{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:2rem}
+.sbdg{font-family:'DM Mono',monospace;font-size:.72rem;padding:8px 16px;border-radius:20px;border:1px solid}
+.sbp{color:var(--pulse);border-color:rgba(0,255,179,.3);background:rgba(0,255,179,.07)}
+.sbi{color:var(--iris);border-color:rgba(155,143,255,.3);background:rgba(155,143,255,.07)}
+.sba{color:var(--amber);border-color:rgba(255,179,71,.3);background:rgba(255,179,71,.07)}
+.compr{height:1px;background:var(--border);margin-bottom:2rem}
+.nxtbtn{font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:.95rem;padding:14px 36px;border-radius:40px;border:none;background:var(--iris);color:#fff;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;gap:10px}
+.nxtbtn:hover{background:#8577f5;transform:translateY(-2px);box-shadow:0 8px 24px rgba(155,143,255,.3)}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .hgrid{grid-template-columns:1fr;gap:2rem}
+  .hdiv,.vig{display:none}
+  .vig{grid-template-columns:1fr!important}
+  .tcg,.agrid,.csg{grid-template-columns:1fr}
+  .astk{position:static}
+  .tpnl.on{grid-template-columns:1fr}
+  .scfs{grid-template-columns:1fr}
+  .fstps{flex-direction:column}
+  #rail{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav id="top-nav">
+  <div class="nav-inner">
+    <span class="nav-brand">AI BYTES LEARNING</span>
+    <span class="nav-title">Lesson 01 &mdash; What Is Generative AI?</span>
+    <span class="nav-chip">12 MIN &middot; INTERMEDIATE</span>
+  </div>
+  <div id="nav-progress"></div>
+</nav>
+
+<!-- RIGHT RAIL -->
+<div id="rail">
+  <div class="rdot active" data-t="hook"><span class="rtip">Hook</span></div>
+  <div class="rdot" data-t="vi"><span class="rtip">Instructor Insight</span></div>
+  <div class="rdot" data-t="found"><span class="rtip">Foundation</span></div>
+  <div class="rdot" data-t="types"><span class="rtip">Three Families</span></div>
+  <div class="rdot" data-t="anat"><span class="rtip">Anatomy</span></div>
+  <div class="rdot" data-t="pred"><span class="rtip">Prediction</span></div>
+  <div class="rdot" data-t="mmap"><span class="rtip">Mindmap</span></div>
+  <div class="rdot" data-t="flow"><span class="rtip">Flow</span></div>
+  <div class="rdot" data-t="ind"><span class="rtip">Industries</span></div>
+  <div class="rdot" data-t="comp"><span class="rtip">Complete</span></div>
+</div>
+
+<!-- ===== 1. HOOK ===== -->
+<section id="hook" data-s="hook">
+  <div class="mesh">
+    <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  </div>
+  <div class="hgrid">
+    <div class="ai">
+      <p class="htag">AI FOUNDATIONS &middot; LESSON 01</p>
+      <h1 class="hh1" id="scrh1">What Is<br><em>Generative AI?</em></h1>
+      <div class="hrule"></div>
+      <p class="hobj">Understand how generative AI models create new content &mdash; text, images, code &mdash; and why they work differently from traditional software.</p>
+      <div class="pcard">
+        <span class="pclbl">Lesson 1 of 5</span>
+        <div class="ptk"><div class="pfill"></div></div>
+        <span class="pclbl" style="color:var(--pulse)">20%</span>
+      </div>
+      <p style="font-family:'DM Mono',monospace;font-size:.68rem;color:var(--muted);letter-spacing:.1em;margin-bottom:.8rem">WHAT YOU&rsquo;LL BUILD</p>
+      <ul class="hbuild">
+        <li>A mental model of how LLMs generate text</li>
+        <li>Understanding of temperature, tokens, and attention</li>
+        <li>The ability to distinguish generative AI families</li>
+      </ul>
+    </div>
+    <div class="hdiv"></div>
+    <div class="ai" style="transition-delay:.15s">
+      <div class="himgc">
+        <img src="https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=600&q=80" alt="Generative AI neural visual" loading="lazy">
+      </div>
+      <div class="kfg">
+        <div class="kf"><span class="kfn" data-to="175" data-suf="B">0</span><span class="kfl">GPT-3 PARAMETERS</span></div>
+        <div class="kf"><span class="kfn">2022</span><span class="kfl">CHATGPT LAUNCH</span></div>
+        <div class="kf"><span class="kfn" data-to="4" data-suf="">0</span><span class="kfl">TYPES OF GEN AI</span></div>
+        <div class="kf"><span class="kfn" style="font-size:1.2rem;color:var(--iris)">GPT-4</span><span class="kfl">LEADING EXAMPLE</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 2. VIDEO INSIGHT ===== -->
+<section id="vi" data-s="vi">
+  <div class="ct">
+    <div class="vig ai">
+      <div>
+        <p class="vlbl">INSTRUCTOR INSIGHT</p>
+        <div class="vwrap">
+          <video autoplay muted loop playsinline>
+            <source src="public/videos/intro.mp4" type="video/mp4">
+          </video>
+        </div>
+      </div>
+      <div class="icards">
+        <div class="icard"><span class="iico">&#x1F500;</span><div><h4>Unlike search &mdash; it creates</h4><p>Generative AI produces original outputs, not links to existing content.</p></div></div>
+        <div class="icard"><span class="iico">&#x1F9EC;</span><div><h4>Trained on patterns, not rules</h4><p>No programmer wrote the rules &mdash; the model inferred them from billions of examples.</p></div></div>
+        <div class="icard"><span class="iico">&#x1F3B2;</span><div><h4>Outputs are probabilistic</h4><p>The same prompt rarely yields the same result &mdash; that is by design, not a bug.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 3. FOUNDATION ===== -->
+<section id="found" data-s="found">
+  <div class="ctn">
+    <div class="ai">
+      <div class="slbl">FOUNDATION</div>
+      <h2 class="sh" style="margin-bottom:1.8rem">The shift from retrieval to creation</h2>
+      <p class="fbody">Traditional software follows instructions written by humans. If you ask a calculator to add two numbers, it applies a formula. If you ask a search engine for information, it retrieves documents from an index. Neither system <strong>creates</strong> &mdash; they retrieve or compute.</p>
+      <p class="fbody"><strong>Generative AI</strong> breaks that pattern entirely. These models are trained on enormous quantities of human-produced content &mdash; text, images, code &mdash; and learn the statistical patterns that underlie all of it. When prompted, they do not look up an answer. They generate one, token by token, based on what their training suggests should come next.</p>
+      <div class="tipc">
+        <div class="tlbl">KEY INSIGHT</div>
+        <p>A generative model is not reasoning from first principles &mdash; it is extrapolating from patterns. Understanding this distinction is foundational to using these tools effectively and critically.</p>
+      </div>
+      <p class="fbody">This probabilistic nature means outputs vary. Run the same prompt twice and you get different results. This is shaped by a parameter called <strong>temperature</strong> &mdash; higher values produce more creative outputs, lower values produce more conservative ones.</p>
+      <p class="fbody">The implications are profound. A generative model can write code it has never seen before, compose music in the style of a composer it studied, or generate images of places that do not exist. The constraint is not imagination &mdash; it is the boundaries of its training distribution.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 4. TYPE CARDS ===== -->
+<section id="types" data-s="types">
+  <div class="ct">
+    <div class="ai">
+      <div class="slbl">MODEL FAMILIES</div>
+      <h2 class="sh">Three Families of Generative AI</h2>
+      <p class="ssub">Each architecture approaches creation differently &mdash; and excels in different domains.</p>
+      <div class="tcg">
+        <div class="tc">
+          <div class="tca" style="background:var(--pulse)"></div>
+          <div class="tcb">
+            <span class="tbdg bp">LANGUAGE</span>
+            <h3>Large Language Models</h3>
+            <p>Transformer-based models trained to predict the next token in a sequence. They power chatbots, code generators, and writing assistants. GPT-4, Gemini, and Claude are all LLMs.</p>
+            <div class="csnp">{"model": "gemini-2.0-flash",
+ "prompt": "Explain LLMs",
+ "tokens": 200}</div>
+          </div>
+        </div>
+        <div class="tc">
+          <div class="tca" style="background:var(--iris)"></div>
+          <div class="tcb">
+            <span class="tbdg bi">IMAGES</span>
+            <h3>Diffusion Models</h3>
+            <p>These models learn to reverse a noise-adding process. Starting from pure noise, they iteratively denoise until a coherent image emerges. Stable Diffusion and DALL-E 3 use this approach.</p>
+            <p style="margin-bottom:0;font-size:.8rem;color:var(--iris)">&#x2192; Best for: image synthesis, art, design generation</p>
+          </div>
+        </div>
+        <div class="tc">
+          <div class="tca" style="background:var(--amber)"></div>
+          <div class="tcb">
+            <span class="tbdg ba">ADVERSARIAL</span>
+            <h3>Generative Adversarial Networks</h3>
+            <p>Two neural networks compete: a generator creates samples, a discriminator judges them. Over time, the generator improves to fool the discriminator. GANs excel at hyper-realistic image generation.</p>
+            <p style="margin-bottom:0;font-size:.8rem;color:var(--amber)">&#x2192; Best for: deepfakes, synthetic data, style transfer</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 5. ANATOMY ===== -->
+<section id="anat" data-s="anat">
+  <div class="aout">
+    <div class="ai" style="margin-bottom:2.5rem">
+      <div class="slbl">DEEP STRUCTURE</div>
+      <h2 class="anath">How a Transformer Works</h2>
+      <p class="anatsub">SCROLL TO STEP THROUGH THE ARCHITECTURE</p>
+    </div>
+    <div class="agrid">
+      <div class="astk">
+        <svg id="tfsvg" viewBox="0 0 260 420" xmlns="http://www.w3.org/2000/svg" width="100%">
+          <defs>
+            <marker id="ah" markerWidth="8" markerHeight="7" refX="6" refY="3.5" orient="auto">
+              <polygon points="0 0, 8 3.5, 0 7" fill="rgba(255,255,255,0.2)"/>
+            </marker>
+          </defs>
+          <rect class="tfbx" id="b0" x="55" y="20"  width="150" height="48" rx="8" ry="8"/>
+          <text class="tflbl" id="l0" x="130" y="44">Input Tokens</text>
+          <line class="tfarr" x1="130" y1="68"  x2="130" y2="96"  marker-end="url(#ah)"/>
+          <rect class="tfbx" id="b1" x="55" y="100" width="150" height="48" rx="8" ry="8"/>
+          <text class="tflbl" id="l1" x="130" y="124">Embedding Layer</text>
+          <line class="tfarr" x1="130" y1="148" x2="130" y2="176" marker-end="url(#ah)"/>
+          <rect class="tfbx" id="b2" x="55" y="180" width="150" height="48" rx="8" ry="8"/>
+          <text class="tflbl" id="l2" x="130" y="204">Multi-Head Attention</text>
+          <line class="tfarr" x1="130" y1="228" x2="130" y2="256" marker-end="url(#ah)"/>
+          <rect class="tfbx" id="b3" x="55" y="260" width="150" height="48" rx="8" ry="8"/>
+          <text class="tflbl" id="l3" x="130" y="284">Feed Forward</text>
+          <line class="tfarr" x1="130" y1="308" x2="130" y2="336" marker-end="url(#ah)"/>
+          <rect class="tfbx" id="b4" x="55" y="340" width="150" height="48" rx="8" ry="8"/>
+          <text class="tflbl" id="l4" x="130" y="364">Output Logits</text>
+        </svg>
+      </div>
+      <div class="aslist" id="aslist">
+        <div class="astep on" data-step="0">
+          <p class="snum">STEP 01</p><h3 class="stit">Tokenisation</h3>
+          <p class="sbdy">Before a model can process your prompt, it splits text into tokens &mdash; small units that might be a word, part of a word, or a single character. &ldquo;Unbelievable&rdquo; might become [&ldquo;Un&rdquo;, &ldquo;believ&rdquo;, &ldquo;able&rdquo;]. This is why models have a &ldquo;context window&rdquo; measured in tokens, not words.</p>
+          <div class="sex">&#x2192; &ldquo;Hello world&rdquo; &#x2248; [&ldquo;Hello&rdquo;, &ldquo; world&rdquo;] = 2 tokens</div>
+        </div>
+        <div class="astep" data-step="1">
+          <p class="snum">STEP 02</p><h3 class="stit">Embedding</h3>
+          <p class="sbdy">Each token is converted into a high-dimensional vector &mdash; a list of numbers that encodes its meaning. Words with similar meanings cluster together in this vector space. &ldquo;King&rdquo; and &ldquo;Queen&rdquo; are near each other; &ldquo;King&rdquo; and &ldquo;Carrot&rdquo; are far apart. This representation preserves semantic relationships across the vocabulary.</p>
+          <div class="sex">&#x2192; &ldquo;cat&rdquo; &#x2192; [0.23, &minus;0.41, 0.88, &hellip;] (768 dimensions)</div>
+        </div>
+        <div class="astep" data-step="2">
+          <p class="snum">STEP 03</p><h3 class="stit">Attention Mechanism</h3>
+          <p class="sbdy">The attention mechanism lets each token &ldquo;look at&rdquo; every other token in the sequence and weigh how relevant they are. This is the breakthrough that makes transformers powerful &mdash; it captures long-range dependencies that earlier architectures missed. Multi-head attention runs this process across many parallel views simultaneously.</p>
+          <div class="sex">&#x2192; &ldquo;The bank by the river was steep&rdquo; &mdash; &ldquo;bank&rdquo; attends to &ldquo;river&rdquo; to resolve ambiguity</div>
+        </div>
+        <div class="astep" data-step="3">
+          <p class="snum">STEP 04</p><h3 class="stit">Output Generation</h3>
+          <p class="sbdy">The final layer produces a probability distribution over the entire vocabulary &mdash; for each possible next token, what is the likelihood it should come next? The model samples from this distribution. Temperature controls how peaked or spread out this distribution is before sampling occurs.</p>
+          <div class="sex">&#x2192; temp=0.1: picks the top token almost always &nbsp;|&nbsp; temp=1.0: samples more freely</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PUNCH QUOTE -->
+<section id="punch" data-s="punch">
+  <div class="ctn ai" style="text-align:center">
+    <div class="prule"></div>
+    <p class="ptxt">&ldquo;A language model doesn&rsquo;t understand.<br>It predicts.&rdquo;</p>
+    <div class="prule"></div>
+    <p class="pattr">&mdash; The core distinction every AI practitioner must grasp</p>
+  </div>
+</section>
+
+<!-- ===== 6. PREDICTION ===== -->
+<section id="pred" data-s="pred">
+  <div class="ctn">
+    <div class="ai">
+      <div style="font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.15em;color:var(--amber);margin-bottom:1.2rem;display:flex;align-items:center;gap:10px">
+        <span style="background:var(--amber);width:3px;height:14px;display:inline-block;border-radius:2px;flex-shrink:0"></span>BEFORE YOU CONTINUE
+      </div>
+      <p class="preq">What does a language model actually do when generating text?</p>
+      <div class="propts" id="propts">
+        <button class="popt" onclick="doPred(this,false)"><span class="pltr">A</span>Searches the internet for an answer</button>
+        <button class="popt" onclick="doPred(this,true)"><span class="pltr">B</span>Predicts the most likely next word, repeatedly</button>
+        <button class="popt" onclick="doPred(this,false)"><span class="pltr">C</span>Selects from pre-written response templates</button>
+      </div>
+      <div class="prev" id="prev">
+        <div class="previn">Correct. Language models are autoregressive &mdash; they predict one token at a time, conditioning each prediction on everything that came before it. This is why they produce long, coherent text: each step informs the next. They are not searching, retrieving, or selecting &mdash; they are generating.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 7. MINDMAP ===== -->
+<section id="mmap" data-s="mmap">
+  <div class="ct">
+    <div class="ai">
+      <div class="slbl">LANDSCAPE</div>
+      <h2 class="sh">The Generative AI Landscape</h2>
+      <p class="ssub">Five domains where generative models are reshaping how we create.</p>
+    </div>
+    <div class="mmw ai" style="transition-delay:.2s">
+      <svg id="mmsvg" viewBox="0 0 900 500" xmlns="http://www.w3.org/2000/svg">
+        <path class="mmp" id="mp0" d="M450,250 L200,128" stroke="#00FFB3"/>
+        <path class="mmp" id="mp1" d="M450,250 L152,262" stroke="#9B8FFF"/>
+        <path class="mmp" id="mp2" d="M450,250 L218,402" stroke="#FFB347"/>
+        <path class="mmp" id="mp3" d="M450,250 L692,128" stroke="#FF6B6B"/>
+        <path class="mmp" id="mp4" d="M450,250 L732,318" stroke="#6effd8"/>
+        <line class="mmp" id="mc0a" x1="200" y1="128" x2="112" y2="68"  stroke="#00FFB3" stroke-dasharray="110" stroke-dashoffset="110"/>
+        <line class="mmp" id="mc0b" x1="200" y1="128" x2="96"  y2="128" stroke="#00FFB3" stroke-dasharray="112" stroke-dashoffset="112"/>
+        <line class="mmp" id="mc0c" x1="200" y1="128" x2="112" y2="190" stroke="#00FFB3" stroke-dasharray="110" stroke-dashoffset="110"/>
+        <line class="mmp" id="mc1a" x1="152" y1="262" x2="44"  y2="218" stroke="#9B8FFF" stroke-dasharray="120" stroke-dashoffset="120"/>
+        <line class="mmp" id="mc1b" x1="152" y1="262" x2="38"  y2="268" stroke="#9B8FFF" stroke-dasharray="120" stroke-dashoffset="120"/>
+        <line class="mmp" id="mc1c" x1="152" y1="262" x2="48"  y2="326" stroke="#9B8FFF" stroke-dasharray="120" stroke-dashoffset="120"/>
+        <line class="mmp" id="mc2a" x1="218" y1="402" x2="112" y2="418" stroke="#FFB347" stroke-dasharray="115" stroke-dashoffset="115"/>
+        <line class="mmp" id="mc2b" x1="218" y1="402" x2="116" y2="458" stroke="#FFB347" stroke-dasharray="115" stroke-dashoffset="115"/>
+        <line class="mmp" id="mc2c" x1="218" y1="402" x2="168" y2="474" stroke="#FFB347" stroke-dasharray="115" stroke-dashoffset="115"/>
+        <line class="mmp" id="mc3a" x1="692" y1="128" x2="778" y2="68"  stroke="#FF6B6B" stroke-dasharray="110" stroke-dashoffset="110"/>
+        <line class="mmp" id="mc3b" x1="692" y1="128" x2="796" y2="128" stroke="#FF6B6B" stroke-dasharray="115" stroke-dashoffset="115"/>
+        <line class="mmp" id="mc3c" x1="692" y1="128" x2="780" y2="190" stroke="#FF6B6B" stroke-dasharray="110" stroke-dashoffset="110"/>
+        <line class="mmp" id="mc4a" x1="732" y1="318" x2="822" y2="274" stroke="#6effd8" stroke-dasharray="102" stroke-dashoffset="102"/>
+        <line class="mmp" id="mc4b" x1="732" y1="318" x2="830" y2="320" stroke="#6effd8" stroke-dasharray="108" stroke-dashoffset="108"/>
+        <line class="mmp" id="mc4c" x1="732" y1="318" x2="822" y2="374" stroke="#6effd8" stroke-dasharray="105" stroke-dashoffset="105"/>
+        <circle cx="450" cy="250" r="52" fill="rgba(15,15,26,.95)" stroke="#9B8FFF" stroke-width="2"/>
+        <text class="mmnt" x="450" y="244" fill="#f5f5f5" font-size="13" font-weight="700">Gen AI</text>
+        <text class="mmnt" x="450" y="260" fill="#9B8FFF" font-size="10">Landscape</text>
+        <circle cx="200" cy="128" r="30" fill="rgba(0,255,179,.1)"   stroke="#00FFB3" stroke-width="1.5"/>
+        <text class="mmnt" x="200" y="128" fill="#00FFB3" font-size="11">Text</text>
+        <circle cx="152" cy="262" r="30" fill="rgba(155,143,255,.1)" stroke="#9B8FFF" stroke-width="1.5"/>
+        <text class="mmnt" x="152" y="262" fill="#9B8FFF" font-size="11">Images</text>
+        <circle cx="218" cy="402" r="30" fill="rgba(255,179,71,.1)"  stroke="#FFB347" stroke-width="1.5"/>
+        <text class="mmnt" x="218" y="402" fill="#FFB347" font-size="11">Audio</text>
+        <circle cx="692" cy="128" r="30" fill="rgba(255,107,107,.1)" stroke="#FF6B6B" stroke-width="1.5"/>
+        <text class="mmnt" x="692" y="128" fill="#FF6B6B" font-size="11">Video</text>
+        <circle cx="732" cy="318" r="30" fill="rgba(110,255,216,.1)" stroke="#6effd8" stroke-width="1.5"/>
+        <text class="mmnt" x="732" y="318" fill="#6effd8" font-size="11">Code</text>
+        <text class="mmct" x="110" y="66">LLMs</text><text class="mmct" x="80" y="128">Chatbots</text><text class="mmct" x="108" y="192">Code Gen</text>
+        <text class="mmct" x="30" y="216">Diffusion</text><text class="mmct" x="22" y="268">GANs</text><text class="mmct" x="32" y="328">Style Tx</text>
+        <text class="mmct" x="94" y="420">TTS</text><text class="mmct" x="92" y="460">Music Gen</text><text class="mmct" x="144" y="477">Voice Clone</text>
+        <text class="mmct" x="788" y="66">Sora</text><text class="mmct" x="808" y="128">Runway</text><text class="mmct" x="792" y="192">HeyGen</text>
+        <text class="mmct" x="838" y="274">Copilot</text><text class="mmct" x="842" y="320">Cursor</text><text class="mmct" x="836" y="376">Claude</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 8. FLOW ===== -->
+<section id="flow" data-s="flow" style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="ct">
+    <div class="ai">
+      <div class="slbl">PROCESS</div>
+      <h2 class="sh">How Text Generation Works</h2>
+      <p class="ssub">From your prompt to the final word &mdash; five steps inside the model.</p>
+      <div class="fstps">
+        <div class="fstp"><div class="fnum" style="background:rgba(155,143,255,.12);color:var(--iris)">01</div><h4>You type a prompt</h4><p>Plain text input to the model interface or API</p></div>
+        <div class="farr">&#x2192;</div>
+        <div class="fstp"><div class="fnum" style="background:rgba(155,143,255,.15);color:var(--iris)">02</div><h4>Tokenised into numbers</h4><p>Text split into tokens, mapped to integer IDs</p></div>
+        <div class="farr">&#x2192;</div>
+        <div class="fstp"><div class="fnum" style="background:rgba(155,143,255,.15);color:var(--iris)">03</div><h4>Attention weights computed</h4><p>Each token attends to all others, building context</p></div>
+        <div class="farr">&#x2192;</div>
+        <div class="fstp"><div class="fnum" style="background:rgba(0,255,179,.12);color:var(--pulse)">04</div><h4>Probability distribution sampled</h4><p>Temperature shapes how creative the sampling is</p></div>
+        <div class="farr">&#x2192;</div>
+        <div class="fstp"><div class="fnum" style="background:rgba(0,255,179,.15);color:var(--pulse)">05</div><h4>Token decoded to text</h4><p>The chosen token ID converts back to a word</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 9. INDUSTRY TABS ===== -->
+<section id="ind" data-s="ind">
+  <div class="ct">
+    <div class="ai">
+      <div class="slbl">REAL WORLD</div>
+      <h2 class="sh">Generative AI Across Industries</h2>
+      <p class="ssub">The same underlying technology reshapes very different workflows.</p>
+      <div class="tbar">
+        <button class="tbtn on" onclick="doTab(0)">Healthcare</button>
+        <button class="tbtn"    onclick="doTab(1)">Finance</button>
+        <button class="tbtn"    onclick="doTab(2)">Education</button>
+        <button class="tbtn"    onclick="doTab(3)">Media</button>
+        <button class="tbtn"    onclick="doTab(4)">Legal</button>
+      </div>
+      <div id="tpnls">
+        <div class="tpnl on" id="tp0"><div class="timg"><img src="https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=600&q=80" alt="Healthcare" loading="lazy"></div><div class="tcnt"><h3>Clinical Documentation at Scale</h3><p>Generative AI is reshaping clinical documentation by automatically summarising patient records, drafting discharge notes, and generating referral letters from consultation transcripts. Physicians dictate naturally; the model produces structured documentation. This reduces administrative burden by up to 40%, giving clinicians more time with patients rather than paperwork.</p></div></div>
+        <div class="tpnl"    id="tp1"><div class="timg"><img src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&q=80" alt="Finance" loading="lazy"></div><div class="tcnt"><h3>Automated Analyst Intelligence</h3><p>Investment banks use generative models to draft equity research summaries, synthesise earnings call transcripts, and generate risk commentary for portfolios. Tasks that once required junior analysts six hours now complete in minutes. The model surfaces relevant signals; the analyst adds judgement and oversight.</p></div></div>
+        <div class="tpnl"    id="tp2"><div class="timg"><img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&q=80" alt="Education" loading="lazy"></div><div class="tcnt"><h3>Personalised Learning at Every Level</h3><p>Educational platforms use generative AI to adapt content to individual learners &mdash; explaining the same concept multiple ways, generating practice problems at the right difficulty, and providing instant feedback on written responses. Adaptive quizzes update in real time based on which concepts a student has mastered.</p></div></div>
+        <div class="tpnl"    id="tp3"><div class="timg"><img src="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=600&q=80" alt="Media" loading="lazy"></div><div class="tcnt"><h3>Content at the Speed of Thought</h3><p>Media organisations use generative AI to draft scripts, generate ad copy variants, create image assets, and repurpose long-form content into social snippets. A single journalist&rsquo;s article can become ten tweet threads, a LinkedIn post, a newsletter summary, and a podcast script &mdash; all in minutes, with human review.</p></div></div>
+        <div class="tpnl"    id="tp4"><div class="timg"><img src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=600&q=80" alt="Legal" loading="lazy"></div><div class="tcnt"><h3>Contract Intelligence</h3><p>Law firms use generative AI to draft standard contract clauses, extract key obligations from lengthy agreements, and flag unusual provisions in due diligence reviews. What previously required paralegal hours of document review now completes in a fraction of the time. Lawyers focus on strategy, negotiation, and judgement.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 10. INTERACTIVE CODE ===== -->
+<section id="int" data-s="int" style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="ct">
+    <div class="ai">
+      <div class="slbl">INSIDE THE API</div>
+      <h2 class="sh">Anatomy of an API Call</h2>
+      <p class="ssub">Every generative AI request is structured JSON. Click Decode to understand each field.</p>
+      <div class="csg">
+        <div>
+          <pre class="apc">{
+  <span style="color:var(--iris)">"model"</span>: <span style="color:var(--pulse)">"gemini-2.0-flash"</span>,
+  <span style="color:var(--iris)">"messages"</span>: [
+    {
+      <span style="color:var(--iris)">"role"</span>: <span style="color:var(--pulse)">"system"</span>,
+      <span style="color:var(--iris)">"content"</span>: <span style="color:var(--amber)">"You are a concise assistant."</span>
+    },
+    {
+      <span style="color:var(--iris)">"role"</span>: <span style="color:var(--pulse)">"user"</span>,
+      <span style="color:var(--iris)">"content"</span>: <span style="color:var(--amber)">"Explain neural networks in 3 sentences."</span>
+    }
+  ],
+  <span style="color:var(--iris)">"temperature"</span>: <span style="color:var(--nova)">0.7</span>,
+  <span style="color:var(--iris)">"max_tokens"</span>: <span style="color:var(--nova)">200</span>
+}</pre>
+          <button class="decbtn" id="decbtn" onclick="doDec()">DECODE &#x2192;</button>
+        </div>
+        <div class="anno" id="anno">
+          <div class="anitem" style="animation-delay:0s"><div class="ank">model</div><div class="anv">Which LLM to use &mdash; different models have different capabilities, speeds, and costs.</div></div>
+          <div class="anitem" style="animation-delay:.1s"><div class="ank">messages</div><div class="anv">Conversation history as an array. &ldquo;system&rdquo; sets behaviour; &ldquo;user&rdquo; is your prompt. Order matters.</div></div>
+          <div class="anitem" style="animation-delay:.2s"><div class="ank">temperature</div><div class="anv">0 = deterministic (always picks the top token). 1 = creative (samples more freely). 0.7 is the typical balanced setting.</div></div>
+          <div class="anitem" style="animation-delay:.3s"><div class="ank">max_tokens</div><div class="anv">Output length cap. 200 tokens &#x2248; 150 words. Higher values cost more; lower values truncate long responses.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 11. APPLIED CASE ===== -->
+<section id="app" data-s="app">
+  <div class="ct">
+    <div class="ai">
+      <div class="apc2">
+        <div class="aplbl">APPLIED CASE</div>
+        <h3>50 Personalised Newsletters &mdash; Every Single Day</h3>
+        <div class="apblk"><div class="apblkl">THE SCENARIO</div><p>A content team at a media company needs to publish 50 personalised newsletter summaries per day &mdash; each tailored to a different reader segment with distinct interests, vocabulary, and reading level.</p></div>
+        <div class="apblk" style="margin-top:1.2rem"><div class="apblkl">TRADITIONAL APPROACH</div><p>3 writers &times; 8 hours each. Cost: &pound;1,200/day. Highly variable quality. No capacity to scale without proportional headcount growth.</p></div>
+        <div class="apblk" style="margin-top:1.2rem"><div class="apblkl">GENERATIVE AI PIPELINE</div><p>Custom prompt template + Gemini API + segment profile data. Output: 50 summaries in 4 minutes. Cost: &pound;0.80. Human writers now focus on strategy, tone oversight, and editorial direction &mdash; higher-value work they previously had no time for.</p></div>
+        <div class="rchips"><span class="rchip">98% cost reduction</span><span class="rchip">50&times; faster</span><span class="rchip">Quality maintained</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 12. WARNING ===== -->
+<section id="warn" data-s="warn" style="padding:5vh 4vw">
+  <div class="ctn ai">
+    <div class="warnd">
+      <div class="wlbl">&#x26A0; COMMON MISTAKE</div>
+      <p>Treating AI output as fact. Generative models hallucinate &mdash; they produce confident-sounding text that is factually wrong. Always verify claims against authoritative sources, especially in high-stakes domains such as medicine, law, or finance.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 13. EXERCISE ===== -->
+<section id="ex" data-s="ex">
+  <div class="ctn">
+    <div class="ai">
+      <p class="exturn">YOUR TURN</p>
+      <p class="exinst">Improve this weak prompt to get a better generative AI response. Use the scaffold below to build a stronger version.</p>
+      <div class="weakp">&ldquo;Write something about AI.&rdquo;</div>
+      <div class="scfs">
+        <div class="scf"><label>WHO IS THE AUDIENCE?</label><input type="text" placeholder="e.g. non-technical executives"></div>
+        <div class="scf"><label>WHAT FORMAT?</label><input type="text" placeholder="e.g. 3 bullet points, under 100 words"></div>
+        <div class="scf"><label>WHAT TONE?</label><input type="text" placeholder="e.g. professional but approachable"></div>
+        <div class="scf"><label>WHAT SHOULD IT COVER?</label><input type="text" placeholder="e.g. what AI is and why it matters in 2026"></div>
+      </div>
+      <button class="seebtn" onclick="doAns()">See model answer</button>
+      <div class="ansrev" id="ansrev">
+        <div class="ansin">&ldquo;Write a 3-bullet summary of what AI is and why it matters in 2026, aimed at non-technical executives. Keep it under 100 words. Use a professional but approachable tone.&rdquo;</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 14. RECAP ===== -->
+<section id="recap" data-s="recap" style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="ctn">
+    <div class="ai">
+      <p class="reclbl">IF YOU REMEMBER ONLY THREE THINGS</p>
+      <div class="recits">
+        <div class="recit"><span class="recn">1</span><div class="rect"><h4>Generative AI creates &mdash; it doesn&rsquo;t retrieve</h4><p>Unlike search engines or databases, generative models produce new content based on learned patterns. Every output is synthesised, not fetched from a stored answer.</p></div></div>
+        <div class="recit"><span class="recn">2</span><div class="rect"><h4>Probability, not understanding, drives output</h4><p>These models do not comprehend meaning as humans do. They operate on statistical patterns over tokens. Impressive outputs can coexist with fundamental factual errors.</p></div></div>
+        <div class="recit"><span class="recn">3</span><div class="rect"><h4>Prompt quality determines output quality</h4><p>Vague prompts produce vague results. Specificity about audience, format, tone, and scope consistently produces better outputs &mdash; a skill called prompt engineering.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 15. QUIZ ===== -->
+<section id="quiz" data-s="quiz">
+  <div class="ctn">
+    <div class="ai">
+      <div class="slbl">CHECK YOUR UNDERSTANDING</div>
+      <p class="qprog" id="qprog">QUESTION 1 OF 3</p>
+      <div class="qqw on" id="q1">
+        <p class="qqt">What is the primary task of a large language model?</p>
+        <div class="qopts">
+          <button class="qopt" onclick="doQ(this,'1',false,'A language model does not search the web &mdash; it generates from its training data.')"><span class="qltr">A</span>Searching the web for answers</button>
+          <button class="qopt" onclick="doQ(this,'1',true,'Exactly right. LLMs predict the next token based on probability distributions learned during training.')"><span class="qltr">B</span>Predicting the next token, repeatedly</button>
+          <button class="qopt" onclick="doQ(this,'1',false,'Models do not store pre-written responses. Every output is generated fresh.')"><span class="qltr">C</span>Storing facts in a database</button>
+        </div>
+        <div class="qfb" id="fb1"><div class="qfbi" id="fbi1"></div></div>
+        <button class="nxtb" id="nxt1" onclick="nextQ(1)">Next question &#x2192;</button>
+      </div>
+      <div class="qqw" id="q2">
+        <p class="qqt">Which generative model type uses a &ldquo;generator vs discriminator&rdquo; architecture?</p>
+        <div class="qopts">
+          <button class="qopt" onclick="doQ(this,'2',false,'Transformers use attention mechanisms, not adversarial training.')"><span class="qltr">A</span>Transformer</button>
+          <button class="qopt" onclick="doQ(this,'2',false,'Diffusion models use a denoising process, not a generator-discriminator pair.')"><span class="qltr">B</span>Diffusion Model</button>
+          <button class="qopt" onclick="doQ(this,'2',true,'Correct. GANs pit a generator against a discriminator, improving through competition.')"><span class="qltr">C</span>Generative Adversarial Network (GAN)</button>
+        </div>
+        <div class="qfb" id="fb2"><div class="qfbi" id="fbi2"></div></div>
+        <button class="nxtb" id="nxt2" onclick="nextQ(2)">Next question &#x2192;</button>
+      </div>
+      <div class="qqw" id="q3">
+        <p class="qqt">What does &ldquo;temperature&rdquo; control in an AI API call?</p>
+        <div class="qopts">
+          <button class="qopt" onclick="doQ(this,'3',false,'Temperature has no effect on processing speed &mdash; that is determined by model size and hardware.')"><span class="qltr">A</span>Processing speed</button>
+          <button class="qopt" onclick="doQ(this,'3',true,'Correct. Temperature scales the probability distribution before sampling &mdash; higher = more random, lower = more deterministic.')"><span class="qltr">B</span>Randomness of output</button>
+          <button class="qopt" onclick="doQ(this,'3',false,'The number of model parameters is fixed after training &mdash; temperature does not change that.')"><span class="qltr">C</span>Number of model parameters</button>
+        </div>
+        <div class="qfb" id="fb3"><div class="qfbi" id="fbi3"></div></div>
+        <button class="nxtb" id="nxt3" onclick="showSc()">See my score &#x2192;</button>
+      </div>
+      <div class="qsc" id="qsc">
+        <div class="qscn" id="qscn">0/3</div>
+        <div class="qscl" style="margin-bottom:1rem">CORRECT ANSWERS</div>
+        <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1rem;color:var(--muted);line-height:1.7">Review any questions you found challenging in the Key Terms section below, then move on to the next lesson.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 16. KEY TERMS ===== -->
+<section id="terms" data-s="terms" style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="ctn">
+    <div class="ai">
+      <div class="slbl">GLOSSARY</div>
+      <h2 class="sh" style="margin-bottom:.5rem">Key Terms</h2>
+      <p class="ssub">Plain-English definitions for the concepts in this lesson.</p>
+      <div class="accl">
+        <div class="acci"><button class="acct" onclick="doAcc(this)">Large Language Model (LLM)<svg class="accch" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="accb"><div class="accbi">A neural network trained on vast text corpora to predict the next token in a sequence. LLMs like GPT-4, Gemini, and Claude can generate coherent, contextually appropriate text across an enormous range of tasks &mdash; from coding to creative writing &mdash; because they have learned the statistical structure of human language at scale.</div></div></div>
+        <div class="acci"><button class="acct" onclick="doAcc(this)">Tokenisation<svg class="accch" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="accb"><div class="accbi">The process of splitting text into smaller units (tokens) before it can be processed by a language model. Tokens are typically sub-word units &mdash; common words become single tokens while rare words are split into multiple parts. A model&rsquo;s &ldquo;context window&rdquo; is measured in tokens, not words.</div></div></div>
+        <div class="acci"><button class="acct" onclick="doAcc(this)">Attention Mechanism<svg class="accch" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="accb"><div class="accbi">The core innovation in transformer architectures. Attention allows every token to &ldquo;attend to&rdquo; every other token in the sequence, computing relevance weights. This enables models to capture long-range dependencies in text &mdash; understanding that &ldquo;it&rdquo; in a long sentence refers to a noun mentioned many words earlier.</div></div></div>
+        <div class="acci"><button class="acct" onclick="doAcc(this)">Temperature<svg class="accch" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="accb"><div class="accbi">A parameter that controls the randomness of a generative model&rsquo;s output by scaling the probability distribution before sampling. Temperature 0 always picks the most probable next token (deterministic, repetitive). Temperature 1 samples from the full distribution (more creative, occasionally surprising or incoherent).</div></div></div>
+        <div class="acci"><button class="acct" onclick="doAcc(this)">Hallucination<svg class="accch" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="accb"><div class="accbi">When a generative model produces factually incorrect information stated with apparent confidence. Hallucinations occur because models generate based on statistical patterns rather than verified knowledge &mdash; they optimise for plausibility, not truth. More common with obscure facts, recent events, and numerical claims.</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 17. COMPLETION ===== -->
+<section id="comp" data-s="comp">
+  <div class="cte ai" style="text-align:center">
+    <p class="complbl">LESSON COMPLETE</p>
+    <h2 class="compt">What Is Generative AI?</h2>
+    <div class="sbdgs">
+      <span class="sbdg sbp">Gen AI Fundamentals</span>
+      <span class="sbdg sbi">Prompt Awareness</span>
+      <span class="sbdg sba">Model Literacy</span>
+    </div>
+    <div class="compr"></div>
+    <button class="nxtbtn">Next Lesson &#x2192; Types of AI Models</button>
+  </div>
+</section>
+
+<script>
+// LENIS — wrap in try/catch so CDN failure doesn't kill everything
+let lenis;
+try { lenis = new Lenis({ lerp: 0.1, smooth: true }); (function tick(t){ lenis.raf(t); requestAnimationFrame(tick); })(0); } catch(e) { lenis = { scrollTo: (el) => el?.scrollIntoView({behavior:'smooth'}), on: ()=>{} }; }
+(function tick(t){ lenis.raf(t); requestAnimationFrame(tick); })(0);
+
+// GSAP — optional enhancement
+try { gsap.registerPlugin(ScrollTrigger); lenis.on('scroll', ScrollTrigger.update); } catch(e) {}
+
+// NAV PROGRESS
+window.addEventListener('scroll', () => {
+  const p = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+  document.getElementById('nav-progress').style.width = p + '%';
+  updateRail();
+}, { passive: true });
+
+// RAIL
+const rdots = document.querySelectorAll('.rdot');
+const sids = ['hook','vi','found','types','anat','pred','mmap','flow','ind','comp'];
+rdots.forEach(d => d.addEventListener('click', () => {
+  const el = document.getElementById(d.dataset.t);
+  if (el) lenis.scrollTo(el, { offset: -60, duration: 1.2 });
+}));
+function updateRail() {
+  let cur = 0;
+  sids.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el && window.scrollY >= el.offsetTop - window.innerHeight * 0.45) cur = i;
+  });
+  rdots.forEach((d, i) => d.classList.toggle('active', i === cur));
+}
+
+// ANIMATE IN
+const aobs = new IntersectionObserver(es => {
+  es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('v'); aobs.unobserve(e.target); }});
+}, { threshold: 0.12 });
+document.querySelectorAll('.ai').forEach(el => aobs.observe(el));
+
+// SCRAMBLE
+const sh1 = document.getElementById('scrh1');
+const origH = sh1.innerHTML;
+const ch = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$';
+function scramble(el, html, dur) {
+  const plain = html.replace(/<[^>]+>/g,'');
+  let t0 = null;
+  (function f(ts) {
+    if (!t0) t0 = ts;
+    const p = Math.min((ts - t0) / dur, 1);
+    const rev = Math.floor(p * plain.length);
+    let out = '';
+    for (let i = 0; i < plain.length; i++) {
+      const c = plain[i];
+      if (c === '\n' || c === ' ') { out += c; continue; }
+      out += i < rev ? c : ch[Math.floor(Math.random() * ch.length)];
+    }
+    el.textContent = out;
+    if (p < 1) requestAnimationFrame(f); else el.innerHTML = html;
+  })(performance.now());
+}
+window.addEventListener('load', () => setTimeout(() => scramble(sh1, origH, 1400), 400));
+
+// COUNT UP
+const cobs = new IntersectionObserver(es => {
+  es.forEach(e => {
+    if (!e.isIntersecting) return;
+    const el = e.target;
+    const to = parseInt(el.dataset.to), suf = el.dataset.suf || '';
+    const t0 = performance.now();
+    (function tick(now) {
+      const p = Math.min((now - t0) / 1500, 1);
+      el.textContent = Math.round(to * (1 - Math.pow(1-p, 3))) + suf;
+      if (p < 1) requestAnimationFrame(tick);
+    })(t0);
+    cobs.unobserve(el);
+  });
+}, { threshold: 0.5 });
+document.querySelectorAll('[data-to]').forEach(el => cobs.observe(el));
+
+// ANATOMY
+const asteps = document.querySelectorAll('.astep');
+const scols = ['#00FFB3','#9B8FFF','#00FFB3','#FFB347'];
+function hilite(i) {
+  asteps.forEach((s, idx) => s.classList.toggle('on', idx === i));
+  for (let b = 0; b < 5; b++) {
+    const box = document.getElementById('b' + b);
+    const lbl = document.getElementById('l' + b);
+    if (!box) continue;
+    if (b === i || b === i + 1) {
+      box.style.fill = (scols[i] || '#9B8FFF') + '22';
+      box.style.stroke = scols[i] || '#9B8FFF';
+      box.style.strokeWidth = '2';
+      if (lbl) lbl.style.fill = '#f5f5f5';
+    } else {
+      box.style.fill = ''; box.style.stroke = ''; box.style.strokeWidth = '';
+      if (lbl) lbl.style.fill = '';
+    }
+  }
+}
+hilite(0);
+ScrollTrigger.create({
+  trigger: '#aslist', start: 'top center', end: 'bottom center',
+  onUpdate: self => hilite(Math.min(3, Math.floor(self.progress * 4)))
+});
+
+// MINDMAP
+const mmps = document.querySelectorAll('.mmp');
+const mmob = new IntersectionObserver(es => {
+  es.forEach(e => {
+    if (!e.isIntersecting) return;
+    let delay = 0;
+    mmps.forEach(p => { setTimeout(() => p.classList.add('d'), delay); delay += 55; });
+    mmob.unobserve(e.target);
+  });
+}, { threshold: 0.2 });
+const mmsvg = document.getElementById('mmsvg');
+if (mmsvg) mmob.observe(mmsvg);
+
+// PREDICTION
+let predDone = false;
+function doPred(btn, ok) {
+  if (predDone) return; predDone = true;
+  document.querySelectorAll('.popt').forEach(b => { b.disabled = true; if (b === btn) b.classList.add(ok ? 'ok' : 'no'); else b.style.opacity = '.35'; });
+  document.getElementById('prev').classList.add('open');
+}
+
+// TABS
+function doTab(i) {
+  document.querySelectorAll('.tbtn').forEach((b, idx) => b.classList.toggle('on', idx === i));
+  document.querySelectorAll('.tpnl').forEach((p, idx) => p.classList.toggle('on', idx === i));
+}
+
+// DECODE
+let decO = false;
+function doDec() {
+  decO = !decO;
+  document.getElementById('anno').classList.toggle('vis', decO);
+  document.getElementById('decbtn').innerHTML = decO ? 'HIDE &#x2190;' : 'DECODE &#x2192;';
+}
+
+// EXERCISE
+let ansO = false;
+function doAns() {
+  ansO = !ansO;
+  document.getElementById('ansrev').classList.toggle('open', ansO);
+}
+
+// ACCORDION
+function doAcc(btn) {
+  const item = btn.closest('.acci');
+  const was = item.classList.contains('open');
+  document.querySelectorAll('.acci.open').forEach(i => i.classList.remove('open'));
+  if (!was) item.classList.add('open');
+}
+
+// QUIZ
+let qsc = 0;
+const qdone = {};
+function doQ(btn, n, ok, expl) {
+  if (qdone[n]) return; qdone[n] = true;
+  if (ok) qsc++;
+  btn.closest('.qopts').querySelectorAll('.qopt').forEach(b => { b.classList.add('dis'); b.disabled = true; });
+  btn.classList.add(ok ? 'ok' : 'no');
+  const fbi = document.getElementById('fbi' + n);
+  fbi.textContent = expl;
+  fbi.className = 'qfbi ' + (ok ? 'ok' : 'no');
+  document.getElementById('fb' + n).classList.add('open');
+  document.getElementById('nxt' + n).classList.add('show');
+}
+function nextQ(cur) {
+  document.getElementById('q' + cur).classList.remove('on');
+  document.getElementById('q' + (cur + 1)).classList.add('on');
+  document.getElementById('qprog').textContent = 'QUESTION ' + (cur + 1) + ' OF 3';
+}
+function showSc() {
+  document.getElementById('q3').classList.remove('on');
+  document.getElementById('qsc').classList.add('show');
+  document.getElementById('qscn').textContent = qsc + '/3';
+  document.getElementById('qprog').textContent = 'COMPLETE';
+}
+</script>
+</body>
+</html>

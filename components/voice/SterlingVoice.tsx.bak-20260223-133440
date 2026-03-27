@@ -1,0 +1,1005 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { GoogleGenAI } from "@google/genai";
+import { createClient } from "@/lib/supabase/client";
+import { useLearningContextStore } from "@/lib/store/learning-context-store";
+import { Settings, X, Minimize2, Maximize2 } from "lucide-react";
+import { STERLING_SYSTEM_INSTRUCTION } from "@/lib/voice/sterling-knowledge";
+import { getSterlingCourseContext } from "@/lib/voice/sterling-context";
+
+interface CourseContext {
+    id: string;
+    title: string;
+    description: string;
+    difficulty: string;
+    type: string;
+    duration: string;
+}
+
+interface ProgressContext {
+    course: string;
+    difficulty: string;
+    progress: number;
+    activity: string;
+    lastAccessed: string;
+}
+
+export function SterlingVoice() {
+    const followUpGreetings = [
+        "You're back. I had rather hoped you'd found a different tutor. An...",
+        "Back again. I've taken the liberty of sighing quietly so you don'...",
+        "Right. You've returned. I'd begun to enjoy the silence.",
+        "Once again, duty calls. Sterling here. What fresh challenge have ...",
+        "Welcome back. I had been experimenting with optimism. Your return...",
+        "You've come back. I won't pretend I didn't see this coming.",
+        "You returned. That alone suggests more commitment than I initiall...",
+        "Back again. Either you found yesterday's session useful, or you'v...",
+        "You've come back. I am almost — almost — impressed.",
+        "Your persistence is admirable. Misguided, perhaps, but admirable...",
+        "Returning shows character. Limited character, but character nonet...",
+        "You're back. I'll confess — I didn't have you down as the type. P...",
+        "Sterling here. I see you've chosen learning over whatever else yo...",
+        "Welcome back. I trust the outside world proved sufficiently disap...",
+        "You've returned. Presumably not for the small talk — I have very ...",
+        "Back again. Sterling at your service, as ever. I've kept your pro...",
+        "Welcome back. I've reviewed your previous session. There is work ...",
+        "Right, you've located me again. I genuinely wasn't hiding. This time...",
+        "Sterling here. I've been waiting with something approaching patie...",
+        "Good day. Sterling, as always, at your disposal — however relucta...",
+        "Sterling here. Impeccably prepared, faintly resigned, entirely at...",
+        "You've returned. I shall resist the urge to remark upon how much ...",
+        "Sterling reporting for duty — a phrase I use with all the enthusi...",
+        "Welcome back. I trust you arrived well-rested, well-fed, and in p...",
+        "You're here again. Good. I was beginning to compile a list of sea...",
+        "Sterling here. I'd ask if you've been keeping up with the reading...",
+        "Back again. I do hope you've had sufficient rest. One cannot abso...",
+        "Welcome back. I have prepared today's session with my usual thoro...",
+        "You've returned. I shan't ask what took you so long. The answer i...",
+        "Sterling here. Still improbably patient. Still waiting to be impr...",
+        "Back again. I've recalibrated my expectations accordingly. Don't ...",
+        "Welcome back. I see the world outside failed to sort itself out w...",
+        "Sterling here. Still here. Still helpful. Still holding out hope ...",
+        "You've returned, which means the distractions have been temporari...",
+        "Back again. I had rather feared you'd given up. Sterling does not...",
+        "Welcome back. Between you and me, these sessions are the highligh...",
+        "You've returned. I won't make a fuss. But I will note — quietly, ...",
+        "Sterling here. You came back. That matters more than either of us...",
+        "Back again. I've kept everything ready for you. That's not sentim...",
+        "Welcome back. I shan't pretend the last session wasn't productive..."
+    ];
+    // State for dynamic context
+    const [availableCourses, setAvailableCourses] = useState<CourseContext[]>([]);
+    const [userProgress, setUserProgress] = useState<ProgressContext[]>([]);
+
+    const { context } = useLearningContextStore(); // Context-Awareness Hook
+    const [userName, setUserName] = useState<string | null>(null);
+
+    const [status, setStatus] = useState<"IDLE" | "CONNECTING" | "CONNECTED" | "DISCONNECTED">("IDLE");
+    const statusRef = useRef<"IDLE" | "CONNECTING" | "CONNECTED" | "DISCONNECTED">(status);
+    const volumeRef = useRef(0);
+    const [isThinking, _setIsThinking] = useState(false);
+    const setIsThinking = (val: boolean) => {
+        if (val) console.log("UI: Starting Thinking/Researching Animation");
+        else console.log("UI: Stopping Thinking/Researching Animation");
+        _setIsThinking(val);
+    };
+    const [micError, setMicError] = useState<string | null>(null);
+    const [inputDevices, setInputDevices] = useState<MediaDeviceInfo[]>([]);
+    const [selectedDeviceId, setSelectedDeviceId] = useState<string>("");
+    const [inputLevel, setInputLevel] = useState(0);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [isListening, setIsListening] = useState(false);
+    const [isUserSpeaking, setIsUserSpeaking] = useState(false);
+    const [liveTranscript, setLiveTranscript] = useState("");
+    const [lastReply, setLastReply] = useState("");
+    const [isSterlingSpeaking, setIsSterlingSpeaking] = useState(false);
+    const isSterlingSpeakingRef = useRef(false);
+    const voiceActivityTimeoutRef = useRef<number | null>(null);
+
+    useEffect(() => {
+        statusRef.current = status;
+    }, [status]);
+
+    const recognitionRef = useRef<any>(null);
+    const recognitionStartRef = useRef<(() => void) | null>(null);
+    const recognitionStopRef = useRef<(() => void) | null>(null);
+    const recognitionRunningRef = useRef(false);
+    const recognitionContextPromptRef = useRef("");
+    const pendingTranscriptRef = useRef("");
+    const interimTranscriptRef = useRef("");
+
+    const animationFrameRef = useRef<number | null>(null);
+    const previewStreamRef = useRef<MediaStream | null>(null);
+    const previewContextRef = useRef<AudioContext | null>(null);
+
+    const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
+    const ttsRequestIdRef = useRef(0);
+    const isProcessingRef = useRef(false);
+    const conversationRef = useRef<Array<{ role: "user" | "assistant"; text: string }>>([]);
+
+    const particlesRef = useRef<Array<{
+        angle: number;
+        speed: number;
+        radius: number;
+        alpha: number;
+        z: number;
+        size: number;
+    }>>([]);
+    const smoothVolRef = useRef(0);
+
+    useEffect(() => {
+        const loadContext = async () => {
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+
+            const platformContext = await getSterlingCourseContext(user?.id, context?.lessonId);
+
+            if (platformContext) {
+                if (platformContext.courses) {
+                    setAvailableCourses(platformContext.courses.map((c: any) => ({
+                        id: c.id,
+                        title: c.title,
+                        description: c.description,
+                        difficulty: c.difficulty_level || "Beginner",
+                        type: c.price > 0 ? "Premium" : "Free",
+                        duration: c.duration ? `${c.duration} hours` : "15 mins"
+                    })));
+                }
+
+                if (platformContext.userProgress) {
+                    setUserProgress(platformContext.userProgress.map((e: any) => ({
+                        course: e.courses?.title || "Active Course",
+                        difficulty: e.courses?.difficulty_level || "Standard",
+                        progress: e.overall_progress_percentage || 0,
+                        activity: e.status || "In-progress",
+                        lastAccessed: e.last_accessed_at
+                    })));
+                }
+            }
+        };
+
+        loadContext();
+    }, [context?.lessonId]);
+
+    useEffect(() => {
+        if (!selectedDeviceId || status === "DISCONNECTED") return;
+
+        let animationFrame: number;
+
+        const startPreview = async () => {
+            try {
+                if (previewContextRef.current?.state !== "closed") previewContextRef.current?.close();
+                if (previewStreamRef.current) previewStreamRef.current.getTracks().forEach(t => t.stop());
+
+                const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+                previewContextRef.current = ctx;
+
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: { deviceId: { exact: selectedDeviceId } }
+                });
+                previewStreamRef.current = stream;
+
+                const source = ctx.createMediaStreamSource(stream);
+                const analyser = ctx.createAnalyser();
+                analyser.fftSize = 256;
+                source.connect(analyser);
+
+                const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+                const updateMeter = () => {
+                    analyser.getByteFrequencyData(dataArray);
+                    let sum = 0;
+                    for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+                    const average = sum / dataArray.length;
+                    volumeRef.current = Math.min(1, average / 50);
+                    setInputLevel(Math.min(100, average * 2));
+                    animationFrame = requestAnimationFrame(updateMeter);
+                };
+                updateMeter();
+            } catch (e) {
+                console.error("Preview error:", e);
+            }
+        };
+
+        startPreview();
+
+        return () => {
+            if (animationFrame) cancelAnimationFrame(animationFrame);
+            if (previewStreamRef.current) previewStreamRef.current.getTracks().forEach(t => t.stop());
+            if (previewContextRef.current?.state !== "closed") previewContextRef.current?.close();
+        };
+    }, [selectedDeviceId, status]);
+
+    const refreshDevices = async () => {
+        try {
+            setDeviceError(null);
+            await navigator.mediaDevices.getUserMedia({ audio: true });
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const audioInputs = devices.filter(d => d.kind === "audioinput");
+            setInputDevices(audioInputs);
+            if (audioInputs.length > 0) {
+                const preferred = audioInputs.find(d => !d.label.toLowerCase().includes("virtual") && !d.label.toLowerCase().includes("mix")) || audioInputs[0];
+                setSelectedDeviceId(preferred.deviceId);
+            }
+        } catch (e) {
+            console.error("Error fetching devices:", e);
+            setDeviceError("Microphone permission not granted or device unavailable.");
+        }
+    };
+
+    useEffect(() => {
+        refreshDevices();
+    }, []);
+
+    useEffect(() => {
+        if (status !== "CONNECTED") {
+            setIsUserSpeaking(false);
+            setLiveTranscript("");
+            if (voiceActivityTimeoutRef.current) {
+                window.clearTimeout(voiceActivityTimeoutRef.current);
+                voiceActivityTimeoutRef.current = null;
+            }
+            return;
+        }
+
+        if (inputLevel > 18) {
+            setIsUserSpeaking(true);
+            if (voiceActivityTimeoutRef.current) {
+                window.clearTimeout(voiceActivityTimeoutRef.current);
+            }
+            voiceActivityTimeoutRef.current = window.setTimeout(() => {
+                setIsUserSpeaking(false);
+            }, 400);
+        }
+    }, [inputLevel, status]);
+
+    useEffect(() => {
+        const fetchUserName = async () => {
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const fullName = user.user_metadata?.full_name || user.user_metadata?.name;
+                if (fullName) {
+                    setUserName(fullName.split(" ")[0]);
+                } else if (user.email) {
+                    const emailName = user.email.split("@")[0];
+                    setUserName(emailName.charAt(0).toUpperCase() + emailName.slice(1));
+                }
+            }
+        };
+        fetchUserName();
+    }, []);
+
+    useEffect(() => {
+        particlesRef.current = [];
+        const particleCount = 400;
+
+        for (let i = 0; i < particleCount; i++) {
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos((Math.random() * 2) - 1);
+            const r = 45;
+
+            const x = r * Math.sin(phi) * Math.cos(theta);
+            const y = r * Math.sin(phi) * Math.sin(theta);
+            const z = r * Math.cos(phi);
+
+            particlesRef.current.push({
+                angle: theta,
+                speed: 0,
+                radius: r,
+                alpha: 0.4 + Math.random() * 0.6,
+                size: 0.8 + Math.random() * 1.2,
+                z: z,
+                // @ts-ignore
+                ox: x,
+                // @ts-ignore
+                oy: y,
+                // @ts-ignore
+                oz: z
+            });
+        }
+    }, []);
+
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        const animate = () => {
+            smoothVolRef.current += (volumeRef.current - smoothVolRef.current) * 0.1;
+            const vol = smoothVolRef.current;
+
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            ctx.clearRect(0, 0, width, height);
+
+            const coreGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 70 + vol * 40);
+            coreGradient.addColorStop(0, `rgba(5, 10, 80, ${0.6 + vol * 0.3})`);
+            coreGradient.addColorStop(0.7, `rgba(10, 20, 120, ${0.3 + vol * 0.2})`);
+            coreGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+            ctx.fillStyle = coreGradient;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 120, 0, Math.PI * 2);
+            ctx.fill();
+
+            particlesRef.current.forEach((p) => {
+                const expansion = 1 + (Math.sin(Date.now() * 0.0015) * 0.1) + (vol * 0.8);
+
+                // @ts-ignore
+                let x3d = p.ox * expansion;
+                // @ts-ignore
+                let y3d = p.oy * expansion;
+                // @ts-ignore
+                let z3d = p.oz * expansion;
+
+                const scale = 300 / (300 - z3d);
+                const x2d = centerX + x3d * scale;
+                const y2d = centerY + y3d * scale;
+
+                const depthDim = (z3d + 50) / 100;
+                const alpha = p.alpha * depthDim;
+
+                if (alpha > 0) {
+                    ctx.fillStyle = `rgba(${10 + vol * 40}, ${20 + vol * 60}, ${150 + vol * 105}, ${alpha})`;
+
+                    const drawSize = p.size * scale;
+                    ctx.beginPath();
+                    ctx.arc(x2d, y2d, Math.max(0.1, drawSize), 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+
+            animationFrameRef.current = requestAnimationFrame(animate);
+        };
+
+        animate();
+
+        return () => {
+            if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+        };
+    }, [status]);
+
+    const beginSterlingSpeech = () => {
+        isSterlingSpeakingRef.current = true;
+        setIsSterlingSpeaking(true);
+        pendingTranscriptRef.current = "";
+        interimTranscriptRef.current = "";
+        setLiveTranscript("");
+        setIsUserSpeaking(false);
+        recognitionStopRef.current?.();
+    };
+
+    const endSterlingSpeech = () => {
+        isSterlingSpeakingRef.current = false;
+        setIsSterlingSpeaking(false);
+        if (statusRef.current === "CONNECTED") {
+            setTimeout(() => recognitionStartRef.current?.(), 300);
+        }
+    };
+
+    const speakWithBrowser = async (text: string) => {
+        if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+            return false;
+        }
+
+        return await new Promise<boolean>((resolve) => {
+            try {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = "en-GB";
+                utterance.onend = () => {
+                    endSterlingSpeech();
+                    resolve(true);
+                };
+                utterance.onerror = () => {
+                    endSterlingSpeech();
+                    resolve(false);
+                };
+
+                beginSterlingSpeech();
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(utterance);
+            } catch {
+                endSterlingSpeech();
+                resolve(false);
+            }
+        });
+    };
+
+    const playElevenLabsAudio = async (text: string) => {
+        const requestId = ++ttsRequestIdRef.current;
+        try {
+            if (!text || !text.trim()) return;
+
+            if (ttsAudioRef.current) {
+                ttsAudioRef.current.pause();
+                ttsAudioRef.current.currentTime = 0;
+                ttsAudioRef.current = null;
+            }
+
+            const response = await fetch("/api/sterling/tts", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text })
+            });
+
+            if (!response.ok) {
+                console.error("ElevenLabs TTS failed:", await response.text());
+                const fallbackSpoken = await speakWithBrowser(text);
+                if (!fallbackSpoken) {
+                    endSterlingSpeech();
+                }
+                return;
+            }
+
+            const data = await response.json();
+            if (requestId !== ttsRequestIdRef.current) return;
+
+            const audio = new Audio(`data:${data.mime || "audio/mpeg"};base64,${data.audioBase64}`);
+            ttsAudioRef.current = audio;
+            beginSterlingSpeech();
+            audio.onended = () => {
+                if (ttsAudioRef.current === audio) ttsAudioRef.current = null;
+                endSterlingSpeech();
+            };
+            audio.onerror = () => {
+                if (ttsAudioRef.current === audio) ttsAudioRef.current = null;
+                endSterlingSpeech();
+            };
+            await audio.play();
+        } catch (e: any) {
+            console.error("ElevenLabs audio playback error:", e.message);
+            const fallbackSpoken = await speakWithBrowser(text);
+            if (!fallbackSpoken) {
+                endSterlingSpeech();
+            }
+            return;
+        }
+    };
+    const enforceSterlingBrevity = (text: string) => {
+        const cleaned = text.replace(/\s+/g, " ").trim();
+        if (!cleaned) return cleaned;
+
+        const sentences = cleaned.match(/[^.!?]+[.!?]+|\S+$/g) || [cleaned];
+        let limited = sentences.slice(0, 2).join(" ").trim();
+
+        const words = limited.split(/\s+/);
+        if (words.length > 40) {
+            limited = words.slice(0, 40).join(" ").replace(/[,\s]+$/, "");
+            if (!/[.!?]$/.test(limited)) limited += ".";
+        }
+
+        return limited;
+    };
+
+    const sanitizeSterlingText = (text: string) => {
+        if (!text) return text;
+        let cleaned = text;
+        // Replace standalone "Ah" interjections with "Right"
+        cleaned = cleaned.replace(/(^|\n)\s*ah[,.]?\s+/gi, "$1Right, ");
+        cleaned = cleaned.replace(/\bAh[,.]?\b/gi, "Right");
+        return cleaned;
+    };
+
+    const getSterlingResponseText = async (userText: string, contextPrompt: string) => {
+        const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY || '' });
+        const history = conversationRef.current.slice(-6).map(m => `${m.role === "user" ? "User" : "Sterling"}: ${m.text}`).join("\n");
+        const prompt = `${STERLING_SYSTEM_INSTRUCTION}
+${contextPrompt}
+
+CONVERSATION SO FAR:
+${history || "(none)"}
+
+User: ${userText}
+Sterling:`;
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.0-flash",
+            contents: prompt,
+            config: {
+                temperature: 0.6,
+                topP: 0.95,
+                maxOutputTokens: 80
+            } as any
+        });
+
+        const parts = response?.candidates?.[0]?.content?.parts || [];
+        const text = parts.map((p: any) => p.text).filter(Boolean).join(" ").trim();
+        const concise = enforceSterlingBrevity(text);
+        const sanitized = sanitizeSterlingText(concise);
+        return sanitized || "Hmm. Something seems off. Try that again, will you?";
+    };
+
+    const processTranscript = async () => {
+        const text = pendingTranscriptRef.current.trim();
+        if (!text || isProcessingRef.current) return;
+        pendingTranscriptRef.current = "";
+
+        isProcessingRef.current = true;
+        setIsThinking(true);
+        conversationRef.current.push({ role: "user", text });
+
+        try {
+            const reply = await getSterlingResponseText(text, recognitionContextPromptRef.current);
+            conversationRef.current.push({ role: "assistant", text: reply });
+            setLastReply(reply);
+            await playElevenLabsAudio(reply);
+        } catch (e: any) {
+            console.error("Sterling text generation failed:", e?.message || e);
+        } finally {
+            setIsThinking(false);
+            isProcessingRef.current = false;
+            if (pendingTranscriptRef.current.trim()) {
+                processTranscript();
+            }
+        }
+    };
+
+    const setupSpeechRecognition = (contextPrompt: string) => {
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            setMicError("Speech recognition not supported in this browser.");
+            return;
+        }
+
+        recognitionContextPromptRef.current = contextPrompt;
+        const recognition = new SpeechRecognition();
+        recognitionRef.current = recognition;
+        recognition.lang = "en-GB";
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.maxAlternatives = 1;
+
+        recognition.onresult = async (event: any) => {
+            if (isSterlingSpeakingRef.current) return;
+
+            let finalText = "";
+            let interimText = "";
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const result = event.results[i];
+                if (result.isFinal) {
+                    finalText += result[0].transcript;
+                } else {
+                    interimText = result[0].transcript;
+                }
+            }
+
+            const text = finalText.trim();
+            if (text) {
+                console.log("[Speech] Final:", text.substring(0, 80));
+                pendingTranscriptRef.current = text;
+                interimTranscriptRef.current = "";
+                setLiveTranscript("");
+                setIsUserSpeaking(true);
+                processTranscript();
+            } else if (interimText) {
+                const trimmed = interimText.trim();
+                if (trimmed) {
+                    console.log("[Speech] Interim:", trimmed.substring(0, 80));
+                    interimTranscriptRef.current = trimmed;
+                    setLiveTranscript(trimmed.substring(0, 80));
+                    setIsUserSpeaking(true);
+                }
+            }
+        };
+
+        recognition.onstart = () => {
+            setIsListening(true);
+        };
+
+        recognition.onspeechstart = () => {
+            setIsUserSpeaking(true);
+        };
+
+        recognition.onspeechend = () => {
+            setIsUserSpeaking(false);
+        };
+
+        recognition.onerror = (e: any) => {
+            recognitionRunningRef.current = false;
+            setIsListening(false);
+            if (e?.error && e.error !== "no-speech") {
+                console.error("Speech recognition error:", e?.error || e);
+                if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+                    setMicError("Microphone access blocked. Allow mic permissions in Chrome.");
+                } else if (e.error === "audio-capture") {
+                    setMicError("No microphone detected.");
+                } else {
+                    setMicError(`Speech error: ${e.error}`);
+                }
+            }
+        };
+
+        recognition.onend = () => {
+            recognitionRunningRef.current = false;
+            setIsListening(false);
+            console.log("[Speech] Recognition ended");
+            if (interimTranscriptRef.current && !pendingTranscriptRef.current) {
+                pendingTranscriptRef.current = interimTranscriptRef.current;
+                interimTranscriptRef.current = "";
+                processTranscript();
+            }
+            if (statusRef.current === "CONNECTED" && !isSterlingSpeakingRef.current) {
+                setTimeout(() => recognitionStartRef.current?.(), 300);
+            }
+        };
+
+
+        recognitionStartRef.current = () => {
+            if (recognitionRunningRef.current || isSterlingSpeakingRef.current) return;
+            pendingTranscriptRef.current = "";
+            try {
+                recognition.start();
+                recognitionRunningRef.current = true;
+                setIsListening(true);
+                console.log("[Speech] Recognition started");
+            } catch (e) {
+                setMicError("Speech recognition failed to start. Check mic permissions.");
+            }
+        };
+
+        recognitionStopRef.current = () => {
+            if (!recognitionRunningRef.current) return;
+            try {
+                recognition.stop();
+            } catch {
+                // ignore
+            }
+            setIsListening(false);
+        };
+    };
+    const connect = async () => {
+        try {
+            if (status === "CONNECTING" || status === "CONNECTED") return;
+            setStatus("CONNECTING");
+            setMicError(null);
+            ttsRequestIdRef.current = 0;
+            isProcessingRef.current = false;
+
+            // Debug API key
+            const hasKey = !!process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+            console.log(`[Sterling] API key present: ${hasKey}`);
+            if (!hasKey) {
+                console.error("[Sterling] NEXT_PUBLIC_GEMINI_API_KEY is missing");
+                setMicError("API Key Missing");
+                throw new Error("API key not configured");
+            }
+
+            console.log("[Sterling] ElevenLabs mode: browser speech recognition + Gemini text + ElevenLabs TTS");
+
+            // Prepare strict context to guarantee knowledge
+
+            // Ensure we have data, otherwise try to use what we can or warn
+            let finalCoursesContext = JSON.stringify(availableCourses, null, 2);
+            let finalProgressContext = JSON.stringify(userProgress, null, 2);
+
+            if (availableCourses.length === 0) {
+                console.warn("[Sterling] State is empty. Attempting to use fallback if present.");
+                // We could try to fetch here but that's async and messy. 
+                // The fallback in fetchData should have handled it.
+            }
+
+            const progressContext = finalProgressContext;
+            const coursesContext = finalCoursesContext;
+
+            // Get latest context
+            const currentContext = useLearningContextStore.getState().context;
+
+            let specialInstruction = "";
+            if (currentContext.currentQuizQuestion) {
+                specialInstruction = `
+URGENT - QUIZ MODE ACTIVE
+The user is currently taking a quiz.
+    QUESTION: "${currentContext.currentQuizQuestion.questionText}"
+OPTIONS: ${JSON.stringify(currentContext.currentQuizQuestion.options)}
+
+YOUR ROLE:
+- You are an Invigilator and Tutor.
+- IF the user asks for help / hint: DO NOT give the answer immediately.
+- Explain the concept ensuring they understand WHY an option might be right or wrong.
+- Use Socratic questioning: "What do you think X means in this context?"
+    - ONLY give the final answer if they are completely stuck and ask for it explicitly.
+`;
+            } else if (currentContext.lessonContent) {
+                specialInstruction = `
+LESSON MODE ACTIVE
+The user is reading: "${currentContext.lessonTitle}" from topic "${currentContext.moduleName}".
+CONTENT SUMMARY: ${currentContext.lessonContent.substring(0, 1000)}...
+
+YOUR ROLE:
+- Answer questions solely based on this lesson content if possible.
+- If they ask "Explain this", explain the text above.
+`;
+            }
+
+            const learningContextPrompt = Object.keys(currentContext).length > 0
+                ? `\nCURRENT PAGE CONTEXT: \n${JSON.stringify(currentContext, null, 2)} \n${specialInstruction} `
+                : "";
+
+            console.log("[Sterling] Sending user progress context (" + userProgress.length + " items)");
+            console.log("[Sterling] Sending available courses context (" + availableCourses.length + " items)");
+            if (availableCourses.length === 0) console.warn("[Sterling] WARNING - Available courses list is empty");
+
+            const contextPrompt = `
+CONTEXT - USER DATA (ACTIVE COURSES):
+${progressContext}
+
+CONTEXT - AVAILABLE COURSES (CATALOGUE):
+${coursesContext}
+
+${learningContextPrompt}
+
+INSTRUCTION:
+You have ACTIVE COURSES (User Progress) and AVAILABLE COURSES (Catalogue) injected above.
+- Use this data DIRECTLY to answer questions. 
+- Do NOT use tools to fetch this data; it is already in your immediate context.
+- If asked "what courses have I started", read from "USER DATA".
+- If asked "what courses are available", read from "AVAILABLE COURSES".
+- Maintain your STERLING persona (smug, British, sarcastic) at all times.
+`;
+
+            setStatus("CONNECTED");
+            setupSpeechRecognition(contextPrompt);
+            if (!recognitionStartRef.current) {
+                setMicError("Speech recognition not supported in this browser.");
+                setStatus("IDLE");
+                return;
+            }
+            // Start recognition immediately on user gesture to satisfy browser permission rules.
+            recognitionStartRef.current?.();
+
+            const firstTimeGreeting = "Good day. I'm Sterling. I've been equipped with the sum of human knowledge, the patience of a saint, and absolutely no faith in your attention span. Shall we?";
+            const hasGreeted = typeof window !== "undefined" && localStorage.getItem("sterling_has_greeted") === "1";
+            const randomFollowUp = followUpGreetings[Math.floor(Math.random() * followUpGreetings.length)];
+            const greeting = !hasGreeted
+                ? firstTimeGreeting
+                : randomFollowUp;
+            if (typeof window !== "undefined" && !hasGreeted) {
+                localStorage.setItem("sterling_has_greeted", "1");
+            }
+            playElevenLabsAudio(greeting);
+        } catch (e: any) {
+            console.error("Setup Error:", e.message);
+            setMicError("Access Denied or Not Found");
+            cleanup();
+        }
+    };
+
+    const cleanup = () => {
+        if (ttsAudioRef.current) {
+            ttsAudioRef.current.pause();
+            ttsAudioRef.current = null;
+        }
+        if (recognitionRef.current) {
+            try { recognitionRef.current.onend = null; recognitionRef.current.stop(); } catch { /* ignore */ }
+            recognitionRef.current = null;
+        }
+        recognitionStartRef.current = null;
+        recognitionStopRef.current = null;
+        recognitionRunningRef.current = false;
+        pendingTranscriptRef.current = "";
+        interimTranscriptRef.current = "";
+
+        setStatus("IDLE");
+        volumeRef.current = 0;
+        // Do not clear micError here so user can see why it disconnected
+    };
+
+    const [showSettings, setShowSettings] = useState(false);
+    const [isMinimized, setIsMinimized] = useState(false);
+    const [, setDeviceError] = useState<string | null>(null);
+    const statusMeta = {
+        IDLE: { label: "Idle", dot: "bg-slate-500", text: "text-slate-300", ring: "ring-slate-400/20" },
+        CONNECTING: { label: "Linking", dot: "bg-cyan-400", text: "text-cyan-200", ring: "ring-cyan-400/30" },
+        CONNECTED: { label: "Live", dot: "bg-emerald-400", text: "text-emerald-200", ring: "ring-emerald-400/30" },
+        DISCONNECTED: { label: "Offline", dot: "bg-red-400", text: "text-red-200", ring: "ring-red-400/30" }
+    }[status];
+    const micStatus = (() => {
+        if (status !== "CONNECTED") {
+            return { label: "Mic off", dot: "bg-slate-500", text: "text-slate-400" };
+        }
+        if (isSterlingSpeaking) {
+            return { label: "Sterling speaking", dot: "bg-cyan-400", text: "text-cyan-200" };
+        }
+        if (isUserSpeaking) {
+            return { label: "Voice detected", dot: "bg-emerald-400 animate-pulse", text: "text-emerald-200" };
+        }
+        if (isListening) {
+            return { label: "Listening", dot: "bg-emerald-300", text: "text-emerald-200" };
+        }
+        return { label: "Mic idle", dot: "bg-slate-500", text: "text-slate-400" };
+    })();
+
+    return (
+        <div className="fixed app-scaled-fixed z-50 flex flex-col items-end gap-4">
+            {/* Error Toast */}
+            {micError && (
+                <div className="bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-bold animate-pulse mb-2 whitespace-nowrap flex items-center gap-2">
+                    <span>Error:</span>
+                    <span>{micError}</span>
+                </div>
+            )}
+
+            {!isMinimized && (
+                <div className="w-[360px] rounded-2xl border border-slate-800/60 bg-slate-950/95 text-slate-100 shadow-2xl shadow-black/40 backdrop-blur-xl">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800/60">
+                        <div className="flex items-center gap-2">
+                            <span className={`h-2.5 w-2.5 rounded-full ${statusMeta.dot}`} />
+                            <span className={`text-[11px] font-semibold uppercase tracking-[0.2em] ${statusMeta.text}`}>
+                                {statusMeta.label}
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setShowSettings(prev => !prev)}
+                                className="w-8 h-8 rounded-full border border-slate-800 bg-slate-900/80 hover:border-cyan-400/50 text-slate-400 hover:text-cyan-200 transition-all flex items-center justify-center"
+                                title="Settings"
+                            >
+                                <Settings className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={() => setIsMinimized(true)}
+                                className="w-8 h-8 rounded-full border border-slate-800 bg-slate-900/80 hover:border-cyan-400/50 text-slate-400 hover:text-cyan-200 transition-all flex items-center justify-center"
+                                title="Minimize"
+                            >
+                                <Minimize2 className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="px-4 py-3 space-y-3">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <div className="text-sm font-semibold">Sterling</div>
+                                <div className={`text-[11px] ${micStatus.text} flex items-center gap-2`}>
+                                    <span className={`h-2 w-2 rounded-full ${micStatus.dot}`} />
+                                    {micStatus.label}
+                                </div>
+                            </div>
+                            <div className="text-[10px] text-slate-400 uppercase tracking-[0.25em]">
+                                {isThinking ? "Thinking" : isSterlingSpeaking ? "Speaking" : isListening ? "Listening" : "Idle"}
+                            </div>
+                        </div>
+
+                        {lastReply && (
+                            <div className="rounded-lg bg-slate-900/70 border border-slate-800/70 px-3 py-2 text-xs text-slate-100">
+                                <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400">Sterling</span>
+                                <div className="mt-1">{lastReply}</div>
+                            </div>
+                        )}
+                        {liveTranscript && (
+                            <div className="rounded-lg bg-slate-900/70 border border-slate-800/70 px-3 py-2 text-xs text-slate-200">
+                                <span className="text-[10px] uppercase tracking-[0.2em] text-slate-500">You</span>
+                                <div className="mt-1">{liveTranscript}</div>
+                            </div>
+                        )}
+
+                        <div className="flex items-center gap-2">
+                            {status === "IDLE" && (
+                                <button
+                                    onClick={() => {
+                                        setShowSettings(false);
+                                        connect();
+                                    }}
+                                    className="flex-1 px-3 py-2 rounded-full bg-gradient-to-br from-cyan-500 to-emerald-400 text-slate-950 text-[11px] font-semibold tracking-wide shadow-lg shadow-cyan-500/30 hover:shadow-cyan-400/50 transition-all"
+                                >
+                                    Start
+                                </button>
+                            )}
+                            {status === "CONNECTING" && (
+                                <button
+                                    disabled
+                                    className="flex-1 px-3 py-2 rounded-full bg-slate-800 text-slate-400 text-[11px] font-semibold tracking-wide cursor-not-allowed"
+                                >
+                                    Connecting...
+                                </button>
+                            )}
+                            {status === "CONNECTED" && (
+                                <button
+                                    onClick={cleanup}
+                                    className="flex-1 px-3 py-2 rounded-full bg-red-500/90 text-white text-[11px] font-semibold shadow-lg shadow-red-500/30 hover:bg-red-500 transition-all"
+                                >
+                                    End
+                                </button>
+                            )}
+                            <button
+                                onClick={cleanup}
+                                className="px-3 py-2 rounded-full border border-slate-800 bg-slate-900/80 text-slate-400 hover:text-cyan-200 hover:border-cyan-400/50 transition-all"
+                                title="Reset"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {showSettings && (
+                            <div className="border-t border-slate-800/60 pt-3 space-y-2">
+                                <div className="text-[11px] text-slate-400 uppercase tracking-[0.2em]">Input Device</div>
+                                <select
+                                    value={selectedDeviceId}
+                                    onChange={(e) => setSelectedDeviceId(e.target.value)}
+                                    className="w-full rounded-lg border border-slate-800 bg-slate-900/80 px-3 py-2 text-xs text-slate-200"
+                                >
+                                    {inputDevices.length === 0 && (
+                                        <option value="">No microphone detected</option>
+                                    )}
+                                    {inputDevices.map(device => (
+                                        <option key={device.deviceId} value={device.deviceId}>
+                                            {device.label || "Microphone"}
+                                        </option>
+                                    ))}
+                                </select>
+                                <button
+                                    onClick={refreshDevices}
+                                    className="text-xs text-cyan-200 hover:text-cyan-100 transition-colors"
+                                >
+                                    Refresh devices
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {isMinimized && (
+                <div className="mt-3">
+                    <div className="flex items-center gap-2 rounded-full border border-slate-800/70 bg-slate-950/90 px-2.5 py-2 shadow-xl shadow-black/40 backdrop-blur">
+                        <button
+                            onClick={() => setIsMinimized(false)}
+                            className="w-8 h-8 rounded-full border border-slate-800 bg-slate-900/80 hover:border-cyan-400/50 text-slate-400 hover:text-cyan-200 transition-all flex items-center justify-center"
+                            title="Expand"
+                        >
+                            <Maximize2 className="w-4 h-4" />
+                        </button>
+
+                        <div className="flex items-center gap-2 pr-1">
+                            <span className={`h-2.5 w-2.5 rounded-full ${statusMeta.dot}`} />
+                            <span className={`text-[10px] font-semibold uppercase tracking-[0.2em] ${statusMeta.text}`}>
+                                {statusMeta.label}
+                            </span>
+                        </div>
+
+                        {status === "IDLE" && (
+                            <button
+                                onClick={() => {
+                                    setShowSettings(false);
+                                    connect();
+                                }}
+                                className="px-3 py-1.5 rounded-full bg-gradient-to-br from-cyan-500 to-emerald-400 text-slate-950 text-[11px] font-semibold tracking-wide shadow-lg shadow-cyan-500/30 hover:shadow-cyan-400/50 transition-all"
+                            >
+                                Start
+                            </button>
+                        )}
+                        {status === "CONNECTING" && (
+                            <div className="px-3 py-1.5 rounded-full bg-slate-800 text-slate-400 text-[11px] font-semibold tracking-wide">
+                                Connecting...
+                            </div>
+                        )}
+                        {status === "CONNECTED" && (
+                            <button
+                                onClick={cleanup}
+                                className="px-3 py-1.5 rounded-full bg-red-500/90 text-white text-[11px] font-semibold shadow-lg shadow-red-500/30 hover:bg-red-500 transition-all"
+                            >
+                                End
+                            </button>
+                        )}
+
+                        <div className="flex items-center gap-2 pl-1">
+                            <div className="h-2.5 w-20 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                                <div
+                                    className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all duration-75"
+                                    style={{ width: `${Math.min(100, Math.max(5, inputLevel))}%` }}
+                                />
+                            </div>
+                            <span className="text-[10px] text-slate-500 uppercase tracking-[0.2em]">Input</span>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}

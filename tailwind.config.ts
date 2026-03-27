@@ -22,15 +22,28 @@ const config: Config = {
 
         primary: "var(--primary)",
         "primary-foreground": "var(--primary-foreground)",
+        "primary-glow": "var(--primary-glow)",
 
         border: "var(--border-default)",
 
         // Shorthand aliases for common usage
         card: "var(--background-card)",
+        obsidian: "var(--obsidian)",
       },
       fontFamily: {
-        sans: ["var(--font-inter)"],
-        mono: ["var(--font-jetbrains-mono)"],
+        sans: ["var(--font-outfit)"],
+        mono: ["var(--font-dm-mono)", "var(--font-jetbrains-mono)", "monospace"],
+        display: ["var(--font-jakarta)", "var(--font-syne)", "sans-serif"],
+        body: ["var(--font-jakarta)", "var(--font-outfit)", "sans-serif"],
+      },
+      keyframes: {
+        "gradient-x": {
+          "0%, 100%": { "background-position": "0% 50%" },
+          "50%": { "background-position": "100% 50%" },
+        },
+      },
+      animation: {
+        "gradient-x": "gradient-x 15s ease infinite",
       },
     },
   },

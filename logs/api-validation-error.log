@@ -1,0 +1,40 @@
+{
+  "body": {
+    "topic": "Prompt Engineering for AI",
+    "difficulty": "beginner",
+    "topicCount": 1,
+    "lessonsPerTopic": 2,
+    "courseHost": "sarah",
+    "moduleHost": "sarah"
+  },
+  "errors": [
+    {
+      "expected": "string",
+      "code": "invalid_type",
+      "path": [
+        "courseName"
+      ],
+      "message": "Invalid input: expected string, received undefined"
+    },
+    {
+      "code": "invalid_value",
+      "values": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ],
+      "path": [
+        "difficultyLevel"
+      ],
+      "message": "Invalid option: expected one of \"beginner\"|\"intermediate\"|\"advanced\""
+    },
+    {
+      "expected": "number",
+      "code": "invalid_type",
+      "path": [
+        "targetDuration"
+      ],
+      "message": "Invalid input: expected number, received undefined"
+    }
+  ]
+}

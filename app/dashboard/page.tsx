@@ -1,493 +1,458 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import {
-  BookOpen,
-  CheckCircle2,
-  Award,
-  Clock,
-  GraduationCap,
-  TrendingUp,
-  Zap,
-  Target,
-  Brain,
-  ArrowRight,
-  Flame,
-  Trophy,
-  Star,
-  Sparkles,
-  PlayCircle,
-  Calendar,
-  BarChart3,
-  Crown,
+  BookOpen, CheckCircle2, Clock, ArrowRight, Flame,
+  Zap, ChevronRight, Play, Layers, BarChart2, Trophy
 } from "lucide-react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+
+// ── Dark panel — matches lesson/home card language ──────────────────────────
+const DarkPanel = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <div className={cn(
+    "relative overflow-hidden bg-[#0d0d1c] border border-white/[0.06] rounded-3xl",
+    className
+  )}>
+    {children}
+  </div>
+);
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const [userName, setUserName] = useState("Learner");
-  const [currentTime, setCurrentTime] = useState("");
+  const [greeting, setGreeting] = useState("Good morning");
+  const [recommendedCourses, setRecommendedCourses] = useState<any[]>([]);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setMounted(true);
-    // Get time of day greeting
     const hour = new Date().getHours();
-    if (hour < 12) setCurrentTime("Good morning");
-    else if (hour < 18) setCurrentTime("Good afternoon");
-    else setCurrentTime("Good evening");
+    if (hour < 12) setGreeting("Good morning");
+    else if (hour < 18) setGreeting("Good afternoon");
+    else setGreeting("Good evening");
 
-    // Get user name from Supabase
-    const fetchUser = async () => {
+    const fetchData = async () => {
       try {
         const { createClient } = await import("@/lib/supabase/client");
         const supabase = createClient();
-        if (supabase) {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user?.user_metadata?.full_name) {
+        const { ensureUserProfile } = await import("@/app/actions/progress");
+        await ensureUserProfile();
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          if (user.user_metadata?.full_name) {
             setUserName(user.user_metadata.full_name.split(" ")[0]);
-          } else if (user?.email) {
+          } else if (user.email) {
             setUserName(user.email.split("@")[0]);
           }
         }
-      } catch (error) {
-        console.error("Error fetching user:", error);
+
+        let enrolledCourseIds: string[] = [];
+        if (user) {
+          const { data: progressData } = await supabase
+            .from("user_course_progress")
+            .select("overall_progress_percentage, last_accessed_at, course_id, status, courses(*)")
+            .eq("user_id", user.id)
+            .order("last_accessed_at", { ascending: false })
+            .limit(3);
+
+          if (progressData && progressData.length > 0) {
+            enrolledCourseIds = progressData.map((p: any) => p.course_id);
+            setCourses(progressData.map((p: any) => ({
+              id: p.course_id,
+              title: (p.courses as any)?.title || "Untitled Course",
+              image: (p.courses as any)?.image_url || "/course_title_images/Mastering ChatGPT & Prompt Engineering.png",
+              progress: p.overall_progress_percentage || 0,
+              duration: (p.courses as any)?.estimated_duration_hours ? `${(p.courses as any).estimated_duration_hours}h` : "2h",
+              category: (p.courses as any)?.category || "AI Foundations",
+            })));
+          } else {
+            setCourses([]);
+          }
+        }
+
+        let query = supabase.from("courses").select("*").eq("published", true);
+        if (enrolledCourseIds.length > 0) {
+          query = query.not("id", "in", `(${enrolledCourseIds.join(",")})`);
+        }
+        const { data: recData } = await query.limit(3);
+
+        if (recData && recData.length > 0) {
+          setRecommendedCourses(recData.map((c: any) => ({
+            id: c.id,
+            title: c.title,
+            image: c.image_url || "/course_title_images/mastering_chatgpt_v2.png",
+            duration: c.estimated_duration_hours ? `${c.estimated_duration_hours * 60} min` : "45 min",
+            level: c.difficulty_level || "Beginner",
+          })));
+        } else {
+          setRecommendedCourses([
+            { id: 672, title: "AI Foundations: The Basics", image: "/course_title_images/mastering_chatgpt_v2.png", duration: "45 min", level: "Beginner" },
+            { id: 670, title: "Prompt Engineering 101", image: "/course_title_images/mastering_chatgpt_v2.png", duration: "60 min", level: "Beginner" },
+          ]);
+        }
+
+        if (user) {
+          const { data: profileData } = await supabase
+            .from("user_profiles")
+            .select("*")
+            .eq("user_id", user.id)
+            .single();
+          if (profileData) setProfile(profileData);
+        }
+      } catch (err) {
+        console.error("Dashboard fetch error:", err);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchUser();
+    fetchData();
   }, []);
 
-  const stats = [
-    {
-      icon: BookOpen,
-      label: "Enrolled Bytes",
-      value: "3",
-      subtext: "Active courses",
-      color: "from-cyan-500 to-blue-500",
-      bgColor: "bg-cyan-500/10",
-      iconColor: "text-cyan-500",
-    },
-    {
-      icon: CheckCircle2,
-      label: "Completed",
-      value: "1",
-      subtext: "Bytes finished",
-      color: "from-emerald-500 to-green-500",
-      bgColor: "bg-emerald-500/10",
-      iconColor: "text-emerald-500",
-    },
-    {
-      icon: Flame,
-      label: "Day Streak",
-      value: "7",
-      subtext: "Keep it up! 🔥",
-      color: "from-orange-500 to-red-500",
-      bgColor: "bg-orange-500/10",
-      iconColor: "text-orange-500",
-    },
-    {
-      icon: Clock,
-      label: "Time Learned",
-      value: "4.5h",
-      subtext: "This month",
-      color: "from-purple-500 to-pink-500",
-      bgColor: "bg-purple-500/10",
-      iconColor: "text-purple-500",
-    },
-  ];
-
-  const currentCourses = [
-    {
-      id: 1,
-      title: "Mastering ChatGPT & Prompt Engineering",
-      image: "/course_title_images/Mastering ChatGPT & Prompt Engineering.png",
-      progress: 65,
-      nextLesson: "Advanced Prompt Techniques",
-      duration: "15 min left",
-      category: "Prompt Engineering",
-    },
-    {
-      id: 2,
-      title: "Generative AI for Business Leaders",
-      image: "/course_title_images/Generative AI for Business Leaders.png",
-      progress: 30,
-      nextLesson: "AI Strategy Framework",
-      duration: "45 min left",
-      category: "Business",
-    },
-    {
-      id: 3,
-      title: "Building AI Agents & Automation",
-      image: "/course_title_images/Building AI Agents & Automation.png",
-      progress: 10,
-      nextLesson: "Introduction to AI Agents",
-      duration: "80 min left",
-      category: "Advanced",
-    },
-  ];
-
-  const achievements = [
-    { icon: Trophy, label: "First Byte", earned: true, color: "text-yellow-500" },
-    { icon: Flame, label: "Week Streak", earned: true, color: "text-orange-500" },
-    { icon: Brain, label: "AI Explorer", earned: true, color: "text-purple-500" },
-    { icon: Star, label: "Top Learner", earned: false, color: "text-slate-400" },
-    { icon: Crown, label: "Champion", earned: false, color: "text-slate-400" },
-  ];
-
-  const recommendedCourses = [
-    {
-      title: "AI Ethics & Responsible AI",
-      image: "/categories/AI Ethics, Governance & Responsible AI.png",
-      duration: "60 min",
-      level: "Intermediate",
-    },
-    {
-      title: "Computer Vision Fundamentals",
-      image: "/categories/Computer Vision & Image AI.png",
-      duration: "75 min",
-      level: "Advanced",
-    },
+  const milestones = [
+    { image: "/mastery/Phase 1.png", label: "First Step",  earned: (profile?.total_xp > 0)             },
+    { image: "/mastery/Phase 2.png", label: "Momentum",    earned: (profile?.current_streak > 0)       },
+    { image: "/mastery/Phase 3.png", label: "Creator",     earned: (profile?.total_xp > 500)           },
+    { image: "/mastery/mastery.png", label: "Expertise",   earned: (profile?.current_level > 5)        },
   ];
 
   if (!mounted) return null;
 
+  const currentCourse = courses[0];
+  const weeklyXp      = Math.min((profile?.total_xp ?? 0) % 100, 100);
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#020617]">
+    <div className="min-h-screen bg-[#080810] font-body relative overflow-x-hidden">
+
+      {/* ── Persistent mesh gradient blobs ───────────────────────────────── */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }} aria-hidden="true">
+        <div className="absolute rounded-full" style={{ width: 900, height: 900, background: "#4b98ad", top: "5%", left: "-20%", filter: "blur(110px)", opacity: 0.09, animation: "dbMesh 35s linear infinite" }} />
+        <div className="absolute rounded-full" style={{ width: 700, height: 700, background: "#00FFB3", top: "50%", right: "-10%", filter: "blur(110px)", opacity: 0.07, animation: "dbMesh 28s linear infinite reverse" }} />
+        <div className="absolute rounded-full" style={{ width: 600, height: 600, background: "#FFB347", bottom: "5%", left: "25%", filter: "blur(110px)", opacity: 0.06, animation: "dbMesh 22s linear infinite", animationDelay: "-11s" }} />
+      </div>
+
+      {/* ── Grain texture ─────────────────────────────────────────────────── */}
+      <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0, opacity: 0.025, mixBlendMode: "soft-light" }} aria-hidden="true">
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <filter id="db-grain"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" /><feColorMatrix type="saturate" values="0" /></filter>
+          <rect width="100%" height="100%" filter="url(#db-grain)" />
+        </svg>
+      </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes dbMesh {
+          0%   { transform: translate(0,0) scale(1); }
+          33%  { transform: translate(40px,-50px) scale(1.07); }
+          66%  { transform: translate(-30px,30px) scale(0.95); }
+          100% { transform: translate(0,0) scale(1); }
+        }
+      ` }} />
+
       <Header />
 
-      {/* Hero Section with Gradient */}
-      <section className="relative overflow-hidden">
-        {/* Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-[#0F172A] to-slate-900">
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-[120px]"></div>
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-[100px]"></div>
-        </div>
+      <main className="relative z-10 max-w-[1140px] mx-auto px-[4vw] pt-12 pb-32 md:pb-20">
 
-        <div className="relative container mx-auto px-4 py-12 lg:py-16 max-w-7xl">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
-            {/* Welcome Message */}
-            <div className="space-y-4">
-              <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30 px-3 py-1">
-                <Sparkles className="w-3 h-3 mr-1" />
-                Premium Member
-              </Badge>
-              <h1 className="text-4xl lg:text-5xl font-bold text-white">
-                {currentTime}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">{userName}</span>
-              </h1>
-              <p className="text-lg text-slate-400 max-w-lg">
-                You're on a <span className="text-orange-400 font-semibold">7-day streak</span>! Keep learning to unlock your next achievement.
-              </p>
-            </div>
+        {/* ── HERO GREETING ─────────────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-12"
+        >
+          <p className="font-mono text-[0.62rem] uppercase tracking-[0.28em] text-white/40 mb-4">
+            {greeting}
+          </p>
+          <h1 className="font-display font-black leading-[0.92] tracking-[-0.03em] mb-8"
+              style={{ fontSize: "clamp(2.6rem, 6vw, 4.8rem)" }}>
+            <span className="text-white/90">Welcome back,{" "}</span>
+            <span style={{ color: "#4b98ad" }}>{userName}.</span>
+          </h1>
 
-            {/* Quick Stats Row */}
-            <div className="flex gap-4 lg:gap-6">
-              <div className="text-center">
-                <div className="text-3xl lg:text-4xl font-bold text-white">65%</div>
-                <div className="text-sm text-slate-400">Weekly Goal</div>
-              </div>
-              <div className="w-px bg-slate-700"></div>
-              <div className="text-center">
-                <div className="text-3xl lg:text-4xl font-bold text-cyan-400">3</div>
-                <div className="text-sm text-slate-400">Active Bytes</div>
-              </div>
-              <div className="w-px bg-slate-700"></div>
-              <div className="text-center">
-                <div className="text-3xl lg:text-4xl font-bold text-emerald-400">1</div>
-                <div className="text-sm text-slate-400">Completed</div>
-              </div>
-            </div>
+          {/* Stat chips */}
+          <div className="flex flex-wrap gap-3">
+            {[
+              { label: "Day Streak",  value: profile?.current_streak ?? 0, icon: Flame,        color: "#FFB347" },
+              { label: "Total XP",   value: profile?.total_xp ?? 0,        icon: Zap,          color: "#4b98ad" },
+              { label: "Completed",  value: courses.filter(c => c.progress === 100).length, icon: CheckCircle2, color: "#00FFB3" },
+            ].map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.18 + i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                className="flex items-center gap-2.5 px-4 py-2.5 rounded-full border"
+                style={{ background: `${stat.color}0d`, borderColor: `${stat.color}28` }}
+              >
+                <stat.icon className="w-3.5 h-3.5 shrink-0" style={{ color: stat.color }} />
+                <span className="font-mono text-sm font-bold" style={{ color: stat.color }}>{stat.value}</span>
+                <span className="font-mono text-[0.62rem] uppercase tracking-[0.1em] text-white/60">{stat.label}</span>
+              </motion.div>
+            ))}
           </div>
-        </div>
-      </section>
+        </motion.div>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-8 max-w-7xl -mt-4">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
-          {stats.map((stat, index) => (
-            <Card
-              key={index}
-              className="group relative overflow-hidden bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50 hover:shadow-xl hover:shadow-cyan-500/5 transition-all duration-500 hover:-translate-y-1"
-            >
-              {/* Gradient accent line */}
-              <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${stat.color} opacity-80`}></div>
+        {/* ── MAIN GRID ─────────────────────────────────────────────────── */}
+        <div className="grid lg:grid-cols-12 gap-6">
 
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                      {stat.label}
-                    </p>
-                    <p className="text-3xl font-bold text-slate-900 dark:text-white">
-                      {stat.value}
-                    </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {stat.subtext}
-                    </p>
+          {/* LEFT — 8 cols */}
+          <div className="lg:col-span-8 space-y-6">
+
+            {/* ── Continue Learning ──────────────────────────────────────── */}
+            <section>
+              <p className="font-mono text-[0.59rem] uppercase tracking-[0.22em] text-white/40 mb-4">
+                — Continue Learning
+              </p>
+
+              {loading ? (
+                <div className="w-full h-64 bg-[#0d0d1c] animate-pulse rounded-3xl border border-white/5" />
+              ) : currentCourse ? (
+                <Link href={`/courses/${currentCourse.id}`} className="block group">
+                  <DarkPanel className="hover:border-white/[0.12] transition-colors duration-300">
+                    <div className="flex flex-col md:flex-row">
+
+                      {/* Course image */}
+                      <div className="w-full md:w-[42%] aspect-video md:aspect-auto relative overflow-hidden rounded-t-3xl md:rounded-l-3xl md:rounded-tr-none" style={{ minHeight: 200 }}>
+                        <Image
+                          src={currentCourse.image} alt={currentCourse.title} fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-700"
+                          sizes="(max-width:768px)100vw,42vw"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#0d0d1c]/70 hidden md:block" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1c]/70 to-transparent md:hidden" />
+                        <div className="absolute bottom-4 left-4 font-mono text-[0.58rem] uppercase tracking-[0.14em] text-[#00FFB3] bg-[#00FFB3]/10 border border-[#00FFB3]/20 px-3 py-1 rounded-full">
+                          {currentCourse.category}
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 p-7 flex flex-col justify-between gap-6">
+                        <div>
+                          <h3 className="font-display font-black text-[1.45rem] text-white leading-tight tracking-[-0.02em] group-hover:text-[#4b98ad] transition-colors duration-300 mb-3">
+                            {currentCourse.title}
+                          </h3>
+                          <span className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-white/55 flex items-center gap-1.5">
+                            <Clock className="w-3 h-3" /> {currentCourse.duration}
+                          </span>
+                        </div>
+
+                        <div className="space-y-2.5">
+                          <div className="flex justify-between items-center">
+                            <span className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-white/55">Progress</span>
+                            <span className="font-mono text-2xl font-bold text-white">{currentCourse.progress}%</span>
+                          </div>
+                          <div className="h-[3px] w-full bg-white/[0.06] rounded-full overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${currentCourse.progress}%` }}
+                              transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1], delay: 0.35 }}
+                              className="h-full rounded-full"
+                              style={{ background: "linear-gradient(90deg, #4b98ad, #00FFB3)" }}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between pt-1">
+                            <span className="font-mono text-[0.58rem] text-white/50">Continue your journey</span>
+                            <span className="font-mono text-[0.62rem] uppercase tracking-[0.1em] text-[#4b98ad] flex items-center gap-1.5 group-hover:translate-x-1 transition-transform duration-300">
+                              Resume <ArrowRight className="w-3 h-3" />
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </DarkPanel>
+                </Link>
+              ) : (
+                <DarkPanel className="p-10 text-center" style={{ borderStyle: "dashed" }}>
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-5" style={{ background: "#4b98ad15", border: "1px solid #4b98ad30" }}>
+                    <Play className="w-5 h-5 text-[#4b98ad]" />
                   </div>
-                  <div className={`w-12 h-12 rounded-2xl ${stat.bgColor} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                    <stat.icon className={`w-6 h-6 ${stat.iconColor}`} />
-                  </div>
+                  <h3 className="font-display font-black text-xl text-white mb-2 tracking-tight">Start Your First Byte</h3>
+                  <p className="font-body text-white/35 text-sm max-w-xs mx-auto mb-6 leading-relaxed">
+                    Pick a topic and jumpstart your AI understanding in just 15 minutes.
+                  </p>
+                  <Link href="/courses">
+                    <button className="font-mono text-[0.65rem] uppercase tracking-[0.15em] px-6 py-2.5 rounded-full border border-[#4b98ad]/35 text-[#4b98ad] hover:bg-[#4b98ad]/10 transition-colors cursor-pointer">
+                      Browse Curriculum
+                    </button>
+                  </Link>
+                </DarkPanel>
+              )}
+            </section>
+
+            {/* ── Also in Progress ───────────────────────────────────────── */}
+            {courses.length > 1 && (
+              <section>
+                <p className="font-mono text-[0.59rem] uppercase tracking-[0.22em] text-white/40 mb-4">— Also in Progress</p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {courses.slice(1).map(c => (
+                    <Link key={c.id} href={`/courses/${c.id}`} className="group">
+                      <DarkPanel className="p-4 flex gap-4 items-center hover:border-white/[0.1] transition-colors duration-300">
+                        <div className="w-16 h-16 shrink-0 rounded-xl overflow-hidden relative">
+                          <Image src={c.image} alt={c.title} fill className="object-cover group-hover:scale-110 transition-transform duration-500" sizes="64px" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-display font-bold text-white text-sm line-clamp-2 leading-tight group-hover:text-[#4b98ad] transition-colors">{c.title}</h4>
+                          <div className="mt-2.5 h-[2px] w-full bg-white/[0.06] rounded-full">
+                            <div className="h-full rounded-full bg-[#4b98ad]/70" style={{ width: `${c.progress}%` }} />
+                          </div>
+                          <p className="font-mono text-[0.58rem] text-white/50 mt-1">{c.progress}% complete</p>
+                        </div>
+                      </DarkPanel>
+                    </Link>
+                  ))}
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              </section>
+            )}
 
-        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
-          {/* Main Content - Current Courses */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Continue Learning Section */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
-                    <PlayCircle className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">Continue Learning</h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Pick up where you left off</p>
-                  </div>
+            {/* ── Recommended ────────────────────────────────────────────── */}
+            <section>
+              <p className="font-mono text-[0.59rem] uppercase tracking-[0.22em] text-white/40 mb-4">— Recommended for You</p>
+              <div className="grid sm:grid-cols-3 gap-4">
+                {recommendedCourses.map((c, i) => (
+                  <motion.div
+                    key={c.id}
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.12 + i * 0.07, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <Link href={`/courses/${c.id}`} className="block group h-full">
+                      <DarkPanel className="p-3 h-full flex flex-col hover:border-white/[0.1] transition-colors duration-300">
+                        <div className="w-full aspect-video rounded-2xl overflow-hidden relative mb-4">
+                          <Image src={c.image} alt={c.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width:768px)100vw,33vw" />
+                          <div className="absolute top-2 left-2 font-mono text-[0.55rem] uppercase tracking-[0.1em] px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white/55 border border-white/[0.08]">
+                            {c.level}
+                          </div>
+                        </div>
+                        <h4 className="font-display font-bold text-white/90 text-sm leading-snug line-clamp-2 mb-2 group-hover:text-[#4b98ad] transition-colors px-1">{c.title}</h4>
+                        <div className="mt-auto flex items-center gap-1.5 font-mono text-[0.58rem] text-white/50 px-1">
+                          <Clock className="w-3 h-3 shrink-0" /> {c.duration}
+                        </div>
+                      </DarkPanel>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            </section>
+
+          </div>
+
+          {/* RIGHT — 4 cols ─────────────────────────────────────────────── */}
+          <div className="lg:col-span-4 space-y-5">
+
+            {/* ── Momentum ───────────────────────────────────────────────── */}
+            <DarkPanel className="p-6">
+              <p className="font-mono text-[0.59rem] uppercase tracking-[0.22em] text-white/40 mb-6">— Your Momentum</p>
+
+              {/* Streak */}
+              <div className="flex items-center justify-between mb-6 pb-6 border-b border-white/[0.04]">
+                <div>
+                  <p className="font-mono text-[0.58rem] uppercase tracking-[0.14em] text-white/55 mb-1.5">Day Streak</p>
+                  <p className="font-mono font-bold text-[#FFB347]" style={{ fontSize: "2.4rem", lineHeight: 1 }}>{profile?.current_streak ?? 0}</p>
+                  <p className="font-mono text-[0.58rem] text-white/45 mt-1">consecutive days</p>
                 </div>
-                <Link href="/courses">
-                  <Button variant="ghost" size="sm" className="text-cyan-600 dark:text-cyan-400 hover:text-cyan-700">
-                    View All <ArrowRight className="w-4 h-4 ml-1" />
-                  </Button>
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "#FFB34712", border: "1px solid #FFB34728" }}>
+                  <Flame className="w-6 h-6 text-[#FFB347]" />
+                </div>
+              </div>
+
+              {/* Weekly XP */}
+              <div className="space-y-2.5">
+                <div className="flex justify-between items-center">
+                  <p className="font-mono text-[0.58rem] uppercase tracking-[0.14em] text-white/55">Weekly XP Goal</p>
+                  <p className="font-mono text-[0.68rem] text-white/50">{weeklyXp} / 100</p>
+                </div>
+                <div className="h-[3px] w-full bg-white/[0.06] rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${weeklyXp}%` }}
+                    transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1], delay: 0.45 }}
+                    className="h-full rounded-full"
+                    style={{ background: "linear-gradient(90deg, #FFB347, #FF6B6B)" }}
+                  />
+                </div>
+                <p className="font-mono text-[0.58rem]" style={{ color: "#FFB347" }}>{weeklyXp}% of weekly goal</p>
+              </div>
+
+              {/* Total XP */}
+              <div className="mt-5 pt-5 border-t border-white/[0.04] flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "#4b98ad12", border: "1px solid #4b98ad28" }}>
+                  <Zap className="w-4 h-4 text-[#4b98ad]" />
+                </div>
+                <div>
+                  <p className="font-mono text-[0.58rem] uppercase tracking-[0.1em] text-white/55">Total XP Earned</p>
+                  <p className="font-mono text-xl font-bold text-[#4b98ad]">{profile?.total_xp ?? 0}</p>
+                </div>
+              </div>
+            </DarkPanel>
+
+            {/* ── Milestones ─────────────────────────────────────────────── */}
+            <DarkPanel className="p-6">
+              <div className="flex items-center justify-between mb-5">
+                <p className="font-mono text-[0.59rem] uppercase tracking-[0.22em] text-white/40">— Milestones</p>
+                <Link href="/achievements" className="font-mono text-[0.59rem] uppercase tracking-[0.1em] text-[#00FFB3]/50 hover:text-[#00FFB3] transition-colors">
+                  All →
                 </Link>
               </div>
 
-              {/* Course Cards */}
-              <div className="space-y-6">
-                {currentCourses.map((course) => (
-                  <Link href={`/courses/${course.id}`} key={course.id}>
-                    <Card className="group overflow-hidden bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50 hover:shadow-2xl hover:shadow-cyan-500/10 transition-all duration-500 hover:-translate-y-1 cursor-pointer">
-                      <CardContent className="p-0">
-                        <div className="flex flex-col sm:flex-row">
-                          {/* Course Image */}
-                          <div className="relative w-full sm:w-36 h-24 shrink-0 overflow-hidden rounded-lg sm:m-4">
-                            <Image
-                              src={course.image}
-                              alt={course.title}
-                              fill
-                              className="object-cover group-hover:scale-110 transition-transform duration-700"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/10 dark:to-black/30"></div>
-                          </div>
+              <div className="grid grid-cols-2 gap-3">
+                {milestones.map((m, i) => (
+                  <motion.div
+                    key={m.label}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.22 + i * 0.07, ease: [0.16, 1, 0.3, 1] }}
+                    className={cn(
+                      "flex flex-col items-center text-center p-4 rounded-2xl border transition-all duration-300",
+                      m.earned
+                        ? "border-[#00FFB3]/18"
+                        : "bg-white/[0.015] border-white/[0.04] opacity-45"
+                    )}
+                    style={m.earned ? { background: "#00FFB308" } : {}}
+                  >
+                    <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center mb-3 relative overflow-hidden", m.earned ? "" : "opacity-50")}
+                         style={m.earned ? { background: "#00FFB310", border: "1px solid #00FFB320" } : { background: "rgba(255,255,255,0.04)" }}>
+                      <Image src={m.image} alt={m.label} fill className="object-cover p-2" sizes="48px" />
+                    </div>
+                    <p className="font-display font-bold text-xs text-white/80 leading-tight">{m.label}</p>
+                    <p className={cn("font-mono text-[0.52rem] uppercase tracking-[0.1em] mt-1.5",
+                      m.earned ? "text-[#00FFB3]" : "text-white/35")}>
+                      {m.earned ? "Unlocked" : "Locked"}
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
+            </DarkPanel>
 
-                          {/* Course Details */}
-                          <div className="flex-1 p-5 space-y-4">
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="space-y-1">
-                                <Badge variant="secondary" className="text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-                                  {course.category}
-                                </Badge>
-                                <h3 className="font-bold text-slate-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
-                                  {course.title}
-                                </h3>
-                              </div>
-                              <div className="text-right shrink-0">
-                                <div className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">{course.progress}%</div>
-                              </div>
-                            </div>
-
-                            {/* Progress Bar */}
-                            <div className="space-y-2">
-                              <div className="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                                <div
-                                  className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-1000"
-                                  style={{ width: `${course.progress}%` }}
-                                />
-                              </div>
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="text-slate-500 dark:text-slate-400">
-                                  Next: <span className="text-slate-700 dark:text-slate-300 font-medium">{course.nextLesson}</span>
-                                </span>
-                                <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                                  <Clock className="w-3.5 h-3.5" />
-                                  {course.duration}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Continue Button */}
-                            <Button className="w-full sm:w-auto bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all">
-                              <PlayCircle className="w-4 h-4 mr-2" />
-                              Continue Learning
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+            {/* ── Quick Links ────────────────────────────────────────────── */}
+            <DarkPanel className="p-5">
+              <p className="font-mono text-[0.59rem] uppercase tracking-[0.22em] text-white/40 mb-4">— Quick Links</p>
+              <div className="space-y-1">
+                {[
+                  { href: "/courses",     label: "Browse Courses",  icon: BookOpen, color: "#4b98ad" },
+                  { href: "/my-learning", label: "My Learning",     icon: Layers,   color: "#00FFB3" },
+                  { href: "/pricing",     label: "Upgrade Plan",    icon: Zap,      color: "#FFB347" },
+                ].map((link) => (
+                  <Link key={link.href} href={link.href}
+                    className="group flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.04] transition-colors cursor-pointer">
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                         style={{ background: `${link.color}12`, border: `1px solid ${link.color}22` }}>
+                      <link.icon className="w-3.5 h-3.5" style={{ color: link.color }} />
+                    </div>
+                    <span className="font-body text-sm text-white/55 group-hover:text-white/85 transition-colors">{link.label}</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-white/12 ml-auto group-hover:text-white/35 group-hover:translate-x-0.5 transition-all" />
                   </Link>
                 ))}
               </div>
-            </div>
+            </DarkPanel>
 
-            {/* Recommended for You */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">Recommended for You</h2>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Based on your interests</p>
-                </div>
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-4">
-                {recommendedCourses.map((course, idx) => (
-                  <Card key={idx} className="group overflow-hidden bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50 hover:shadow-xl transition-all duration-300 cursor-pointer">
-                    <div className="relative h-32 overflow-hidden">
-                      <Image
-                        src={course.image}
-                        alt={course.title}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                      <Badge className="absolute top-3 left-3 bg-white/90 text-slate-900">{course.level}</Badge>
-                    </div>
-                    <CardContent className="p-4">
-                      <h3 className="font-bold text-slate-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                        {course.title}
-                      </h3>
-                      <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                        <Clock className="w-4 h-4" />
-                        {course.duration}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Achievements Card */}
-            <Card className="overflow-hidden bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
-                    <Trophy className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white">Achievements</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">3 of 5 earned</p>
-                  </div>
-                </div>
-
-                <div className="flex justify-between gap-2">
-                  {achievements.map((ach, idx) => (
-                    <div key={idx} className="flex flex-col items-center gap-2">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${ach.earned ? 'bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 shadow-lg' : 'bg-slate-100 dark:bg-slate-800 opacity-50'}`}>
-                        <ach.icon className={`w-5 h-5 ${ach.color}`} />
-                      </div>
-                      <span className={`text-[10px] font-medium ${ach.earned ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400'}`}>
-                        {ach.label}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Weekly Goal Card */}
-            <Card className="overflow-hidden bg-gradient-to-br from-cyan-500 to-blue-600 border-none text-white">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <Target className="w-6 h-6" />
-                  <h3 className="font-bold">Weekly Goal</h3>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <p className="text-4xl font-bold">65%</p>
-                      <p className="text-cyan-100 text-sm">39 min / 60 min</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-cyan-100">21 min left</p>
-                    </div>
-                  </div>
-
-                  <div className="h-3 bg-white/20 rounded-full overflow-hidden">
-                    <div className="h-full bg-white rounded-full w-[65%] transition-all duration-1000" />
-                  </div>
-
-                  <p className="text-sm text-cyan-100">
-                    🎯 Complete 21 more minutes to hit your goal!
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Learning Streak */}
-            <Card className="overflow-hidden bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
-                    <Flame className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white">7 Day Streak</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Your best: 14 days</p>
-                  </div>
-                </div>
-
-                <div className="flex justify-between">
-                  {["M", "T", "W", "T", "F", "S", "S"].map((day, idx) => (
-                    <div key={idx} className="flex flex-col items-center gap-2">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${idx <= 6 ? 'bg-gradient-to-br from-orange-400 to-red-500' : 'bg-slate-100 dark:bg-slate-700'}`}>
-                        {idx <= 6 && <Flame className="w-4 h-4 text-white" />}
-                      </div>
-                      <span className="text-xs text-slate-500 dark:text-slate-400">{day}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Actions */}
-            <Card className="overflow-hidden bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50">
-              <CardContent className="p-6 space-y-3">
-                <h3 className="font-bold text-slate-900 dark:text-white mb-4">Quick Actions</h3>
-
-                <Link href="/courses">
-                  <Button variant="outline" className="w-full justify-start text-left h-12 border-slate-200 dark:border-slate-700 hover:border-cyan-500 hover:text-cyan-600 dark:hover:text-cyan-400">
-                    <BookOpen className="w-4 h-4 mr-3" />
-                    Browse All Courses
-                  </Button>
-                </Link>
-
-                <Link href="/account/subscription">
-                  <Button variant="outline" className="w-full justify-start text-left h-12 border-slate-200 dark:border-slate-700 hover:border-purple-500 hover:text-purple-600 dark:hover:text-purple-400">
-                    <Crown className="w-4 h-4 mr-3" />
-                    Manage Subscription
-                  </Button>
-                </Link>
-
-                <Link href="/certificate">
-                  <Button variant="outline" className="w-full justify-start text-left h-12 border-slate-200 dark:border-slate-700 hover:border-yellow-500 hover:text-yellow-600 dark:hover:text-yellow-400">
-                    <Award className="w-4 h-4 mr-3" />
-                    View Certificates
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
           </div>
         </div>
-      </div>
-
-      <Footer />
+      </main>
     </div>
   );
 }

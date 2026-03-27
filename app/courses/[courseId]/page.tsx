@@ -1,12 +1,53 @@
 
 import React from 'react';
+import type { Metadata } from "next";
 import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { cn } from "@/lib/utils";
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, PlayCircle, Lock, BookOpen, ChevronRight } from 'lucide-react';
+import { CheckCircle2, CirclePlay, Lock, BookOpen, ChevronRight, Clock } from 'lucide-react';
 import { PremiumCurriculum } from '@/components/course/premium-curriculum';
+import { AvatarImage } from '@/components/course/avatar-image';
+import { VoiceAvatar } from '@/components/voice/voice-avatar';
+import { AutoVideoSync } from '@/components/video/auto-video-sync';
+import { ContextUpdater } from '@/components/voice/ContextUpdater';
+import { MobileStats } from "@/components/course/mobile-stats";
+import { buildMetadata } from "@/lib/seo";
+
+// Force dynamic rendering to fix hydration/stale cache issues
+export const dynamic = 'force-dynamic';
+
+export async function generateMetadata(
+    props: { params: Promise<{ courseId: string }> }
+): Promise<Metadata> {
+    const params = await props.params;
+    const supabase = await createClient(true);
+    const { data: course } = await supabase
+        .from('courses')
+        .select('*')
+        .eq('id', params.courseId)
+        .single();
+
+    const title = course?.seo_title || course?.title || "AI Bytes Course";
+    const rawDescription = (course?.seo_description || course?.description || "")
+        .replace('[gemma]', '')
+        .trim();
+    const description = rawDescription || "Master AI in 15-minute lessons with AI Bytes Learning.";
+    const keywords = course?.seo_keywords
+        ? String(course.seo_keywords).split(",").map((k: string) => k.trim()).filter(Boolean)
+        : undefined;
+    const image = course?.thumbnail_url || undefined;
+
+    return buildMetadata({
+        title,
+        description,
+        path: `/courses/${params.courseId}`,
+        image,
+        keywords,
+    });
+}
 
 export default async function CourseOverviewPage(props: { params: Promise<{ courseId: string }> }) {
     const params = await props.params;
@@ -24,12 +65,23 @@ export default async function CourseOverviewPage(props: { params: Promise<{ cour
             course_topics (
                 id,
                 title,
+                description,
                 order_index,
+                video_url,
+                intro_video_job_id,
+                intro_video_status,
+                thumbnail_url,
                 course_lessons (
                     id,
                     title,
                     order_index,
-                    estimated_duration_minutes
+                    estimated_duration_minutes,
+                    key_takeaways,
+                    thumbnail_url,
+                    video_job_id,
+                    video_status,
+                    micro_objective,
+                    lesson_action
                 ),
                 course_quizzes (
                     id,
@@ -55,68 +107,156 @@ export default async function CourseOverviewPage(props: { params: Promise<{ cour
     // If admin, grant full access
     const hasAccess = isAdmin || (course.price || 0) === 0;
 
+    // Check if course is completed
+    const { data: progressData } = user ? await supabase
+        .from('user_course_progress')
+        .select('status')
+        .eq('course_id', courseId)
+        .eq('user_id', user.id)
+        .maybeSingle() : { data: null };
+
+    const isCourseCompleted = progressData?.status === 'completed';
+    const isCompleted = isCourseCompleted;
+
+    // Fetch COMPLETED lessons for this user/course
+    const { data: lessonProgress } = user ? await supabase
+        .from('user_lesson_progress')
+        .select('lesson_id')
+        .eq('user_id', user.id)
+        .eq('course_id', courseId)
+        .eq('status', 'completed') : { data: null };
+
+    // Fetch PASSED quizzes for this user/course
+    const { data: quizAttempts } = user ? await supabase
+        .from('quiz_attempts')
+        .select('quiz_id')
+        .eq('user_id', user.id)
+        .eq('course_id', courseId)
+        .eq('passed', true) : { data: null };
+
+    const completedLessonIds = lessonProgress?.map(p => String(p.lesson_id)) || [];
+    const passedQuizIds = quizAttempts?.map(a => String(a.quiz_id)) || [];
+
     // Helper to clean raw prompt titles
     const cleanTitle = (t: string) => {
         if (!t) return "";
-        // Split by common "prompt injection" keywords and take the first part
-        return t.split(/Target Audience:/i)[0]
+        let cleaned = t
+            .split(/Target Audience:/i)[0]
             .split(/Difficulty:/i)[0]
-            .split(/Number of Modules:/i)[0]
-            .split(/\.\s*$/)[0] // Remove trailing dot
+            .split(/Number of Modules:/i)[0];
+
+        // Remove standalone difficulty levels or those followed by a colon
+        cleaned = cleaned.replace(/\b(Beginner|Intermediate|Advanced|Mastery)\b\s*:/gi, '');
+        cleaned = cleaned.replace(/:\s*\b(Beginner|Intermediate|Advanced|Mastery)\b/gi, '');
+
+        // Remove "Level X"
+        cleaned = cleaned.replace(/\bLevel\s+\d+\b/gi, '');
+
+        // Clean up resulting punctuation/spacing
+        return cleaned
+            .replace(/^:\s*/, '') // Leading colon
+            .replace(/:\s*$/, '') // Trailing colon
+            .replace(/\s+:\s+/g, ': ') // Fix spacing around colons
+            .replace(/\s+/g, ' ') // Collapse spaces
+            .replace(/\.\s*$/, '') // Trailing dot
             .trim();
     };
 
     const displayTitle = cleanTitle(course.title);
 
+    // Standardise instructor based on course description tag (added during generation)
+    const isGemma = course.description?.toLowerCase().includes('[gemma]');
+    const instructorName = isGemma ? "Gemma" : "Sarah";
+    const instructorPoster = isGemma ? "/gemma_host.png?v=2" : "/sarah_host.png?v=2";
+    const cleanDescription = course.description?.replace(/\[gemma\]/gi, '').replace(/\[sarah\]/gi, '').trim();
+
+    const lessonCount = course.course_topics.reduce((acc: number, t: any) => acc + (t.course_lessons?.length || 0), 0);
+    const priceDisplay = (course.price || 0) === 0 ? "Free" : `£${course.price}`;
+
     return (
-        <div className="min-h-screen bg-white font-sans selection:bg-violet-500/30 selection:text-violet-900">
+        <section className="min-h-screen flex flex-col bg-[#080810] font-sans selection:bg-[#4b98ad]/30 selection:text-[#4b98ad]">
+            {/* Client-side Utilities Hub */}
+            <div className="hidden">
+                <AutoVideoSync courseId={courseId} />
+                <ContextUpdater context={{
+                    courseId,
+                    courseTitle: displayTitle,
+                    moduleId: course.course_topics[0]?.id,
+                    moduleName: course.course_topics[0]?.title
+                }} />
+            </div>
 
             {/* --- PREMIUM HERO SECTION (Floating Card Style) --- */}
             {/* Added container wrapper to constrain width and standard spacing */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8">
+            <div className="mx-auto w-[95%] max-w-screen-2xl pt-24 pb-8">
                 <div className="relative bg-[#0F1117] text-white rounded-[2.5rem] p-8 md:p-12 lg:p-16 overflow-hidden shadow-2xl">
 
-                    {/* Dynamic Background Mesh (Contained within card) */}
+                    {/* Dynamic Background Mesh */}
                     <div className="absolute inset-0 pointer-events-none">
-                        <div className="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] bg-violet-600/20 rounded-full blur-[120px] mix-blend-screen animate-pulse" />
-                        <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-[100px] mix-blend-screen" />
-                        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.2] mix-blend-overlay" />
+                        <div className="absolute top-[-20%] right-[-10%] w-[700px] h-[700px] bg-[#4b98ad]/15 rounded-full blur-[120px]" />
+                        <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] bg-[#00FFB3]/8 rounded-full blur-[100px]" />
                     </div>
 
-                    <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
 
                         {/* Left Column: Content */}
-                        <div className="space-y-8">
+                        <div className="lg:col-span-8 space-y-8">
                             {/* Badges */}
                             <div className="flex flex-wrap gap-3">
-                                <span className="px-3 py-1 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 border border-violet-500/30 text-violet-300">
+                                <span className="px-3 py-1 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase bg-[#4b98ad]/15 border border-[#4b98ad]/30 text-[#4b98ad]">
                                     {course.difficulty_level || "Premium Course"}
                                 </span>
-                                <span className="px-3 py-1 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase bg-slate-800 border border-slate-700 text-slate-400">
-                                    {course.course_topics.length} Modules
+                                <span className="px-3 py-1 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase bg-white/5 border border-white/10 text-white/50">
+                                    {lessonCount} {lessonCount === 1 ? 'Byte' : 'Bytes'}
+                                </span>
+                                <span className="px-3 py-1 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase bg-[#00FFB3]/10 border border-[#00FFB3]/25 text-[#00FFB3]">
+                                    <Clock className="w-2.5 h-2.5 inline mr-1" />
+                                    15m / Byte
                                 </span>
                             </div>
 
                             {/* Title */}
-                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.1] text-balance">
+                            <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.1] line-clamp-2">
                                 {displayTitle}
                             </h1>
 
-                            <p className="text-lg text-slate-400 max-w-xl leading-relaxed">
-                                {course.description}
-                            </p>
+                            {cleanDescription?.split('\n').filter(Boolean).slice(0, 1).map((para: string, i: number) => (
+                                <p key={i} className="font-body text-white/60 text-base leading-relaxed line-clamp-2 max-w-xl">{para.trim()}</p>
+                            ))}
 
-                            {/* CTA Buttons */}
+                            {course.course_outcome && (
+                                <div className="bg-[#00FFB3]/8 border border-[#00FFB3]/20 rounded-2xl p-6 max-w-xl">
+                                    <div className="flex items-start gap-4">
+                                        <div className="mt-1 bg-[#00FFB3]/15 p-2 rounded-lg">
+                                            <CheckCircle2 className="w-5 h-5 text-[#00FFB3]" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-bold text-[#00FFB3] uppercase tracking-widest mb-1">After this course you can</p>
+                                            <p className="text-white/80 text-sm leading-relaxed font-medium">
+                                                {course.course_outcome}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="flex flex-col sm:flex-row gap-4 pt-4">
                                 {hasAccess && firstLessonId ? (
-                                    <Link href={`/courses/${courseId}/lessons/${firstLessonId}`} className="w-full sm:w-auto">
-                                        <Button className="h-14 px-8 rounded-full bg-white text-slate-900 hover:bg-slate-100 font-bold text-base transition-all w-full sm:w-auto">
-                                            <PlayCircle className="w-5 h-5 mr-2" />
-                                            Continue Learning
-                                        </Button>
-                                    </Link>
+                                    <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                                        {isCompleted ? (
+                                            <Link href={`/courses/${courseId}/complete`} className={cn(buttonVariants({ variant: "default" }), "h-14 px-8 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-900 font-bold text-base transition-all w-full sm:w-auto shadow-[0_0_20px_-5px_rgba(251,191,36,0.5)] border border-yellow-300/50")}>
+                                                <CheckCircle2 className="w-5 h-5 mr-2" />
+                                                View Certificate
+                                            </Link>
+                                        ) : (
+                                            <Link href={`/courses/${courseId}/lessons/${firstLessonId}`} className={cn(buttonVariants({ variant: "default" }), "h-14 px-8 rounded-full bg-white text-slate-900 hover:bg-slate-100 font-bold text-base transition-all w-full sm:w-auto")}>
+                                                <CirclePlay className="w-5 h-5 mr-2" />
+                                                Continue Learning
+                                            </Link>
+                                        )}
+                                    </div>
                                 ) : (
-                                    <Button className="h-14 px-8 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold text-base transition-all shadow-[0_0_30px_-5px_rgba(124,58,237,0.5)] w-full sm:w-auto border border-violet-500/50">
+                                    <Button className="h-14 px-8 rounded-full bg-[#4b98ad] hover:bg-[#8a7fee] text-[#080810] font-bold text-base transition-all shadow-[0_0_30px_-5px_rgba(155,143,255,0.4)] w-full sm:w-auto border-0">
                                         {(course.price || 0) > 0 ? (
                                             <>
                                                 <Lock className="w-5 h-5 mr-2" />
@@ -124,57 +264,44 @@ export default async function CourseOverviewPage(props: { params: Promise<{ cour
                                             </>
                                         ) : (
                                             <>
-                                                <PlayCircle className="w-5 h-5 mr-2" />
+                                                <CirclePlay className="w-5 h-5 mr-2" />
                                                 Start for Free
                                             </>
                                         )}
                                     </Button>
                                 )}
-                                <Button variant="outline" className="h-14 px-8 rounded-full border-white/10 hover:bg-white/5 text-slate-300 hover:text-white w-full sm:w-auto transition-colors">
+                                <Link href="#curriculum" className={cn(buttonVariants({ variant: "outline" }), "h-14 px-8 rounded-full border-white/10 hover:bg-white/5 text-slate-300 hover:text-white w-full sm:w-auto transition-colors")}>
                                     View Syllabus
-                                </Button>
+                                </Link>
                             </div>
                         </div>
 
-                        {/* Right Column: Visual / Stats Hud */}
-                        <div className="relative hidden lg:block">
-                            {/* Glass HUD Card */}
-                            <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
-                                {/* Floating Elements */}
-                                <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg transform rotate-12 z-20">
-                                    <BookOpen className="w-10 h-10 text-white" />
-                                </div>
+                        {/* Right Column: Course Intro Video */}
+                        <div className="relative hidden lg:block lg:col-span-4 h-full">
+                            <div className="relative w-full h-full rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-slate-900/50 aspect-video">
+                                <div className="relative w-full h-full">
+                                    <VoiceAvatar
+                                        src={course.intro_video_url}
+                                        poster={instructorPoster}
+                                        instructor={instructorName.toLowerCase() as any}
+                                        transparent={false}
+                                        controls={true}
+                                        overlayControls={true}
+                                        className="w-full h-full"
+                                    />
 
-                                <div className="space-y-8 divide-y divide-white/10">
-                                    <div className="space-y-2">
-                                        <div className="text-xs font-medium text-slate-500 uppercase tracking-widest">Pricing</div>
-                                        <div className="text-3xl font-mono text-white">
-                                            {(course.price || 0) === 0 ? "Free Access" : `£${course.price}`}
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4 pt-6">
-                                        <div>
-                                            <div className="text-xs font-medium text-slate-500 uppercase tracking-widest mb-1">Duration</div>
-                                            <div className="text-lg text-slate-200 font-semibold">Self-Paced</div>
-                                        </div>
-                                        <div>
-                                            <div className="text-xs font-medium text-slate-500 uppercase tracking-widest mb-1">Certificate</div>
-                                            <div className="text-lg text-emerald-400 font-semibold flex items-center gap-1">
-                                                Included <CheckCircle2 className="w-4 h-4" />
+                                    {/* Loading / Generating Overlay */}
+                                    {(!course.intro_video_url && course.intro_video_job_id) && (
+                                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-30 backdrop-blur-[2px]">
+                                            <div className="text-center p-6 bg-slate-900/90 rounded-2xl backdrop-blur-md border border-white/10 shadow-xl">
+                                                <div className="w-12 h-12 border-4 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto mb-4 shadow-[0_0_15px_rgba(139,92,246,0.5)]" />
+                                                <p className="text-white font-semibold text-lg">Creating Your Video</p>
+                                                <p className="text-sm text-violet-200/70 mt-2 max-w-[200px] mx-auto">
+                                                    {instructorName} is preparing the course introduction...
+                                                </p>
                                             </div>
                                         </div>
-                                    </div>
-
-                                    <div className="pt-6">
-                                        <div className="text-xs font-medium text-slate-500 uppercase tracking-widest mb-3">Hands-On Projects</div>
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-2 flex-1 bg-slate-800 rounded-full overflow-hidden">
-                                                <div className="h-full w-3/4 bg-cyan-500" />
-                                            </div>
-                                            <span className="text-xs text-cyan-400 font-mono">CODE-READY</span>
-                                        </div>
-                                    </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -183,47 +310,43 @@ export default async function CourseOverviewPage(props: { params: Promise<{ cour
             </div>
 
             {/* --- CONTENT SECTION --- */}
-            {/* Removed negative margin since we are now in a stacked card layout */}
-            <div className="relative z-10 max-w-7xl mx-auto px-6 pb-32 space-y-12">
+            <div suppressHydrationWarning className="relative z-10 mx-auto w-[95%] max-w-screen-2xl pb-32 space-y-12">
 
                 {/* Mobile Stats (Visible only on small screens) */}
-                <div className="lg:hidden grid grid-cols-2 gap-4">
-                    <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl text-center">
-                        <div className="text-xs text-slate-500 uppercase tracking-widest mb-1">Lessons</div>
-                        <div className="text-2xl font-bold text-white">{course.course_topics.reduce((acc: any, t: any) => acc + (t.course_lessons?.length || 0), 0)}</div>
-                    </div>
-                    <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl text-center">
-                        <div className="text-xs text-slate-500 uppercase tracking-widest mb-1">Price</div>
-                        <div className="text-2xl font-bold text-white">{(course.price || 0) === 0 ? "Free" : `£${course.price}`}</div>
-                    </div>
-                </div>
+                {/* Mobile Stats (Visible only on small screens) */}
+                <MobileStats lessonCount={lessonCount} priceDisplay={priceDisplay} />
 
                 {/* Topics List - Premium Redesign */}
-                <PremiumCurriculum course={course} hasAccess={hasAccess} />
+                <div id="curriculum" className="scroll-mt-32">
+                    <PremiumCurriculum
+                        course={course}
+                        hasAccess={hasAccess}
+                        completedLessons={completedLessonIds}
+                        completedQuizzes={passedQuizIds}
+                    />
+                </div>
 
                 {/* Subscription CTA Card - Only show if not admin */}
                 {!hasAccess && (
-                    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-cyan-900 to-blue-900 p-8 md:p-12 text-center border border-white/10 shadow-2xl">
+                    <div className="relative overflow-hidden rounded-3xl bg-[#0f0f1a] p-8 md:p-12 text-center border border-[#4b98ad]/20 shadow-2xl">
+                        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-[#4b98ad]/15 blur-[80px] rounded-full pointer-events-none" />
+                        <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-64 h-64 bg-[#00FFB3]/8 blur-[80px] rounded-full pointer-events-none" />
                         <div className="relative z-10 space-y-6">
-                            <h2 className="text-3xl font-bold text-white">Ready to start learning?</h2>
-                            <p className="text-cyan-100 max-w-xl mx-auto text-lg">
+                            <h2 className="text-3xl font-bold text-white tracking-tight">Ready to start learning?</h2>
+                            <p className="text-white/50 max-w-xl mx-auto text-lg">
                                 Get unlimited access to this course and 50+ others with our Pro subscription.
                             </p>
-                            <Button className="h-12 px-8 bg-white text-cyan-900 hover:bg-cyan-50 font-bold text-lg rounded-full">
+                            <Button className="h-12 px-8 bg-[#4b98ad] hover:bg-[#8a7fee] text-[#080810] font-bold text-base rounded-full border-0">
                                 Get All-Access Pass
                             </Button>
-                            <p className="text-xs text-cyan-200/60 mt-4">
+                            <p className="text-xs text-white/25 mt-4">
                                 Includes 7-day money back guarantee. Cancel anytime.
                             </p>
                         </div>
-
-                        {/* Decorative */}
-                        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-cyan-500/20 blur-[80px] rounded-full"></div>
-                        <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-64 h-64 bg-purple-500/20 blur-[80px] rounded-full"></div>
                     </div>
                 )}
 
             </div>
-        </div>
+        </section>
     );
 }

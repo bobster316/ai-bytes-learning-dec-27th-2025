@@ -1,0 +1,55 @@
+{
+  "course_id": 792,
+  "course_topic": "Introduction to Prompt Engineering",
+  "domain_history": [
+    "Sports",
+    "Culinary"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "calligrapher preparing ink"
+  ],
+  "used_image_urls": [
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774195536145-bjnhlfm-photorealistic%20close.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774195549667-em9h0l-computer%20code%20genera.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774195531564-o3hajg-magnifying%20glass%20exa.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774195632537-ineny6-a%20potter's%20hands%20car.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774195651225-jcp8ee-weaving%20loom%20closeup.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774195634485-jymn28-pottery%20wheel.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774195636697-bmj93l-calligraphy%20brush.jpeg"
+  ],
+  "used_video_urls": [
+    {
+      "query": "SCENE: A master calligrapher meticulously preparing their ink and brush before starting to write, va",
+      "url": "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/videos/veo-1774195743240-upk92.mp4",
+      "source": "veo-3.1"
+    }
+  ],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 0,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 0,
+    "type_cards": 0,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 2,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

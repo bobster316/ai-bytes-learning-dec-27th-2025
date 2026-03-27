@@ -1,0 +1,1446 @@
+
+> ai-bytes-learning@0.1.0 dev
+> next dev
+
+   ▲ Next.js 16.0.1 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.167:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1012ms
+ ○ Compiling / ...
+ GET / 200 in 3.6s (compile: 3.3s, render: 312ms)
+ GET / 200 in 105ms (compile: 6ms, render: 99ms)
+Fetching fresh news from RSS feeds
+Fetching from AI News...
+Fetching from VentureBeat AI...
+Fetching from TechCrunch AI...
+Fetching from The Verge AI...
+Fetching from Wired AI...
+Fetching from Ars Technica...
+Fetching from ZDNet AI...
+Fetching from MIT Tech Review...
+Fetching from Google AI Blog...
+Fetching from OpenAI Blog...
+Successfully fetched 20 items from TechCrunch AI
+Successfully fetched 12 items from AI News
+Successfully fetched 10 items from Wired AI
+Successfully fetched 10 items from The Verge AI
+Successfully fetched 20 items from Ars Technica
+Successfully fetched 10 items from MIT Tech Review
+Successfully fetched 7 items from VentureBeat AI
+Successfully fetched 20 items from ZDNet AI
+Total articles fetched: 109
+[Article 1] "How Amul is using AI dairy farming to put 36 million farmers first" - Image: https://www.artificialintelligence-news.com/wp-content/uploads/2025/08/ai-expo-banner-2025.png
+[Article 2] "VPN tricks and tips you didn't know you needed (but definitely do)" - Image: NONE
+[Article 3] "Hitachi bets on industrial expertise to win the physical AI race" - Image: https://www.artificialintelligence-news.com/wp-content/uploads/2026/01/image-3.png
+Mapped 30 articles
+After deduplication: 30 unique articles
+Found 2 articles
+Successfully cached 2 articles. Cache valid until 2026-02-23T09:40:12.877Z
+ GET /api/news 200 in 676ms (compile: 339ms, render: 337ms)
+ ✓ Compiled in 158ms
+ ✓ Compiled in 239ms
+ GET / 200 in 405ms (compile: 95ms, render: 310ms)
+Returning cached news data
+ GET /api/news 200 in 8ms (compile: 1850µs, render: 6ms)
+ GET / 200 in 98ms (compile: 5ms, render: 93ms)
+Returning cached news data
+ GET /api/news 200 in 6ms (compile: 2ms, render: 4ms)
+ POST /api/sterling/tts 200 in 1495ms (compile: 99ms, render: 1396ms)
+ ✓ Compiled in 195ms
+ GET / 200 in 314ms (compile: 76ms, render: 237ms)
+Returning cached news data
+ GET /api/news 200 in 8ms (compile: 1956µs, render: 6ms)
+ POST /api/sterling/tts 200 in 924ms (compile: 1666µs, render: 923ms)
+ ✓ Compiled in 139ms
+ ✓ Compiled in 138ms
+ GET / 200 in 304ms (compile: 79ms, render: 225ms)
+Fetching fresh news from RSS feeds
+Fetching from AI News...
+Fetching from VentureBeat AI...
+Fetching from TechCrunch AI...
+Fetching from The Verge AI...
+Fetching from Wired AI...
+Fetching from Ars Technica...
+Fetching from ZDNet AI...
+Fetching from MIT Tech Review...
+Fetching from Google AI Blog...
+Fetching from OpenAI Blog...
+Successfully fetched 10 items from The Verge AI
+Successfully fetched 20 items from TechCrunch AI
+Successfully fetched 20 items from Ars Technica
+Successfully fetched 10 items from Wired AI
+Successfully fetched 10 items from MIT Tech Review
+Successfully fetched 7 items from VentureBeat AI
+Successfully fetched 20 items from ZDNet AI
+Successfully fetched 12 items from AI News
+Total articles fetched: 109
+[Article 1] "How Amul is using AI dairy farming to put 36 million farmers first" - Image: https://www.artificialintelligence-news.com/wp-content/uploads/2025/08/ai-expo-banner-2025.png
+[Article 2] "VPN tricks and tips you didn't know you needed (but definitely do)" - Image: NONE
+[Article 3] "Hitachi bets on industrial expertise to win the physical AI race" - Image: https://www.artificialintelligence-news.com/wp-content/uploads/2025/08/ai-expo-banner-2025.png
+Mapped 30 articles
+After deduplication: 30 unique articles
+Found 2 articles
+Successfully cached 2 articles. Cache valid until 2026-02-23T10:18:56.249Z
+ GET /api/news 200 in 639ms (compile: 2ms, render: 637ms)
+ GET /categories/AI Product Development.png 404 in 561ms (compile: 494ms, render: 67ms)
+ POST /api/sterling/tts 200 in 1053ms (compile: 3ms, render: 1050ms)
+ GET / 200 in 95ms (compile: 5ms, render: 90ms)
+Returning cached news data
+ GET /api/news 200 in 10ms (compile: 1905µs, render: 8ms)
+ POST /api/sterling/tts 200 in 915ms (compile: 1606µs, render: 914ms)
+ GET /categories/AI Product Development.png 404 in 38ms (compile: 6ms, render: 32ms)
+ ✓ Compiled in 144ms
+ GET / 200 in 138ms (compile: 106ms, render: 33ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ ✓ Compiled in 136ms
+ GET / 200 in 306ms (compile: 71ms, render: 234ms)
+ GET /categories/AI Product Development.png 404 in 199ms (compile: 88ms, render: 112ms)
+Returning cached news data
+ GET /api/news 200 in 7ms (compile: 3ms, render: 4ms)
+ POST /api/sterling/tts 200 in 951ms (compile: 1767µs, render: 950ms)
+ ✓ Compiled in 155ms
+ GET / 200 in 310ms (compile: 83ms, render: 226ms)
+ GET /categories/AI Product Development.png 404 in 149ms (compile: 62ms, render: 87ms)
+Returning cached news data
+ GET /api/news 200 in 7ms (compile: 2ms, render: 5ms)
+ GET / 200 in 102ms (compile: 4ms, render: 98ms)
+ GET /categories/AI Product Development.png 404 in 40ms (compile: 7ms, render: 33ms)
+Returning cached news data
+ GET /api/news 200 in 8ms (compile: 1831µs, render: 7ms)
+ POST /api/sterling/tts 200 in 958ms (compile: 2ms, render: 956ms)
+ POST /api/sterling/tts 200 in 1207ms (compile: 1837µs, render: 1205ms)
+ POST /api/sterling/tts 200 in 1005ms (compile: 1724µs, render: 1003ms)
+ POST /api/sterling/tts 200 in 1347ms (compile: 1517µs, render: 1345ms)
+ GET / 200 in 91ms (compile: 4ms, render: 86ms)
+ GET /categories/AI Product Development.png 404 in 47ms (compile: 9ms, render: 38ms)
+Returning cached news data
+ GET /api/news 200 in 10ms (compile: 1986µs, render: 8ms)
+ GET / 200 in 84ms (compile: 3ms, render: 81ms)
+ GET /categories/AI Product Development.png 404 in 45ms (compile: 6ms, render: 39ms)
+Returning cached news data
+ GET /api/news 200 in 7ms (compile: 1805µs, render: 5ms)
+ POST /api/sterling/tts 200 in 1325ms (compile: 1630µs, render: 1324ms)
+ POST /api/sterling/tts 200 in 1045ms (compile: 1680µs, render: 1043ms)
+ POST /api/sterling/tts 200 in 1051ms (compile: 1961µs, render: 1049ms)
+ ✓ Compiled in 140ms
+ POST /api/sterling/tts 200 in 1024ms (compile: 2ms, render: 1022ms)
+ GET / 200 in 333ms (compile: 77ms, render: 256ms)
+Fetching fresh news from RSS feeds
+Fetching from AI News...
+Fetching from VentureBeat AI...
+Fetching from TechCrunch AI...
+Fetching from The Verge AI...
+Fetching from Wired AI...
+Fetching from Ars Technica...
+Fetching from ZDNet AI...
+Fetching from MIT Tech Review...
+Fetching from Google AI Blog...
+Fetching from OpenAI Blog...
+Successfully fetched 20 items from TechCrunch AI
+Successfully fetched 10 items from Wired AI
+Successfully fetched 12 items from AI News
+Successfully fetched 10 items from The Verge AI
+Successfully fetched 10 items from MIT Tech Review
+Successfully fetched 7 items from VentureBeat AI
+Successfully fetched 20 items from Ars Technica
+Successfully fetched 20 items from ZDNet AI
+Total articles fetched: 109
+[Article 1] "This 3-in-1 multi-charger erases desktop cord clutter - and looks great while doing it" - Image: NONE
+[Article 2] "I made my home smarter with these 10 cheap gadgets - here's how" - Image: NONE
+[Article 3] "Mastercard’s AI payment demo points to agent-led commerce" - Image: https://www.artificialintelligence-news.com/wp-content/uploads/2025/08/ai-expo-banner-2025.png
+Mapped 30 articles
+After deduplication: 30 unique articles
+Found 2 articles
+Successfully cached 2 articles. Cache valid until 2026-02-23T11:31:44.201Z
+ GET /api/news 200 in 622ms (compile: 1684µs, render: 620ms)
+ POST /api/sterling/tts 200 in 1054ms (compile: 1693µs, render: 1052ms)
+ ✓ Compiled in 139ms
+ ✓ Compiled in 134ms
+ ✓ Compiled in 125ms
+ GET / 200 in 284ms (compile: 74ms, render: 210ms)
+Fetching fresh news from RSS feeds
+Fetching from AI News...
+Fetching from VentureBeat AI...
+Fetching from TechCrunch AI...
+Fetching from The Verge AI...
+Fetching from Wired AI...
+Fetching from Ars Technica...
+Fetching from ZDNet AI...
+Fetching from MIT Tech Review...
+Fetching from Google AI Blog...
+Fetching from OpenAI Blog...
+Successfully fetched 10 items from The Verge AI
+Successfully fetched 20 items from TechCrunch AI
+Successfully fetched 10 items from Wired AI
+Successfully fetched 12 items from AI News
+Successfully fetched 20 items from Ars Technica
+Successfully fetched 10 items from MIT Tech Review
+Successfully fetched 7 items from VentureBeat AI
+Successfully fetched 20 items from ZDNet AI
+Total articles fetched: 109
+[Article 1] "How many AIs does it take to read a PDF?" - Image: https://platform.theverge.com/wp-content/uploads/sites/2/2026/02/PDFs-AI-still.jpg?quality=90&strip=all&crop=0,0,100,100
+[Article 2] "This 3-in-1 multi-charger erases desktop cord clutter - and looks great while doing it" - Image: NONE
+[Article 3] "I made my home smarter with these 10 cheap gadgets - here's how" - Image: NONE
+Mapped 30 articles
+After deduplication: 30 unique articles
+Found 4 articles
+Successfully cached 4 articles. Cache valid until 2026-02-23T12:47:59.249Z
+ GET /api/news 200 in 829ms (compile: 1867µs, render: 827ms)
+ GET /api/news/image?url=https%3A%2F%2Fplatform.theverge.com%2Fwp-content%2Fuploads%2Fsites%2F2%2F2026%2F02%2FPDFs-AI-still.jpg%3Fquality%3D90%26strip%3Dall%26crop%3D0%2C0%2C100%2C100 200 in 183ms (compile: 81ms, render: 102ms)
+ GET /api/news/image?url=https%3A%2F%2Fwp.technologyreview.com%2Fwp-content%2Fuploads%2F2026%2F02%2FLPL_DSF7601.jpg%3Fw%3D2701 200 in 203ms (compile: 88ms, render: 115ms)
+ POST /api/sterling/tts 200 in 1632ms (compile: 2ms, render: 1630ms)
+ POST /api/sterling/tts 200 in 2.1s (compile: 2ms, render: 2.1s)
+ POST /api/sterling/tts 200 in 1014ms (compile: 1967µs, render: 1012ms)
+ ✓ Compiled in 6ms
+ ✓ Compiled in 136ms
+ POST /api/sterling/tts 200 in 1768ms (compile: 2ms, render: 1765ms)
+ POST /api/sterling/tts 200 in 1503ms (compile: 2ms, render: 1501ms)
+ POST /api/sterling/tts 200 in 1278ms (compile: 1767µs, render: 1276ms)
+ GET / 200 in 300ms (compile: 77ms, render: 223ms)
+ GET / 200 in 111ms (compile: 4ms, render: 107ms)
+ GET / 200 in 98ms (compile: 4ms, render: 94ms)
+ GET / 200 in 128ms (compile: 3ms, render: 125ms)
+Returning cached news data
+ GET /api/news 200 in 8ms (compile: 1796µs, render: 7ms)
+ POST /api/sterling/tts 200 in 1152ms (compile: 3ms, render: 1150ms)
+ POST /api/sterling/tts 200 in 1258ms (compile: 1675µs, render: 1256ms)
+ POST /api/sterling/tts 200 in 1036ms (compile: 2ms, render: 1034ms)
+ POST /api/sterling/tts 200 in 1240ms (compile: 2ms, render: 1238ms)
+ GET /categories/AI Product Development.png 404 in 219ms (compile: 89ms, render: 130ms)
+ ✓ Compiled in 135ms
+ ✓ Compiled in 225ms
+ GET / 200 in 114ms (compile: 82ms, render: 32ms)
+ GET / 200 in 28ms (compile: 6ms, render: 22ms)
+ ✓ Compiled in 136ms
+ GET / 200 in 391ms (compile: 79ms, render: 311ms)
+ GET / 200 in 125ms (compile: 3ms, render: 122ms)
+Fetching fresh news from RSS feeds
+Fetching from AI News...
+Fetching from VentureBeat AI...
+Fetching from TechCrunch AI...
+Fetching from The Verge AI...
+Fetching from Wired AI...
+Fetching from Ars Technica...
+Fetching from ZDNet AI...
+Fetching from MIT Tech Review...
+Fetching from Google AI Blog...
+Fetching from OpenAI Blog...
+Successfully fetched 10 items from The Verge AI
+Successfully fetched 20 items from TechCrunch AI
+Successfully fetched 10 items from Wired AI
+Successfully fetched 20 items from Ars Technica
+Successfully fetched 7 items from VentureBeat AI
+Successfully fetched 10 items from MIT Tech Review
+Successfully fetched 12 items from AI News
+Successfully fetched 20 items from ZDNet AI
+Total articles fetched: 109
+[Article 1] "The Download: Chicago’s surveillance network, and building better bras" - Image: https://s.w.org/images/core/emoji/16.0.1/72x72/2601.png
+[Article 2] "7 AI coding techniques that quietly make you elite" - Image: NONE
+[Article 3] "How many AIs does it take to read a PDF?" - Image: https://platform.theverge.com/wp-content/uploads/sites/2/2026/02/PDFs-AI-still.jpg?quality=90&strip=all&crop=0,0,100,100
+Mapped 30 articles
+After deduplication: 30 unique articles
+Found 4 articles
+Successfully cached 4 articles. Cache valid until 2026-02-23T14:07:51.954Z
+ GET /api/news 200 in 418ms (compile: 1701µs, render: 416ms)
+ GET /api/news/image?url=https%3A%2F%2Fmedia.wired.com%2Fphotos%2F699879d490ce1a01f1ba1ac0%2Fmaster%2Fpass%2FGettyImages-2250413446.jpg 200 in 110ms (compile: 1792µs, render: 108ms)
+ GET / 200 in 100ms (compile: 4ms, render: 95ms)
+Returning cached news data
+ GET /api/news 200 in 10ms (compile: 1886µs, render: 8ms)
+ ✓ Compiled in 145ms
+ GET / 200 in 331ms (compile: 80ms, render: 251ms)
+Returning cached news data
+ GET /api/news 200 in 7ms (compile: 2ms, render: 5ms)
+ POST /api/sterling/tts 200 in 1359ms (compile: 2ms, render: 1357ms)
+ POST /api/sterling/tts 200 in 1083ms (compile: 1888µs, render: 1081ms)
+ GET /categories/AI Product Development.png 404 in 264ms (compile: 110ms, render: 154ms)
+ ✓ Compiled in 143ms
+ ✓ Compiled in 142ms
+ GET / 200 in 295ms (compile: 78ms, render: 217ms)
+ GET /categories/AI Product Development.png 404 in 179ms (compile: 62ms, render: 117ms)
+Returning cached news data
+ GET /api/news 200 in 7ms (compile: 3ms, render: 4ms)
+ POST /api/sterling/tts 200 in 1124ms (compile: 1682µs, render: 1122ms)
+ POST /api/sterling/tts 200 in 2.0s (compile: 1954µs, render: 2.0s)
+ POST /api/sterling/tts 200 in 966ms (compile: 1867µs, render: 964ms)
+ POST /api/sterling/tts 200 in 1168ms (compile: 1406µs, render: 1166ms)
+ POST /api/sterling/tts 200 in 1322ms (compile: 3ms, render: 1320ms)
+ POST /api/sterling/tts 200 in 1099ms (compile: 1975µs, render: 1097ms)
+ POST /api/sterling/tts 200 in 1194ms (compile: 1536µs, render: 1193ms)
+ POST /api/sterling/tts 200 in 1536ms (compile: 1416µs, render: 1534ms)
+ POST /api/sterling/tts 200 in 1572ms (compile: 1840µs, render: 1570ms)
+ ✓ Compiled in 134ms
+ ✓ Compiled in 189ms
+ GET /categories/AI Product Development.png 500 in 179ms (compile: 57ms, render: 123ms)
+ GET / 500 in 601ms (compile: 99ms, render: 502ms)
+ GET /categories/AI Product Development.png 500 in 61ms (compile: 7ms, render: 54ms)
+ ✓ Compiled in 149ms
+ GET / 500 in 350ms (compile: 91ms, render: 259ms)
+ GET /categories/AI Product Development.png 500 in 177ms (compile: 59ms, render: 117ms)
+ ✓ Compiled in 133ms
+ GET / 500 in 339ms (compile: 78ms, render: 261ms)
+ GET /categories/AI Product Development.png 500 in 175ms (compile: 53ms, render: 122ms)
+ ✓ Compiled in 143ms
+ GET / 500 in 339ms (compile: 78ms, render: 260ms)
+ GET /categories/AI Product Development.png 500 in 203ms (compile: 62ms, render: 142ms)
+ ✓ Compiled in 126ms
+ GET / 500 in 361ms (compile: 87ms, render: 274ms)
+ GET /categories/AI Product Development.png 500 in 203ms (compile: 73ms, render: 130ms)
+ ✓ Compiled in 146ms
+ GET / 500 in 380ms (compile: 89ms, render: 291ms)
+ GET /categories/AI Product Development.png 500 in 200ms (compile: 66ms, render: 134ms)
+ ✓ Compiled in 150ms
+ GET / 200 in 374ms (compile: 89ms, render: 285ms)
+ GET /categories/AI Product Development.png 404 in 244ms (compile: 78ms, render: 166ms)
+Fetching fresh news from RSS feeds
+Fetching from AI News...
+Fetching from VentureBeat AI...
+Fetching from TechCrunch AI...
+Fetching from The Verge AI...
+Fetching from Wired AI...
+Fetching from Ars Technica...
+Fetching from ZDNet AI...
+Fetching from MIT Tech Review...
+Fetching from Google AI Blog...
+Fetching from OpenAI Blog...
+Successfully fetched 10 items from The Verge AI
+Successfully fetched 20 items from TechCrunch AI
+Successfully fetched 10 items from Wired AI
+Successfully fetched 20 items from Ars Technica
+Successfully fetched 12 items from AI News
+Successfully fetched 10 items from MIT Tech Review
+Successfully fetched 7 items from VentureBeat AI
+Successfully fetched 20 items from ZDNet AI
+Total articles fetched: 109
+[Article 1] "I tried the first car charger with Apple and Google's location tracking, and it's the real deal" - Image: NONE
+[Article 2] "Don't buy the wrong touchscreen gloves this winter - here's the one I recommend most" - Image: NONE
+[Article 3] "Defense Secretary summons Anthropic’s Amodei over military use of Claude" - Image: NONE
+Mapped 30 articles
+After deduplication: 30 unique articles
+Found 3 articles
+Successfully cached 3 articles. Cache valid until 2026-02-23T15:04:28.934Z
+ GET /api/news 200 in 340ms (compile: 3ms, render: 337ms)
+ GET /api/news/image?url=https%3A%2F%2Fplatform.theverge.com%2Fwp-content%2Fuploads%2Fsites%2F2%2F2026%2F02%2FPDFs-AI-still.jpg%3Fquality%3D90%26strip%3Dall%26crop%3D0%2C0%2C100%2C100 200 in 60ms (compile: 2ms, render: 58ms)
+ GET /api/news/image?url=https%3A%2F%2Fwp.technologyreview.com%2Fwp-content%2Fuploads%2F2026%2F02%2FLPL_DSF7601.jpg%3Fw%3D2701 200 in 75ms (compile: 8ms, render: 67ms)
+ ✓ Compiled in 7ms
+ GET / 200 in 489ms (compile: 174ms, render: 314ms)
+ GET / 200 in 444ms (compile: 155ms, render: 289ms)
+ GET /categories/AI Product Development.png 404 in 282ms (compile: 75ms, render: 206ms)
+Returning cached news data
+ GET /api/news 200 in 18ms (compile: 12ms, render: 6ms)
+ ✓ Compiled in 167ms
+ GET / 200 in 177ms (compile: 150ms, render: 26ms)
+ GET /categories/AI Product Development.png 404 in 142ms (compile: 34ms, render: 109ms)
+ GET / 200 in 27ms (compile: 9ms, render: 18ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 19ms (compile: 3ms, render: 16ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 20ms (compile: 3ms, render: 17ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 31ms (compile: 3ms, render: 28ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 15ms (compile: 2ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 22ms (compile: 3ms, render: 19ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 25ms (compile: 4ms, render: 22ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 5ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 15ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 4ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 18ms (compile: 3ms, render: 16ms)
+ GET / 200 in 24ms (compile: 3ms, render: 21ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 47ms (compile: 3ms, render: 44ms)
+ GET / 200 in 18ms (compile: 4ms, render: 14ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 14ms (compile: 2ms, render: 12ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 2ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 15ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 24ms (compile: 3ms, render: 21ms)
+ GET / 200 in 22ms (compile: 4ms, render: 17ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 17ms (compile: 4ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 20ms (compile: 2ms, render: 18ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 22ms (compile: 3ms, render: 19ms)
+ GET / 200 in 18ms (compile: 3ms, render: 15ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 27ms (compile: 3ms, render: 24ms)
+ GET / 200 in 18ms (compile: 3ms, render: 15ms)
+ GET / 200 in 24ms (compile: 4ms, render: 20ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 18ms (compile: 2ms, render: 16ms)
+ GET / 200 in 18ms (compile: 3ms, render: 15ms)
+ GET / 200 in 17ms (compile: 2ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 24ms (compile: 3ms, render: 21ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 18ms (compile: 3ms, render: 15ms)
+ GET / 200 in 17ms (compile: 3ms, render: 15ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 27ms (compile: 3ms, render: 24ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 15ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 18ms (compile: 3ms, render: 15ms)
+ GET / 200 in 23ms (compile: 3ms, render: 20ms)
+ GET / 200 in 55ms (compile: 3ms, render: 52ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 17ms (compile: 2ms, render: 14ms)
+ GET / 200 in 18ms (compile: 3ms, render: 15ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 426ms (compile: 144ms, render: 282ms)
+ GET / 200 in 407ms (compile: 147ms, render: 260ms)
+ GET /categories/AI Product Development.png 404 in 254ms (compile: 123ms, render: 131ms)
+Fetching fresh news from RSS feeds
+Fetching from AI News...
+Fetching from VentureBeat AI...
+Fetching from TechCrunch AI...
+Fetching from The Verge AI...
+Fetching from Wired AI...
+Fetching from Ars Technica...
+Fetching from ZDNet AI...
+Fetching from MIT Tech Review...
+Fetching from Google AI Blog...
+Fetching from OpenAI Blog...
+Successfully fetched 10 items from The Verge AI
+Successfully fetched 20 items from TechCrunch AI
+Successfully fetched 10 items from Wired AI
+Successfully fetched 12 items from AI News
+Successfully fetched 10 items from MIT Tech Review
+Successfully fetched 7 items from VentureBeat AI
+Successfully fetched 20 items from Ars Technica
+Successfully fetched 20 items from ZDNet AI
+Total articles fetched: 109
+[Article 1] "5 days left to lock in the lowest TechCrunch Disrupt 2026 ticket rates" - Image: NONE
+[Article 2] "AI project stalled? Blame your outdated, fragmented workflow - and redesign it now" - Image: NONE
+[Article 3] "How AI agents could destroy the economy" - Image: NONE
+Mapped 30 articles
+After deduplication: 30 unique articles
+Found 3 articles
+Successfully cached 3 articles. Cache valid until 2026-02-23T15:39:14.530Z
+ GET /api/news 200 in 800ms (compile: 57ms, render: 743ms)
+ ✓ Compiled in 120ms
+ GET / 200 in 305ms (compile: 92ms, render: 212ms)
+ GET / 200 in 118ms (compile: 3ms, render: 115ms)
+ GET / 200 in 121ms (compile: 5ms, render: 116ms)
+Fetching fresh news from RSS feeds
+Fetching from AI News...
+Fetching from VentureBeat AI...
+Fetching from TechCrunch AI...
+Fetching from The Verge AI...
+Fetching from Wired AI...
+Fetching from Ars Technica...
+Fetching from ZDNet AI...
+Fetching from MIT Tech Review...
+Fetching from Google AI Blog...
+Fetching from OpenAI Blog...
+Successfully fetched 20 items from TechCrunch AI
+Successfully fetched 10 items from The Verge AI
+Successfully fetched 10 items from Wired AI
+Successfully fetched 12 items from AI News
+Successfully fetched 10 items from MIT Tech Review
+Successfully fetched 7 items from VentureBeat AI
+Successfully fetched 20 items from Ars Technica
+Successfully fetched 20 items from ZDNet AI
+Total articles fetched: 109
+[Article 1] "How to set up Private DNS mode on your iPhone - and why you should do it ASAP" - Image: NONE
+[Article 2] "This low-cost networking option can seriously improve your internet - and it's easy to set up" - Image: NONE
+[Article 3] "Samsung Galaxy S26 Ultra vs. S25 Ultra: My concerns as a longtime Galaxy user" - Image: NONE
+Mapped 30 articles
+After deduplication: 30 unique articles
+Found 3 articles
+Successfully cached 3 articles. Cache valid until 2026-02-23T16:17:33.800Z
+ GET /api/news 200 in 832ms (compile: 2ms, render: 830ms)
+ POST /api/sterling/tts 200 in 1312ms (compile: 24ms, render: 1288ms)
+ POST /api/sterling/reply 200 in 12.4s (compile: 633ms, render: 11.7s)
+ POST /api/sterling/tts 200 in 2.2s (compile: 1905µs, render: 2.2s)
+ POST /api/sterling/reply 200 in 2.7s (compile: 1866µs, render: 2.7s)
+ POST /api/sterling/tts 200 in 1344ms (compile: 2ms, render: 1342ms)
+ POST /api/sterling/reply 200 in 7.2s (compile: 3ms, render: 7.2s)
+ POST /api/sterling/tts 200 in 1953ms (compile: 1484µs, render: 1951ms)
+ ✓ Compiled in 139ms
+ GET / 200 in 292ms (compile: 85ms, render: 206ms)
+Returning cached news data
+ GET /api/news 200 in 9ms (compile: 1609µs, render: 7ms)
+ POST /api/sterling/tts 200 in 1096ms (compile: 1591µs, render: 1095ms)
+ POST /api/sterling/reply 200 in 1140ms (compile: 79ms, render: 1061ms)
+ POST /api/sterling/tts 200 in 1248ms (compile: 1680µs, render: 1246ms)
+ ✓ Compiled in 147ms
+ ✓ Compiled in 156ms
+ ✓ Compiled in 177ms
+ ✓ Compiled in 139ms
+ GET / 200 in 278ms (compile: 81ms, render: 197ms)
+Returning cached news data
+ GET /api/news 200 in 8ms (compile: 1621µs, render: 7ms)
+ ✓ Compiled in 157ms
+ ✓ Compiled in 169ms
+ GET / 200 in 284ms (compile: 83ms, render: 201ms)
+Returning cached news data
+ GET /api/news 200 in 8ms (compile: 1730µs, render: 7ms)
+ GET / 200 in 89ms (compile: 3ms, render: 86ms)
+Returning cached news data
+ GET /api/news 200 in 6ms (compile: 1775µs, render: 5ms)
+ ✓ Compiled in 156ms
+ ✓ Compiled in 203ms
+ ✓ Compiled in 182ms
+ ✓ Compiled in 146ms
+ GET / 200 in 283ms (compile: 83ms, render: 200ms)
+Fetching fresh news from RSS feeds
+Fetching from AI News...
+Fetching from VentureBeat AI...
+Fetching from TechCrunch AI...
+Fetching from The Verge AI...
+Fetching from Wired AI...
+Fetching from Ars Technica...
+Fetching from ZDNet AI...
+Fetching from MIT Tech Review...
+Fetching from Google AI Blog...
+Fetching from OpenAI Blog...
+Successfully fetched 20 items from TechCrunch AI
+Successfully fetched 10 items from The Verge AI
+Successfully fetched 20 items from Ars Technica
+Successfully fetched 10 items from Wired AI
+Successfully fetched 12 items from AI News
+Successfully fetched 10 items from MIT Tech Review
+Successfully fetched 7 items from VentureBeat AI
+Successfully fetched 20 items from ZDNet AI
+Total articles fetched: 109
+[Article 1] "How to FaceTime on Android (or your Windows PC) - no third-party app needed" - Image: NONE
+[Article 2] "If Big Tech cared about fighting AI slop, it wouldn’t be drowning us in it" - Image: https://platform.theverge.com/wp-content/uploads/sites/2/2025/05/STKS511_AI_SLOP_A.jpg?quality=90&strip=all&crop=0,0,100,100
+[Article 3] "10 cheap gadgets that seriously upgraded my smart home (and are easy to install)" - Image: NONE
+Mapped 30 articles
+After deduplication: 30 unique articles
+Found 3 articles
+Successfully cached 3 articles. Cache valid until 2026-02-23T16:51:48.861Z
+ GET /api/news 200 in 626ms (compile: 3ms, render: 623ms)
+ GET /api/news/image?url=https%3A%2F%2Fplatform.theverge.com%2Fwp-content%2Fuploads%2Fsites%2F2%2F2025%2F05%2FSTKS511_AI_SLOP_A.jpg%3Fquality%3D90%26strip%3Dall%26crop%3D0%2C0%2C100%2C100 200 in 92ms (compile: 23ms, render: 69ms)
+ GET / 200 in 178ms (compile: 149ms, render: 28ms)
+ GET / 200 in 17ms (compile: 3ms, render: 15ms)
+ ✓ Compiled in 141ms
+ GET / 200 in 159ms (compile: 130ms, render: 28ms)
+ GET / 200 in 19ms (compile: 3ms, render: 16ms)
+ GET / 200 in 32ms (compile: 3ms, render: 28ms)
+ GET / 200 in 34ms (compile: 6ms, render: 28ms)
+ GET / 200 in 41ms (compile: 24ms, render: 17ms)
+ GET / 200 in 21ms (compile: 4ms, render: 17ms)
+ GET / 200 in 24ms (compile: 3ms, render: 21ms)
+ GET / 200 in 31ms (compile: 5ms, render: 26ms)
+ GET / 200 in 76ms (compile: 5ms, render: 72ms)
+ GET /categories/AI Product Development.png 404 in 223ms (compile: 116ms, render: 108ms)
+ GET / 200 in 269ms (compile: 6ms, render: 264ms)
+ GET / 200 in 53ms (compile: 6ms, render: 48ms)
+ GET / 200 in 50ms (compile: 4ms, render: 47ms)
+ GET / 200 in 86ms (compile: 4ms, render: 82ms)
+ GET / 200 in 47ms (compile: 3ms, render: 44ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 12ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 14ms)
+ GET / 200 in 16ms (compile: 2ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 19ms (compile: 3ms, render: 16ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 15ms (compile: 2ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 22ms (compile: 3ms, render: 19ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 22ms (compile: 3ms, render: 19ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 15ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 2ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 25ms (compile: 3ms, render: 22ms)
+ GET / 200 in 20ms (compile: 3ms, render: 17ms)
+ GET / 200 in 18ms (compile: 3ms, render: 15ms)
+ GET / 200 in 19ms (compile: 3ms, render: 15ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 12ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 15ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 23ms (compile: 3ms, render: 20ms)
+ GET / 200 in 16ms (compile: 2ms, render: 14ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 14ms)
+ GET / 200 in 18ms (compile: 3ms, render: 15ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 18ms (compile: 3ms, render: 16ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 18ms (compile: 4ms, render: 15ms)
+ GET / 200 in 27ms (compile: 3ms, render: 25ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 15ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 14ms)
+ GET / 200 in 17ms (compile: 2ms, render: 15ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 12ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 31ms (compile: 3ms, render: 27ms)
+ GET / 200 in 21ms (compile: 3ms, render: 18ms)
+ GET / 200 in 25ms (compile: 5ms, render: 20ms)
+ GET / 200 in 20ms (compile: 3ms, render: 17ms)
+ GET / 200 in 16ms (compile: 2ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 12ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 18ms (compile: 3ms, render: 15ms)
+ GET / 200 in 18ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 2ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 26ms (compile: 3ms, render: 23ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 17ms (compile: 2ms, render: 14ms)
+ GET / 200 in 16ms (compile: 2ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 15ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 19ms (compile: 6ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 25ms (compile: 3ms, render: 22ms)
+ GET / 200 in 17ms (compile: 2ms, render: 15ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 18ms (compile: 3ms, render: 15ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 15ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 24ms (compile: 3ms, render: 21ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 12ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ ✓ Compiled in 123ms
+ GET / 200 in 107ms (compile: 85ms, render: 22ms)
+ GET /categories/AI Product Development.png 404 in 127ms (compile: 40ms, render: 86ms)
+ GET / 200 in 131ms (compile: 97ms, render: 34ms)
+ GET / 200 in 20ms (compile: 3ms, render: 17ms)
+ GET / 200 in 19ms (compile: 3ms, render: 16ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 15ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 18ms (compile: 3ms, render: 14ms)
+ GET / 200 in 18ms (compile: 3ms, render: 15ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 19ms (compile: 3ms, render: 16ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 14ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 20ms (compile: 2ms, render: 18ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 14ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 19ms (compile: 3ms, render: 15ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 25ms (compile: 2ms, render: 22ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 14ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 18ms (compile: 2ms, render: 16ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 24ms (compile: 3ms, render: 21ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 14ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 24ms (compile: 2ms, render: 22ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 12ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 17ms (compile: 2ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 12ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 24ms (compile: 2ms, render: 22ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 14ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 12ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 14ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 15ms (compile: 2ms, render: 12ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 24ms (compile: 2ms, render: 21ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 14ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 12ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 17ms (compile: 2ms, render: 14ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 24ms (compile: 3ms, render: 22ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 18ms (compile: 2ms, render: 16ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 24ms (compile: 3ms, render: 21ms)
+ GET / 200 in 18ms (compile: 3ms, render: 15ms)
+ GET / 200 in 15ms (compile: 3ms, render: 12ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 14ms)
+ GET / 200 in 20ms (compile: 3ms, render: 17ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 17ms (compile: 3ms, render: 14ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 2ms, render: 13ms)
+ GET / 200 in 16ms (compile: 3ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 19ms (compile: 3ms, render: 16ms)
+ GET / 200 in 24ms (compile: 2ms, render: 22ms)
+ GET / 200 in 16ms (compile: 3ms, render: 14ms)
+ GET / 200 in 15ms (compile: 2ms, render: 13ms)
+ GET / 200 in 15ms (compile: 2ms, render: 12ms)
+ GET / 200 in 15ms (compile: 3ms, render: 13ms)
+ GET / 200 in 217ms (compile: 4ms, render: 214ms)
+Fetching fresh news from RSS feeds
+Fetching from AI News...
+Fetching from VentureBeat AI...
+Fetching from TechCrunch AI...
+Fetching from The Verge AI...
+Fetching from Wired AI...
+Fetching from Ars Technica...
+Fetching from ZDNet AI...
+Fetching from MIT Tech Review...
+Fetching from Google AI Blog...
+Fetching from OpenAI Blog...
+Successfully fetched 12 items from AI News
+Successfully fetched 20 items from TechCrunch AI
+Successfully fetched 10 items from The Verge AI
+Successfully fetched 20 items from Ars Technica
+Successfully fetched 10 items from Wired AI
+Successfully fetched 10 items from MIT Tech Review
+Successfully fetched 7 items from VentureBeat AI
+Successfully fetched 20 items from ZDNet AI
+Total articles fetched: 109
+[Article 1] "Google Pixel 10a vs. Pixel 10: I compared the two midrange models, and here's my choice" - Image: NONE
+[Article 2] "How to FaceTime on Android (or your Windows PC) - no third-party app needed" - Image: NONE
+[Article 3] "If Big Tech cared about fighting AI slop, it wouldn’t be drowning us in it" - Image: https://platform.theverge.com/wp-content/uploads/sites/2/2025/05/STKS511_AI_SLOP_A.jpg?quality=90&strip=all&crop=0,0,100,100
+Mapped 30 articles
+After deduplication: 30 unique articles
+Found 3 articles
+Successfully cached 3 articles. Cache valid until 2026-02-23T17:15:46.307Z
+ GET /api/news 200 in 880ms (compile: 48ms, render: 831ms)
+ POST /api/sterling/tts 200 in 1842ms (compile: 25ms, render: 1817ms)
+ POST /api/sterling/reply 200 in 1096ms (compile: 72ms, render: 1023ms)
+ POST /api/sterling/tts 200 in 1136ms (compile: 1392µs, render: 1134ms)
+ POST /api/sterling/reply 200 in 892ms (compile: 1783µs, render: 891ms)
+ POST /api/sterling/tts 200 in 1751ms (compile: 1404µs, render: 1749ms)
+ ✓ Compiled in 150ms
+ GET /categories/AI Product Development.png 404 in 42ms (compile: 6ms, render: 35ms)
+ GET /courses 200 in 1391ms (compile: 798ms, render: 593ms)
+ ✓ Compiled in 182ms
+ ✓ Compiled in 169ms
+ GET /courses 200 in 476ms (compile: 91ms, render: 384ms)
+ GET /mastery 200 in 429ms (compile: 410ms, render: 19ms)
+ GET /api/user/mastery?userId=6838916b-b514-4066-ad38-df2743a6793b 200 in 580ms (compile: 218ms, render: 363ms)
+ GET /pricing 200 in 434ms (compile: 409ms, render: 26ms)
+ POST /api/sterling/tts 200 in 1255ms (compile: 1575µs, render: 1254ms)
+ POST /api/sterling/reply 200 in 1069ms (compile: 2ms, render: 1066ms)
+ POST /api/sterling/tts 200 in 1461ms (compile: 1516µs, render: 1459ms)
+ ✓ Compiled in 125ms
+ ✓ Compiled in 151ms
+ ✓ Compiled in 156ms
+ GET /pricing 200 in 385ms (compile: 137ms, render: 248ms)
+ ✓ Compiled in 208ms
+ ✓ Compiled in 138ms
+ GET /pricing 200 in 243ms (compile: 78ms, render: 165ms)
+ GET / 200 in 118ms (compile: 98ms, render: 21ms)
+Fetching fresh news from RSS feeds
+Fetching from AI News...
+Fetching from VentureBeat AI...
+Fetching from TechCrunch AI...
+Fetching from The Verge AI...
+Fetching from Wired AI...
+Fetching from Ars Technica...
+Fetching from ZDNet AI...
+Fetching from MIT Tech Review...
+Fetching from Google AI Blog...
+Fetching from OpenAI Blog...
+Successfully fetched 10 items from The Verge AI
+Successfully fetched 20 items from TechCrunch AI
+Successfully fetched 12 items from AI News
+Successfully fetched 10 items from Wired AI
+Successfully fetched 20 items from Ars Technica
+Successfully fetched 7 items from VentureBeat AI
+Successfully fetched 10 items from MIT Tech Review
+Successfully fetched 20 items from ZDNet AI
+Total articles fetched: 109
+[Article 1] "This hub-free smart plug is the best option for most homes (and it's only $20)" - Image: NONE
+[Article 2] "Oura Ring 3 vs. Oura Ring 4: I've tested both and this is the model you should buy" - Image: NONE
+[Article 3] "OpenAI calls in the consultants for its enterprise push" - Image: NONE
+Mapped 30 articles
+After deduplication: 30 unique articles
+Found 2 articles
+Successfully cached 2 articles. Cache valid until 2026-02-23T19:02:43.444Z
+ GET /api/news 200 in 677ms (compile: 2ms, render: 675ms)
+ GET /courses 200 in 306ms (compile: 17ms, render: 289ms)
+ GET /mastery 200 in 30ms (compile: 15ms, render: 15ms)
+ GET /api/user/mastery?userId=6838916b-b514-4066-ad38-df2743a6793b 200 in 577ms (compile: 1646µs, render: 575ms)
+ GET /admin 200 in 459ms (compile: 437ms, render: 22ms)
+ GET /admin/courses 200 in 602ms (compile: 581ms, render: 21ms)
+💳 Checking HeyGen GenCredits...
+[API DEBUG] Starting Admin Course List fetch...
+[API DEBUG] Creating Service Role Client...
+[API DEBUG] Service Role Client requested.
+[API DEBUG] Client created. Fetching courses...
+[API DEBUG] Fetched 4 courses.
+ GET /api/admin/courses/list?t=1771871591671 200 in 329ms (compile: 135ms, render: 194ms)
+ POST /admin/courses 200 in 650ms (compile: 4ms, render: 646ms)
+ GET /courses/696 200 in 1237ms (compile: 956ms, render: 282ms)
+🔄 Auto-sync: Checking for completed videos...
+🔍 HeyGen: Checking status for video 5b9726e2763b4e2ca7dc3df3293aa241
+🔍 HeyGen Raw Status Data: {
+  "code": 100,
+  "data": {
+    "callback_id": null,
+    "caption_url": "",
+    "created_at": 1771776451,
+    "duration": 36.8482,
+    "error": null,
+    "gif_url": "https://resource2.heygen.ai/video/5b9726e2763b4e2ca7dc3df3293aa241/gif.gif",
+    "id": "5b9726e2763b4e2ca7dc3df3293aa241",
+    "status": "completed",
+    "thumbnail_url": "https://files2.heygen.ai/aws_pacific/avatar_tmp/c21a2971938047efa5aa25e6dd98653b/5b9726e2763b4e2ca7dc3df3293aa241.jpeg?Expires=1772476398&Signature=LZbboJQ7YMBG15LREv3hC~ZRTUI9jS0oP0GQa8KPhgMPXc7Aogym8Oeu-n1RdFUVscew24qqSfWu21IvhuiaXFDW96mKwAtTDBDZ1f0eN1pd37ZZRoF-TE5HzB5vpR4YIE0E0sl-pnHP0EbYKy1-vZw5c0Lp8Y~v7QqowARYwkT2V-zaOTQFKNKx1MFAqeMdy3Ic9IYFxiuvJukoroxLQ8Ep6VzWs7DPb7N4UCIhN9EScziTBJQBy9Wa3koKPHZ1Jcs1wlFxi0EDLdrmQ3U0zBLH60cJk4QRZy6n6sFWSCbZqXNgXhG9kxRMgtcW-Fwy6ptcjrXqcyENFLHSoIxE0Q__&Key-Pair-Id=K38HBHX5LX3X2H",
+    "video_url": "https://files2.heygen.ai/aws_pacific/avatar_tmp/c21a2971938047efa5aa25e6dd98653b/5b9726e2763b4e2ca7dc3df3293aa241.mp4?Expires=1772381431&Signature=KQmA8Z62Y5lVIEPigSQw2-n~JwVDm3JmFhm2q9WNWsRTkVPfwxy8DKb5CstLzjERDnsDV-37HwGzQFDFAW0eF4bbSKAkQn9wF9rCA~FtBNbyu6eGnXDFFwAlewSrui6jhayDXRVESCeHfpe0eLUFkPlthsf3ZHpeW0QcASdKUy9Tub7sjEY5abeixjmzkFLOwL9cc5Q1XvOw7ETJDh2BaU6OR36YX5XNrRQ3EjVzSXJv1nXmXqvA9yx~4AvE58dq2F6mmyfCqoCg8d6Rckhmds6cLPyYfp1qnWJcWo6or1PX-X207o48y2pF4Qp2krYAI3UKQxg6u-ev27~zpCaeEg__&Key-Pair-Id=K38HBHX5LX3X2H",
+    "video_url_caption": null
+  },
+  "message": "Success"
+}
+   Status: completed 
+   Video URL: https://files2.heygen.ai/aws_pacific/avatar_tmp/c21a2971938047efa5aa25e6dd98653b/5b9726e2763b4e2ca7dc3df3293aa241.mp4?Expires=1772381431&Signature=KQmA8Z62Y5lVIEPigSQw2-n~JwVDm3JmFhm2q9WNWsRTkVPfwxy8DKb5CstLzjERDnsDV-37HwGzQFDFAW0eF4bbSKAkQn9wF9rCA~FtBNbyu6eGnXDFFwAlewSrui6jhayDXRVESCeHfpe0eLUFkPlthsf3ZHpeW0QcASdKUy9Tub7sjEY5abeixjmzkFLOwL9cc5Q1XvOw7ETJDh2BaU6OR36YX5XNrRQ3EjVzSXJv1nXmXqvA9yx~4AvE58dq2F6mmyfCqoCg8d6Rckhmds6cLPyYfp1qnWJcWo6or1PX-X207o48y2pF4Qp2krYAI3UKQxg6u-ev27~zpCaeEg__&Key-Pair-Id=K38HBHX5LX3X2H 
+✅ Updated course: AI in Medicine: Diagnosis and Treatment
+🔍 HeyGen: Checking status for video b575d30df7e246d4bc4543632e95b6af
+🔍 HeyGen Raw Status Data: {
+  "code": 100,
+  "data": {
+    "callback_id": null,
+    "caption_url": "",
+    "created_at": 1771776514,
+    "duration": 35.7801,
+    "error": null,
+    "gif_url": "https://resource2.heygen.ai/video/b575d30df7e246d4bc4543632e95b6af/gif.gif",
+    "id": "b575d30df7e246d4bc4543632e95b6af",
+    "status": "completed",
+    "thumbnail_url": "https://files2.heygen.ai/aws_pacific/avatar_tmp/c21a2971938047efa5aa25e6dd98653b/b575d30df7e246d4bc4543632e95b6af.jpeg?Expires=1772476398&Signature=nx4GRQPTZRDRzQhtQ4XfhuQ~j2GI6Aq1F9wf4l7VirR0wGiRqTSNqZ1183fnmOXtLTsEkX2CwpQ91Mm5KBCNi3Zdq7uPewfzemFBiSU-7eyX3mDkQC6hcRZ2C9mGl01pKPey9dBjXFnp5PYS1BvtzrhLC4MNSaokaX-1W16Ugons6lsqhpAlbxn3jREciXCltN48wFlf6NZZKLAQVCfxFAhMWAmjAuTrLTttgoy8AmJNxC1A8I5Kmrb4uIeiOLxGNDCNKxMUzQrJSDZ0~qDtO8aZz2iNtzzaI6eYhEqamQr~QhNtvPmDnTzVSQufJWhTdwcTtBvjStiX36WGW~q6ow__&Key-Pair-Id=K38HBHX5LX3X2H",
+    "video_url": "https://files2.heygen.ai/aws_pacific/avatar_tmp/c21a2971938047efa5aa25e6dd98653b/b575d30df7e246d4bc4543632e95b6af.mp4?Expires=1772381499&Signature=WNroPJxd~UMrmbbzqwBjU8W1y-Qj-U5n5hPml51MqpAhpWqABWs55G~1mD7~k3r5NClEwMBkITS4fFZ7pSti5j7jKSTb5HsjN3T9zgAfVNPf~Mjp7~0nfJ5-mu-OBVfhdQTPSR92bsr663W5SYitidZKKLL3BIQVsbO3PK-rpKXNVN8jo0sMZnW~oJH020Os9LwZbr72HB3SrD4an7QVRGqcqyxIcp0tgyJ9NM9OFaU7LU1O7g0UxXXBhulJ~QvYSkXrgLxmpzSmvM7QdkgvuOrPr1An5vtsB8XVdmH4GQxGRKLE70KIN3zMpXGJw4DCvDbWGDzWOQZeW0GRmrAISg__&Key-Pair-Id=K38HBHX5LX3X2H",
+    "video_url_caption": null
+  },
+  "message": "Success"
+}
+   Status: completed 
+   Video URL: https://files2.heygen.ai/aws_pacific/avatar_tmp/c21a2971938047efa5aa25e6dd98653b/b575d30df7e246d4bc4543632e95b6af.mp4?Expires=1772381499&Signature=WNroPJxd~UMrmbbzqwBjU8W1y-Qj-U5n5hPml51MqpAhpWqABWs55G~1mD7~k3r5NClEwMBkITS4fFZ7pSti5j7jKSTb5HsjN3T9zgAfVNPf~Mjp7~0nfJ5-mu-OBVfhdQTPSR92bsr663W5SYitidZKKLL3BIQVsbO3PK-rpKXNVN8jo0sMZnW~oJH020Os9LwZbr72HB3SrD4an7QVRGqcqyxIcp0tgyJ9NM9OFaU7LU1O7g0UxXXBhulJ~QvYSkXrgLxmpzSmvM7QdkgvuOrPr1An5vtsB8XVdmH4GQxGRKLE70KIN3zMpXGJw4DCvDbWGDzWOQZeW0GRmrAISg__&Key-Pair-Id=K38HBHX5LX3X2H 
+✅ Updated course: AI in Finance: Automate Portfolio Analysis
+ GET /api/sync-videos 200 in 973ms (compile: 116ms, render: 857ms)
+ GET /courses/696 200 in 222ms (compile: 11ms, render: 210ms)
+🔄 Auto-sync: Checking for completed videos...
+ GET /api/sync-videos 200 in 172ms (compile: 1499µs, render: 171ms)
+ GET /admin/courses 200 in 26ms (compile: 4ms, render: 22ms)
+[API DEBUG] Starting Admin Course List fetch...
+[API DEBUG] Creating Service Role Client...
+[API DEBUG] Service Role Client requested.
+[API DEBUG] Client created. Fetching courses...
+💳 Checking HeyGen GenCredits...
+[API DEBUG] Fetched 4 courses.
+ GET /api/admin/courses/list?t=1771871644449 200 in 155ms (compile: 2ms, render: 153ms)
+ POST /admin/courses 200 in 578ms (compile: 3ms, render: 574ms)
+ GET /courses/695 200 in 178ms (compile: 11ms, render: 166ms)
+🔄 Auto-sync: Checking for completed videos...
+ GET /api/sync-videos 200 in 114ms (compile: 2ms, render: 112ms)
+[API DEBUG] Starting Admin Course List fetch...
+[API DEBUG] Creating Service Role Client...
+[API DEBUG] Service Role Client requested.
+[API DEBUG] Client created. Fetching courses...
+💳 Checking HeyGen GenCredits...
+[API DEBUG] Fetched 4 courses.
+ GET /api/admin/courses/list?t=1771871677578 200 in 104ms (compile: 2ms, render: 102ms)
+ POST /admin/courses 200 in 620ms (compile: 3ms, render: 617ms)
+[Bulk Delete API] Deleting 1 courses...
+[Bulk Delete API] Successfully deleted 1 courses.
+ POST /api/course/bulk-delete 200 in 849ms (compile: 146ms, render: 703ms)
+[Bulk Delete API] Deleting 1 courses...
+[Bulk Delete API] Successfully deleted 1 courses.
+ POST /api/course/bulk-delete 200 in 364ms (compile: 1532µs, render: 363ms)
+[Bulk Delete API] Deleting 1 courses...
+[Bulk Delete API] Successfully deleted 1 courses.
+ POST /api/course/bulk-delete 200 in 341ms (compile: 1336µs, render: 340ms)
+[Bulk Delete API] Deleting 1 courses...
+[Bulk Delete API] Successfully deleted 1 courses.
+ POST /api/course/bulk-delete 200 in 391ms (compile: 1919µs, render: 389ms)
+ GET /admin/courses/new 200 in 952ms (compile: 931ms, render: 21ms)
+[GeminiImageService] Initialized with API key
+[API] Processing with synchronized videoSettings: {
+  "courseHost": "sarah",
+  "moduleHost": "sarah"
+}
+🎯 Orchestration: Stage 1 - Planning...
+[PlanningAgent] Using ENHANCED prompt system
+✅ Orchestration: Planning complete.
+[Orchestrator] Starting video script generation with Variety Engine...
+[MediaService] Using Brand-Enforced Custom Thumbnail Prompt: "4K photorealistic image of a brain with interconnected nodes representing AI, gl..."
+[MediaService] 🎨 Trying Gemini for: "4K photorealistic image of a brain with interconne..."
+[GeminiImageService] Generating image for: "4K photorealistic image of a brain with interconne..." (Index: 0)
+[GeminiImageService] ✅ Successfully generated image, uploading to storage...
+[API] Processing 2 topics...
+[API] Received videoSettings: {
+  "courseHost": "sarah",
+  "moduleHost": "sarah"
+}
+[API] Resolved Avatar - Course: sarah
+[API] ========================================
+[API] VIDEO SCRIPT GENERATION CHECK
+[API] ========================================
+[API] Course intro script exists: true
+[API] Course intro script keys: [
+  'hook',
+  'context',
+  'coreContent',
+  'demonstration',
+  'recap',
+  'transition',
+  'totalDuration',
+  'pronunciationGuide'
+]
+[API] Course intro script sample: {"hook":{"duration":5,"script":"Imagine a world transformed by AI... Are you ready to shape it?","visualCues":["Futuristic city skyline transforming"]},"context":{"duration":5,"script":"This course gi
+[API] ========================================
+[API] ✅ Queuing course intro video...
+[API] ✅ Course intro video queued. Total requests: 1
+[MediaService] 🎨 Trying Gemini for: "Photorealistic image of interconnected neural netw..."
+[GeminiImageService] Generating image for: "Photorealistic image of interconnected neural netw..." (Index: 0)
+[GeminiImageService] ✅ Successfully generated image, uploading to storage...
+[API] Processing 4 unique visuals for lesson: The AI Opportunity
+[MediaService] 🎨 Trying Gemini for: "A factory assembly line being optimized by a digit..."
+[GeminiImageService] Generating image for: "A factory assembly line being optimized by a digit..." (Index: 0)
+[GeminiImageService] ✅ Successfully generated image, uploading to storage...
+[MediaService] 🎨 Trying Gemini for: "A diagram illustrating the flow of data through an..."
+[GeminiImageService] Generating image for: "A diagram illustrating the flow of data through an..." (Index: 1)
+[GeminiImageService] ✅ Successfully generated image, uploading to storage...
+[MediaService] 🎨 Trying Gemini for: "Screenshot of Netflix recommendations powered by A..."
+[GeminiImageService] Generating image for: "Screenshot of Netflix recommendations powered by A..." (Index: 2)
+[GeminiImageService] ✅ Successfully generated image, uploading to storage...
+[MediaService] 🎨 Trying Gemini for: "Infographic summarizing the key benefits of AI for..."
+[GeminiImageService] Generating image for: "Infographic summarizing the key benefits of AI for..." (Index: 3)
+[GeminiImageService] ✅ Successfully generated image, uploading to storage...
+[API] Processing 4 unique visuals for lesson: Core AI Concepts
+[MediaService] 🎨 Trying Gemini for: "Nested circles diagram illustrating AI as the larg..."
+[GeminiImageService] Generating image for: "Nested circles diagram illustrating AI as the larg..." (Index: 0)
+[GeminiImageService] ✅ Successfully generated image, uploading to storage...
+[MediaService] 🎨 Trying Gemini for: "Flowchart illustrating the different types of mach..."
+[GeminiImageService] Generating image for: "Flowchart illustrating the different types of mach..." (Index: 1)
+[GeminiImageService] ✅ Successfully generated image, uploading to storage...
+[MediaService] 🎨 Trying Gemini for: "Examples of each type of learning in action (e.g.,..."
+[GeminiImageService] Generating image for: "Examples of each type of learning in action (e.g.,..." (Index: 2)
+[GeminiImageService] ✅ Successfully generated image, uploading to storage...
+[MediaService] 🎨 Trying Gemini for: "Infographic summarizing the key differences betwee..."
+[GeminiImageService] Generating image for: "Infographic summarizing the key differences betwee..." (Index: 3)
+[GeminiImageService] ✅ Successfully generated image, uploading to storage...
+[API] Checking for quizzes... Assessments found: 24
+[API] Found 12 questions for topic "AI: What and Why?"
+[API] ✅ Successfully created quiz with 12 questions for "AI: What and Why?"
+[MediaService] 🎨 Trying Gemini for: "Photorealistic image of data scientists collaborat..."
+[GeminiImageService] Generating image for: "Photorealistic image of data scientists collaborat..." (Index: 0)
+[GeminiImageService] ✅ Successfully generated image, uploading to storage...
+[API] Processing 4 unique visuals for lesson: AI Implementation Patterns
+[MediaService] 🎨 Trying Gemini for: "Premium cinematic digital illustration. Dark navy ..."
+[GeminiImageService] Generating image for: "Premium cinematic digital illustration. Dark navy ..." (Index: 0)
+[GeminiImageService] ✅ Successfully generated image, uploading to storage...
+[MediaService] 🎨 Trying Gemini for: "Premium cinematic digital illustration. Dark navy ..."
+[GeminiImageService] Generating image for: "Premium cinematic digital illustration. Dark navy ..." (Index: 1)
+[GeminiImageService] ✅ Successfully generated image, uploading to storage...
+[MediaService] 🎨 Trying Gemini for: "Premium cinematic digital illustration. Dark navy ..."
+[GeminiImageService] Generating image for: "Premium cinematic digital illustration. Dark navy ..." (Index: 2)
+[GeminiImageService] ✅ Successfully generated image, uploading to storage...
+[MediaService] 🎨 Trying Gemini for: "Premium cinematic digital illustration. Dark navy ..."
+[GeminiImageService] Generating image for: "Premium cinematic digital illustration. Dark navy ..." (Index: 3)
+[GeminiImageService] ✅ Successfully generated image, uploading to storage...
+[API] Processing 4 unique visuals for lesson: Common Pitfalls & Tradeoffs
+[MediaService] 🎨 Trying Gemini for: "A distorted image of a cake, with some ingredients..."
+[GeminiImageService] Generating image for: "A distorted image of a cake, with some ingredients..." (Index: 0)
+[GeminiImageService] ✅ Successfully generated image, uploading to storage...
+[MediaService] 🎨 Trying Gemini for: "A graph showing the relationship between model com..."
+[GeminiImageService] Generating image for: "A graph showing the relationship between model com..." (Index: 1)
+[GeminiImageService] ✅ Successfully generated image, uploading to storage...
+[MediaService] 🎨 Trying Gemini for: "A stylized representation of a set of scales, unba..."
+[GeminiImageService] Generating image for: "A stylized representation of a set of scales, unba..." (Index: 2)
+[GeminiImageService] ✅ Successfully generated image, uploading to storage...
+[MediaService] 🎨 Trying Gemini for: "A geometric infographic summarizing strategies for..."
+[GeminiImageService] Generating image for: "A geometric infographic summarizing strategies for..." (Index: 3)
+[GeminiImageService] ✅ Successfully generated image, uploading to storage...
+[API] Checking for quizzes... Assessments found: 24
+[API] Found 12 questions for topic "Applying AI: How to Get Started"
+[API] ✅ Successfully created quiz with 12 questions for "Applying AI: How to Get Started"
+[API] ========================================
+[API] VIDEO GENERATION CHECK
+[API] ========================================
+[API] Total video requests: 1
+[API] DRY_RUN: false
+[API] videoService available: true
+[API] ========================================
+[API] 🎬 Starting video batch generation...
+🎬 Triggering Video Generation for Course 697 (1 videos)...
+[VideoGen] Batch: Processing course_introduction for 697 with avatar: sarah
+[VideoGen] generateVideo called for type: course_introduction
+[VideoGen] selectedAvatar: sarah
+[VideoGen] options.avatar: sarah
+🎬 Generating course_introduction video with sarah avatar
+   Backend: ElevenLabs + HeyGen
+✅ Audio generated: 187.60s (469 chars)
+📤 Uploading audio to Supabase Storage...
+[AudioStorage] Uploading audio to Supabase Storage...
+   Bucket: course-audio
+   File: 1771872263481_course_introduction_sarah_1771872263481.mp3
+   Size: 590.25 KB
+[AudioStorage] ✅ Upload successful
+   Public URL: https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-audio/1771872263481_course_introduction_sarah_1771872263481.mp3
+✅ Audio uploaded: https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-audio/1771872263481_course_introduction_sarah_1771872263481.mp3
+[VideoGen] Final HeyGen Avatar Selection:
+[VideoGen] Name: sarah
+[VideoGen] ID: dca5f0bcd8524f079791fbb46f808c01
+[VideoGen] Is Gemma? false
+🎬 HeyGen: Generating video with dca5f0bcd8524f079791fbb46f808c01 avatar
+   Duration: 187.6s
+   Audio URL: https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-audio/1771872263481_course_introduction_sarah_1771872263481.mp3
+   Talking Photo ID: dca5f0bcd8524f079791fbb46f808c01 (Fallback to Sarah)
+   Avatar Style: formal (randomized for variety)
+[DEBUG] Calling HeyGen URL: https://api.heygen.com/v2/video/generate
+✅ HeyGen: Video generation started
+   Video ID: 386c9db5b8ac4e7eb0dad9ea3ecf4acb
+✅ Video generation started: 386c9db5b8ac4e7eb0dad9ea3ecf4acb
+[API] ========================================
+[API] VIDEO GENERATION RESULTS
+[API] ========================================
+[API] videoResults type: object
+[API] videoResults keys: [ '697' ]
+[API] videoResults entries: 1
+[API] videoResults: {
+  "697": "386c9db5b8ac4e7eb0dad9ea3ecf4acb"
+}
+[API] ========================================
+[API] Processing entity 697 with jobId: 386c9db5b8ac4e7eb0dad9ea3ecf4acb
+[API] Comparing entityId (string): "697" with course.id (number): "697"
+[API] ✅ MATCH! This is the course intro video
+[API] ✅ Course Intro Video Job ID saved: 386c9db5b8ac4e7eb0dad9ea3ecf4acb
+[API]    Verified in database: 386c9db5b8ac4e7eb0dad9ea3ecf4acb
+ POST /api/course/generate 200 in 4.2min (compile: 463ms, render: 4.1min)
+ GET /courses/697 200 in 289ms (compile: 32ms, render: 257ms)
+🔄 Auto-sync: Checking for completed videos...
+🔍 HeyGen: Checking status for video 386c9db5b8ac4e7eb0dad9ea3ecf4acb
+🔍 HeyGen Raw Status Data: {
+  "code": 100,
+  "data": {
+    "callback_id": null,
+    "caption_url": null,
+    "created_at": 1771872264,
+    "duration": null,
+    "error": null,
+    "gif_url": null,
+    "id": "386c9db5b8ac4e7eb0dad9ea3ecf4acb",
+    "status": "waiting",
+    "thumbnail_url": null,
+    "video_url": null,
+    "video_url_caption": null
+  },
+  "message": "Success"
+}
+   Status: processing 
+ GET /api/sync-videos 200 in 394ms (compile: 1934µs, render: 392ms)
+🔄 Auto-sync: Checking for completed videos...
+🔍 HeyGen: Checking status for video 386c9db5b8ac4e7eb0dad9ea3ecf4acb
+🔍 HeyGen Raw Status Data: {
+  "code": 100,
+  "data": {
+    "callback_id": null,
+    "caption_url": null,
+    "created_at": 1771872264,
+    "duration": null,
+    "error": null,
+    "gif_url": null,
+    "id": "386c9db5b8ac4e7eb0dad9ea3ecf4acb",
+    "status": "processing",
+    "thumbnail_url": null,
+    "video_url": null,
+    "video_url_caption": null
+  },
+  "message": "Success"
+}
+   Status: processing 
+ GET /api/sync-videos 200 in 738ms (compile: 1892µs, render: 736ms)
+🔄 Auto-sync: Checking for completed videos...
+🔍 HeyGen: Checking status for video 386c9db5b8ac4e7eb0dad9ea3ecf4acb
+🔍 HeyGen Raw Status Data: {
+  "code": 100,
+  "data": {
+    "callback_id": null,
+    "caption_url": "",
+    "created_at": 1771872264,
+    "duration": 37.6842,
+    "error": null,
+    "gif_url": null,
+    "id": "386c9db5b8ac4e7eb0dad9ea3ecf4acb",
+    "status": "completed",
+    "thumbnail_url": "https://files2.heygen.ai/aws_pacific/avatar_tmp/c21a2971938047efa5aa25e6dd98653b/386c9db5b8ac4e7eb0dad9ea3ecf4acb.jpeg?Expires=1772477189&Signature=MWMKBb~K44XAme6smuJR054LbZlmqY8B4GF3NnYWkdD5znhsoe8BPmI3mmfSCOjbiATUvFmXN4~ZjETFFnv2aWV2eiZzgiQ4OV0PQv7I1ycGfZ6H5FBjNi-KdCczFmbVEk6TdARXspJ2y~byoBLZRTGpvd2K2YYf2Fbp9AkMxRZyQPz8FtPuktmN8GRDjX7i5ecscHxa75qJIbuYkvPFMTPpGqJ2IXrVBLOSRkHkqMKxQz146gC8FtUgno9JdYgTR3Kn1RrRsEeB-wS3WaHNj~I6PxjSfECpAygY5nCX2sgHqBAr6ih5Fz6i9QDPlJ9rlxTBjwVVzC9bbJNTl6AunA__&Key-Pair-Id=K38HBHX5LX3X2H",
+    "video_url": "https://files2.heygen.ai/aws_pacific/avatar_tmp/c21a2971938047efa5aa25e6dd98653b/386c9db5b8ac4e7eb0dad9ea3ecf4acb.mp4?Expires=1772477189&Signature=fgAhsw7aJyyhe0D1pxohqdb-jf3meUhdCa7jYYyPC~GRLUlnW~W8HW~Y6kYkbQhfb~xj~4Dh-xULsszhc4EeTwjzqYSylZK-C9Jrp4IQXlcYzL~MAa3w1QeBT1BCJnS-lukXRr1bt1~5MnjQRPwvtqIijSgIW56dW99TaSMsCugHEQH7EZogO-vznTtizVRhwhtc3w~UTFmDmKdd0H3E28GP1ML-c4qEca9h2T0gmatGfGhZ039Rylau5l3F3NIXl1pYVMt3-XRrjR9D-RHCCVzMDny3z56QX4GLxM1Y36UNviNXkOl~uqUjLRK2ycZJkFK4RWy~VGJqdH6MklKobA__&Key-Pair-Id=K38HBHX5LX3X2H",
+    "video_url_caption": null
+  },
+  "message": "Success"
+}
+   Status: completed 
+   Video URL: https://files2.heygen.ai/aws_pacific/avatar_tmp/c21a2971938047efa5aa25e6dd98653b/386c9db5b8ac4e7eb0dad9ea3ecf4acb.mp4?Expires=1772477189&Signature=fgAhsw7aJyyhe0D1pxohqdb-jf3meUhdCa7jYYyPC~GRLUlnW~W8HW~Y6kYkbQhfb~xj~4Dh-xULsszhc4EeTwjzqYSylZK-C9Jrp4IQXlcYzL~MAa3w1QeBT1BCJnS-lukXRr1bt1~5MnjQRPwvtqIijSgIW56dW99TaSMsCugHEQH7EZogO-vznTtizVRhwhtc3w~UTFmDmKdd0H3E28GP1ML-c4qEca9h2T0gmatGfGhZ039Rylau5l3F3NIXl1pYVMt3-XRrjR9D-RHCCVzMDny3z56QX4GLxM1Y36UNviNXkOl~uqUjLRK2ycZJkFK4RWy~VGJqdH6MklKobA__&Key-Pair-Id=K38HBHX5LX3X2H 
+✅ Updated course: AI Essentials
+ GET /api/sync-videos 200 in 656ms (compile: 2ms, render: 654ms)
+ GET /courses/697 200 in 154ms (compile: 11ms, render: 143ms)
+🔄 Auto-sync: Checking for completed videos...
+ GET /api/sync-videos 200 in 135ms (compile: 1801µs, render: 133ms)
+🔄 Auto-sync: Checking for completed videos...
+ GET /api/sync-videos 200 in 223ms (compile: 1895µs, render: 221ms)
+🔄 Auto-sync: Checking for completed videos...
+ GET /api/sync-videos 200 in 226ms (compile: 1702µs, render: 224ms)
+🔄 Auto-sync: Checking for completed videos...
+ GET /api/sync-videos 200 in 182ms (compile: 1402µs, render: 181ms)
+🔄 Auto-sync: Checking for completed videos...
+ GET /api/sync-videos 200 in 193ms (compile: 2ms, render: 191ms)
+🔄 Auto-sync: Checking for completed videos...
+ GET /api/sync-videos 200 in 740ms (compile: 3ms, render: 737ms)
+ GET /courses/697 200 in 240ms (compile: 11ms, render: 230ms)
+🔄 Auto-sync: Checking for completed videos...
+ GET /api/sync-videos 200 in 250ms (compile: 2ms, render: 247ms)
+ GET /courses/697/lessons/3271 200 in 1641ms (compile: 896ms, render: 745ms)
+ POST /api/analytics/track 200 in 204ms (compile: 94ms, render: 109ms)

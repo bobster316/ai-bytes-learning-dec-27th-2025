@@ -1,5 +1,5 @@
 // ========================================
-// Progress Tracking for Course Generation
+// Progress Tracking for Course Creation
 // ========================================
 
 import { getCourseDatabase } from '../database/course-operations';

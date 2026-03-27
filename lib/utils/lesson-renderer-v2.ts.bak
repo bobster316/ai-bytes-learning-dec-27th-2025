@@ -1,0 +1,153 @@
+import { CompletedLesson } from '../types/course-upgrade';
+
+/**
+ * Generates premium HTML for lessons with proper structure
+ * Handles the new Elite Instructional Designer format
+ */
+export function generateLessonHTML(lessonData: CompletedLesson): string {
+  const content = (lessonData as any).content || {};
+  const actualTopicContent = (lessonData as any).topicContent || content.topicContent || (typeof content === 'string' ? content : "");
+  const keyTakeaways = lessonData.metadata?.keyTakeaways || ((lessonData as any).keyTakeaway ? [(lessonData as any).keyTakeaway] : (content.keyTakeaway ? [content.keyTakeaway] : []));
+  const nextTopicTeaser = (lessonData as any).nextTopicTeaser || content.nextTopicTeaser;
+
+  return `
+    <div class="lesson-container max-w-4xl mx-auto px-6 py-12 font-sans text-slate-900 dark:text-white">
+      
+      <!-- Lesson Header -->
+      <header class="mb-12 text-center">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-100 text-cyan-700 text-xs font-bold uppercase tracking-wider mb-6">
+            Micro-Learning • ${lessonData.metadata?.estimatedDuration || 7} Min
+        </div>
+        <h1 class="text-5xl font-black tracking-tight mb-4 text-slate-900 dark:text-white">${lessonData.lessonTitle}</h1>
+        <div class="h-1.5 w-24 bg-cyan-500 mx-auto mt-6"></div>
+      </header>
+
+      <!-- Main Content (Markdown Rendered) -->
+      <section class="mb-12">
+        <div class="prose dark:prose-invert max-w-none leading-relaxed">
+          ${formatMarkdownContent(actualTopicContent)}
+        </div>
+      </section>
+
+      <!-- Key Takeaways -->
+      ${keyTakeaways.length > 0 ? `
+      <section class="mb-12 p-8 bg-slate-900 text-white rounded-2xl">
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+          <span>✨</span> Key Takeaways
+        </h2>
+        <ul class="space-y-3">
+          ${keyTakeaways.map((takeaway: string) => `
+            <li class="flex items-start gap-3">
+              <span class="text-violet-400 mt-1">✓</span>
+              <span class="text-lg">${takeaway}</span>
+            </li>
+          `).join('')}
+        </ul>
+      </section>
+      ` : ''}
+
+       <!-- Context/Connection -->
+       ${nextTopicTeaser ? `
+        <div class="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800">
+            <p class="text-slate-600 dark:text-slate-400 italic">Coming up next: ${nextTopicTeaser}</p>
+        </div>
+       ` : ''}
+
+    </div>
+
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+      .lesson-container { font-family: 'Inter', sans-serif; line-height: 1.7; }
+      .prose { max-width: none; }
+      .prose p { margin-bottom: 2rem; font-size: 1.25rem; }
+      .prose strong { color: #00BCD4; font-weight: 800; border-bottom: 2px solid rgba(0, 188, 212, 0.2); }
+      .prose h2 { font-size: 2.25rem; font-weight: 900; margin-top: 4rem; margin-bottom: 1.5rem; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
+      .prose h3 { font-size: 1.75rem; font-weight: 800; margin-top: 3rem; margin-bottom: 1rem; color: #00BCD4; }
+      .prose ul { margin-left: 1.5rem; margin-bottom: 2rem; list-style-type: disc; }
+      .prose li { margin-bottom: 0.75rem; font-size: 1.25rem; }
+      .dark .prose h2 { color: #f8fafc; border-color: #334155; }
+      .dark .prose h3 { color: #22d3ee; }
+      .dark .prose p, .dark .prose li { color: #cbd5e1; }
+    </style>
+    `;
+}
+
+function escapeHtml(text: string): string {
+  const map: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+/**
+ * Parses Markdown content from V4+ generator.
+ */
+function formatMarkdownContent(text: string): string {
+  if (!text) return "";
+
+  // Handle marker lines separately
+  const lines = text.split('\n');
+  let html = "";
+  let inList = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i].trim();
+
+    if (!line) {
+      if (inList) { html += "</ul>\n"; inList = false; }
+      continue;
+    }
+
+    // Image Marker Detection
+    if (line.match(/(\[!\[IMAGE:?\s*(.+)\]\]|!\[IMAGE:?\s*(.+)\]|\[IMAGE:?\s*(.+)\])/i)) {
+      if (inList) { html += "</ul>\n"; inList = false; }
+      html += `<div class="my-12 p-4 bg-slate-100 dark:bg-slate-800 rounded-xl text-center italic text-slate-500 border-2 border-dashed border-slate-300 dark:border-slate-700">
+        [Visual Display: ${line.replace(/[\[\]!]/g, '')}]
+      </div>`;
+      continue;
+    }
+
+    // Headers
+    if (line.startsWith('## ')) {
+      if (inList) { html += "</ul>\n"; inList = false; }
+      html += `<h2 class="text-3xl font-black mt-12 mb-6 text-slate-900 dark:text-white">${parseInline(line.substring(3))}</h2>`;
+      continue;
+    }
+    if (line.startsWith('### ')) {
+      if (inList) { html += "</ul>\n"; inList = false; }
+      html += `<h3 class="text-2xl font-bold mt-8 mb-4 text-cyan-600 dark:text-cyan-400">${parseInline(line.substring(4))}</h3>`;
+      continue;
+    }
+
+    // Lists
+    if (line.startsWith('- ') || line.startsWith('* ')) {
+      if (!inList) {
+        html += `<ul class="list-disc pl-6 space-y-2 mb-6">`;
+        inList = true;
+      }
+      html += `<li>${parseInline(line.substring(2))}</li>`;
+      continue;
+    }
+
+    // Paragraph
+    if (inList) { html += "</ul>\n"; inList = false; }
+    html += `<p class="mb-8 text-xl leading-relaxed text-slate-800 dark:text-slate-300">${parseInline(line)}</p>`;
+  }
+
+  if (inList) html += "</ul>\n";
+  return html;
+}
+
+function parseInline(text: string): string {
+  // Bold
+  let processed = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  // Italic
+  processed = processed.replace(/\*(.*?)\*/g, '<em class="italic">$1</em>');
+  // Code
+  processed = processed.replace(/`(.*?)`/g, '<code class="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded text-sm font-mono text-pink-500">$1</code>');
+  return processed;
+}

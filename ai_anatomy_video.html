@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>The Anatomy of an AI Answer — AI Bytes Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --iris:   #9B8FFF;
+  --pulse:  #00FFB3;
+  --amber:  #FFB347;
+  --blue:   #72BBFF;
+  --rose:   #FF8FA3;
+  --teal:   #5DE4D4;
+}
+
+html, body {
+  width: 1920px; height: 1080px;
+  overflow: hidden;
+  background: #030308;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  color: #fff;
+  user-select: none;
+}
+
+/* ═══ AMBIENT ══════════════════════════════════════════════════ */
+.ambient {
+  position: absolute; inset: 0; pointer-events: none;
+}
+.ambient-a {
+  position: absolute;
+  width: 1100px; height: 700px;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -54%);
+  background: radial-gradient(ellipse at center,
+    rgba(80, 100, 220, 0.10) 0%,
+    rgba(60, 40, 140, 0.04) 50%,
+    transparent 75%
+  );
+  filter: blur(40px);
+}
+.ambient-b {
+  position: absolute;
+  width: 500px; height: 400px;
+  right: 28%; top: 18%;
+  background: radial-gradient(ellipse at center,
+    rgba(155, 143, 255, 0.07) 0%,
+    transparent 70%
+  );
+  filter: blur(60px);
+}
+.ambient-c {
+  position: absolute;
+  width: 400px; height: 300px;
+  left: 28%; bottom: 25%;
+  background: radial-gradient(ellipse at center,
+    rgba(0, 255, 179, 0.04) 0%,
+    transparent 70%
+  );
+  filter: blur(70px);
+}
+
+/* ═══ VIGNETTE ══════════════════════════════════════════════════ */
+.vignette {
+  position: absolute; inset: 0; pointer-events: none; z-index: 100;
+  background: radial-gradient(ellipse 90% 85% at 50% 50%,
+    transparent 55%,
+    rgba(2, 2, 6, 0.45) 85%,
+    rgba(2, 2, 6, 0.75) 100%
+  );
+}
+
+/* ═══ GRAIN ══════════════════════════════════════════════════════ */
+.grain {
+  position: absolute; inset: 0; pointer-events: none; z-index: 99;
+  opacity: 0.022; mix-blend-mode: soft-light;
+}
+
+/* ═══ LOGO ═══════════════════════════════════════════════════════ */
+.logo {
+  position: absolute;
+  top: 52px; left: 50%;
+  transform: translateX(-50%);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.22);
+  opacity: 0;
+}
+
+/* ═══ SCENE ═══════════════════════════════════════════════════════ */
+.scene {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  perspective: 1800px;
+  perspective-origin: 50% 48%;
+}
+
+#stage {
+  position: relative;
+  transform-style: preserve-3d;
+  width: 680px;
+}
+
+/* ═══ INPUT FIELD ═════════════════════════════════════════════════ */
+#input-wrap {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 680px;
+  opacity: 0;
+  z-index: 10;
+}
+
+.input-field {
+  width: 100%;
+  height: 56px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.038);
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  padding: 0 22px;
+  gap: 0;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(155,143,255,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 8px 40px rgba(0,0,0,0.4);
+}
+.input-field::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.055) 0%, transparent 55%);
+  pointer-events: none;
+}
+.input-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(155,143,255,0.65);
+  margin-right: 18px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.input-separator {
+  width: 1px; height: 18px;
+  background: rgba(255,255,255,0.1);
+  margin-right: 18px;
+  flex-shrink: 0;
+}
+.input-text {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.82);
+  letter-spacing: -0.01em;
+}
+.cursor {
+  display: inline-block;
+  width: 2px; height: 17px;
+  background: var(--iris);
+  margin-left: 3px;
+  border-radius: 1px;
+  vertical-align: middle;
+  animation: blink 0.85s ease infinite;
+}
+@keyframes blink { 0%,45%{opacity:1} 50%,100%{opacity:0} }
+
+/* Status dots (top-right of input) */
+.input-dots {
+  position: absolute;
+  right: 18px; top: 50%;
+  transform: translateY(-50%);
+  display: flex; gap: 6px;
+}
+.dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  opacity: 0.3;
+}
+
+/* ═══ LAYER STACK ══════════════════════════════════════════════════ */
+#stack {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  transform-style: preserve-3d;
+  width: 680px;
+}
+
+.layer {
+  position: absolute;
+  top: 0; left: 0;
+  width: 680px;
+  height: 54px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  padding: 0 22px;
+  gap: 12px;
+  opacity: 0;
+  transform: translateY(0px) translateZ(0px);
+  transform-style: preserve-3d;
+  will-change: transform, opacity, box-shadow;
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 2px 20px rgba(0,0,0,0.35);
+}
+/* Glass base */
+.layer::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg,
+    rgba(255,255,255,0.065) 0%,
+    rgba(255,255,255,0.018) 50%,
+    rgba(255,255,255,0.04) 100%
+  );
+  pointer-events: none;
+}
+/* Border */
+.layer::after {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.09);
+  pointer-events: none;
+}
+
+.layer-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.18);
+  letter-spacing: 0.08em;
+  width: 16px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.layer-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.layer-lbl {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  opacity: 0.6;
+  width: 92px;
+}
+.layer-bar {
+  width: 1px;
+  height: 16px;
+  background: rgba(255,255,255,0.08);
+  flex-shrink: 0;
+}
+.layer-txt {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.58);
+  letter-spacing: -0.01em;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+}
+/* Metallic top edge */
+.layer-top {
+  position: absolute;
+  top: 0; left: 12px; right: 12px; height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(255,255,255,0.22) 30%,
+    rgba(255,255,255,0.28) 50%,
+    rgba(255,255,255,0.22) 70%,
+    transparent
+  );
+  pointer-events: none;
+}
+/* Pulse sweep light */
+.layer-sweep {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 50%;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(255,255,255,0.18),
+    rgba(255,255,255,0.08),
+    transparent
+  );
+  left: -50%;
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* ═══ FINAL CARD ══════════════════════════════════════════════════ */
+#finalCard {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 680px;
+  border-radius: 18px;
+  padding: 30px 34px 30px 34px;
+  opacity: 0;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 0 0 1px rgba(0,255,179,0.0),
+    0 24px 80px rgba(0,0,0,0.6),
+    0 0 60px rgba(0,255,179,0.0);
+  overflow: hidden;
+  z-index: 5;
+}
+#finalCard::before {
+  content: '';
+  position: absolute; inset: 0; border-radius: 18px;
+  background: linear-gradient(135deg,
+    rgba(155,143,255,0.06) 0%,
+    rgba(255,255,255,0.02) 50%,
+    rgba(0,255,179,0.03) 100%
+  );
+  pointer-events: none;
+}
+#finalCard::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(0,255,179,0.35) 35%,
+    rgba(0,255,179,0.50) 50%,
+    rgba(0,255,179,0.35) 65%,
+    transparent
+  );
+  pointer-events: none;
+}
+.card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 16px;
+}
+.card-badge-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--pulse);
+  box-shadow: 0 0 6px var(--pulse);
+}
+.card-badge-lbl {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(0,255,179,0.75);
+}
+.card-text {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.90);
+  line-height: 1.62;
+  letter-spacing: -0.025em;
+}
+.card-text em {
+  color: var(--pulse);
+  font-style: normal;
+}
+
+/* ═══ TAGLINE ══════════════════════════════════════════════════════ */
+#tagline {
+  position: absolute;
+  bottom: 108px; left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 20px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.38);
+  letter-spacing: 0.12em;
+  opacity: 0;
+  white-space: nowrap;
+}
+
+/* ═══ BOTTOM RULE ══════════════════════════════════════════════════ */
+#bottomRule {
+  position: absolute;
+  bottom: 96px; left: 50%;
+  transform: translateX(-50%);
+  width: 320px; height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(255,255,255,0.12) 30%,
+    rgba(255,255,255,0.18) 50%,
+    rgba(255,255,255,0.12) 70%,
+    transparent
+  );
+  opacity: 0;
+}
+
+/* ═══ STEP INDICATOR ═══════════════════════════════════════════════ */
+#stepIndicator {
+  position: absolute;
+  right: 64px; top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  opacity: 0;
+  z-index: 50;
+}
+.step-dot {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  transition: all 0.3s;
+}
+.step-dot.active {
+  background: var(--pulse);
+  box-shadow: 0 0 8px var(--pulse);
+  width: 4px; height: 12px;
+  border-radius: 2px;
+}
+
+</style>
+</head>
+<body>
+
+<!-- Ambient glow -->
+<div class="ambient">
+  <div class="ambient-a"></div>
+  <div class="ambient-b"></div>
+  <div class="ambient-c"></div>
+</div>
+
+<!-- Grain -->
+<svg class="grain" width="1920" height="1080">
+  <filter id="g">
+    <feTurbulence type="fractalNoise" baseFrequency="0.68" numOctaves="4" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+  </filter>
+  <rect width="100%" height="100%" filter="url(#g)"/>
+</svg>
+
+<!-- Vignette -->
+<div class="vignette"></div>
+
+<!-- Logo -->
+<div class="logo" id="logo">AI Bytes Learning</div>
+
+<!-- Particle canvas -->
+<canvas id="particles" width="1920" height="1080"
+  style="position:absolute;inset:0;pointer-events:none;z-index:1;"></canvas>
+
+<!-- Step indicator (right side) -->
+<div id="stepIndicator">
+  <div class="step-dot" id="sd0"></div>
+  <div class="step-dot" id="sd1"></div>
+  <div class="step-dot" id="sd2"></div>
+  <div class="step-dot" id="sd3"></div>
+  <div class="step-dot" id="sd4"></div>
+  <div class="step-dot" id="sd5"></div>
+  <div class="step-dot" id="sd6"></div>
+</div>
+
+<!-- Scene -->
+<div class="scene">
+  <div id="stage" style="transform-style:preserve-3d;">
+
+    <!-- Input -->
+    <div id="input-wrap">
+      <div class="input-field">
+        <span class="input-label">Prompt</span>
+        <div class="input-separator"></div>
+        <span class="input-text" id="typedText"></span><span class="cursor" id="cur"></span>
+        <div class="input-dots">
+          <div class="dot" style="background:#00FFB3"></div>
+          <div class="dot" style="background:#FFB347"></div>
+          <div class="dot" style="background:#FF6B6B"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layer stack -->
+    <div id="stack"></div>
+
+    <!-- Final answer card -->
+    <div id="finalCard">
+      <div class="card-badge">
+        <div class="card-badge-dot"></div>
+        <span class="card-badge-lbl">AI Answer</span>
+      </div>
+      <div class="card-text">
+        A neural network <em>learns patterns</em> by adjusting connections between artificial neurons.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Bottom rule + tagline -->
+<div id="bottomRule"></div>
+<div id="tagline">Complexity, made learnable.</div>
+
+<!-- GSAP -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+/* ═════════════════════════════════════════════════════════════════════
+   DATA
+   ═════════════════════════════════════════════════════════════════════ */
+const LAYERS = [
+  { label:'Prompt',       txt:'Explain neural networks simply',                    col:'#9B8FFF', bg:'rgba(155,143,255,0.045)' },
+  { label:'Intent',       txt:'Educational · Simplification requested',             col:'#72BBFF', bg:'rgba(114,187,255,0.04)'  },
+  { label:'Context',      txt:'Beginner level · No prior knowledge assumed',        col:'#5DE4D4', bg:'rgba(93,228,212,0.04)'   },
+  { label:'Knowledge',    txt:'Neural nets · Weights · Nodes · Training data',      col:'#00FFB3', bg:'rgba(0,255,179,0.04)'    },
+  { label:'Reasoning',    txt:'Analogy: brain · Simplification: connection graph',  col:'#FFB347', bg:'rgba(255,179,71,0.04)'   },
+  { label:'Safety',       txt:'Accuracy verified · No harmful content',             col:'#FF8FA3', bg:'rgba(255,143,163,0.04)'  },
+  { label:'Final Answer', txt:'A neural network learns patterns by adjusting…',     col:'rgba(255,255,255,0.9)', bg:'rgba(255,255,255,0.05)' },
+];
+
+/* ═════════════════════════════════════════════════════════════════════
+   BUILD LAYERS
+   ═════════════════════════════════════════════════════════════════════ */
+const stack = document.getElementById('stack');
+LAYERS.forEach((d, i) => {
+  const el = document.createElement('div');
+  el.className = 'layer'; el.id = 'L' + i;
+  el.style.cssText = `background:${d.bg};top:0;left:0;`;
+  el.innerHTML = `
+    <div class="layer-top"></div>
+    <span class="layer-num">${String(i+1).padStart(2,'0')}</span>
+    <div class="layer-dot" style="background:${d.col};box-shadow:0 0 5px ${d.col}70;"></div>
+    <span class="layer-lbl" style="color:${d.col};">${d.label}</span>
+    <div class="layer-bar"></div>
+    <span class="layer-txt">${d.txt}</span>
+    <div class="layer-sweep" id="sw${i}"></div>
+  `;
+  stack.appendChild(el);
+});
+
+/* ═════════════════════════════════════════════════════════════════════
+   PARTICLES
+   ═════════════════════════════════════════════════════════════════════ */
+(function () {
+  const c = document.getElementById('particles');
+  const ctx = c.getContext('2d');
+  const pts = Array.from({length: 22}, () => ({
+    x: Math.random() * 1920, y: Math.random() * 1080,
+    r: Math.random() * 1.2 + 0.4,
+    vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.22,
+    col: Math.random() > 0.5 ? '155,143,255' : '0,255,179',
+    op: Math.random() * 0.28 + 0.08,
+  }));
+  function draw() {
+    ctx.clearRect(0, 0, 1920, 1080);
+    pts.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = 1920; if (p.x > 1920) p.x = 0;
+      if (p.y < 0) p.y = 1080; if (p.y > 1080) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${p.col},${p.op})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ═════════════════════════════════════════════════════════════════════
+   TYPEWRITER
+   ═════════════════════════════════════════════════════════════════════ */
+const PROMPT = 'Explain neural networks simply';
+function typeText(done) {
+  const el = document.getElementById('typedText');
+  let i = 0;
+  const t = setInterval(() => {
+    el.textContent = PROMPT.slice(0, ++i);
+    if (i >= PROMPT.length) { clearInterval(t); setTimeout(done, 180); }
+  }, 40);
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   LAYER POSITIONS (exploded state)
+   Y = screen spread, Z = depth separation
+   ═════════════════════════════════════════════════════════════════════ */
+const CENTER = (LAYERS.length - 1) / 2; // 3
+const POS = LAYERS.map((_, i) => {
+  const off = i - CENTER;
+  return { y: off * 82, z: -off * 42 };
+});
+
+/* ═════════════════════════════════════════════════════════════════════
+   STEP INDICATOR
+   ═════════════════════════════════════════════════════════════════════ */
+function setActive(idx) {
+  document.querySelectorAll('.step-dot').forEach((d, i) => {
+    d.classList.toggle('active', i === idx);
+  });
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   MAIN TIMELINE
+   ═════════════════════════════════════════════════════════════════════ */
+const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+// ── 0.0 – 0.6: Logo + ambient ──────────────────────────────────
+tl.to('#logo', { opacity: 1, duration: 0.7 }, 0.15);
+tl.to('.input-dots .dot', { opacity: 0.35, stagger: 0.1, duration: 0.4 }, 0.1);
+
+// ── 0.5: Input field slides up ─────────────────────────────────
+tl.fromTo('#input-wrap',
+  { opacity: 0, y: 18 },
+  { opacity: 1, y: 0, duration: 0.65, ease: 'power2.out' },
+  0.48
+);
+
+// ── 0.85: Type the prompt ──────────────────────────────────────
+tl.call(typeText, [() => {}], 0.9);
+
+// ── 1.8: Hide cursor, step indicator in ───────────────────────
+tl.to('#cur', { opacity: 0, duration: 0.3 }, 1.82);
+tl.to('#stepIndicator', { opacity: 1, duration: 0.5 }, 1.85);
+
+// ── 2.1: Tilt scene into 3D view ──────────────────────────────
+tl.to('#stage', {
+  rotateX: -18, rotateY: 7,
+  duration: 1.05, ease: 'power2.inOut',
+}, 2.05);
+tl.to('#input-wrap', { opacity: 0, y: -14, duration: 0.45, ease: 'power2.in' }, 2.05);
+
+// ── 2.3: Layers explode with stagger ──────────────────────────
+LAYERS.forEach((d, i) => {
+  const t = 2.28 + i * 0.07;
+  tl.to(`#L${i}`, {
+    y: POS[i].y, z: POS[i].z,
+    opacity: 1, duration: 0.85, ease: 'power3.out',
+  }, t);
+  // Content text fades in
+  tl.to(`#L${i} .layer-txt`, { opacity: 1, duration: 0.4 }, t + 0.3);
+  // Step dot
+  tl.call(() => setActive(i), [], t + 0.1);
+});
+
+// ── 3.3: Pause at fully exploded ──────────────────────────────
+// (natural gap in timeline)
+
+// ── 3.5: Pulse sweeps front → back ────────────────────────────
+LAYERS.forEach((d, i) => {
+  const t = 3.52 + i * 0.22;
+  const sweep = `#sw${i}`;
+  const layer = `#L${i}`;
+
+  // Sweep light across the layer
+  tl.fromTo(sweep,
+    { left: '-55%', opacity: 0.9 },
+    { left: '120%', opacity: 0, duration: 0.55, ease: 'power1.inOut' },
+    t
+  );
+  // Layer edge glow
+  tl.to(layer, {
+    boxShadow: `0 0 0 1px ${d.col}55, 0 0 28px ${d.col}30, inset 0 1px 0 rgba(255,255,255,0.08)`,
+    duration: 0.18, ease: 'power2.out'
+  }, t + 0.02);
+  tl.to(layer, {
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 20px rgba(0,0,0,0.35)',
+    duration: 0.55, ease: 'power2.in'
+  }, t + 0.22);
+  // Step dot highlight
+  tl.call(() => setActive(i), [], t + 0.08);
+});
+
+// ── 5.0: Convergence — layers collapse back ────────────────────
+const CONV = 5.05;
+tl.to('#stage', {
+  rotateX: 0, rotateY: 0,
+  duration: 0.85, ease: 'power2.inOut',
+}, CONV);
+tl.to('#stepIndicator', { opacity: 0, duration: 0.4 }, CONV);
+
+LAYERS.forEach((d, i) => {
+  const t = CONV + i * 0.025;
+  tl.to(`#L${i}`, {
+    y: 0, z: 0, opacity: 0,
+    duration: 0.65, ease: 'power3.inOut',
+  }, t);
+  tl.to(`#L${i} .layer-txt`, { opacity: 0, duration: 0.2 }, t);
+});
+
+// ── 5.6: Final card materialises ──────────────────────────────
+tl.fromTo('#finalCard',
+  { opacity: 0, scale: 0.97 },
+  { opacity: 1, scale: 1, duration: 0.6, ease: 'power2.out' },
+  5.62
+);
+// Pulse glow on card
+tl.to('#finalCard', {
+  boxShadow: `
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    0 0 0 1px rgba(0,255,179,0.22),
+    0 24px 80px rgba(0,0,0,0.6),
+    0 0 80px rgba(0,255,179,0.08)
+  `,
+  duration: 0.6, ease: 'power2.out',
+}, 5.7);
+
+// ── 5.9: Bottom rule + tagline ─────────────────────────────────
+tl.to('#bottomRule', { opacity: 1, duration: 0.5 }, 5.88);
+tl.fromTo('#tagline',
+  { opacity: 0, y: 8 },
+  { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' },
+  5.95
+);
+
+// ── 6.8+: Gentle loop prep (fade + restart) ───────────────────
+tl.to(['.logo', '#finalCard', '#tagline', '#bottomRule'], {
+  opacity: 0, duration: 0.7, stagger: 0.05, ease: 'power2.in',
+}, 8.2);
+tl.call(() => {
+  // Reset all state and restart
+  document.getElementById('typedText').textContent = '';
+  document.getElementById('cur').style.opacity = '1';
+  LAYERS.forEach((_, i) => {
+    gsap.set(`#L${i}`, { y: 0, z: 0, opacity: 0, boxShadow: '' });
+    gsap.set(`#L${i} .layer-txt`, { opacity: 0 });
+    gsap.set(`#sw${i}`, { left: '-55%', opacity: 0 });
+  });
+  gsap.set('#stage', { rotateX: 0, rotateY: 0 });
+  gsap.set('#input-wrap', { opacity: 0, y: 18 });
+  gsap.set('#finalCard', { opacity: 0, scale: 0.97, boxShadow: '' });
+  gsap.set('#stepIndicator', { opacity: 0 });
+  document.querySelectorAll('.step-dot').forEach(d => d.classList.remove('active'));
+  tl.restart();
+}, [], 9.1);
+
+</script>
+</body>
+</html>

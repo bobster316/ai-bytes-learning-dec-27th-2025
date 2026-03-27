@@ -1,0 +1,232 @@
+[
+  {
+    "order": 0,
+    "blockType": "lesson_header",
+    "lesson_title": "Designing AI Test Plans"
+  },
+  {
+    "order": 1,
+    "quote": "The quality of your AI is directly proportional to the quality of your tests.",
+    "author": "Alan Turing (Hypothetical)",
+    "blockType": "punch_quote"
+  },
+  {
+    "order": 2,
+    "blockType": "objective",
+    "objective": "Learn how to develop complete test plans tailored for AI systems."
+  },
+  {
+    "order": 3,
+    "content": {
+      "id": "VS-2.4",
+      "type": "video_snippet",
+      "title": "AI Test Plan Genesis",
+      "caption": "Visualising the iterative refinement of an AI test plan through simulated data flows and performance metrics.",
+      "duration": "8s",
+      "videoPrompt": "The scene opens with a wireframe model of a neural network, rendered with sharp edges and a metallic sheen, floating in a dark void. Focus on the geometric complexity of the network's architecture, highlighting the interconnected layers and nodes. Gradually, data tensors represented as glowing cubes flow through the network, illuminating the pathways. The light is concentrated at the active nodes, with a subtle subsurface scattering effect on the tensor cubes as they pass through. A virtual camera pans across the network, showing the data flow from multiple angles. Overlayed on the network are real-time performance metrics: precision, recall, F1-score, visualised as line graphs and heatmaps, updating dynamically in response to the data flow. The graphs are rendered with anti-aliasing for clarity. The camera zooms in on a specific node, highlighting its weight matrix as a grid of numerical values. A frame-by-frame camera movement shows the weight matrix adjusting in response to the incoming data. The lighting shifts to emphasise the changes in the weight matrix. The scene then transitions to a split-screen view. On one side, the neural network continues to process data. On the other side, a simulated user interface displays the results of the AI's decisions. The interface includes charts, graphs, and text summaries, all updating in real-time. The camera tilts to show the correlation between the tree's internal state and the user interface's output. The lighting is adjusted to create a clear distinction between the two sides of the screen. The video concludes with a zoom out, showing the entire system – the neural network, the performance metrics, and the user interface – as a unified whole. The camera pans to reveal a title card: 'AI Test Plan: Iterative Refinement'. The lighting is soft and diffused, creating a sense of completion. The video must demonstrate the iterative nature of AI testing, showing how data flows through the system, performance is measured, and adjustments are made. The geometry should be precise and technically accurate, reflecting the underlying mathematical structures. The physics should be realistic, with appropriate material properties and lighting effects. The data visualisation should be clear and informative, using standard chart types and colour schemes. The motion should be smooth and deliberate, guiding the viewer's eye to the most important details. Imagine the tensors glowing brighter as the AI learns, the lines of code shifting and reforming to optimize for accuracy. The video must convey the dynamic and ever-evolving nature of AI testing, emphasizing the importance of continuous monitoring and adaptation. The camera movement should be fluid and engaging, drawing the viewer's eye to the most important details. The colour palette should be vibrant and modern, reflecting the latest technology being showcased. The video should be inspiring and motivating, encouraging viewers to embrace the challenges and opportunities of AI testing.",
+      "video_search_query": "neural network data flow performance metrics visualisation"
+    },
+    "blockType": "HERO VIDEO"
+  },
+  {
+    "text": "Imagine deploying an AI system without thorough testing. What could go wrong? AI systems are complex, and even small errors in training data or model design can lead to unexpected and undesirable outcomes. A reliable test plan identifies these weaknesses before they impact real-world performance.",
+    "label": "Why Test AI?",
+    "order": 4,
+    "title": "The Necessity of Rigorous AI Testing",
+    "layout": "image_text_row",
+    "reverse": true,
+    "blockType": "FLEX-1",
+    "imagePrompt": "A detailed rendering of a digital circuit board, focusing on the intricate network of conductive traces and microchips. The board is illuminated with a soft, diffused light, highlighting the sharp edges and smooth surfaces of the components. The conductive traces are made of copper, with a subtle refractive index that creates a realistic metallic sheen. The microchips are labelled with technical specifications, such as clock speed and memory capacity. The camera zooms in on a specific microchip, revealing its internal structure as a complex arrangement of transistors and logic gates. The transistors are rendered with atomic precision, showing the individual silicon atoms arranged in a crystal lattice. The logic gates are represented as Boolean circuits, with inputs and outputs clearly labelled. The camera then pans across the board, showing the flow of electrical signals from one component to another. The signals are visualised as glowing lines, with a subtle subsurface scattering effect that creates a sense of depth. The lines are coloured according to their voltage level, with red representing high voltage and blue representing low voltage. The scene is set in a cleanroom environment, with the circuit board resting on a static-dissipative mat. The background is blurred to create a sense of depth and focus. The lighting is carefully controlled to avoid reflections and glare. The image should convey the complexity and precision of modern electronics, and should inspire a sense of wonder and awe. The image should be technically accurate and visually appealing, showcasing the beauty of engineering. The image is restricted to showing a circuit board and its components, and must align with the concept of testing complex systems (LO-2). Consider the refractive index of the silicon and the metal, and how they interact with the light. The image should be sharp and clear, with no blurring or distortion. The image should be well-composed, with the circuit board as the main subject. The image should be visually appealing and engaging, drawing the viewer in to explore the details of the circuit board. The image should be informative and educational, providing a glimpse into the inner workings of modern electronics. The image should be inspiring and motivating, encouraging viewers to learn more about engineering and technology. The image should be creative and original, offering a unique perspective on a familiar subject. The image should be new and new, pushing the boundaries of what is possible with digital rendering."
+  },
+  {
+    "cards": [
+      {
+        "badge": "1",
+        "title": "Define Objectives",
+        "badgeColour": "#29ABE2",
+        "description": "Begin by clearly stating what the AI system is intended to achieve. What specific problems should it solve, and what metrics will be used to measure its success?"
+      },
+      {
+        "badge": "2",
+        "title": "Identify Risks",
+        "badgeColour": "#29ABE2",
+        "description": "What potential failures or biases could arise? Consider scenarios where the AI might make incorrect decisions or exhibit unfair behaviour."
+      },
+      {
+        "badge": "3",
+        "title": "Design Test Cases",
+        "badgeColour": "#29ABE2",
+        "description": "Develop specific tests to evaluate the AI's performance under various conditions. Include both positive and negative test cases to assess robustness."
+      },
+      {
+        "badge": "4",
+        "title": "Analyse Results",
+        "badgeColour": "#29ABE2",
+        "description": "Carefully examine the outcomes of each test case. Identify areas where the AI performs well and areas where it needs improvement. Iterate on the model and testing procedures based on the findings."
+      }
+    ],
+    "order": 5,
+    "layout": "numbered",
+    "blockType": "FLEX-2"
+  },
+  {
+    "order": 6,
+    "content": "AI systems often require more sophisticated testing approaches than traditional software. Consider techniques like adversarial testing, where the system is deliberately exposed to inputs designed to trick it. This helps uncover vulnerabilities and improve robustness.\n\nAnother important technique is fairness testing. This involves evaluating the AI's performance across different demographic groups to ensure that it does not exhibit bias. Fairness testing requires careful consideration of the data used to train the AI and the metrics used to evaluate its performance.\n\nFinally, consider using simulation and synthetic data to augment real-world testing. This can be especially useful for scenarios that are difficult or impossible to replicate in the real world, such as autonomous vehicle testing or financial risk modelling.",
+    "blockType": "FLEX-3",
+    "triggerText": "Advanced Testing Techniques"
+  },
+  {
+    "text": "To accurately assess an AI's performance, testing should mimic real-world conditions as closely as possible. This includes using realistic data, simulating user interactions, and accounting for environmental factors.",
+    "label": "Testing Environment",
+    "order": 7,
+    "title": "Realistic Testing Environments",
+    "layout": "image_text_row",
+    "reverse": false,
+    "blockType": "FLEX-4",
+    "imagePrompt": "A photorealistic rendering of a data centre, focusing on the rows of server racks and the complex network of cables and cooling systems. The server racks are densely packed with electronic components, each labelled with technical specifications. The cables are neatly organised and colour-coded, representing the flow of data between the servers. The cooling systems are designed to efficiently dissipate heat, with fans and vents strategically placed throughout the data centre. The lighting is bright and even, highlighting the cleanliness and order of the environment. The camera pans across the rows of server racks, showing the scale and complexity of the data centre. The camera then zooms in on a specific server, revealing its internal components: CPUs, GPUs, memory modules, and storage devices. The components are rendered with atomic precision, showing the individual transistors and logic gates. The camera then pans across the network of cables, showing the flow of data from one server to another. The data is visualised as glowing lines, with a subtle subsurface scattering effect that creates a sense of depth. The lines are coloured according to their bandwidth, with red representing high bandwidth and blue representing low bandwidth. The scene is set in a secure location, with biometric access controls and surveillance cameras monitoring the environment. The background is blurred to create a sense of depth and focus. The lighting is carefully controlled to avoid reflections and glare. The image should convey the importance of data infrastructure in modern AI systems, and should inspire a sense of security and reliability. The image should be technically accurate and visually appealing, showcasing the beauty of engineering. The image is restricted to showing a data centre and its components, and must align with the concept of testing AI systems in a realistic environment (LO-2). The data center should be modern and well-maintained. The server racks should be neatly organized and labeled. The cables should be color-coded and properly connected. The cooling systems should be efficient and effective. The security measures should be complete and reliable. The image should be visually appealing and technically accurate. The lighting should be even and well-distributed. The camera angle should be carefully chosen to highlight the key features of the data center. The image should be free of any distractions or clutter. The image should be optimized for online viewing."
+  },
+  {
+    "order": 8,
+    "heading": "From Theory to Practice",
+    "blockType": "FLEX-5",
+    "paragraphs": [
+      "Now that we've covered the fundamental principles of AI test plan design, let's consider how these principles can be applied in practice. What are some common challenges encountered when testing AI systems, and how can these challenges be overcome?",
+      "The following case study illustrates the process of designing and implementing an AI test plan for a real-world application. By examining this example, we can gain a deeper understanding of the practical considerations involved in AI testing."
+    ]
+  },
+  {
+    "order": 9,
+    "title": "Autonomous Vehicle Testing",
+    "caption": "Visualising the complexity of testing autonomous vehicles in diverse urban environments.",
+    "blockType": "FLEX-6",
+    "full_image": "true",
+    "imagePrompt": "A highly detailed, photorealistic rendering of an autonomous vehicle navigating a complex urban environment. The vehicle is equipped with a variety of sensors, including LiDAR, radar, and cameras, all rendered with extreme precision. The LiDAR sensor emits a laser beam that scans the environment, creating a 3D point cloud. The radar sensor detects the presence of other vehicles and pedestrians, even in adverse weather conditions. The cameras capture high-resolution images of the surroundings, allowing the vehicle to identify traffic signals, lane markings, and other important features. The urban environment is densely populated with buildings, pedestrians, and other vehicles, all rendered with realistic textures and lighting. The buildings are a mix of modern skyscrapers and historic structures, reflecting the diversity of the city. The pedestrians are engaged in a variety of activities, such as walking, talking, and shopping. The other vehicles include cars, trucks, buses, and motorcycles, all moving at different speeds and in different directions. The lighting is dynamic and realistic, with sunlight filtering through the buildings and reflecting off the surfaces of the vehicles. The camera angle is from the perspective of the autonomous vehicle, giving the viewer a sense of what it's like to work through the urban environment. The image should convey the complexity and challenges of autonomous driving, and should inspire a sense of wonder and excitement about the future of transportation. The image should be technically accurate and visually appealing, showcasing the beauty of engineering. The image is restricted to showing an autonomous vehicle in an urban environment, and must align with the concept of testing AI systems in a realistic environment (LO-2). The LiDAR sensor should be emitting a realistic laser beam. The radar sensor should be detecting other vehicles and pedestrians. The cameras should be capturing high-resolution images of the surroundings. The urban environment should be densely populated with buildings, pedestrians, and other vehicles. The lighting should be dynamic and realistic. The camera angle should be from the perspective of the autonomous vehicle. The image should convey the complexity and challenges of autonomous driving. The image should inspire a sense of wonder and excitement about the future of transportation."
+  },
+  {
+    "order": 10,
+    "steps": [
+      {
+        "label": "Define Scope",
+        "colour": "#F26419",
+        "description": "Clearly define the boundaries of the AI system and the specific functions to be tested."
+      },
+      {
+        "label": "Identify Inputs",
+        "colour": "#F26419",
+        "description": "Determine the range of inputs that the AI system will receive, including both valid and invalid data."
+      },
+      {
+        "label": "Establish Metrics",
+        "colour": "#F26419",
+        "description": "Define the key performance indicators (KPIs) that will be used to measure the AI system's success."
+      },
+      {
+        "label": "Design Test Cases",
+        "colour": "#F26419",
+        "description": "Create specific test cases that cover all aspects of the AI system's functionality, including edge cases and error conditions."
+      },
+      {
+        "label": "Execute Tests",
+        "colour": "#F26419",
+        "description": "Run the test cases and collect data on the AI system's performance."
+      },
+      {
+        "label": "Analyse Results",
+        "colour": "#F26419",
+        "description": "Analyse the test results and identify areas where the AI system needs improvement."
+      }
+    ],
+    "title": "Developing a Test Plan: A Step-by-Step Approach",
+    "blockType": "FLEX-7"
+  },
+  {
+    "order": 11,
+    "scenario": "A financial institution is developing an AI-powered fraud detection system.",
+    "blockType": "FLEX-8",
+    "challenge": "The system needs to accurately identify fraudulent transactions while minimising false positives, which could inconvenience legitimate customers. The system must also be reliable against evolving fraud techniques.",
+    "resolution": "The institution designed a complete test plan that included: testing against historical transaction data, adversarial testing with simulated fraud attempts, and A/B testing with a control group using the existing fraud detection system. The results were continuously monitored and used to refine the AI model and testing procedures."
+  },
+  {
+    "order": 12,
+    "content": {
+      "id": "VS-2.13",
+      "type": "video_snippet",
+      "title": "AI Test Plan Iteration",
+      "caption": "Visualising the iterative process of refining an AI test plan based on performance feedback and evolving requirements.",
+      "duration": "8s",
+      "videoPrompt": "The scene opens with a wireframe model of a decision tree, rendered with sharp lines and a matte finish, rotating slowly in a dark space. Focus on the hierarchical structure of the tree, highlighting the branching nodes and leaf nodes. As the tree rotates, data points represented as coloured spheres flow through the tree, following different paths based on their attributes. The spheres are rendered with a subtle subsurface scattering effect, making them appear to glow from within. A virtual camera zooms in on a specific node, showing the decision rule that determines which path the data points will follow. The decision rule is displayed as a mathematical equation, with the variables and coefficients clearly labelled. The camera then pans across the tree, showing the different paths that the data points can take. The paths are coloured according to the outcome of the decision, with green representing positive outcomes and red representing negative outcomes. Overlayed on the decision tree are real-time performance metrics: accuracy, precision, recall, visualised as bar charts and pie charts, updating dynamically in response to the data flow. The charts are rendered with anti-aliasing for clarity. The scene then transitions to a split-screen view. On one side, the decision tree continues to process data. On the other side, a simulated user interface displays the results of the AI's decisions. The interface includes tables, graphs, and text summaries, all updating in real-time. The camera tilts to show the correlation between the tree's internal state and the user interface's output. The lighting is adjusted to create a clear distinction between the two sides of the screen. The video concludes with a zoom out, showing the entire system – the decision tree, the performance metrics, and the user interface – as a unified whole. The camera pans to reveal a title card: 'AI Test Plan: Iterative Refinement'. The lighting is soft and diffused, creating a sense of completion. The video must demonstrate the iterative nature of AI testing, showing how data flows through the system, performance is measured, and adjustments are made. The geometry should be precise and technically accurate, reflecting the underlying mathematical structures. The physics should be realistic, with appropriate material properties and lighting effects. The data visualisation should be clear and informative, using standard chart types and colour schemes. The motion should be smooth and deliberate, guiding the viewer's eye to the key elements of the system. Imagine the decision tree growing and evolving as the AI learns, the data points flowing more efficiently through the tree, and the performance metrics improving over time. The video must convey the dynamic and iterative nature of AI testing, emphasizing the importance of continuous monitoring and adaptation. The camera movement should be fluid and engaging, drawing the viewer's eye to the most important details. The colour palette should be vibrant and modern, reflecting the latest technology being showcased. The video should be inspiring and motivating, encouraging viewers to embrace the challenges and opportunities of AI testing.",
+      "video_search_query": "decision tree data flow performance metrics visualisation"
+    },
+    "blockType": "SECONDARY VIDEO"
+  },
+  {
+    "order": 13,
+    "heading": "Foundation",
+    "blockType": "text",
+    "paragraphs": [
+      "The foundation of any successful AI system lies in its testing. A well-designed test plan is not merely a formality; it is a critical component of the development process. It helps ensure that the AI system functions as intended, is reliable against unexpected inputs, and is free from bias."
+    ]
+  },
+  {
+    "order": 14,
+    "style": "minimal",
+    "title": "Key Takeaways",
+    "bullets": [
+      "AI test plans must be tailored to the specific characteristics of AI systems.",
+      "Realistic testing environments are crucial for accurate performance assessment.",
+      "Iterative refinement is essential for improving AI system performance and robustness."
+    ],
+    "blockType": "recap"
+  },
+  {
+    "order": 15,
+    "blockType": "quiz",
+    "questions": [
+      {
+        "answer": "All of the above",
+        "options": [
+          "Defining the scope of the AI system",
+          "Identifying potential risks and biases",
+          "Designing specific test cases",
+          "All of the above"
+        ],
+        "question": "Which of the following is a key component of an AI test plan?"
+      },
+      {
+        "answer": "To accurately assess the AI's performance under real-world conditions",
+        "options": [
+          "To accurately assess the AI's performance under real-world conditions",
+          "To reduce the cost of testing",
+          "To speed up the testing process",
+          "To make the AI system look more impressive"
+        ],
+        "question": "Why is it important to use realistic testing environments when testing AI systems?"
+      },
+      {
+        "answer": "Exposing the AI system to inputs designed to trick it",
+        "options": [
+          "Testing the AI system against a human opponent",
+          "Exposing the AI system to inputs designed to trick it",
+          "Testing the AI system in a simulated environment",
+          "Testing the AI system with a large dataset"
+        ],
+        "question": "What is adversarial testing?"
+      }
+    ]
+  },
+  {
+    "order": 16,
+    "terms": [
+      "Test Plan",
+      "Adversarial Testing",
+      "Fairness Testing",
+      "Key Performance Indicators (KPIs)"
+    ],
+    "blockType": "key_terms"
+  },
+  {
+    "order": 17,
+    "message": "As curious explorers venturing into the uncharted territories of AI testing, what if we could build AI systems that test themselves? What if we could create a self-improving testing framework that adapts to the ever-evolving field of AI? The process of discovery never truly ends. As you continue your exploration, remember that the most significant discoveries often come from asking 'what if' and daring to challenge the status quo. Embrace the unknown, experiment fearlessly, and never stop pushing the boundaries of what is possible. The future of AI testing is in your hands, and it is brimming with possibilities waiting to be learn. The process continues, explorer!",
+    "blockType": "completion"
+  }
+]

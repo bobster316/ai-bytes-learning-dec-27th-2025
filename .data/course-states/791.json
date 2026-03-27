@@ -1,0 +1,64 @@
+{
+  "course_id": 791,
+  "course_topic": "AI Tranformer Architecture",
+  "domain_history": [
+    "Music",
+    "Travel"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "rose bush pruning",
+    "football game analysis"
+  ],
+  "used_image_urls": [
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774193075271-tkf0ht-a%20detailed%20illustrat.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774193075917-5b523-transformer%20model.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774193068937-an9v5i-data%20flow.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774193067106-kdv7wa-machine%20translation.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774193137359-6wcrf4-a%20detailed,%20colorful.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774193145317-63rdak-a%20visually%20striking%20.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774193144943-g00x6-an%20illustration%20of%20a.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774193146758-k4u86m-attention%20score%20matr.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774193150810-ehyo2i-self-attention%20netwo.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774193144373-gfdmts-multi-head%20attention.jpeg"
+  ],
+  "used_video_urls": [
+    {
+      "query": "rose bush pruning",
+      "url": "https://videos.pexels.com/video-files/1188442/1188442-hd_1920_1080_30fps.mp4",
+      "source": "pexels"
+    },
+    {
+      "query": "football game analysis",
+      "url": "https://videos.pexels.com/video-files/9517846/9517846-hd_1366_720_24fps.mp4",
+      "source": "pexels"
+    }
+  ],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 1,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 1,
+    "type_cards": 0,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 3,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

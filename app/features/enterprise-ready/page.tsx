@@ -12,7 +12,7 @@ export default function EnterpriseReadyPage() {
 
         "We offer 'Bulk Certificate Generation' and management. When your data science team completes their 'Advanced NLP' module, you can generate and distribute their certificates instantly. This is vital for compliance and for internal morale. Celebrating these wins publicly helps build a culture of continuous learning within your firm.",
 
-        "Our 'Team Analytics' are granular and actionable. You can see not just who has watched a video, but who has passed the assessments. You can identify your internal champions—the employees who are engaging most deeply—and your stragglers who might need more support or time. This data allows you to measure the effectiveness of your training budget. You can prove to the board that the investment in AI Bytes is translating into verified skill acquisition.",
+        "Our 'Team Analytics' are granular and actionable. You can see not just who has watched a video, but who has passed the assessments. You can identify your internal champions—the employees who are engaging most deeply—and your stragglers who might need more support or time. This data allows you to measure the effectiveness of your training budget. You can prove to the board that the investment in AI Bytes Learning is translating into verified skill acquisition.",
 
         "Security is paramount for enterprise. We support Single Sign-On (SSO) integration with major identity providers like Okta, Azure AD, and Google Workspace. This means your employees don't need another password to remember. They log in with their corporate credentials, ensuring a seamless and secure user experience. It also means you retain control over access; if an employee leaves, their access is automatically revoked.",
 
@@ -60,3 +60,4 @@ export default function EnterpriseReadyPage() {
         />
     );
 }
+

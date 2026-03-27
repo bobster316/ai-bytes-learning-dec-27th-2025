@@ -1,0 +1,53 @@
+{
+  "course_id": 834,
+  "course_topic": "Attention Mechanisms in Transformers",
+  "domain_history": [
+    "Nature"
+  ],
+  "structure_history": [
+    "The Hook"
+  ],
+  "tone_history": [
+    "Warm Mentor"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [],
+  "used_image_urls": [
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774643476480-2b3y7-3d%20isometric%20render%20.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774643472680-hikdb-3d%20isometric%20render%20.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774643480421-cbdpj-3d%20isometric%20render%20.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774643464337-sdht56-mandatory:%20use%20minim.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774643470220-1o6s8f-3d%20isometric%20render%20.jpeg"
+  ],
+  "used_video_urls": [
+    {
+      "query": "This video demonstrates the mathematical operations involved in attention mechanisms, building on 'T",
+      "url": "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/videos/veo-1774643532926-yl971f.mp4",
+      "source": "veo"
+    },
+    {
+      "query": "This video demonstrates the core intuition behind attention weights within the context of the 'The I",
+      "url": "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/videos/veo-1774643571607-eacfi.mp4",
+      "source": "veo"
+    }
+  ],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 0,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 0,
+    "type_cards": 0,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 0,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

@@ -1,0 +1,5 @@
+.archive/
+.tmp.driveupload/
+node_modules/
+logs/
+.git/

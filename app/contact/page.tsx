@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import Link from "next/link";
 import { Mail, MapPin, Phone, Clock, Send, Home, ChevronRight, CheckCircle, Loader2 } from "lucide-react";
 
 export default function ContactPage() {
@@ -45,7 +46,7 @@ export default function ContactPage() {
       {/* Hero Section */}
       <section className="relative min-h-[50vh] flex items-center overflow-hidden py-20 bg-slate-900 shadow-2xl">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-900/20 via-slate-900 to-slate-900 pointer-events-none"></div>
-        <div className="container relative z-10 mx-auto px-4 max-w-7xl">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center space-y-6">
             <span className="inline-block py-1 px-3 rounded-full bg-white/10 border border-[#086c7f]/20 text-cyan-300 font-medium text-lg tracking-wide uppercase">
               GET IN TOUCH
@@ -62,7 +63,7 @@ export default function ContactPage() {
 
       {/* Main Content */}
       <section className="py-12">
-        <div className="container mx-auto px-4">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Contact Form */}
             <div className="lg:col-span-2">
@@ -178,8 +179,8 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground mb-1">Email</h3>
-                      <p className="text-sm text-foreground/70">support@aibytes.learning</p>
-                      <p className="text-sm text-foreground/70">hello@aibytes.learning</p>
+                      <p className="text-sm text-foreground/70">support@ai-bytes.org</p>
+                      <p className="text-sm text-foreground/70">admin@ai-bytes.org</p>
                     </div>
                   </div>
 
@@ -189,8 +190,8 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground mb-1">Phone</h3>
-                      <p className="text-sm text-foreground/70">+44 (0) 20 1234 5678</p>
-                      <p className="text-sm text-foreground/70">Mon-Fri, 9am-6pm GMT</p>
+                      <p className="text-sm text-foreground/70">+44 (0) 20 7946 0123</p>
+                      <p className="text-sm text-foreground/70">Mon-Fri, 9am-5.30pm GMT</p>
                     </div>
                   </div>
 
@@ -199,9 +200,9 @@ export default function ContactPage() {
                       <MapPin className="w-6 h-6 text-[#086c7f]" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-foreground mb-1">Office</h3>
-                      <p className="text-sm text-foreground/70">123 Learning Street</p>
-                      <p className="text-sm text-foreground/70">London, EC2A 4BX</p>
+                      <h3 className="font-semibold text-foreground mb-1">Headquarters</h3>
+                      <p className="text-sm text-foreground/70">Google Campus, 4-5 Bonhill St</p>
+                      <p className="text-sm text-foreground/70">Shoreditch, London EC2A 4BX</p>
                       <p className="text-sm text-foreground/70">United Kingdom</p>
                     </div>
                   </div>
@@ -225,9 +226,11 @@ export default function ContactPage() {
                   <p className="text-sm text-foreground-inverse/70 mb-4">
                     Check our Help Centre for quick answers to common questions.
                   </p>
-                  <Button variant="outline" className="w-full border-border text-foreground-inverse hover:bg-foreground-inverse/10">
-                    Visit Help Centre
-                  </Button>
+                  <Link href="/help" className="block w-full">
+                    <Button variant="outline" className="w-full border-border text-foreground-inverse hover:bg-foreground-inverse/10">
+                      Visit Help Centre
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             </div>
@@ -237,7 +240,7 @@ export default function ContactPage() {
 
       {/* FAQ Section */}
       <section className="py-12 bg-card border-t border-border">
-        <div className="container mx-auto px-4">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-2xl font-bold text-foreground mb-6 text-center">
               Frequently Asked Questions
@@ -288,3 +291,4 @@ export default function ContactPage() {
     </div>
   );
 }
+

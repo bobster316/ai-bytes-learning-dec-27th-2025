@@ -1,0 +1,51 @@
+const { createClient } = require('@supabase/supabase-js');
+const dotenv = require('dotenv');
+const { QualityAssuranceService } = require('../lib/services/quality-assurance');
+
+// Mock browser APIs for Node environment if needed by libraries
+global.fetch = require('node-fetch');
+
+dotenv.config({ path: '.env.local' });
+
+async function run() {
+    console.log('Initializing QA Manual Run...');
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+    
+    // Get latest course
+    const { data: course } = await supabase
+        .from('courses')
+        .select('id, title')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+        
+    if (!course) {
+        console.error('No course found');
+        return;
+    }
+    
+    console.log(`Targeting Course: ${course.title} (${course.id})`);
+    
+    // Get lessons
+    const { data: lessons } = await supabase
+        .from('course_lessons')
+        .select('id, title')
+        // Get generic topic lookup 
+        .in('topic_id', (await supabase.from('course_topics').select('id').eq('course_id', course.id)).data.map(t => t.id));
+        
+    console.log(`Found ${lessons.length} lessons. Running QA...`);
+    
+    // Instantiate Service - NOTE: This requires ts-node or transpilation if importing TS directly. 
+    // Since we are in simple JS script, we might have issues importing the class if it's TS.
+    // OPTION B: We use the existing API route logic but call the logic directly if possible, OR we just invoke the API route using fetch.
+    
+    // Let's use the API route approach as it handles environment better
+    const apiUrl = 'http://localhost:3000/api/admin/quality-reports'; 
+    // Wait, that API is likely for GETting reports.
+    
+    // Actually, `check-generation-status.js` might have better clues.
+    // Given the complexity of importing TS into detailed JS script without setup, 
+    // I will try to use the `ts-node` if available, or just use `npx tsx` to run a TS script.
+}
+
+// I will write this as a TS script and run with npx tsx

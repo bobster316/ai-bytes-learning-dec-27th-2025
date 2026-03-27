@@ -3,8 +3,10 @@ import { logMediaToRegistry } from '@/lib/utils/registry';
 import fs from 'fs';
 import path from 'path';
 import OpenAI from 'openai';
+import sharp from 'sharp';
 import { geminiImageService } from './gemini-image-service';
 import { diagramGenerator } from '@/lib/diagrams/diagram-generator';
+import { CourseState } from './course-state';
 
 const PEXELS_API_KEY = process.env.PEXELS_API_KEY;
 const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
@@ -102,203 +104,150 @@ export class MediaService {
      * Search Pexels for images to ensure relevance and quality.
      * Falls back to Unsplash if Pexels fails or yields no results.
      */
-    async fetchImages(prompts: string[]): Promise<LessonImage[]> {
+    async fetchImages(prompts: { prompt: string, domain?: string }[], courseState: CourseState | null = null): Promise<LessonImage[]> {
         const results: LessonImage[] = [];
 
         let index = 0;
-        for (const rawPrompt of prompts) {
-            // Clean up prompt to remove legacy prefixes
-            const prompt = rawPrompt.replace(/^PHOTOREALISTIC:\s*/i, '');
-
-            // =========================================================
-            // PRIMARY: Try Gemini 2.5 Flash Image first (best quality)
-            // =========================================================
-            if (geminiImageService.isAvailable()) {
-                console.log(`[MediaService] 🎨 Trying Gemini for: "${prompt.substring(0, 50)}..."`);
-
-                // Pass index for variable seed/temperature generation
-                const geminiImage = await geminiImageService.generateImage(prompt, index);
-                index++;
-
-                if (geminiImage) {
-                    results.push({
-                        url: geminiImage.url,
-                        alt: geminiImage.alt,
-                        caption: geminiImage.caption
-                    });
-                    await logMediaToRegistry(geminiImage.url, prompt);
-                    continue; // Success! Move to next prompt
-                }
-
-                console.log('[MediaService] Gemini failed, falling back to alternative providers...');
-            }
-
-            // =========================================================
-            // FALLBACK: Existing diagram/stock logic
-            // =========================================================
-
-            // NUCLEAR FIX: Force diagram detection for any technical keywords
-            const technicalKeywords = [
-                'neural', 'network', 'diagram', 'architecture', 'algorithm',
-                'perceptron', 'layer', 'node', 'technical', 'schematic',
-                'illustration', 'infographic', 'visualization', 'model', 'ai', 'data'
+        for (const input of prompts) {
+            const rawPrompt = input.prompt;
+            const domain = input.domain || 'Generic';
+            
+            // Check if it's a diagram
+            const tier1Keywords = [
+                'flowchart', 'timeline', 'comparison chart', 'pie chart', 
+                'bar graph', 'org chart', 'mind map', 'cycle diagram', 
+                'venn diagram', 'funnel', 'comparison'
             ];
-
-            const isDiagram = technicalKeywords.some(keyword =>
-                prompt.toLowerCase().includes(keyword)
-            );
-
-            console.log(`[MediaService] Fallback mode. Type: ${isDiagram ? 'DIAGRAM (SVG)' : 'PHOTO (STOCK)'}, Prompt: "${prompt}"`);
+            
+            const isDiagram = tier1Keywords.some(keyword => rawPrompt.toLowerCase().includes(keyword));
 
             if (isDiagram) {
-                // =========================================================
-                // PHASE 2: PROGRAMMATIC DIAGRAMS (Mermaid / Custom SVG)
-                // =========================================================
-                console.log('[MediaService] 🛠️ Generating programmatic diagram for:', prompt);
-
-                let svgContent = '';
-
-                // Detect Diagram Type
-                if (prompt.toLowerCase().match(/(neural|network|deep learning|perceptron|layer)/)) {
-                    // Generate specific Neural Network Topology
-                    const layers = [
-                        Math.floor(Math.random() * 3) + 3, // Input
-                        Math.floor(Math.random() * 4) + 4, // Hidden
-                        Math.floor(Math.random() * 4) + 4, // Hidden
-                        Math.floor(Math.random() * 2) + 2  // Output
-                    ];
-
-                    try {
-                        svgContent = await diagramGenerator.generate('neural-network', {
-                            title: prompt.length > 50 ? prompt.substring(0, 50) + '...' : prompt,
-                            data: { layers }
-                        });
-                    } catch (e) {
-                        console.error("Diagram generation error:", e);
-                    }
-                }
-
-                // Fallback to Phase 1 Generic Placeholder if specific generator didn't run or failed
-                if (!svgContent) {
-                    // Deterministic color based on prompt length
-                    const hue = (prompt.length * 13) % 360;
-
-                    svgContent = `
-                    <svg width="1280" height="720" viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                            </pattern>
-                            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#1e293b;stop-opacity:1" />
-                            </linearGradient>
-                        </defs>
-                        <rect width="1280" height="720" fill="url(#grad)"/>
-                        <rect width="1280" height="720" fill="url(#grid)"/>
-                        
-                        <!-- Center Content -->
-                        <g transform="translate(640, 360)" text-anchor="middle">
-                            <circle r="60" fill="none" stroke="hsl(${hue}, 70%, 50%)" stroke-width="2" opacity="0.8"/>
-                            <circle r="50" fill="none" stroke="hsl(${hue}, 70%, 50%)" stroke-width="1" stroke-dasharray="4 4" opacity="0.6">
-                                <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="20s" repeatCount="indefinite"/>
-                            </circle>
-                            
-                            <text y="-80" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="hsl(${hue}, 70%, 60%)" letter-spacing="4" font-weight="600" text-transform="uppercase">
-                                Technical Diagram
-                            </text>
-                            
-                            <text y="140" font-family="system-ui, -apple-system, sans-serif" font-size="24" fill="#e2e8f0" letter-spacing="1" font-weight="500">
-                                ${prompt.substring(0, 40)}${prompt.length > 40 ? '...' : ''}
-                            </text>
-
-                            <!-- Abstract Nodes -->
-                            <circle cx="-120" cy="0" r="4" fill="#94a3b8"/>
-                            <circle cx="120" cy="0" r="4" fill="#94a3b8"/>
-                            <line x1="-110" y1="0" x2="-70" y2="0" stroke="#334155" stroke-width="2"/>
-                            <line x1="70" y1="0" x2="110" y2="0" stroke="#334155" stroke-width="2"/>
-                        </g>
-                    </svg>
-                    `;
-                }
-
-                // Convert to Base64 Data URI
-                const base64Svg = Buffer.from(svgContent).toString('base64');
-                const dataUri = `data:image/svg+xml;base64,${base64Svg}`;
-
-                results.push({
-                    url: dataUri,
-                    alt: "Professional Diagram: " + prompt,
-                    caption: "Technical visualization of " + prompt
+                // Determine layout type based on keywords
+                let layout: any = 'concept-map';
+                if (rawPrompt.toLowerCase().includes('neural')) layout = 'neural-network';
+                else if (rawPrompt.toLowerCase().includes('flowchart') || rawPrompt.toLowerCase().includes('process')) layout = 'flowchart';
+                else if (rawPrompt.toLowerCase().includes('timeline')) layout = 'timeline';
+                else if (rawPrompt.toLowerCase().includes('cycle')) layout = 'cycle';
+                else if (rawPrompt.toLowerCase().includes('comparison')) layout = 'comparison';
+                else if (rawPrompt.toLowerCase().includes('funnel')) layout = 'funnel';
+                else if (rawPrompt.toLowerCase().includes('mind map')) layout = 'mindmap';
+                else if (rawPrompt.toLowerCase().includes('venn')) layout = 'venn';
+                
+                let svgContent = await diagramGenerator.generate(layout, {
+                    title: rawPrompt.length > 50 ? rawPrompt.substring(0, 50) + '...' : rawPrompt,
+                    domain: domain
                 });
 
-                // Skip all AI generation steps for diagrams (Phase 1)
-
-                // =========================================================
-
+                const base64Svg = Buffer.from(svgContent).toString('base64');
+                results.push({
+                    url: `data:image/svg+xml;base64,${base64Svg}`,
+                    alt: "Professional Diagram: " + rawPrompt,
+                    caption: "Technical visualization of " + rawPrompt
+                });
+                
             } else {
-                // =========================================================
-                // PHOTO PIPELINE (Stock Allowed)
-                // =========================================================
-                try {
-                    let image: LessonImage | null = null;
-                    let attempts = 0;
-                    let currentPage = Math.floor(Math.random() * 20) + 1;
-
-                    while (attempts < 5 && !image) {
-                        attempts++;
-
-                        // 1. Try Pexels first for photos (Faster/Cheaper)
-                        const pexelsImage = await this.searchPexelsImage(prompt, currentPage);
-                        if (pexelsImage) {
-                            if (!(await this.isMediaUsed(this.getMediaId(pexelsImage.url), pexelsImage.url))) {
-                                this.sessionUsedIds.add(this.getMediaId(pexelsImage.url));
-                                await logMediaToRegistry(pexelsImage.url, prompt);
-                                image = pexelsImage;
-                                break;
-                            }
-                        }
-
-                        // 2. Try Unsplash
-                        if (!image) {
-                            const unsplashImage = await this.searchUnsplashImage(prompt, currentPage);
-                            if (unsplashImage) {
-                                if (!(await this.isMediaUsed(this.getMediaId(unsplashImage.url), unsplashImage.url))) {
-                                    this.sessionUsedIds.add(this.getMediaId(unsplashImage.url));
-                                    await logMediaToRegistry(unsplashImage.url, prompt);
-                                    image = unsplashImage;
-                                    break;
-                                }
-                            }
-                        }
-
-                        currentPage++;
-                    }
-
-                    if (image) {
-                        results.push(image);
-                    } else {
-                        // Fallback to Pollinations for "Photo" style
-                        const seed = Math.floor(Math.random() * 1000000);
-                        results.push({
-                            url: `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1280&height=720&nologo=true&seed=${seed}`,
-                            alt: prompt,
-                            caption: prompt
-                        });
-                    }
-
-                } catch (error) {
-                    console.error(`[MediaService] Error fetching photo for '${prompt}':`, error);
-                    results.push({
-                        url: `https://placehold.co/1280x720/1e293b/94a3b8?text=Image+Unavailable`,
-                        alt: "Image loading failed",
-                        caption: "Image Unavailable"
-                    });
-                }
+                // Strict Image Waterfall: Primary -> Fallback Noun -> Domain Object -> Unsplash -> SVG
+                const image = await this.executeStrictImageWaterfall(rawPrompt, domain, courseState);
+                results.push(image);
             }
         }
-
         return results;
+    }
+    
+    private async executeStrictImageWaterfall(prompt: string, domain: string, courseState: CourseState | null): Promise<LessonImage> {
+        let avoidedUrls = courseState ? courseState.used_image_urls : [];
+        const originalQuery = this.extractSearchQuery(prompt);
+        
+        // 1. Primary Query
+        const primary = await this.searchPexelsImage(originalQuery, 1, avoidedUrls);
+        if (primary) return primary;
+        
+        // 2. Fallback Query (Noun extraction / highly simplified)
+        const fallbackQuery = originalQuery.split(' ').slice(-2).join(' '); // last 2 words hoping for nouns
+        if (fallbackQuery && fallbackQuery !== originalQuery) {
+            const fallback = await this.searchPexelsImage(fallbackQuery, 1, avoidedUrls);
+            if (fallback) return fallback;
+        }
+
+        // 3. Domain Object Query
+        const domainQuery = domain !== 'Generic' ? domain : 'Technology abstract';
+        const domainImg = await this.searchPexelsImage(domainQuery, 1, avoidedUrls);
+        if (domainImg) return domainImg;
+        
+        // 4. Cross Provider (Unsplash)
+        const unsplashPrimary = await this.searchUnsplashImage(originalQuery, 1, avoidedUrls);
+        if (unsplashPrimary) return unsplashPrimary;
+        
+        const unsplashDomain = await this.searchUnsplashImage(domainQuery, 1, avoidedUrls);
+        if (unsplashDomain) return unsplashDomain;
+        
+        // 5. SVG Fallback (Total failure)
+        let svgContent = await diagramGenerator.generate('concept-map', {
+            title: originalQuery.substring(0, 30),
+            domain: domain
+        });
+        const base64Svg = Buffer.from(svgContent).toString('base64');
+        return {
+            url: `data:image/svg+xml;base64,${base64Svg}`,
+            alt: "Fallback Visual",
+            caption: originalQuery
+        };
+    }
+
+    /**
+     * Sanitises search queries by stripping banned terms and extracting concrete nouns.
+     */
+    private sanitiseQuery(query: string): string {
+        const bannedTerms = [
+            'technology', 'ai', 'artificial intelligence', 'digital', 'tech', 
+            'machine learning', 'computer', 'software', 'data', 'algorithm', 
+            'neural', 'cyber', 'virtual', 'cloud computing',
+            'abstract', 'concept of', 'illustration of', 'representation of', 
+            'visualisation of', 'metaphor for', 'symbol of',
+            'showing', 'depicting', 'representing', 'symbolising', 'illustrating', 
+            'demonstrating', 'conveying'
+        ];
+
+        let sanitized = query;
+        for (const term of bannedTerms) {
+            const regex = new RegExp(`\\b${term}\\b`, 'gi');
+            sanitized = sanitized.replace(regex, '');
+        }
+
+        // Clean up extra spaces
+        sanitized = sanitized.replace(/\s+/g, ' ').trim();
+        
+        // Truncate to first 4 words for better search matches if still long
+        const words = sanitized.split(' ');
+        if (words.length > 5) {
+            sanitized = words.slice(0, 4).join(' ');
+        }
+        
+        return sanitized || query.substring(0, 40);
+    }
+
+    /**
+     * Extracts a concise search term from a verbose AI imagePrompt.
+     * e.g. "A photorealistic 8k render of neural networks glowing..." → "neural networks"
+     */
+    private extractSearchQuery(prompt: string): string {
+        let q = prompt
+            // Strip common generative prefixes
+            .replace(/^(a|an)\s+(photorealistic|cinematic|8k|digital|professional|high-quality|stunning|beautiful|dramatic|futuristic)\s+(render|image|photo|illustration|visualization|depiction)?\s*(of\s*)?/gi, '')
+            .replace(/^(photo|image|illustration|render|visualization|depiction)\s+of\s+/gi, '')
+            // Strip quality suffixes
+            .replace(/\s+(8k|hdr|cinematic|photorealistic|dramatic lighting|ultra-realistic|high resolution|studio lighting)[^,.;]*/gi, '');
+
+        // Take up to first comma or 55 chars
+        q = q.split(/[,;.]/)[0].trim().substring(0, 75);
+        return this.sanitiseQuery(q);
+    }
+
+    /**
+     * Fast parallel image fetch using Pexels/Unsplash only. Falls back to waterfall.
+     */
+    async fetchImagesParallel(prompts: { prompt: string, domain?: string }[], courseState: CourseState | null = null): Promise<LessonImage[]> {
+        return Promise.all(prompts.map(p => this.executeStrictImageWaterfall(p.prompt, p.domain || 'Generic', courseState)));
     }
 
     /**
@@ -356,11 +305,19 @@ export class MediaService {
         try {
             console.log('[MediaService] Generating image with DALL-E 3:', prompt);
 
-            // Educational diagram strict prompt engineering
-            const enhancedPrompt = `Professional educational diagram, NOT a photograph: ${prompt}. 
-            Digital illustration style, clean vector graphics, infographic quality, minimal aesthetic. 
-            Technical schematic with labels and annotations. No photographic elements. 
-            Dark background with neon/cyan accents preferred for "cyber" look.`;
+            let stylePrompt = "";
+
+            if (prompt.includes("3D ISOMETRIC")) {
+                stylePrompt = "High-end 3D isometric render, depth-rich, octane render style, clean background, highly detailed technical illustration.";
+            } else if (prompt.includes("SPLIT-SCREEN")) {
+                stylePrompt = "Split-screen comparison, distinct side-by-side elements, clear contrast, photorealistic composite.";
+            } else if (prompt.includes("FUTURISTIC UI")) {
+                stylePrompt = "Futuristic UI dashboard, glowing holograms, cyan and purple neon data visualization, high-tech HUD interface, black background.";
+            } else {
+                stylePrompt = "Digital illustration style, clean vector graphics, infographic quality, minimal aesthetic. Technical schematic with labels.";
+            }
+
+            const enhancedPrompt = `Professional educational visual: ${prompt}. ${stylePrompt} No text overlays unless specified.`;
 
             const response = await openai.images.generate({
                 model: "dall-e-3",
@@ -503,11 +460,11 @@ export class MediaService {
         return null;
     }
 
-    private async searchPexelsImage(query: string, page: number = 1): Promise<LessonImage | null> {
+    private async searchPexelsImage(query: string, page: number = 1, avoidedUrls: string[] = []): Promise<LessonImage | null> {
         if (!PEXELS_API_KEY) return null;
 
         try {
-            const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=1&page=${page}&orientation=landscape`;
+            const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=10&page=${page}&orientation=landscape`;
             const res = await fetch(url, {
                 headers: { Authorization: PEXELS_API_KEY }
             });
@@ -516,7 +473,17 @@ export class MediaService {
             const data = await res.json();
 
             if (data.photos && data.photos.length > 0) {
-                const photo = data.photos[0];
+                // Find first photo not in avoidedUrls AND not in the current session set
+                const validPhoto = data.photos.find((p: any) => 
+                    !avoidedUrls.includes(p.src.large) && 
+                    !avoidedUrls.includes(p.src.large2x) &&
+                    !this.sessionUsedIds.has(p.id.toString())
+                );
+                const photo = validPhoto || data.photos[0]; // fallback to first if all used (graceful degradation)
+                
+                this.sessionUsedIds.add(photo.id.toString());
+                await logMediaToRegistry(photo.src.large2x || photo.src.large, query); // log to file registry
+                
                 return {
                     url: photo.src.large2x || photo.src.large,
                     alt: photo.alt || query,
@@ -529,11 +496,11 @@ export class MediaService {
         return null;
     }
 
-    private async searchUnsplashImage(query: string, page: number = 1): Promise<LessonImage | null> {
+    private async searchUnsplashImage(query: string, page: number = 1, avoidedUrls: string[] = []): Promise<LessonImage | null> {
         if (!UNSPLASH_ACCESS_KEY) return null;
 
         try {
-            const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1&page=${page}&orientation=landscape`;
+            const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=10&page=${page}&orientation=landscape`;
             const res = await fetch(url, {
                 headers: { Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}` }
             });
@@ -542,7 +509,15 @@ export class MediaService {
             const data = await res.json();
 
             if (data.results && data.results.length > 0) {
-                const photo = data.results[0];
+                const validPhoto = data.results.find((p: any) => 
+                    !avoidedUrls.includes(p.urls.regular) &&
+                    !this.sessionUsedIds.has(p.id.toString())
+                );
+                const photo = validPhoto || data.results[0];
+                
+                this.sessionUsedIds.add(photo.id.toString());
+                await logMediaToRegistry(photo.urls.regular, query);
+                
                 return {
                     url: photo.urls.regular,
                     alt: photo.alt_description || query,
@@ -555,15 +530,140 @@ export class MediaService {
         return null;
     }
 
-    async fetchCourseThumbnail(title: string): Promise<string> {
-        // High-effort thumbnail search
-        // We use a specific suffix to get "wallpaper" style images
-        const images = await this.fetchImages([title + " abstract futuristic technology wallpaper"]);
-        if (images.length > 0) return images[0].url;
+    async fetchCourseThumbnail(title: string, description?: string, customPrompt?: string): Promise<string> {
+        let prompt = "";
 
-        // Fallback with uniqueness seed
-        const seed = Math.floor(Math.random() * 1000000);
-        return `https://image.pollinations.ai/prompt/${encodeURIComponent(title)}%20abstract?width=1600&height=900&nologo=true&seed=${seed}`;
+        if (customPrompt && customPrompt.length > 20) {
+            prompt = `${customPrompt}. MANDATORY STYLE: Deep dark navy background (#0D1117). Teal/cyan (#00BCD4) and purple (#6B3FA0) dominant accent colours. Cinematic atmospheric lighting with subtle glow effects. Clean minimal geometric composition. Ultra high resolution. Absolutely NO text, letters, or words anywhere in the image. Premium sophisticated professional aesthetic for senior business executives.`;
+        } else {
+            const context = description ? description.substring(0, 150) : title;
+            prompt = `Premium cinematic digital illustration for an AI microlearning course titled "${title}". Abstract conceptual visual metaphor representing: ${context}. MANDATORY: Deep dark navy background (#0D1117). Teal/cyan and purple dominant accent colours with cinematic glow lighting. Clean minimal geometric composition. Absolutely NO text or words in the image. Sophisticated premium aesthetic for senior business professionals. Ultra high resolution. 16:9 aspect ratio.`;
+        }
+
+        const images = await this.fetchImages([{ prompt }]);
+        const baseUrl = images.length > 0 ? images[0].url : `https://images.pexels.com/photos/373543/pexels-photo-373543.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2`;
+
+        // NEW: Add Title Overlay for "WOW" Factor
+        try {
+            return await this.generateCourseThumbnailWithTitle(title, baseUrl);
+        } catch (e) {
+            console.error("[MediaService] Title overlay failed, returning base image:", e);
+            return baseUrl;
+        }
+    }
+
+    /**
+     * Composites the course title onto the background image using sharp + SVG.
+     */
+    async generateCourseThumbnailWithTitle(title: string, backgroundUrl: string): Promise<string> {
+        console.log(`[MediaService] 🎨 Compositing title overlay for: "${title}"`);
+
+        // 1. Fetch background image
+        const response = await fetch(backgroundUrl);
+        const arrayBuffer = await response.arrayBuffer();
+        const backgroundBuffer = Buffer.from(arrayBuffer);
+
+        // 2. Adaptive font size — scale down for long titles or long individual words
+        const svgWidth = 1200;
+        const svgHeight = 675; // 16:9
+        const usableWidth = svgWidth * 0.82; // 82% of canvas width for safe margins
+
+        const upperTitle = title.toUpperCase();
+        const longestWord = upperTitle.split(' ').reduce((a, b) => a.length > b.length ? a : b, '');
+        const totalChars = upperTitle.length;
+
+        // Approximate px per character for bold uppercase sans-serif: ~0.58 * fontSize
+        let fontSize: number;
+        if (totalChars > 55 || longestWord.length > 15) {
+            fontSize = 52;
+        } else if (totalChars > 38 || longestWord.length > 12) {
+            fontSize = 66;
+        } else {
+            fontSize = 84;
+        }
+
+        // Chars that fit per line at the chosen font size
+        const charWidth = fontSize * 0.58;
+        const maxCharsPerLine = Math.floor(usableWidth / charWidth);
+
+        // Wrap text into lines
+        const words = upperTitle.split(' ');
+        const lines: string[] = [];
+        let currentLine = "";
+
+        words.forEach(word => {
+            const candidate = currentLine ? currentLine + word : word;
+            if (candidate.length > maxCharsPerLine && currentLine) {
+                lines.push(currentLine.trim());
+                currentLine = word + " ";
+            } else {
+                currentLine += word + " ";
+            }
+        });
+        if (currentLine.trim()) lines.push(currentLine.trim());
+
+        // If still too many lines, reduce font size further
+        if (lines.length > 4) fontSize = Math.max(38, Math.floor(fontSize * 0.8));
+
+        const lineHeight = fontSize * 1.15;
+        const startY = (svgHeight / 2) - ((lines.length - 1) * lineHeight / 2) + (fontSize / 3);
+
+        const textElements = lines.map((line, i) => `
+            <text x="50%" y="${startY + (i * lineHeight)}" 
+                  text-anchor="middle" 
+                  fill="white" 
+                  font-family="sans-serif" 
+                  font-weight="900" 
+                  font-size="${fontSize}px">
+                ${line}
+            </text>
+        `).join('');
+
+        const svgOverlay = `
+            <svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="vignette" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:black;stop-opacity:0.4" />
+                        <stop offset="20%" style="stop-color:black;stop-opacity:0" />
+                        <stop offset="80%" style="stop-color:black;stop-opacity:0" />
+                        <stop offset="100%" style="stop-color:black;stop-opacity:0.7" />
+                    </linearGradient>
+                    <linearGradient id="textBackdrop" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:black;stop-opacity:0" />
+                        <stop offset="20%" style="stop-color:black;stop-opacity:0.6" />
+                        <stop offset="80%" style="stop-color:black;stop-opacity:0.6" />
+                        <stop offset="100%" style="stop-color:black;stop-opacity:0" />
+                    </linearGradient>
+                </defs>
+                
+                <!-- Dark strip for text legibility -->
+                <rect x="0" y="${startY - fontSize * 1.2}" width="100%" height="${lines.length * lineHeight + fontSize}" fill="url(#textBackdrop)" />
+                
+                <rect width="100%" height="100%" fill="url(#vignette)" />
+                
+                ${textElements}
+                
+                <!-- Bottom Branding -->
+                <text x="50%" y="${svgHeight - 40}" text-anchor="middle" fill="white" fill-opacity="0.4" font-family="sans-serif" font-weight="bold" font-size="22px" letter-spacing="Track">
+                    AI BYTES LEARNING
+                </text>
+            </svg>
+        `;
+
+        // 4. Composite with Sharp
+        const finalImageBuffer = await sharp(backgroundBuffer)
+            .resize(svgWidth, svgHeight)
+            .composite([{
+                input: Buffer.from(svgOverlay),
+                top: 0,
+                left: 0
+            }])
+            .png()
+            .toBuffer();
+
+        // 5. Upload to Supabase
+        const publicUrl = await geminiImageService.generateImageFromBuffer(finalImageBuffer, 'image/png', `thumbnail-${title.toLowerCase().replace(/[^a-z0-9]/g, '-')}`);
+        return publicUrl || backgroundUrl;
     }
 }
 

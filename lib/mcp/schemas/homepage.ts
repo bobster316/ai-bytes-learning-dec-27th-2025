@@ -1,7 +1,7 @@
 /**
  * @fileoverview Defines the Model Context Protocol for the dynamic homepage.
  * This file specifies the context for personalizing the homepage content
- * and the expected shape of the AI-generated elements.
+ * and the expected shape of the generated elements.
  */
 
 /**

@@ -15,7 +15,10 @@ import {
     MoreHorizontal,
     Eye,
     Archive,
-    CheckCircle
+    CheckCircle,
+    Wand2,
+    Headphones,
+    Loader2
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -31,6 +34,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ApiUsageDashboard } from "@/components/admin/api-usage-dashboard";
 
 export default function AdminCoursesPage() {
     const [courses, setCourses] = useState<any[]>([]);
@@ -56,7 +60,7 @@ export default function AdminCoursesPage() {
 
     const fetchCourses = useCallback(async () => {
         try {
-            const response = await fetch('/api/admin/courses/list');
+            const response = await fetch(`/api/admin/courses/list?t=${Date.now()}`, { cache: 'no-store' });
             if (response.ok) {
                 const data = await response.json();
                 setCourses(data.courses || []);
@@ -64,8 +68,11 @@ export default function AdminCoursesPage() {
                 // Valid state: No courses yet or endpoint not ready
                 setCourses([]);
             } else if (response.status === 500) {
-                // Generation likely in progress - silent return (Option B)
-                return;
+                const errText = await response.text();
+                console.error("Server 500 Error:", errText);
+                // alert(`Server Error: ${errText}`); // Optional: alert for visibility
+                // return;
+
             } else {
                 console.warn(`Fetch courses status: ${response.status}`);
             }
@@ -81,26 +88,32 @@ export default function AdminCoursesPage() {
     }, [fetchCourses]);
 
     async function deleteCourse(id: string) {
-        if (!confirm("Are you sure? This will delete all topics, lessons, and quizzes permanently.")) {
-            return;
-        }
+        // if (!confirm("Are you sure? This will delete all topics, lessons, and quizzes permanently.")) {
+        //     return;
+        // }
+        console.log("Delete triggered for:", id);
 
         try {
-            setLoading(true);
-            const response = await fetch(`/api/course/delete?id=${id}`, {
-                method: 'DELETE',
+            // setLoading(true); // Don't hide the list while deleting
+            const response = await fetch('/api/course/bulk-delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids: [id] })
             });
 
             if (response.ok) {
-                await fetchCourses(); // Refresh list
+                // Optimistic Update: Remove immediately from UI
+                setCourses(current => current.filter(c => c.id !== id));
+                // await fetchCourses(); // No need to re-fetch immediately if optimistic update works
             } else {
                 const err = await response.json();
                 console.error("Delete failed:", err);
-                alert("Failed to delete course. Please check console.");
+                alert(`Failed to delete course: ${err.error || 'Unknown error'}`);
                 setLoading(false);
             }
         } catch (e) {
             console.error("Delete exception:", e);
+            alert("An error occurred while deleting the course.");
             setLoading(false);
         }
     }
@@ -152,41 +165,130 @@ export default function AdminCoursesPage() {
         }
     };
 
-    const deleteSelected = async () => {
-        if (!confirm(`Are you sure you want to delete ${selectedCourses.size} courses? This cannot be undone.`)) return;
-        setLoading(true);
-        for (const id of Array.from(selectedCourses)) {
-            await fetch(`/api/course/delete`, {
-                method: 'DELETE',
-                body: JSON.stringify({ id: id })
+    // audioProgress: courseId -> { done, total } while generating; absent when idle
+    const [audioProgress, setAudioProgress] = useState<Map<string, { done: number; total: number }>>(new Map());
+
+    const handleGenerateAudio = async (courseId: string) => {
+        setAudioProgress(prev => new Map(prev).set(courseId, { done: 0, total: 0 }));
+        try {
+            const res = await fetch('/api/admin/courses/generate-audio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ courseId, force: false })
             });
+            if (!res.body) throw new Error('No response stream');
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let serverError: string | null = null;
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n\n');
+                buffer = lines.pop() ?? '';
+                for (const line of lines) {
+                    const dataLine = line.trim().replace(/^data: /, '');
+                    if (!dataLine) continue;
+                    try {
+                        const event = JSON.parse(dataLine);
+                        if (event.type === 'start') {
+                            setAudioProgress(prev => new Map(prev).set(courseId, { done: 0, total: event.total }));
+                        } else if (event.type === 'lesson_done' || event.type === 'lesson_error' || event.type === 'progress') {
+                            setAudioProgress(prev => new Map(prev).set(courseId, { done: event.done, total: event.total }));
+                        } else if (event.type === 'done') {
+                            setAudioProgress(prev => { const m = new Map(prev); m.delete(courseId); return m; });
+                            const errSummary = event.errors?.length ? `\n\nFailed:\n${event.errors.join('\n')}` : '';
+                            alert(`Audio complete — ${event.generated} / ${event.total} modules generated.${event.skipped ? ` (${event.skipped} already had audio)` : ''}${errSummary}`);
+                        } else if (event.type === 'error') {
+                            serverError = event.message; // capture — don't throw inside the parse try/catch
+                        }
+                    } catch { /* skip truly malformed JSON lines */ }
+                }
+                if (serverError) break; // exit read loop on server error
+            }
+
+            if (serverError) throw new Error(serverError);
+        } catch (e: any) {
+            alert(`Audio generation failed: ${e.message}`);
+            setAudioProgress(prev => { const m = new Map(prev); m.delete(courseId); return m; });
         }
-        await fetchCourses();
-        setSelectedCourses(new Set());
+    };
+
+    const deleteSelected = async () => {
+        const count = selectedCourses.size;
+        // if (!confirm(`Are you sure you want to delete ${count} courses? This cannot be undone.`)) return;
+        console.log("Bulk delete triggered for:", count);
+
+        try {
+            // setLoading(true); // Don't hide list
+            const ids = Array.from(selectedCourses);
+            const BATCH_SIZE = 1;
+
+            // Process in batches to avoid DB timeouts
+            for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+                const batch = ids.slice(i, i + BATCH_SIZE);
+                console.log(`Processing batch ${i / BATCH_SIZE + 1} (${batch.length} items)...`);
+
+                const response = await fetch('/api/course/bulk-delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids: batch })
+                });
+
+                if (response.ok) {
+                    // Optimistic Update: Remove THIS BATCH immediately
+                    setCourses(current => current.filter(c => !batch.includes(c.id)));
+                    // Update selection to remove processed items (optional, but good for UI consistency)
+                    setSelectedCourses(prev => {
+                        const next = new Set(prev);
+                        batch.forEach(id => next.delete(id));
+                        return next;
+                    });
+                } else {
+                    const err = await response.json();
+                    console.error("Batch delete error:", err);
+                    // Continue to next batch but show warning? 
+                    // For now, simple console log, maybe alert at end if some failed.
+                }
+            }
+
+            // Clear any remaining selection (if all success)
+            setSelectedCourses(new Set());
+
+        } catch (e) {
+            console.error("Bulk delete exception:", e);
+            alert("An error occurred while deleting courses.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
-        <div className="min-h-screen bg-gray-50/50 font-sans">
+        <div className="min-h-screen bg-[#080810] text-[#f5f5f7] font-sans">
             <Header />
             <div className="p-6 lg:p-8">
-                <div className="max-w-[1200px] mx-auto space-y-8">
+                <div className="max-w-screen-2xl mx-auto space-y-8 mt-[80px]">
 
                     {/* Header & Controls */}
                     <div className="flex flex-col gap-6">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                            <div>
-                                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+                            <div className="shrink-0">
+                                <h1 className="text-3xl font-bold text-white tracking-tight">
                                     Courses
                                 </h1>
-                                <p className="text-muted-foreground mt-1">
+                                <p className="text-white/50 mt-1">
                                     Manage and organize your AI curriculum.
                                 </p>
                             </div>
-                            <div className="flex gap-3">
+
+                            <div className="flex flex-wrap gap-3 shrink-0">
                                 {selectedCourses.size > 0 && (
                                     <Button
                                         variant="danger"
-                                        className="rounded-full shadow-lg font-bold px-6"
+                                        className="rounded-full shadow-lg font-bold px-6 whitespace-nowrap shrink-0"
                                         onClick={deleteSelected}
                                     >
                                         <Trash2 className="w-4 h-4 mr-2" />
@@ -194,7 +296,7 @@ export default function AdminCoursesPage() {
                                     </Button>
                                 )}
                                 <Link href="/admin/courses/new">
-                                    <Button className="rounded-full shadow-lg bg-primary hover:bg-primary/90 text-white font-bold px-6">
+                                    <Button className="rounded-full shadow-lg bg-primary hover:bg-primary/90 text-white font-bold px-6 whitespace-nowrap shrink-0">
                                         <Plus className="w-4 h-4 mr-2" />
                                         New Course
                                     </Button>
@@ -202,26 +304,30 @@ export default function AdminCoursesPage() {
                             </div>
                         </div>
 
+                        <div className="w-full shadow-sm rounded-xl border border-white/[0.08] bg-white/[0.02] px-3 overflow-hidden">
+                            <ApiUsageDashboard />
+                        </div>
+
                         {/* Toolbar */}
-                        <div className="flex flex-col sm:flex-row gap-4 items-center bg-white p-4 rounded-xl border shadow-sm">
+                        <div className="flex flex-col sm:flex-row gap-4 items-center bg-white/[0.02] p-4 rounded-xl border border-white/[0.08] shadow-sm">
                             <div className="relative flex-1 w-full">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
                                 <Input
                                     placeholder="Search courses..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-9 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                    className="pl-9 bg-white/[0.03] text-white border-white/[0.08] focus:bg-white/[0.06] transition-colors"
                                 />
                             </div>
                             <div className="flex items-center gap-2 w-full sm:w-auto">
-                                <div className="flex p-1 bg-gray-100 rounded-lg">
+                                <div className="flex p-1 bg-white/[0.03] border border-white/[0.05] rounded-lg">
                                     {['all', 'published', 'draft'].map((status) => (
                                         <button
                                             key={status}
                                             onClick={() => setStatusFilter(status as any)}
                                             className={`px-4 py-1.5 text-xs font-bold rounded-md capitalize transition-all ${statusFilter === status
-                                                ? 'bg-white text-primary shadow-sm'
-                                                : 'text-gray-500 hover:text-gray-700'
+                                                ? 'bg-[#4b98ad] text-white shadow-sm'
+                                                : 'text-white/50 hover:text-white hover:bg-white/[0.04]'
                                                 }`}
                                         >
                                             {status}
@@ -233,181 +339,211 @@ export default function AdminCoursesPage() {
                     </div>
 
                     {/* Content List (Table Style) */}
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                        {/* Table Header */}
-                        <div className="grid grid-cols-[140px_3fr_1.5fr_120px_120px_100px_100px_80px] gap-4 p-4 border-b border-gray-100 bg-gray-50/50 text-xs font-bold text-gray-500 uppercase tracking-wider items-center whitespace-nowrap">
-                            <div className="pl-2">
-                                <input
-                                    type="checkbox"
-                                    className="rounded border-gray-300 text-primary w-4 h-4 cursor-pointer"
-                                    checked={filteredCourses.length > 0 && selectedCourses.size === filteredCourses.length}
-                                    onChange={toggleAll}
-                                />
+                    <div className="bg-white/[0.02] rounded-2xl border border-white/[0.08] shadow-sm overflow-x-auto">
+                        <div className="min-w-[1200px]">
+                            {/* Table Header */}
+                            <div className="grid grid-cols-[240px_minmax(250px,3fr)_minmax(150px,2fr)_150px_120px_100px_100px_80px] gap-4 p-4 border-b border-white/[0.08] bg-white/[0.01] text-xs font-bold text-white/50 uppercase tracking-wider items-center whitespace-nowrap">
+                                <div className="pl-2">
+                                    <input
+                                        type="checkbox"
+                                        className="rounded border-white/[0.2] bg-transparent text-primary w-4 h-4 cursor-pointer"
+                                        checked={filteredCourses.length > 0 && selectedCourses.size === filteredCourses.length}
+                                        onChange={toggleAll}
+                                    />
+                                </div>
+                                <div>Course Name</div>
+                                <div>Category</div>
+                                <div>Date</div>
+                                <div>Difficulty</div>
+                                <div>Price</div>
+                                <div className="text-center">Status</div>
+                                <div className="text-right pr-4">Actions</div>
                             </div>
-                            <div>Course Name</div>
-                            <div>Category</div>
-                            <div>Date</div>
-                            <div>Difficulty</div>
-                            <div>Price</div>
-                            <div className="text-center">Status</div>
-                            <div className="text-right pr-4">Actions</div>
-                        </div>
 
-                        {loading ? (
-                            <div className="divide-y divide-gray-100">
-                                {[1, 2, 3].map(i => (
-                                    <div key={i} className="p-4 flex items-center gap-4">
-                                        <div className="w-16 h-10 bg-gray-100 rounded animate-pulse" />
-                                        <div className="flex-1 h-4 bg-gray-100 rounded animate-pulse" />
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="divide-y divide-gray-100">
-                                <AnimatePresence mode="popLayout">
-                                    {filteredCourses.map((course) => (
-                                        <motion.div
-                                            key={course.id}
-                                            layout
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            exit={{ opacity: 0, height: 0 }}
-                                            className={`grid grid-cols-[140px_3fr_1.5fr_120px_120px_100px_100px_80px] gap-4 p-4 items-center hover:bg-gray-50 transition-colors ${selectedCourses.has(course.id) ? 'bg-blue-50/50' : ''}`}
-                                        >
-                                            {/* Checkbox & Thumbnail */}
-                                            <div className="flex items-center gap-4 pl-2">
-                                                <input
-                                                    type="checkbox"
-                                                    className="rounded border-gray-300 text-primary w-4 h-4 cursor-pointer"
-                                                    checked={selectedCourses.has(course.id)}
-                                                    onClick={(e) => e.stopPropagation()}
-                                                    onChange={() => toggleSelection(course.id)}
-                                                />
-                                                <div className="w-24 h-16 rounded-lg bg-gray-100 overflow-hidden border border-gray-200 relative group cursor-pointer" onClick={(e) => { e.stopPropagation(); toggleSelection(course.id); }}>
-                                                    {course.thumbnail_url ? (
-                                                        <img
-                                                            src={course.thumbnail_url}
-                                                            alt={course.title}
-                                                            className="w-full h-full object-cover"
-                                                        />
+                            {loading ? (
+                                <div className="divide-y divide-white/[0.05] min-w-[1200px]">
+                                    {[1, 2, 3].map(i => (
+                                        <div key={i} className="p-4 flex items-center gap-4">
+                                            <div className="w-16 h-10 bg-white/[0.05] rounded animate-pulse" />
+                                            <div className="flex-1 h-4 bg-white/[0.05] rounded animate-pulse" />
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="divide-y divide-white/[0.05] min-w-[1200px]">
+                                    <AnimatePresence mode="popLayout">
+                                        {filteredCourses.map((course) => (
+                                            <motion.div
+                                                key={course.id}
+                                                layout
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0, height: 0 }}
+                                                className={`grid grid-cols-[240px_minmax(250px,3fr)_minmax(150px,2fr)_150px_120px_100px_100px_80px] gap-4 p-4 items-center hover:bg-white/[0.04] transition-colors ${selectedCourses.has(course.id) ? 'bg-[#4b98ad]/10' : ''}`}
+                                            >
+                                                {/* Checkbox & Thumbnail */}
+                                                <div className="flex items-center gap-4 pl-2">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="rounded border-white/[0.2] bg-transparent text-primary w-4 h-4 cursor-pointer"
+                                                        checked={selectedCourses.has(course.id)}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        onChange={() => toggleSelection(course.id)}
+                                                    />
+                                                    <div className="w-48 h-32 rounded-lg bg-[#0c0c1a] overflow-hidden border border-white/[0.1] relative group cursor-pointer" onClick={(e) => { e.stopPropagation(); toggleSelection(course.id); }}>
+                                                        {course.thumbnail_url ? (
+                                                            <img
+                                                                src={course.thumbnail_url}
+                                                                alt={course.title}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center bg-white/[0.02]">
+                                                                <ImageIcon className="w-5 h-5 text-white/20" />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Title (Only) */}
+                                                <div className="min-w-0">
+                                                    <Link href={`/courses/${course.id}`} onClick={(e) => e.stopPropagation()} className="font-bold text-white hover:text-primary transition-colors text-base block" title={course.title}>
+                                                        {course.title}
+                                                    </Link>
+                                                </div>
+
+                                                {/* Category */}
+                                                <div className="text-sm text-white/60 flex items-center gap-1">
+                                                    <BookOpen className="w-3 h-3 text-white/40" />
+                                                    <span title={course.category}>
+                                                        {categories.find(c => c.id === course.category)?.label || course.category || 'General'}
+                                                    </span>
+                                                </div>
+
+                                                {/* Date & Time (UK Format) */}
+                                                <div className="text-sm text-white/50 whitespace-nowrap">
+                                                    {new Date(course.created_at).toLocaleString('en-GB', {
+                                                        day: '2-digit',
+                                                        month: '2-digit',
+                                                        year: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                        hour12: false
+                                                    })}
+                                                </div>
+
+                                                {/* Difficulty */}
+                                                <div>
+                                                    <Badge variant="outline" className={`font-medium border-none whitespace-nowrap ${(course.difficulty_level || 'Beginner') === 'Beginner' ? 'bg-[#4b98ad]/20 text-[#4b98ad] ring-1 ring-[#4b98ad]/30' :
+                                                        (course.difficulty_level || 'Beginner') === 'Intermediate' ? 'bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/30' :
+                                                            'bg-purple-500/20 text-purple-400 ring-1 ring-purple-500/30'
+                                                        }`}>
+                                                        {course.difficulty_level || 'Beginner'}
+                                                    </Badge>
+                                                </div>
+
+                                                {/* Price */}
+                                                <div className="font-semibold text-white/80">
+                                                    {(course.price || 0) === 0 ? (
+                                                        <span className="inline-flex items-center px-2 py-1 rounded-md bg-white/[0.06] text-white/70 text-xs">FREE</span>
                                                     ) : (
-                                                        <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                                                            <ImageIcon className="w-5 h-5 text-gray-300" />
-                                                        </div>
+                                                        `£${Number(course.price).toFixed(2)}`
                                                     )}
                                                 </div>
-                                            </div>
 
-                                            {/* Title (Only) */}
-                                            <div className="min-w-0">
-                                                <Link href={`/courses/${course.id}`} onClick={(e) => e.stopPropagation()} className="font-bold text-gray-900 hover:text-primary transition-colors text-base block truncate" title={course.title}>
-                                                    {course.title}
-                                                </Link>
-                                            </div>
+                                                {/* Status */}
+                                                <div className="text-center flex flex-col items-center gap-1">
+                                                    <Badge className={`backdrop-blur-md shadow-sm border-none px-3 ${course.published
+                                                        ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
+                                                        : 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30'
+                                                        }`}>
+                                                        {course.published ? 'Live' : 'Draft'}
+                                                    </Badge>
+                                                    {audioProgress.has(course.id) && (() => {
+                                                        const p = audioProgress.get(course.id)!;
+                                                        return (
+                                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-medium border border-emerald-500/30">
+                                                                <Loader2 className="h-3 w-3 animate-spin" />
+                                                                {p.total > 0 ? `${p.done}/${p.total}` : 'Starting…'}
+                                                            </span>
+                                                        );
+                                                    })()}
+                                                </div>
 
-                                            {/* Category */}
-                                            <div className="text-sm text-gray-600 flex items-center gap-1 whitespacenowrap">
-                                                <BookOpen className="w-3 h-3 text-gray-400" />
-                                                <span className="truncate max-w-[120px]" title={course.category}>
-                                                    {categories.find(c => c.id === course.category)?.label || course.category || 'General'}
-                                                </span>
-                                            </div>
-
-                                            {/* Date */}
-                                            <div className="text-sm text-gray-500 whitespace-nowrap">
-                                                {new Date(course.created_at).toLocaleDateString()}
-                                            </div>
-
-                                            {/* Difficulty */}
-                                            <div>
-                                                <Badge variant="outline" className={`font-medium border-none whitespace-nowrap ${(course.difficulty_level || 'Beginner') === 'Beginner' ? 'bg-green-50 text-green-700 ring-1 ring-green-600/20' :
-                                                    (course.difficulty_level || 'Beginner') === 'Intermediate' ? 'bg-blue-50 text-blue-700 ring-1 ring-blue-600/20' :
-                                                        'bg-purple-50 text-purple-700 ring-1 ring-purple-600/20'
-                                                    }`}>
-                                                    {course.difficulty_level || 'Beginner'}
-                                                </Badge>
-                                            </div>
-
-                                            {/* Price */}
-                                            <div className="font-semibold text-gray-700">
-                                                {(course.price || 0) === 0 ? (
-                                                    <span className="inline-flex items-center px-2 py-1 rounded-md bg-slate-100 text-slate-600 text-xs">FREE</span>
-                                                ) : (
-                                                    `£${Number(course.price).toFixed(2)}`
-                                                )}
-                                            </div>
-
-                                            {/* Status */}
-                                            <div className="text-center">
-                                                <Badge className={`backdrop-blur-md shadow-sm border-none px-3 ${course.published
-                                                    ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                                                    : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-                                                    }`}>
-                                                    {course.published ? 'Live' : 'Draft'}
-                                                </Badge>
-                                            </div>
-
-                                            {/* Actions */}
-                                            <div className="flex items-center justify-end pr-2">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" className="h-8 w-8 p-0" onClick={(e) => e.stopPropagation()}>
-                                                            <span className="sr-only">Open menu</span>
-                                                            <MoreHorizontal className="h-4 w-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end" className="w-[160px]">
-                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                        <Link href={`/courses/${course.id}`} target="_blank">
-                                                            <DropdownMenuItem>
-                                                                <Eye className="mr-2 h-4 w-4" />
-                                                                View Course
+                                                {/* Actions */}
+                                                <div className="flex items-center justify-end pr-2">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" className="h-8 w-8 p-0 text-white/60 hover:text-white hover:bg-white/10" onClick={(e) => e.stopPropagation()}>
+                                                                <span className="sr-only">Open menu</span>
+                                                                <MoreHorizontal className="h-4 w-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end" className="w-[160px] bg-[#1a1a2e] border-white/10 text-white shadow-xl">
+                                                            <DropdownMenuLabel className="text-white/50">Actions</DropdownMenuLabel>
+                                                            <Link href={`/courses/${course.id}`} target="_blank">
+                                                                <DropdownMenuItem className="cursor-pointer focus:bg-white/10 focus:text-white transition-colors">
+                                                                    <Eye className="mr-2 h-4 w-4" />
+                                                                    View Course
+                                                                </DropdownMenuItem>
+                                                            </Link>
+                                                            <Link href={`/admin/courses/edit/${course.id}`}>
+                                                                <DropdownMenuItem className="cursor-pointer focus:bg-white/10 focus:text-white transition-colors">
+                                                                    <Edit className="mr-2 h-4 w-4" />
+                                                                    Edit Course
+                                                                </DropdownMenuItem>
+                                                            </Link>
+                                                            <DropdownMenuItem
+                                                                className="text-[#4b98ad] cursor-pointer focus:bg-[#4b98ad]/10 focus:text-[#4b98ad] transition-colors"
+                                                                disabled={audioProgress.has(course.id)}
+                                                                onClick={(e) => { e.stopPropagation(); handleGenerateAudio(course.id); }}
+                                                            >
+                                                                {audioProgress.has(course.id)
+                                                                    ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                                    : <Headphones className="mr-2 h-4 w-4" />
+                                                                }
+                                                                Generate Audio
                                                             </DropdownMenuItem>
-                                                        </Link>
-                                                        <Link href={`/admin/courses/edit/${course.id}`}>
-                                                            <DropdownMenuItem>
-                                                                <Edit className="mr-2 h-4 w-4" />
-                                                                Edit Course
+                                                            <DropdownMenuSeparator className="bg-white/10" />
+                                                            <DropdownMenuItem className="cursor-pointer focus:bg-white/10 focus:text-white transition-colors" onClick={(e) => { e.stopPropagation(); togglePublish(course); }}>
+                                                                {course.published ? (
+                                                                    <>
+                                                                        <Archive className="mr-2 h-4 w-4" />
+                                                                        Unpublish
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <CheckCircle className="mr-2 h-4 w-4" />
+                                                                        Publish
+                                                                    </>
+                                                                )}
                                                             </DropdownMenuItem>
-                                                        </Link>
-                                                        <DropdownMenuSeparator />
-                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); togglePublish(course); }}>
-                                                            {course.published ? (
-                                                                <>
-                                                                    <Archive className="mr-2 h-4 w-4" />
-                                                                    Unpublish
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <CheckCircle className="mr-2 h-4 w-4" />
-                                                                    Publish
-                                                                </>
-                                                            )}
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem
-                                                            onClick={(e) => { e.stopPropagation(); deleteCourse(course.id); }}
-                                                            className="text-red-600 focus:text-red-600"
-                                                        >
-                                                            <Trash2 className="mr-2 h-4 w-4" />
-                                                            Delete
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </div>
-                                        </motion.div>
-                                    ))}
-                                </AnimatePresence>
-                            </div>
-                        )}
+                                                            <DropdownMenuItem
+                                                                onClick={(e) => { e.stopPropagation(); deleteCourse(course.id); }}
+                                                                className="text-red-400 focus:bg-red-500/10 focus:text-red-400 transition-colors"
+                                                            >
+                                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                                Delete
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                    </AnimatePresence>
+                                </div>
+                            )}
 
-                        {filteredCourses.length === 0 && !loading && (
-                            <div className="text-center py-24 text-gray-500">
-                                No courses found.
-                            </div>
-                        )}
+                            {filteredCourses.length === 0 && !loading && (
+                                <div className="text-center py-24 text-white/40">
+                                    No courses found.
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     );
 }
+

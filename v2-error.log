@@ -1,0 +1,65 @@
+2026-03-26T21:08:45.667Z ResponseAborted: 
+    at ServerResponse.<anonymous> (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\node_modules_next_a164c54e._.js:5881:26)
+    at Object.onceWrapper (node:events:621:28)
+    at ServerResponse.emit (node:events:519:35)
+    at emitCloseNT (node:_http_server:1033:10)
+    at Socket.onServerResponseClose (node:_http_server:285:5)
+    at Socket.emit (node:events:519:35)
+    at TCP.<anonymous> (node:net:346:12)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+2026-03-27T09:35:45.233Z Error: ManifestPlannerAgent API Error 400
+    at ManifestPlannerAgent.makeRequest (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__77aff019._.js:1299:27)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async ManifestPlannerAgent.generateManifest (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__77aff019._.js:1419:16)
+    at async OrchestratorV2.generateManifest (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__77aff019._.js:1865:16)
+    at async D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__77aff019._.js:6254:30
+2026-03-27T09:45:05.422Z MediaGenerationError: [veo] budget_exceeded — Execution budget exceeded (275s elapsed, 240s limit) — reduce lessons per course or increase maxDuration (lesson: "Dissecting Attention: The Core Concepts", block: video_snippet)
+    at D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__77aff019._.js:6699:39
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2026-03-27T11:51:34.430Z ResponseAborted: 
+    at ServerResponse.<anonymous> (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\node_modules_next_98fa1267._.js:5881:26)
+    at Object.onceWrapper (node:events:621:28)
+    at ServerResponse.emit (node:events:519:35)
+    at emitCloseNT (node:_http_server:1033:10)
+    at Socket.onServerResponseClose (node:_http_server:285:5)
+    at Socket.emit (node:events:519:35)
+    at TCP.<anonymous> (node:net:346:12)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+2026-03-27T11:54:21.417Z MediaGenerationError: [gemini-image] content_policy_violation — Content blocked by provider safety filter (lesson: "The Rise of Transformers", block: image_text_row, slot: image_text_row)
+    at D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:6448:39
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Promise.all (index 2)
+    at async D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:6444:49
+2026-03-27T12:06:30.556Z ResponseAborted: 
+    at ServerResponse.<anonymous> (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\node_modules_next_98fa1267._.js:5881:26)
+    at Object.onceWrapper (node:events:621:28)
+    at ServerResponse.emit (node:events:519:35)
+    at emitCloseNT (node:_http_server:1033:10)
+    at Socket.onServerResponseClose (node:_http_server:285:5)
+    at Socket.emit (node:events:519:35)
+    at TCP.<anonymous> (node:net:346:12)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+2026-03-27T12:32:00.172Z MediaGenerationError: [veo] empty_result — Veo did not complete within the 2-minute extra wait window (lesson: "Understanding the Basics of Transformers", block: video_snippet, slot: Transformers: The Core Components)
+    at D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:6520:39
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at listOnTimeout (node:internal/timers:569:9)
+    at process.processTimers (node:internal/timers:543:7)
+    at async Promise.all (index 0)
+    at async D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:6501:25
+2026-03-27T15:25:29.796Z SyntaxError: "undefined" is not valid JSON
+    at JSON.parse (<anonymous>)
+    at makeRequestWithTemp (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:1750:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async LessonExpanderAgent.expandLesson (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:1786:16)
+    at async OrchestratorV2.processLesson (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:1868:16)
+    at async D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:6118:42
+2026-03-27T19:24:09.755Z MediaGenerationError: [gemini-image] content_policy_violation — Content blocked by provider safety filter (lesson: "Introduction to Prompt Engineering", block: type_cards, slot: type_card_1)
+    at D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:6479:39
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Promise.all (index 4)
+    at async D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:6468:49
+2026-03-27T20:19:09.328Z MediaGenerationError: [gemini-image] content_policy_violation — Content blocked by provider safety filter (lesson: "Understanding and Implementing Attention", block: type_cards, slot: type_card_2)
+    at D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:6479:39
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Promise.all (index 5)
+    at async D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:6468:49

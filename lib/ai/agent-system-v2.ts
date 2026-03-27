@@ -319,6 +319,14 @@ function getBlockSchemaDoc(blockRef: string): string {
         'text:bridge':           'text (bridge/transition) — 1–3 paragraphs only. heading, paragraphs[].',
         'video_snippet':          'video_snippet — AI-generated cinematic video clip. REQUIRED: type: "video_snippet", id, title, caption, videoPrompt: EXACTLY 5 SENTENCES using the motion-arc structure — S1: name the exact lesson concept being demonstrated (must include the lesson title), S2: primary visible objects / UI / interfaces / data flows in frame, S3: motion arc — what state the scene STARTS in, what CHANGES during 8 seconds, what the final state IS, S4: camera movement and environment / lighting, S5: exclusions (no metaphors, no human faces) and fidelity target (photorealistic / cinematic). video_search_query: 3-5 words safe for Pexels stock search. duration: "8s".',
         'go_deeper':             'go_deeper — advanced accordion. triggerText, content (2–3 paragraphs).',
+        'lesson_header':         'lesson_header — hero section. REQUIRED fields: title (string), tag (2–3 word category label), duration (e.g. "15 min"), difficulty (Beginner|Intermediate|Advanced), heroType: "interactive", heroPrompt (200-word image description), description (1–2 sentence lesson overview), objectives (array of 4 short strings each starting with a verb).',
+        'objective':             'objective — single learning objective card. REQUIRED fields: label (short label e.g. "Learning Objective"), text (1 sentence starting with "By the end of this lesson you will be able to…").',
+        'punch_quote':           'punch_quote — full-width bold statement. REQUIRED fields: quote (one punchy declarative sentence, 10–20 words, no quotation marks), accent (pulse|iris|amber|nova).',
+        'recap':                 'recap — end-of-lesson summary. REQUIRED fields: style (card|bold_number|timeline), title (string), points (array of 3 strings summarising the main takeaways).',
+        'key_terms':             'key_terms — glossary accordion. REQUIRED fields: terms (array of objects each with: term (string), definition (1 sentence)).',
+        'completion':            'completion — lesson complete card. REQUIRED fields: skillsEarned (array of 3 short strings describing what was learned).',
+        'quiz':                  'quiz — knowledge check. REQUIRED fields: title, questions (array of 3–5 objects each with: question (string), options (array of 3 strings), correctIndex (0|1|2), correctFeedback (string), incorrectFeedback (string)).',
+        'full_image':            'full_image — wide visual. REQUIRED fields: imagePrompt (MINIMUM 1000 WORDS ultra-detailed image description), caption (1–2 sentence description).',
     };
     return schemas[blockRef] || schemas[type] || `${type} block — include all required fields.`;
 }
@@ -393,7 +401,7 @@ export class LessonExpanderAgent extends BaseAgentV2 {
         });
 
         const ironAfter = [
-            `[BLOCK-${middleBlocks.length + 5}] text — FOUNDATION`,
+            `[BLOCK-${middleBlocks.length + 5}] text — FOUNDATION: ${getBlockSchemaDoc('text')} Write 2–3 paragraphs (150–250 words each) that consolidate the lesson's core ideas and prepare the learner for the next topic.`,
             `[BLOCK-${middleBlocks.length + 6}] recap — style: "${recapStyle}"`,
             `[BLOCK-${middleBlocks.length + 7}] quiz — EXACTLY 3 questions`,
             `[BLOCK-${middleBlocks.length + 8}] key_terms`,
@@ -422,7 +430,8 @@ ${unifiedBlueprint}
 VISUAL ACCURACY — ABSOLUTE LAW:
 >>> IMAGE PROMPTS (imagePrompt fields) MUST BE MINIMUM 1000 WORDS of technical blueprint following the 6-part formula below.
 >>> VIDEO PROMPTS (videoPrompt fields) MUST BE EXACTLY 5 SENTENCES using the motion-arc structure: S1 names the lesson concept and lesson title, S2 describes visible objects/interfaces, S3 describes the motion arc (start state → transformation → end state), S4 describes camera movement and environment, S5 states exclusions and fidelity target.
->>> All other text (content, captions, titles) must be CONCISE (under 100 words per field) to stay within token limits.
+>>> TEXT BLOCK PARAGRAPHS (paragraphs[] fields) must be 150–250 words each — substantive, educational prose. DO NOT truncate these.
+>>> Captions, titles, labels, and single-line fields must be CONCISE (under 50 words) to stay within token limits.
 >>> YOU MUST GENERATE TWO (2) VIDEO SNIPPETS: One at [BLOCK-4] and one at [BLOCK-X] as labeled in the blueprint.
 >>> NEVER use analogies or metaphors (no kitchens, gardens, pottery, or simple "city" metaphors).
 >>> USE 6-PART TECHNICAL FORMULA FOR PROMPTS:

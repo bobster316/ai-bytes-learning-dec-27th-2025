@@ -99,7 +99,8 @@ export async function POST(req: NextRequest) {
                     );
 
                     // Fetch exactly 6 unique high-relevance images
-                    const images = await imageService.fetchImages(lessonContent.imagePrompts);
+                    const imagePromptsToFetch = lessonContent.metadata?.imagePrompts || [];
+                    const images = await imageService.fetchImages(imagePromptsToFetch);
 
                     // Fetch a 100% relevant video for the FIRST lesson only (Course Introduction)
                     let videoUrl = null;
@@ -120,8 +121,9 @@ export async function POST(req: NextRequest) {
                         .insert({
                             topic_id: topicData.id,
                             title: lesson.title,
-                            content_markdown: JSON.stringify(lessonContent),
-                            content_html: fullHtml,
+                            content_markdown: "Replaced by structurally generated JSON blocks.",
+                            content_html: fullHtml || "",
+                            content_blocks: lessonContent.blocks || lessonContent,
                             order_index: j,
                             estimated_duration_minutes: difficulty === 'advanced' ? 20 : (difficulty === 'intermediate' ? 15 : 10),
                             video_url: videoUrl // New: Persist video URL

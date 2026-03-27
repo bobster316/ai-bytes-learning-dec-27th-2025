@@ -1,0 +1,53 @@
+{
+  "course_id": 831,
+  "course_topic": "Intro to Transformer Architecture",
+  "domain_history": [
+    "Gardening",
+    "Craftsmanship"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "self attention mechanism visualization",
+    "positional encoding visualization"
+  ],
+  "used_image_urls": [],
+  "used_video_urls": [
+    {
+      "query": "This video demonstrates the Attention Mechanism concept from the \"AI Lesson\". The scene opens with a",
+      "url": "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/videos/veo-1774625524848-ojrutc.mp4",
+      "source": "veo"
+    },
+    {
+      "query": "This video demonstrates Positional Encoding Visualisation from the \"AI Lesson\". Initially, the scree",
+      "url": "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/videos/veo-1774625525258-husdbf.mp4",
+      "source": "veo"
+    }
+  ],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 0,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 0,
+    "type_cards": 0,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 0,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

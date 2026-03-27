@@ -95,7 +95,7 @@ export async function POST(request: Request) {
           <p>Designers are using AI to generate multiple design variations quickly, explore color schemes, and create custom illustrations tailored to specific needs.</p>
 
           <h3>Writing and Content Creation</h3>
-          <p>Large language models are assisting writers with brainstorming, drafting, editing, and even generating entire articles. While AI-generated text still requires human oversight and refinement, these tools are significantly boosting productivity.</p>
+          <p>Large language models are assisting writers with brainstorming, drafting, editing, and even generating entire articles. While automated text still requires human oversight and refinement, these tools are significantly boosting productivity.</p>
 
           <p>Marketing teams use AI to generate copy variations, product descriptions, and social media content, freeing up time for strategic creative work.</p>
 
@@ -103,7 +103,7 @@ export async function POST(request: Request) {
           <p>AI music generators can compose original pieces, create backing tracks, and even mimic specific musical styles. Musicians are using these tools for inspiration, to overcome creative blocks, and to explore new sonic territories.</p>
 
           <h3>The Human-AI Creative Partnership</h3>
-          <p>The most exciting applications of generative AI involve human-AI collaboration. Artists provide creative direction, make aesthetic judgments, and refine AI-generated outputs. The result is work that combines machine efficiency with human creativity and taste.</p>
+          <p>The most exciting applications of generative AI involve human-AI collaboration. Artists provide creative direction, make aesthetic judgments, and refine machine outputs. The result is work that combines computational efficiency with human creativity and taste.</p>
 
           <h3>Ethical Considerations</h3>
           <p>The rise of generative AI raises important questions about authorship, copyright, and the value of human creativity. The creative community is grappling with how to embrace these tools while preserving what makes human artistry special.</p>

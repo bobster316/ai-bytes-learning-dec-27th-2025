@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import { Play, Pause, Square, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface VoiceAvatarProps {
     className?: string;
@@ -10,21 +11,29 @@ interface VoiceAvatarProps {
     keyColor?: { r: number; g: number; b: number };
     transparent?: boolean;
     controls?: boolean;
+    overlayControls?: boolean;
     externalIsPlaying?: boolean;
+    poster?: string;
+    instructor?: 'sarah' | 'gemma';
 }
 
 export function VoiceAvatar({
     className,
-    src = "/ai_avatar/ai-avatar-light.mp4",
+    src,
     keyColor = { r: 0, g: 255, b: 0 },
     transparent = false,
     controls = true,
-    externalIsPlaying
+    overlayControls = false,
+    externalIsPlaying,
+    poster,
+    instructor = 'sarah'
 }: VoiceAvatarProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
-    const [isMuted, setIsMuted] = useState(true);
+    const [hasStarted, setHasStarted] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isMuted, setIsMuted] = useState(false);
 
     // Animation Frame ID and frame skip counter
     const requestRef = useRef<number | null>(null);
@@ -83,13 +92,12 @@ export function VoiceAvatar({
         }
     }, [keyColor, isPlaying, transparent]);
 
-    // Initial draw and seek updates
+    // Initial draw and seek updates (ONLY ONCE)
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
 
         const handleDraw = () => {
-            // Verify video has data
             if (video.readyState >= 2) {
                 processFrame();
             }
@@ -101,11 +109,6 @@ export function VoiceAvatar({
                 canvas.width = video.videoWidth || 640;
                 canvas.height = video.videoHeight || 360;
                 processFrame();
-
-                // Retry drawing a few times to ensure first frame isn't missed
-                setTimeout(processFrame, 100);
-                setTimeout(processFrame, 500);
-                setTimeout(processFrame, 1000);
             }
         };
 
@@ -114,10 +117,8 @@ export function VoiceAvatar({
         video.addEventListener('canplay', handleDraw);
         video.addEventListener('loadedmetadata', handleMetadata);
 
-        // Force load of first frame
         video.preload = "auto";
-        // Small seek to trigger rendering of first frame
-        video.currentTime = 0.1;
+        video.currentTime = 0;
 
         return () => {
             video.removeEventListener('loadeddata', handleDraw);
@@ -126,7 +127,17 @@ export function VoiceAvatar({
             video.removeEventListener('loadedmetadata', handleMetadata);
             if (requestRef.current) cancelAnimationFrame(requestRef.current);
         };
-    }, [processFrame]);
+    }, []); // Only run on mount to setup listeners
+
+    // Force video reload when src changes
+    useEffect(() => {
+        if (videoRef.current && src) {
+            videoRef.current.load();
+            setHasStarted(false);
+            setIsPlaying(false);
+            setIsLoading(false);
+        }
+    }, [src]);
 
     // Watch isPlaying to trigger loop
     useEffect(() => {
@@ -145,21 +156,43 @@ export function VoiceAvatar({
         if (externalIsPlaying === undefined || !videoRef.current) return;
 
         if (externalIsPlaying) {
-            videoRef.current.play().catch(e => console.error("Auto-play prevented:", e));
-            setIsPlaying(true);
+            if (src) {
+                videoRef.current.play().catch(e => console.error("Auto-play prevented:", e));
+                setIsPlaying(true);
+            }
         } else {
             videoRef.current.pause();
             setIsPlaying(false);
         }
-    }, [externalIsPlaying]);
+    }, [externalIsPlaying, src]);
 
 
-    // Controls
     const togglePlay = () => {
         if (videoRef.current) {
-            if (isPlaying) videoRef.current.pause();
-            else videoRef.current.play();
-            // setIsPlaying is updated by onPlay/onPause events on the video element
+            if (!src) {
+                // Silently return to avoid console spam during job processing
+                return;
+            }
+
+            if (videoRef.current.paused) {
+                // Optimistically remove poster layer
+                setHasStarted(true);
+                setIsPlaying(true);
+
+                setIsLoading(true);
+                const playPromise = videoRef.current.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => {
+                        console.warn("Playback failed:", e);
+                        setIsPlaying(false);
+                        setIsLoading(false);
+                        setHasStarted(false); // Reset so poster comes back if blocked
+                    });
+                }
+            } else {
+                videoRef.current.pause();
+                setIsPlaying(false);
+            }
         }
     };
 
@@ -180,63 +213,96 @@ export function VoiceAvatar({
     };
 
     return (
-        <div className={`flex flex-col gap-3 ${className}`}>
+        <div className={cn("relative w-full h-full overflow-hidden", className)}>
             {/* Main Video Viewport */}
-            <div className="relative w-full aspect-square overflow-hidden bg-transparent">
+            <div className="absolute inset-0 w-full h-full bg-transparent">
                 {/* Video Source - Visible if transparent */}
                 <video
                     ref={videoRef}
                     src={src}
-                    className={transparent ? "w-full h-full object-contain" : "hidden"}
+                    className={transparent ? "w-full h-full object-cover" : "opacity-0 pointer-events-none absolute inset-0 w-full h-full"}
                     playsInline
                     muted={isMuted}
                     preload="auto"
-                    onPlay={() => setIsPlaying(true)}
+                    crossOrigin="anonymous"
+                    onPlay={() => {
+                        setIsPlaying(true);
+                        setHasStarted(true);
+                        setIsLoading(false);
+                    }}
                     onPause={() => setIsPlaying(false)}
-                    onEnded={() => setIsPlaying(false)}
+                    onEnded={() => {
+                        setIsPlaying(false);
+                        setHasStarted(false);
+                    }}
+                    onWaiting={() => setIsLoading(true)}
+                    onPlaying={() => setIsLoading(false)}
+                    onStalled={() => setIsLoading(true)}
+                    onClick={togglePlay}
                 />
+
+                {/* Poster Image Overlay - Visible when not playing and not yet started */}
+                {(poster || (instructor === 'gemma' ? '/gemma_host.png' : '/sarah_host.png')) && !hasStarted && (
+                    <div
+                        className="absolute inset-0 w-full h-full z-10 cursor-pointer"
+                        onClick={togglePlay}
+                    >
+                        <img
+                            src={poster || (instructor === 'gemma' ? '/gemma_host.png' : '/sarah_host.png')}
+                            alt="Video Thumbnail"
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                )}
 
                 {/* Display Canvas (Chroma Key) - Only if not transparent */}
                 {!transparent && (
                     <canvas
                         ref={canvasRef}
-                        className="w-full h-full object-contain"
+                        className="w-full h-full object-cover cursor-pointer"
+                        onClick={togglePlay}
                     />
+                )}
+
+                {/* Loading State Overlay */}
+                {isLoading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[1px] z-20 pointer-events-none">
+                        <div className="w-8 h-8 border-3 border-cyan-500 border-t-transparent rounded-full animate-spin shadow-[0_0_15px_rgba(6,182,212,0.5)]" />
+                    </div>
                 )}
             </div>
 
-            {/* Controls - Below and Left Aligned */}
-            {/* Controls - Below and Left Aligned */}
+            {/* Controls */}
             {controls && (
-                <div className="flex items-center justify-start gap-3 pl-2">
+                <div className="absolute bottom-4 left-4 z-20 flex items-center gap-2">
                     <Button
                         size="icon"
                         variant="ghost"
-                        className="w-12 h-12 rounded-full bg-white/10 text-white hover:bg-white/20 border border-white/20 backdrop-blur-sm"
+                        className="w-8 h-8 rounded-full bg-white/10 text-white hover:bg-white/20 border border-white/20 backdrop-blur-md transition-all"
                         onClick={stopVideo}
                         title="Stop"
                     >
-                        <Square className="w-5 h-5 fill-current" />
+                        <Square className="w-3 h-3 fill-current" />
                     </Button>
 
                     <Button
                         size="icon"
                         variant="ghost"
-                        className="w-12 h-12 rounded-full text-white hover:bg-white/10 border border-white/20 hover:border-white/40 backdrop-blur-sm"
+                        className="w-10 h-10 rounded-full bg-white text-slate-900 hover:bg-cyan-400 border-none shadow-lg transition-all"
                         onClick={togglePlay}
                         title={isPlaying ? "Pause" : "Play"}
                     >
-                        {isPlaying ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current ml-1" />}
+                        {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
                     </Button>
 
                     <Button
                         size="icon"
                         variant="ghost"
-                        className="w-12 h-12 rounded-full bg-white/10 text-white hover:bg-white/20 border border-white/20 backdrop-blur-sm"
+                        className="w-8 h-8 rounded-full bg-white/10 text-white hover:bg-white/20 border border-white/20 backdrop-blur-md transition-all"
                         onClick={toggleMute}
                         title={isMuted ? "Unmute" : "Mute"}
                     >
-                        {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                        {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                     </Button>
                 </div>
             )}

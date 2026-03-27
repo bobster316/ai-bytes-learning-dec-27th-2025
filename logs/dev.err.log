@@ -1,0 +1,205 @@
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+(node:3796) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Failed to fetch OpenAI Blog: Status code 403
+Failed to fetch Google AI Blog: Status code 404
+Failed to fetch OpenAI Blog: Status code 403
+Failed to fetch Google AI Blog: Status code 404
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+Failed to fetch OpenAI Blog: Status code 403
+Failed to fetch Google AI Blog: Status code 404
+Failed to fetch OpenAI Blog: Status code 403
+Failed to fetch Google AI Blog: Status code 404
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+Failed to fetch OpenAI Blog: Status code 403
+Failed to fetch Google AI Blog: Status code 404
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ ReferenceError: inputLevel is not defined
+    at SterlingVoice (components\voice\SterlingVoice.tsx:351:6)
+  349 |     if(status!=="CONNECTED"){setIsUserSpeaking(false);setLiveTranscript("");if(voiceActivityTimeoutRef.current){window.clearTimeout(voiceActivityTimeoutRef.current);voiceActivityTimeoutRef.current=null;}return;}
+  350 |     if(inputLevel>18){setIsUserSpeaking(true);if(voiceActivityTimeoutRef.current)window.clearTimeout(voiceActivityTimeoutRef.current);voiceActivityTimeoutRef.current=window.setTimeout(()=>setIsUserSpeaking(false),400);}
+> 351 |   },[inputLevel,status]);
+      |      ^
+  352 |
+  353 |   useEffect(()=>{
+  354 |     const f=async()=>{const s=createClient();const{data:{user}}=await s.auth.getUser();if(user){const fn=user.user_metadata?.full_name||user.user_metadata?.name;if(fn)setUserName(fn.split(" ")[0]);else if(user.email){const en=user.email.split("@")[0];setUserName(en.charAt(0).toUpperCase()+en.slice(1));}}}; {
+  digest: '2258080386'
+}
+ ⨯ ReferenceError: inputLevel is not defined
+    at SterlingVoice (components\voice\SterlingVoice.tsx:351:6)
+  349 |     if(status!=="CONNECTED"){setIsUserSpeaking(false);setLiveTranscript("");if(voiceActivityTimeoutRef.current){window.clearTimeout(voiceActivityTimeoutRef.current);voiceActivityTimeoutRef.current=null;}return;}
+  350 |     if(inputLevel>18){setIsUserSpeaking(true);if(voiceActivityTimeoutRef.current)window.clearTimeout(voiceActivityTimeoutRef.current);voiceActivityTimeoutRef.current=window.setTimeout(()=>setIsUserSpeaking(false),400);}
+> 351 |   },[inputLevel,status]);
+      |      ^
+  352 |
+  353 |   useEffect(()=>{
+  354 |     const f=async()=>{const s=createClient();const{data:{user}}=await s.auth.getUser();if(user){const fn=user.user_metadata?.full_name||user.user_metadata?.name;if(fn)setUserName(fn.split(" ")[0]);else if(user.email){const en=user.email.split("@")[0];setUserName(en.charAt(0).toUpperCase()+en.slice(1));}}}; {
+  digest: '1539902242'
+}
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+ ⨯ ReferenceError: inputLevel is not defined
+    at SterlingVoice (components\voice\SterlingVoice.tsx:351:6)
+  349 |     if(status!=="CONNECTED"){setIsUserSpeaking(false);setLiveTranscript("");if(voiceActivityTimeoutRef.current){window.clearTimeout(voiceActivityTimeoutRef.current);voiceActivityTimeoutRef.current=null;}return;}
+  350 |     if(inputLevel>18){setIsUserSpeaking(true);if(voiceActivityTimeoutRef.current)window.clearTimeout(voiceActivityTimeoutRef.current);voiceActivityTimeoutRef.current=window.setTimeout(()=>setIsUserSpeaking(false),400);}
+> 351 |   },[inputLevel,status]);
+      |      ^
+  352 |
+  353 |   useEffect(()=>{
+  354 |     const f=async()=>{const s=createClient();const{data:{user}}=await s.auth.getUser();if(user){const fn=user.user_metadata?.full_name||user.user_metadata?.name;if(fn)setUserName(fn.split(" ")[0]);else if(user.email){const en=user.email.split("@")[0];setUserName(en.charAt(0).toUpperCase()+en.slice(1));}}}; {
+  digest: '1539902242'
+}
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ ReferenceError: inputLevel is not defined
+    at SterlingVoice (components\voice\SterlingVoice.tsx:316:6)
+  314 |     if(status!=="CONNECTED"){setIsUserSpeaking(false);setLiveTranscript("");if(voiceActivityTimeoutRef.current){window.clearTimeout(voiceActivityTimeoutRef.current);voiceActivityTimeoutRef.current=null;}return;}
+  315 |     if(inputLevel>18){setIsUserSpeaking(true);if(voiceActivityTimeoutRef.current)window.clearTimeout(voiceActivityTimeoutRef.current);voiceActivityTimeoutRef.current=window.setTimeout(()=>setIsUserSpeaking(false),400);}
+> 316 |   },[inputLevel,status]);
+      |      ^
+  317 |
+  318 |   useEffect(()=>{
+  319 |     const f=async()=>{const s=createClient();const{data:{user}}=await s.auth.getUser();if(user){const fn=user.user_metadata?.full_name||user.user_metadata?.name;if(fn)setUserName(fn.split(" ")[0]);else if(user.email){const en=user.email.split("@")[0];setUserName(en.charAt(0).toUpperCase()+en.slice(1));}}}; {
+  digest: '2258080386'
+}
+ ⨯ ReferenceError: inputLevel is not defined
+    at SterlingVoice (components\voice\SterlingVoice.tsx:316:6)
+  314 |     if(status!=="CONNECTED"){setIsUserSpeaking(false);setLiveTranscript("");if(voiceActivityTimeoutRef.current){window.clearTimeout(voiceActivityTimeoutRef.current);voiceActivityTimeoutRef.current=null;}return;}
+  315 |     if(inputLevel>18){setIsUserSpeaking(true);if(voiceActivityTimeoutRef.current)window.clearTimeout(voiceActivityTimeoutRef.current);voiceActivityTimeoutRef.current=window.setTimeout(()=>setIsUserSpeaking(false),400);}
+> 316 |   },[inputLevel,status]);
+      |      ^
+  317 |
+  318 |   useEffect(()=>{
+  319 |     const f=async()=>{const s=createClient();const{data:{user}}=await s.auth.getUser();if(user){const fn=user.user_metadata?.full_name||user.user_metadata?.name;if(fn)setUserName(fn.split(" ")[0]);else if(user.email){const en=user.email.split("@")[0];setUserName(en.charAt(0).toUpperCase()+en.slice(1));}}}; {
+  digest: '1539902242'
+}
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ ReferenceError: inputLevel is not defined
+    at SterlingVoice (components\voice\SterlingVoice.tsx:551:56)
+  549 |                         ?`linear-gradient(90deg,${T.emerald},${T.teal})`
+  550 |                         :`linear-gradient(90deg,${T.teal},${T.tealDark})`,
+> 551 |                       width:`${Math.min(100,Math.max(2,inputLevel))}%`,
+      |                                                        ^
+  552 |                       transition:"width .08s",
+  553 |                     }}/>
+  554 |                   </div> {
+  digest: '2258080386'
+}
+ ⨯ ReferenceError: inputLevel is not defined
+    at SterlingVoice (components\voice\SterlingVoice.tsx:551:56)
+  549 |                         ?`linear-gradient(90deg,${T.emerald},${T.teal})`
+  550 |                         :`linear-gradient(90deg,${T.teal},${T.tealDark})`,
+> 551 |                       width:`${Math.min(100,Math.max(2,inputLevel))}%`,
+      |                                                        ^
+  552 |                       transition:"width .08s",
+  553 |                     }}/>
+  554 |                   </div> {
+  digest: '1539902242'
+}
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ ReferenceError: inputLevel is not defined
+    at SterlingVoice (components\voice\SterlingVoice.tsx:552:56)
+  550 |                         ?`linear-gradient(90deg,${T.emerald},${T.teal})`
+  551 |                         :`linear-gradient(90deg,${T.teal},${T.tealDark})`,
+> 552 |                       width:`${Math.min(100,Math.max(2,inputLevel))}%`,
+      |                                                        ^
+  553 |                       transition:"width .08s",
+  554 |                     }}/>
+  555 |                   </div> {
+  digest: '2258080386'
+}
+ ⨯ ReferenceError: inputLevel is not defined
+    at SterlingVoice (components\voice\SterlingVoice.tsx:552:56)
+  550 |                         ?`linear-gradient(90deg,${T.emerald},${T.teal})`
+  551 |                         :`linear-gradient(90deg,${T.teal},${T.tealDark})`,
+> 552 |                       width:`${Math.min(100,Math.max(2,inputLevel))}%`,
+      |                                                        ^
+  553 |                       transition:"width .08s",
+  554 |                     }}/>
+  555 |                   </div> {
+  digest: '1539902242'
+}
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ ReferenceError: inputLevel is not defined
+    at SterlingVoice (components\voice\SterlingVoice.tsx:552:56)
+  550 |                         ?`linear-gradient(90deg,${T.emerald},${T.teal})`
+  551 |                         :`linear-gradient(90deg,${T.teal},${T.tealDark})`,
+> 552 |                       width:`${Math.min(100,Math.max(2,inputLevel))}%`,
+      |                                                        ^
+  553 |                       transition:"width .08s",
+  554 |                     }}/>
+  555 |                   </div> {
+  digest: '2258080386'
+}
+ ⨯ ReferenceError: inputLevel is not defined
+    at SterlingVoice (components\voice\SterlingVoice.tsx:552:56)
+  550 |                         ?`linear-gradient(90deg,${T.emerald},${T.teal})`
+  551 |                         :`linear-gradient(90deg,${T.teal},${T.tealDark})`,
+> 552 |                       width:`${Math.min(100,Math.max(2,inputLevel))}%`,
+      |                                                        ^
+  553 |                       transition:"width .08s",
+  554 |                     }}/>
+  555 |                   </div> {
+  digest: '1539902242'
+}
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ ReferenceError: inputLevel is not defined
+    at SterlingVoice (components\voice\SterlingVoice.tsx:554:56)
+  552 |                         ?`linear-gradient(90deg,${T.emerald},${T.teal})`
+  553 |                         :`linear-gradient(90deg,${T.teal},${T.tealDark})`,
+> 554 |                       width:`${Math.min(100,Math.max(2,inputLevel))}%`,
+      |                                                        ^
+  555 |                       transition:"width .08s",
+  556 |                     }}/>
+  557 |                   </div> {
+  digest: '2258080386'
+}
+ ⨯ ReferenceError: inputLevel is not defined
+    at SterlingVoice (components\voice\SterlingVoice.tsx:554:56)
+  552 |                         ?`linear-gradient(90deg,${T.emerald},${T.teal})`
+  553 |                         :`linear-gradient(90deg,${T.teal},${T.tealDark})`,
+> 554 |                       width:`${Math.min(100,Math.max(2,inputLevel))}%`,
+      |                                                        ^
+  555 |                       transition:"width .08s",
+  556 |                     }}/>
+  557 |                   </div> {
+  digest: '1539902242'
+}
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+Failed to fetch OpenAI Blog: Status code 403
+Failed to fetch Google AI Blog: Status code 404
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+Failed to fetch OpenAI Blog: Status code 403
+Failed to fetch Google AI Blog: Status code 404
+Failed to fetch OpenAI Blog: Status code 403
+Failed to fetch Google AI Blog: Status code 404
+GoogleGenAI.interactions: Interactions usage is experimental and may change in future versions.
+GoogleGenAI.interactions: Interactions usage is experimental and may change in future versions.
+GoogleGenAI.interactions: Interactions usage is experimental and may change in future versions.
+Failed to fetch OpenAI Blog: Status code 403
+Failed to fetch Google AI Blog: Status code 404
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+Failed to fetch OpenAI Blog: Status code 403
+Failed to fetch Google AI Blog: Status code 404
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+Failed to fetch OpenAI Blog: Status code 403
+Failed to fetch Google AI Blog: Status code 404
+[API] SEO update failed (non-blocking): Could not find the 'seo_description' column of 'courses' in the schema cache
+^C^C

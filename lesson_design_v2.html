@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt Engineering · Lesson 1 of 4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #020208;
+    --surface:  #07071A;
+    --mid:      #0E0E28;
+    --signal:   #00FFB3;
+    --iris:     #9B8FFF;
+    --amber:    #FFB347;
+    --nova:     #FF6B6B;
+    --hi:       #EEEEFF;
+    --lo:       #9090C0;
+    --dim:      #3A3A5C;
+    --border:   rgba(255,255,255,0.06);
+    --ease:     cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--hi);
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 18px;
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  /* PROGRESS BAR */
+  #progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 1px;
+    width: 0%;
+    background: var(--signal);
+    z-index: 1000;
+    transition: width 0.1s linear;
+  }
+
+  /* TYPOGRAPHY */
+  .syne { font-family: 'Syne', sans-serif; font-weight: 800; }
+  .mono { font-family: 'DM Mono', monospace; }
+  .serif-italic { font-family: 'Instrument Serif', Georgia, serif; font-style: italic; }
+
+  .label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--lo);
+  }
+
+  /* SCROLL REVEAL */
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+
+  /* ─────────────────────────────────────────
+     1. HERO
+  ───────────────────────────────────────── */
+  #hero {
+    position: relative;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 0;
+    padding: 80px 80px 60px;
+    overflow: hidden;
+    align-items: center;
+  }
+
+  #hero-canvas {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.4;
+  }
+
+  .hero-left {
+    position: relative;
+    z-index: 2;
+    padding-right: 60px;
+  }
+
+  .hero-lesson-label {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+
+  .hero-lesson-rotated {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  .hero-lesson-line {
+    width: 1px;
+    height: 60px;
+    background: var(--dim);
+  }
+
+  .hero-headline {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(2.8rem, 5.5vw, 5rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    color: var(--hi);
+    max-width: 820px;
+  }
+
+  .hero-headline .accent-word {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-style: italic;
+    color: var(--signal);
+  }
+
+  .hero-scroll-cue {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 64px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  .hero-scroll-line {
+    width: 0;
+    height: 1px;
+    background: var(--signal);
+    animation: grow-line 2s var(--ease) 1s forwards;
+  }
+
+  @keyframes grow-line {
+    to { width: 80px; }
+  }
+
+  .hero-right {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 40px;
+    padding-left: 60px;
+    border-left: 1px solid var(--border);
+  }
+
+  .hero-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .hero-stat-number {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(4rem, 8vw, 7rem);
+    line-height: 0.9;
+    color: var(--hi);
+    letter-spacing: -0.03em;
+  }
+
+  .hero-stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--lo);
+    padding-left: 4px;
+  }
+
+  .hero-stat-divider {
+    width: 40px;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .hero-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  .hero-chip {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--lo);
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+  }
+
+  /* ─────────────────────────────────────────
+     2. EDITORIAL — WHAT IS A PROMPT
+  ───────────────────────────────────────── */
+  .section {
+    position: relative;
+    overflow: hidden;
+    padding: 120px 80px;
+  }
+
+  .watermark {
+    position: absolute;
+    right: -20px;
+    top: -40px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(8rem, 18vw, 16rem);
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255,255,255,0.04);
+    line-height: 1;
+    user-select: none;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .section-inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+
+  .col-left-label {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding-top: 6px;
+  }
+
+  .section-heading {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(2rem, 3.5vw, 3rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--hi);
+  }
+
+  .section-heading .serif-accent {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .accent-bar {
+    width: 32px;
+    height: 2px;
+    background: var(--signal);
+  }
+
+  .col-right-body {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .body-para {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 18px;
+    line-height: 1.75;
+    color: var(--lo);
+  }
+
+  .stat-callout {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 28px 0 28px 28px;
+    border-left: 2px solid var(--signal);
+    margin-top: 16px;
+  }
+
+  .stat-callout-number {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 3.5rem;
+    color: var(--signal);
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  .stat-callout-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--lo);
+  }
+
+  /* ─────────────────────────────────────────
+     3. PINNED ANATOMY
+  ───────────────────────────────────────── */
+  .pin-wrapper {
+    height: 400vh;
+    position: relative;
+  }
+
+  .pin-inner {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow: hidden;
+  }
+
+  .pin-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px;
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+    position: relative;
+  }
+
+  .pin-stage {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+    pointer-events: none;
+  }
+
+  .pin-stage.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .pin-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--lo);
+    margin-bottom: 24px;
+  }
+
+  .pin-stage-heading {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.8rem, 2.8vw, 2.4rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--hi);
+    margin-bottom: 20px;
+  }
+
+  .pin-stage-body {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.75;
+    color: var(--lo);
+    max-width: 420px;
+  }
+
+  .pin-stage-accent {
+    display: inline;
+    color: var(--signal);
+    font-style: italic;
+  }
+
+  .pin-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px;
+    background: var(--bg);
+    gap: 0;
+  }
+
+  .pin-right-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 32px;
+  }
+
+  .prompt-display {
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+    line-height: 1.9;
+    color: var(--dim);
+  }
+
+  .prompt-part {
+    display: block;
+    padding: 10px 16px;
+    margin-bottom: 6px;
+    transition: color 0.5s var(--ease), background 0.5s var(--ease);
+    border-left: 2px solid transparent;
+    transition: all 0.5s var(--ease);
+  }
+
+  .prompt-part.lit-role {
+    color: var(--signal);
+    border-left-color: var(--signal);
+    background: rgba(0, 255, 179, 0.04);
+  }
+  .prompt-part.lit-context {
+    color: var(--iris);
+    border-left-color: var(--iris);
+    background: rgba(155, 143, 255, 0.04);
+  }
+  .prompt-part.lit-task {
+    color: var(--amber);
+    border-left-color: var(--amber);
+    background: rgba(255, 179, 71, 0.04);
+  }
+  .prompt-part.lit-format {
+    color: var(--nova);
+    border-left-color: var(--nova);
+    background: rgba(255, 107, 107, 0.04);
+  }
+
+  .prompt-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    opacity: 0;
+    margin-left: 8px;
+    transition: opacity 0.4s var(--ease);
+    vertical-align: middle;
+  }
+
+  .prompt-part.lit-role .prompt-tag,
+  .prompt-part.lit-context .prompt-tag,
+  .prompt-part.lit-task .prompt-tag,
+  .prompt-part.lit-format .prompt-tag {
+    opacity: 0.7;
+  }
+
+  .pin-indicators {
+    position: absolute;
+    bottom: 40px;
+    right: 80px;
+    display: flex;
+    gap: 8px;
+  }
+
+  .pin-dot {
+    width: 4px;
+    height: 4px;
+    background: var(--dim);
+    border-radius: 50%;
+    transition: background 0.3s var(--ease), transform 0.3s var(--ease);
+  }
+
+  .pin-dot.active {
+    background: var(--signal);
+    transform: scale(1.5);
+  }
+
+  /* ─────────────────────────────────────────
+     4. CONTRAST
+  ───────────────────────────────────────── */
+  #contrast {
+    padding: 120px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .contrast-heading {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--hi);
+    max-width: 640px;
+    margin-bottom: 60px;
+  }
+
+  .contrast-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .contrast-col {
+    background: var(--bg);
+    padding: 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .contrast-label-bad {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--nova);
+  }
+
+  .contrast-label-good {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--signal);
+  }
+
+  .contrast-prompt-box {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--lo);
+    padding: 20px;
+    background: var(--surface);
+    border-left: 2px solid var(--nova);
+  }
+
+  .contrast-prompt-box.good {
+    border-left-color: var(--signal);
+    color: var(--hi);
+  }
+
+  .contrast-output {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-style: italic;
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--dim);
+  }
+
+  .contrast-output.good {
+    color: var(--lo);
+    font-style: normal;
+  }
+
+  .quality-bar-wrap {
+    margin-top: 8px;
+  }
+
+  .quality-bar-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .quality-bar-track {
+    height: 2px;
+    background: var(--mid);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .quality-bar-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 1.2s var(--ease);
+  }
+
+  .quality-bar-fill.bad { background: var(--nova); }
+  .quality-bar-fill.good { background: var(--signal); }
+
+  .quality-pct {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--lo);
+  }
+
+  /* ─────────────────────────────────────────
+     5. PREDICTION QUIZ
+  ───────────────────────────────────────── */
+  #quiz {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    padding: 80px;
+  }
+
+  .quiz-inner {
+    max-width: 680px;
+  }
+
+  .quiz-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--iris);
+    margin-bottom: 32px;
+  }
+
+  .quiz-question {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.6rem, 2.8vw, 2.2rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--hi);
+    margin-bottom: 48px;
+  }
+
+  .quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .quiz-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 20px 0;
+    border-top: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.3s var(--ease);
+  }
+
+  .quiz-option:last-child {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .quiz-option:hover .option-letter {
+    border-color: rgba(255,255,255,0.2);
+    color: var(--hi);
+  }
+
+  .option-letter {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--dim);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--lo);
+    flex-shrink: 0;
+    transition: all 0.3s var(--ease);
+  }
+
+  .option-text {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--lo);
+    padding-top: 4px;
+    transition: color 0.3s var(--ease);
+  }
+
+  .quiz-option.correct .option-letter {
+    border-color: var(--signal);
+    background: rgba(0, 255, 179, 0.1);
+    color: var(--signal);
+  }
+
+  .quiz-option.correct .option-text {
+    color: var(--hi);
+  }
+
+  .quiz-option.wrong {
+    opacity: 0.3;
+  }
+
+  .quiz-option.wrong .option-letter {
+    border-color: var(--nova);
+    color: var(--nova);
+  }
+
+  .quiz-explanation {
+    margin-top: 32px;
+    padding: 24px 0 0 0;
+    border-top: 1px solid var(--border);
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--lo);
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+  }
+
+  .quiz-explanation.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .quiz-explanation strong {
+    color: var(--signal);
+    font-weight: 400;
+    font-style: italic;
+  }
+
+  /* ─────────────────────────────────────────
+     6. POWER TECHNIQUES
+  ───────────────────────────────────────── */
+  #techniques {
+    padding: 120px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .techniques-header {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 80px;
+    align-items: end;
+    margin-bottom: 64px;
+  }
+
+  .techniques-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .technique-cell {
+    background: var(--bg);
+    padding: 48px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .technique-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  .technique-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .technique-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.3rem;
+    letter-spacing: -0.01em;
+    color: var(--hi);
+  }
+
+  .technique-tag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    align-self: flex-start;
+  }
+
+  .technique-tag.signal { color: var(--signal); border: 1px solid rgba(0, 255, 179, 0.2); }
+  .technique-tag.iris   { color: var(--iris);   border: 1px solid rgba(155, 143, 255, 0.2); }
+  .technique-tag.amber  { color: var(--amber);  border: 1px solid rgba(255, 179, 71, 0.2); }
+
+  .technique-body {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--lo);
+  }
+
+  .technique-example {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--dim);
+    padding: 16px;
+    background: var(--surface);
+    margin-top: 4px;
+  }
+
+  /* ─────────────────────────────────────────
+     7. ENDING
+  ───────────────────────────────────────── */
+  #ending {
+    min-height: 100vh;
+    padding: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: var(--bg);
+  }
+
+  .ending-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--lo);
+    margin-bottom: 64px;
+  }
+
+  .ending-skills {
+    display: flex;
+    flex-direction: column;
+    max-width: 680px;
+    margin-bottom: 64px;
+  }
+
+  .ending-skill {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 24px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .ending-skill:last-child {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ending-check {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  .ending-skill-text {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.65;
+    color: var(--lo);
+  }
+
+  .ending-skill-text strong {
+    color: var(--hi);
+    font-weight: 400;
+  }
+
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--signal);
+    color: var(--bg);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 18px 36px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s var(--ease);
+    text-decoration: none;
+    margin-bottom: 24px;
+    align-self: flex-start;
+  }
+
+  .cta-btn:hover {
+    background: #33ffca;
+    transform: translateX(4px);
+  }
+
+  .ending-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  /* ─────────────────────────────────────────
+     RESPONSIVE
+  ───────────────────────────────────────── */
+  @media (max-width: 900px) {
+    #hero {
+      grid-template-columns: 1fr;
+      padding: 60px 32px 48px;
+      gap: 48px;
+    }
+    .hero-right {
+      border-left: none;
+      border-top: 1px solid var(--border);
+      padding-left: 0;
+      padding-top: 40px;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+    .hero-headline { font-size: clamp(2.2rem, 7vw, 3.5rem); }
+    .section { padding: 80px 32px; }
+    .two-col { grid-template-columns: 1fr; gap: 40px; }
+    .techniques-header { grid-template-columns: 1fr; gap: 24px; }
+    .techniques-grid { grid-template-columns: 1fr; }
+    .contrast-grid { grid-template-columns: 1fr; }
+    .pin-inner { grid-template-columns: 1fr; }
+    .pin-right { display: none; }
+    #quiz { padding: 60px 32px; }
+    #techniques { padding: 80px 32px; }
+    #ending { padding: 60px 32px; }
+    #contrast { padding: 80px 32px; }
+    .techniques-header { margin-bottom: 40px; }
+  }
+
+  @media (max-width: 600px) {
+    .hero-chips { display: none; }
+    .pin-left { padding: 48px 32px; }
+    .pin-stage { padding: 48px 32px; }
+    .contrast-col { padding: 32px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- ═══════════════════════════════════════════
+     1. HERO
+═══════════════════════════════════════════ -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+
+  <div class="hero-left">
+    <div class="hero-lesson-label reveal">
+      <span class="hero-lesson-rotated">Prompt Engineering</span>
+      <div class="hero-lesson-line"></div>
+      <span class="label">Lesson 01 of 04</span>
+    </div>
+
+    <h1 class="hero-headline reveal reveal-delay-1">
+      The difference between a mediocre answer
+      and an <span class="accent-word">expert</span> one
+      is your question.
+    </h1>
+
+    <div class="hero-scroll-cue reveal reveal-delay-2">
+      <span>Scroll to begin</span>
+      <div class="hero-scroll-line"></div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="hero-stat reveal reveal-delay-1">
+      <div class="hero-stat-number">12</div>
+      <div class="hero-stat-label">minutes</div>
+    </div>
+
+    <div class="hero-stat-divider reveal reveal-delay-2"></div>
+
+    <div class="hero-stat reveal reveal-delay-2">
+      <div class="hero-stat-number">3</div>
+      <div class="hero-stat-label">new skills</div>
+    </div>
+
+    <div class="hero-chips reveal reveal-delay-3">
+      <span class="hero-chip">Beginner Friendly</span>
+      <span class="hero-chip">+120 XP</span>
+      <span class="hero-chip">Certificate</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     2. EDITORIAL — WHAT IS A PROMPT
+═══════════════════════════════════════════ -->
+<section class="section" id="what-is">
+  <div class="watermark">01</div>
+  <div class="section-inner">
+    <div class="two-col">
+      <div class="col-left-label reveal">
+        <span class="label">Chapter One</span>
+        <div class="accent-bar"></div>
+        <h2 class="section-heading">What is<br>a <span class="serif-accent">prompt,</span><br>really?</h2>
+      </div>
+      <div class="col-right-body">
+        <p class="body-para reveal reveal-delay-1">
+          A prompt is not just a question. It is an instruction set — a compressed brief that tells a language model not only what you want, but who you are, what you know, and how you want the answer packaged.
+        </p>
+        <p class="body-para reveal reveal-delay-2">
+          Most people treat AI like a search engine. They type a fragment and hope for the best. The result is a generic response that could have been written for anyone — because it was written for no one in particular.
+        </p>
+        <p class="body-para reveal reveal-delay-3">
+          The professionals who extract disproportionate value from AI tools are doing one thing differently. They are engineering their input with the same care they give to their output.
+        </p>
+        <div class="stat-callout reveal reveal-delay-4">
+          <div class="stat-callout-number">47%</div>
+          <div class="stat-callout-label">improvement in output quality with a structured four-part prompt</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     3. PINNED ANATOMY
+═══════════════════════════════════════════ -->
+<div class="pin-wrapper" id="pin-wrapper">
+  <div class="pin-inner" id="pin-inner">
+
+    <!-- LEFT: Text stages -->
+    <div class="pin-left">
+
+      <div class="pin-stage active" id="stage-0">
+        <div class="pin-eyebrow">Anatomy of a Prompt</div>
+        <h3 class="pin-stage-heading">At first glance,<br>it looks like any<br>other message.</h3>
+        <p class="pin-stage-body">Read the text on the right. Nothing unusual — just a request sent to an AI tool. But look closer. Every sentence is doing a specific job. Scroll to reveal the architecture hidden in plain sight.</p>
+      </div>
+
+      <div class="pin-stage" id="stage-1">
+        <div class="pin-eyebrow">Part 1 · Role</div>
+        <h3 class="pin-stage-heading">Tell it <span class="pin-stage-accent">who it is.</span></h3>
+        <p class="pin-stage-body">The first sentence establishes expertise. "Senior UX researcher with 10 years of B2B SaaS experience" is not flattery — it primes the model to draw on a specific body of knowledge and use the right professional vocabulary. Without a role, you get a generalist.</p>
+      </div>
+
+      <div class="pin-stage" id="stage-2">
+        <div class="pin-eyebrow">Part 2 · Context</div>
+        <h3 class="pin-stage-heading">Anchor it<br>to <span style="color:var(--iris);font-style:italic;">your world.</span></h3>
+        <p class="pin-stage-body">Context narrows the problem space from infinite to specific. "Enterprise clients" and "onboarding flow redesign" rules out consumer advice, startup heuristics, and theoretical frameworks. The AI now knows the stakes and the audience.</p>
+      </div>
+
+      <div class="pin-stage" id="stage-3">
+        <div class="pin-eyebrow">Parts 3 & 4 · Task + Format</div>
+        <h3 class="pin-stage-heading">Define the<br>deliverable.</h3>
+        <p class="pin-stage-body">The task is specific and countable — three failure points, one fix each. The format constraints eliminate bloat before it begins. "Under 60 words. No buzzwords." You are not hoping for a good answer. You are engineering one.</p>
+      </div>
+
+      <div class="pin-indicators" id="pin-indicators">
+        <div class="pin-dot active" data-stage="0"></div>
+        <div class="pin-dot" data-stage="1"></div>
+        <div class="pin-dot" data-stage="2"></div>
+        <div class="pin-dot" data-stage="3"></div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: Prompt display -->
+    <div class="pin-right">
+      <div class="pin-right-label">The prompt · dissected</div>
+      <div class="prompt-display">
+        <span class="prompt-part" id="part-role">You are a senior UX researcher with 10 years of B2B SaaS experience.<span class="prompt-tag">role</span></span>
+        <span class="prompt-part" id="part-context">We are redesigning our onboarding flow for enterprise clients.<span class="prompt-tag">context</span></span>
+        <span class="prompt-part" id="part-task">Identify the three most common failure points in SaaS onboarding and suggest one fix for each.<span class="prompt-tag">task</span></span>
+        <span class="prompt-part" id="part-format">Format as a numbered list. Under 60 words. No buzzwords.<span class="prompt-tag">format</span></span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     4. CONTRAST
+═══════════════════════════════════════════ -->
+<section id="contrast">
+  <div class="watermark">02</div>
+  <div class="section-inner">
+    <div class="label reveal" style="margin-bottom:16px;">The Difference in Practice</div>
+    <h2 class="contrast-heading reveal reveal-delay-1">The exact same question.<br>Two completely different results.</h2>
+
+    <div class="contrast-grid reveal reveal-delay-2">
+      <!-- BAD -->
+      <div class="contrast-col">
+        <div class="contrast-label-bad">Before</div>
+        <div class="contrast-prompt-box">
+          "Write something about AI for my team."
+        </div>
+        <p class="contrast-output">
+          "Here is a general overview of artificial intelligence. AI, or Artificial Intelligence, refers to the simulation of human intelligence in machines that are programmed to think and learn..."
+        </p>
+        <div class="quality-bar-wrap">
+          <div class="quality-bar-label">
+            <span class="label">Response quality</span>
+            <span class="quality-pct" id="pct-bad">0%</span>
+          </div>
+          <div class="quality-bar-track">
+            <div class="quality-bar-fill bad" id="bar-bad" data-target="18"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GOOD -->
+      <div class="contrast-col">
+        <div class="contrast-label-good">After This Lesson</div>
+        <div class="contrast-prompt-box good">"You are a Head of Engineering with expertise in AI adoption. My team of 12 software engineers is sceptical about integrating AI into our workflow. Identify the top three objections they are likely to have and provide a one-paragraph response to each. Be direct. Under 200 words total."</div>
+        <p class="contrast-output good">
+          "1. 'It will replace my job' — AI tools augment repetitive tasks, freeing engineers for architecture decisions and creative problem-solving that machines cannot replicate.<br><br>2. 'The output is unreliable' — treat AI like a junior colleague: review its work, correct errors, and it improves over time..."
+        </p>
+        <div class="quality-bar-wrap">
+          <div class="quality-bar-label">
+            <span class="label">Response quality</span>
+            <span class="quality-pct" id="pct-good">0%</span>
+          </div>
+          <div class="quality-bar-track">
+            <div class="quality-bar-fill good" id="bar-good" data-target="94"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     5. PREDICTION QUIZ
+═══════════════════════════════════════════ -->
+<section id="quiz">
+  <div class="quiz-inner">
+    <div class="quiz-eyebrow reveal">Quick Check</div>
+    <h2 class="quiz-question reveal reveal-delay-1">You send: "Help me write an email."<br>What's the most likely problem?</h2>
+    <div class="quiz-options" id="quiz-options">
+      <div class="quiz-option reveal reveal-delay-1" data-correct="false" data-index="0">
+        <div class="option-letter">A</div>
+        <div class="option-text">The AI will refuse to write emails without specific permission settings enabled.</div>
+      </div>
+      <div class="quiz-option reveal reveal-delay-2" data-correct="true" data-index="1">
+        <div class="option-letter">B</div>
+        <div class="option-text">Without context, role, or format constraints, the output will be generic and require heavy editing to be useful.</div>
+      </div>
+      <div class="quiz-option reveal reveal-delay-3" data-correct="false" data-index="2">
+        <div class="option-letter">C</div>
+        <div class="option-text">The prompt is too short and will cause an error in most AI systems.</div>
+      </div>
+    </div>
+    <div class="quiz-explanation" id="quiz-explanation">
+      <strong>Exactly right.</strong> The prompt gives the AI nothing to work with — no recipient, no tone, no purpose, no length. The output will be a polite, forgettable template. Adding just one sentence of context ("I'm declining a sales call, professionally but firmly") transforms the result entirely.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     6. POWER TECHNIQUES
+═══════════════════════════════════════════ -->
+<section id="techniques">
+  <div class="watermark">03</div>
+  <div class="section-inner">
+    <div class="techniques-header">
+      <div>
+        <span class="label reveal">Advanced Methods</span>
+        <div class="accent-bar" style="margin-top:16px;margin-bottom:20px;"></div>
+        <h2 class="section-heading reveal reveal-delay-1">Three techniques<br>used by <span class="serif-accent">experts.</span></h2>
+      </div>
+      <p class="body-para reveal reveal-delay-2" style="max-width:480px;">Once you understand the four-part structure, these advanced techniques push output quality further — each one targeting a different failure mode in standard prompting.</p>
+    </div>
+
+    <div class="techniques-grid">
+      <!-- Technique 1 -->
+      <div class="technique-cell reveal">
+        <div class="technique-number">01</div>
+        <svg class="technique-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="8" cy="20" r="4" stroke="var(--signal)" stroke-width="1.5"/>
+          <circle cx="20" cy="20" r="4" stroke="var(--signal)" stroke-width="1.5"/>
+          <circle cx="32" cy="20" r="4" stroke="var(--signal)" stroke-width="1.5"/>
+          <line x1="12" y1="20" x2="16" y2="20" stroke="var(--signal)" stroke-width="1.5"/>
+          <line x1="24" y1="20" x2="28" y2="20" stroke="var(--signal)" stroke-width="1.5"/>
+          <path d="M16 18 L20 14 L24 18" stroke="var(--signal)" stroke-width="1" stroke-opacity="0.4"/>
+        </svg>
+        <div class="technique-name">Chain of Thought</div>
+        <span class="technique-tag signal">Reasoning</span>
+        <p class="technique-body">Ask the AI to reason through the problem step by step before reaching a conclusion. This reduces confident errors and surfaces assumptions.</p>
+        <div class="technique-example">"Think through this step by step before giving your final answer..."</div>
+      </div>
+
+      <!-- Technique 2 -->
+      <div class="technique-cell reveal reveal-delay-1">
+        <div class="technique-number">02</div>
+        <svg class="technique-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="20" cy="15" r="6" stroke="var(--iris)" stroke-width="1.5"/>
+          <path d="M8 34 C8 26 32 26 32 34" stroke="var(--iris)" stroke-width="1.5"/>
+          <path d="M20 9 L20 6 M14.5 11 L12 8.5 M25.5 11 L28 8.5" stroke="var(--iris)" stroke-width="1" stroke-opacity="0.5"/>
+        </svg>
+        <div class="technique-name">Persona Anchoring</div>
+        <span class="technique-tag iris">Identity</span>
+        <p class="technique-body">Define not just a role but a specific person with a track record, a perspective, and constraints. The more specific the persona, the more distinctive the output.</p>
+        <div class="technique-example">"You are a cynical ex-consultant who has seen every growth hack fail..."</div>
+      </div>
+
+      <!-- Technique 3 -->
+      <div class="technique-cell reveal reveal-delay-2">
+        <div class="technique-number">03</div>
+        <svg class="technique-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="8" width="32" height="6" rx="1" stroke="var(--amber)" stroke-width="1.5"/>
+          <rect x="8" y="18" width="24" height="6" rx="1" stroke="var(--amber)" stroke-width="1.5"/>
+          <rect x="12" y="28" width="16" height="6" rx="1" stroke="var(--amber)" stroke-width="1.5"/>
+        </svg>
+        <div class="technique-name">Constraint Stacking</div>
+        <span class="technique-tag amber">Precision</span>
+        <p class="technique-body">Layer multiple constraints — length, tone, vocabulary, audience, format — to pre-eliminate everything you do not want. Each constraint multiplies precision.</p>
+        <div class="technique-example">"Under 80 words. No jargon. Avoid passive voice. Written for a CEO who reads at 2x speed..."</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     7. ENDING
+═══════════════════════════════════════════ -->
+<section id="ending">
+  <div class="ending-eyebrow reveal">Lesson Complete</div>
+
+  <div class="ending-skills">
+    <div class="ending-skill reveal reveal-delay-1">
+      <svg class="ending-check" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="3,9 7,13 15,5" stroke="var(--signal)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="ending-skill-text"><strong>You can explain why vague prompts produce vague results</strong> — and articulate the mechanism behind it to a colleague who has never heard of prompt engineering.</div>
+    </div>
+    <div class="ending-skill reveal reveal-delay-2">
+      <svg class="ending-check" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="3,9 7,13 15,5" stroke="var(--signal)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="ending-skill-text"><strong>You know the four-part structure</strong> — Role, Context, Task, Format — and can apply it to any prompt before you send it.</div>
+    </div>
+    <div class="ending-skill reveal reveal-delay-3">
+      <svg class="ending-check" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="3,9 7,13 15,5" stroke="var(--signal)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="ending-skill-text"><strong>You have three expert techniques to apply today</strong> — Chain of Thought, Persona Anchoring, and Constraint Stacking — each solving a different failure mode.</div>
+    </div>
+  </div>
+
+  <a class="cta-btn reveal reveal-delay-4" href="#">Next Lesson →</a>
+
+  <div class="ending-meta reveal reveal-delay-4">Prompt Engineering &nbsp;·&nbsp; Lesson 2 of 4</div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════ -->
+<script>
+(function() {
+
+  // ── 1. HERO CANVAS ───────────────────────────────
+  const canvas = document.getElementById('hero-canvas');
+  const ctx = canvas.getContext('2d');
+  let nodes = [];
+  const NODE_COUNT = 20;
+  const MAX_DIST = 180;
+
+  function resizeCanvas() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+  }
+
+  function initNodes() {
+    nodes = [];
+    for (let i = 0; i < NODE_COUNT; i++) {
+      nodes.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        r: Math.random() * 2 + 1
+      });
+    }
+  }
+
+  function drawCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Connections
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < MAX_DIST) {
+          const alpha = (1 - dist / MAX_DIST) * 0.5;
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(0, 255, 179, ${alpha})`;
+          ctx.lineWidth = 0.5;
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Nodes
+    nodes.forEach(n => {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0, 255, 179, 0.7)';
+      ctx.fill();
+    });
+
+    // Move
+    nodes.forEach(n => {
+      n.x += n.vx;
+      n.y += n.vy;
+      if (n.x < 0 || n.x > canvas.width) n.vx *= -1;
+      if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
+    });
+
+    requestAnimationFrame(drawCanvas);
+  }
+
+  window.addEventListener('resize', () => { resizeCanvas(); initNodes(); });
+  resizeCanvas();
+  initNodes();
+  drawCanvas();
+
+
+  // ── 2. PROGRESS BAR ──────────────────────────────
+  const progressBar = document.getElementById('progress-bar');
+
+  function updateProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = pct + '%';
+  }
+
+
+  // ── 3. SCROLL REVEAL ─────────────────────────────
+  const revealEls = document.querySelectorAll('.reveal');
+  const revealObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.12 });
+
+  revealEls.forEach(el => revealObs.observe(el));
+
+
+  // ── 4. PINNED ANATOMY ────────────────────────────
+  const pinWrapper = document.getElementById('pin-wrapper');
+  const stages     = [
+    document.getElementById('stage-0'),
+    document.getElementById('stage-1'),
+    document.getElementById('stage-2'),
+    document.getElementById('stage-3')
+  ];
+  const dots = document.querySelectorAll('.pin-dot');
+  const partRole    = document.getElementById('part-role');
+  const partContext = document.getElementById('part-context');
+  const partTask    = document.getElementById('part-task');
+  const partFormat  = document.getElementById('part-format');
+
+  let currentStage = 0;
+
+  function setStage(n) {
+    if (n === currentStage) return;
+    currentStage = n;
+
+    // Update text panels
+    stages.forEach((s, i) => {
+      s.classList.toggle('active', i === n);
+    });
+
+    // Update dots
+    dots.forEach((d, i) => {
+      d.classList.toggle('active', i === n);
+    });
+
+    // Update prompt highlighting
+    // Reset all
+    [partRole, partContext, partTask, partFormat].forEach(p => {
+      p.className = 'prompt-part';
+    });
+
+    if (n === 1) {
+      partRole.classList.add('lit-role');
+    } else if (n === 2) {
+      partRole.classList.add('lit-role');
+      partContext.classList.add('lit-context');
+    } else if (n === 3) {
+      partRole.classList.add('lit-role');
+      partContext.classList.add('lit-context');
+      partTask.classList.add('lit-task');
+      partFormat.classList.add('lit-format');
+    }
+  }
+
+  function handlePinScroll() {
+    const rect = pinWrapper.getBoundingClientRect();
+    const wrapperHeight = pinWrapper.offsetHeight;
+    const viewH = window.innerHeight;
+
+    // How far through the pin-wrapper we've scrolled (0–1)
+    const scrolled = -rect.top;
+    const scrollable = wrapperHeight - viewH;
+
+    if (scrollable <= 0) return;
+
+    const progress = Math.max(0, Math.min(1, scrolled / scrollable));
+
+    let stage;
+    if (progress < 0.25)      stage = 0;
+    else if (progress < 0.5)  stage = 1;
+    else if (progress < 0.75) stage = 2;
+    else                      stage = 3;
+
+    setStage(stage);
+  }
+
+
+  // ── 5. CONTRAST BARS ─────────────────────────────
+  const barBad  = document.getElementById('bar-bad');
+  const barGood = document.getElementById('bar-good');
+  const pctBad  = document.getElementById('pct-bad');
+  const pctGood = document.getElementById('pct-good');
+  let barsAnimated = false;
+
+  function animateBars() {
+    if (barsAnimated) return;
+    barsAnimated = true;
+
+    const targetBad  = parseInt(barBad.dataset.target, 10);
+    const targetGood = parseInt(barGood.dataset.target, 10);
+
+    barBad.style.width  = targetBad + '%';
+    barGood.style.width = targetGood + '%';
+
+    // Animate counter numbers
+    let startTime = null;
+    const duration = 1200;
+
+    function step(ts) {
+      if (!startTime) startTime = ts;
+      const elapsed = ts - startTime;
+      const pct = Math.min(elapsed / duration, 1);
+      const ease = 1 - Math.pow(1 - pct, 3);
+
+      pctBad.textContent  = Math.round(ease * targetBad) + '%';
+      pctGood.textContent = Math.round(ease * targetGood) + '%';
+
+      if (pct < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  const contrastSection = document.getElementById('contrast');
+  const barObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) animateBars();
+    });
+  }, { threshold: 0.3 });
+  barObs.observe(contrastSection);
+
+
+  // ── 6. QUIZ ──────────────────────────────────────
+  const quizOptions    = document.querySelectorAll('.quiz-option');
+  const quizExplanation = document.getElementById('quiz-explanation');
+  let quizAnswered = false;
+
+  quizOptions.forEach(opt => {
+    opt.addEventListener('click', () => {
+      if (quizAnswered) return;
+      quizAnswered = true;
+
+      const isCorrect = opt.dataset.correct === 'true';
+
+      quizOptions.forEach(o => {
+        if (o.dataset.correct === 'true') {
+          o.classList.add('correct');
+        } else {
+          o.classList.add('wrong');
+        }
+      });
+
+      quizExplanation.classList.add('visible');
+    });
+  });
+
+
+  // ── MASTER SCROLL HANDLER ────────────────────────
+  window.addEventListener('scroll', () => {
+    updateProgress();
+    handlePinScroll();
+  }, { passive: true });
+
+  updateProgress();
+  handlePinScroll();
+
+})();
+</script>
+</body>
+</html>

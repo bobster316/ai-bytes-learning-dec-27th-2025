@@ -1,0 +1,8 @@
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+(node:27328) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Failed to fetch OpenAI Blog: Status code 403
+Failed to fetch Google AI Blog: Status code 404
+ ⨯ The requested resource isn't a valid image for /categories/AI Product Development.png received null
+Failed to fetch OpenAI Blog: Status code 403
+Failed to fetch Google AI Blog: Status code 404

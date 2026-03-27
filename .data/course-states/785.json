@@ -1,0 +1,39 @@
+{
+  "course_id": 785,
+  "course_topic": "Quantum Computing & AI",
+  "domain_history": [
+    "Architecture",
+    "Gardening"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "seedling time lapse",
+    "faders smoothly moving"
+  ],
+  "used_image_urls": [],
+  "used_video_urls": [],
+  "narration_history": [],
+  "visual_type_counts": {
+    "cinematic_photo": 0,
+    "animated_diagram": 0,
+    "split_comparison": 0,
+    "data_narrative": 0,
+    "interactive_reveal": 0,
+    "metaphor_morph": 0,
+    "type_cards": 5,
+    "flow_diagram": 3,
+    "concept_illustration": 2,
+    "interactive_vis": 1
+  },
+  "validation_log": []
+}

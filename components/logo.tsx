@@ -1,18 +1,19 @@
 "use client";
 
-import Image from "next/image";
-
 export function Logo({ className = "" }: { className?: string }) {
     return (
-        <div className={`relative flex items-center overflow-hidden ${className}`}>
-            <Image
-                src="/logos/Cyan and black AI logo design.png"
-                alt="AI Bytes Learning"
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-contain object-left"
-                priority
-            />
-        </div>
+        <div
+            className={`relative ${className}`}
+            role="img"
+            aria-label="AI Bytes Learning"
+            style={{
+                backgroundImage: "url('/logos/ai-bytes-logo-dark.png')",
+                backgroundSize: "128%",
+                backgroundPosition: "center 50%",
+                backgroundRepeat: "no-repeat",
+                /* Inset shadow masks any white PNG edge in the header colour */
+                boxShadow: "inset 0 0 0 6px #080810",
+            }}
+        />
     );
 }

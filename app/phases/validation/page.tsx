@@ -13,7 +13,7 @@ export default function ValidationPage() {
             <Header />
 
             {/* Hero Section */}
-            <section className="relative mx-auto w-[95%] max-w-7xl my-8 rounded-3xl border border-white/5 shadow-2xl py-20 lg:py-32 bg-slate-900 overflow-hidden">
+            <section className="relative mx-auto w-[95%] max-w-screen-2xl my-8 rounded-3xl border border-white/5 shadow-2xl py-20 lg:py-32 bg-slate-900 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-slate-900 to-slate-900"></div>
 
                 <div className="container mx-auto px-6 relative z-10">
@@ -32,7 +32,7 @@ export default function ValidationPage() {
             </section>
 
             {/* Main Content */}
-            <section className="mx-auto w-[95%] max-w-7xl my-8 rounded-3xl border border-slate-200 dark:border-white/5 shadow-2xl py-16 bg-white dark:bg-slate-900">
+            <section className="mx-auto w-[95%] max-w-screen-2xl my-8 rounded-3xl border border-slate-200 dark:border-white/5 shadow-2xl py-16 bg-white dark:bg-slate-900">
                 <div className="container mx-auto px-6">
                     {/* Feature Image */}
                     <div className="relative h-[400px] rounded-2xl overflow-hidden mb-12 shadow-2xl">
@@ -59,7 +59,7 @@ export default function ValidationPage() {
                         <div className="grid md:grid-cols-2 gap-6 my-12">
                             {[
                                 {
-                                    icon: Award,
+                                    thumbnail: "/assets/thumbnails/award.png",
                                     title: "Industry-Recognized Certificates",
                                     description: "Our certificates are valued by top tech companies and recruiters worldwide."
                                 },
@@ -81,8 +81,8 @@ export default function ValidationPage() {
                             ].map((feature, idx) => (
                                 <Card key={idx} className="border-slate-200 dark:border-slate-700 hover:border-blue-500/50 transition-all">
                                     <CardContent className="p-6 space-y-3">
-                                        <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                                            <feature.icon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                                        <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center overflow-hidden">
+                                            <img src={feature.thumbnail} className="w-9 h-9 object-contain" alt={feature.title} />
                                         </div>
                                         <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                                             {feature.title}
@@ -201,3 +201,4 @@ export default function ValidationPage() {
         </div>
     );
 }
+

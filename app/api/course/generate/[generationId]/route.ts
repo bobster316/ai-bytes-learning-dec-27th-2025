@@ -1,5 +1,5 @@
 // ========================================
-// Course Generation Status API Endpoint
+// Course Creation Status API Endpoint
 // GET /api/course/generate/[generationId]
 // ========================================
 
@@ -9,7 +9,7 @@ import type { GenerationStatusResponse } from '@/lib/types/course-generator';
 
 /**
  * GET /api/course/generate/[generationId]
- * Check the status of an ongoing course generation
+ * Check the status of an ongoing course creation
  */
 export async function GET(
   request: NextRequest,

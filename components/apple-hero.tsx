@@ -30,7 +30,10 @@ export function AppleHero() {
 
         setIsGenerating(true);
         try {
-            const response = await fetch('/api/course/generate', {
+            // HARDCODING V2 FOR TESTING PURPOSES
+            const useV2 = true;
+            const endpoint = '/api/course/generate-v2';
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -127,7 +130,7 @@ export function AppleHero() {
                             <TextReveal text="The world's most complex technology, decoded into ultra-short, cinematic lessons." className="h-auto min-h-0" />
                         </div>
 
-                        {/* NEW: Course Generation Form */}
+                        {/* NEW: Course Creation Form */}
                         <div className="w-full max-w-xl mx-auto space-y-4 pt-4 backdrop-blur-xl bg-white/5 p-6 rounded-3xl border border-white/10 shadow-2xl">
                             <div className="flex flex-col gap-4">
                                 <input

@@ -1,0 +1,81 @@
+{
+  "course_id": 790,
+  "course_topic": "Introduction to Machine Learning Models",
+  "domain_history": [
+    "Craftsmanship",
+    "Travel"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "train arriving",
+    "forest canopy"
+  ],
+  "used_image_urls": [
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106908928-5gtpov-scatter%20plot%20data.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106901897-i4jqnr-regression%20line%20grap.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106908151-4xmis9-coefficient%20equation.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106896025-oboj3-simple%20linear%20regres.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106904991-4sheeg-multiple%20linear%20regr.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106907342-f6j5ph-data%20cleaning%20proces.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106896258-2xu4rd-feature%20engineering.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106904386-5vnx7-model%20evaluation%20met.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106895393-ij2wkq-stock%20market%20graph.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106897347-a1jpmm-medical%20research%20dat.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106903105-2fwcq-sales%20forecasting%20ch.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106902845-osigs-flight%20booking%20data.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106900834-1kkkzb-scatter%20plot%20graph.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106894730-z9sdzt-regression%20line%20equa.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106897375-318iqm-model%20evaluation%20met.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106966506-oqaycs-binary%20tree%20diagram.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106966129-alp3w9-data%20classification.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106967664-6u1sqd-regression%20analysis.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106967946-3tcaff-manual%20sorting.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106971497-bul57o-automated%20sorting.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106970694-1qapqg-root%20node.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106963409-4jv2ro-internal%20node.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106960410-4mi5ni-leaf%20node.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106967981-b01snn-hospital%20diagnosis.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106966492-dv3p6g-credit%20risk%20analysis.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106971752-sc4l83-customer%20segmentatio.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106971921-556kng-quality%20control.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106967993-czyv3j-decision%20tree%20diagra.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106959506-jtz8bq-classification%20examp.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774106967063-xddgh-overfitting%20example.jpeg"
+  ],
+  "used_video_urls": [
+    {
+      "query": "train arriving",
+      "url": "https://videos.pexels.com/video-files/13238808/13238808-hd_1280_720_24fps.mp4",
+      "source": "pexels"
+    },
+    {
+      "query": "forest canopy",
+      "url": "https://videos.pexels.com/video-files/8926423/8926423-hd_1280_720_25fps.mp4",
+      "source": "pexels"
+    }
+  ],
+  "narration_history": [],
+  "visual_type_counts": {
+    "cinematic_photo": 0,
+    "animated_diagram": 0,
+    "split_comparison": 0,
+    "data_narrative": 0,
+    "interactive_reveal": 0,
+    "metaphor_morph": 0,
+    "type_cards": 6,
+    "flow_diagram": 2,
+    "concept_illustration": 2,
+    "interactive_vis": 2
+  },
+  "validation_log": []
+}

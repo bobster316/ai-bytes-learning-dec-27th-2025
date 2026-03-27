@@ -1,65 +1,34 @@
-# AI Bytes Learning Platform
+# AI Bytes Learning — High-Velocity Mastery DNA
 
-This is the frontend application for the AI Bytes Learning platform, a modern learning environment for AI-related courses. This project is built with Next.js, TypeScript, and Tailwind CSS.
+AI Bytes Learning is the world's leading micro-learning platform for AI. We democratize AI education by breaking down complex concepts into digestible, 15-minute high-velocity bytes.
 
-## Tech Stack
+## 🚀 The Mission: High-Velocity Mastery
+The era of rambling, 40-hour lectures is over. AI Bytes Learning offers zero-fluff, outcome-focused learning designed for instant understanding and practical capability. Our DNA is built on:
 
-- **Framework**: [Next.js](https://nextjs.org/) (v16+)
-- **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **UI Components**: [Shadcn/UI](https://ui.shadcn.com/) (using `class-variance-authority` and `lucide-react`)
-- **Content Parsing**: [Cheerio](https://cheerio.js.org/), [@mozilla/readability](https://github.com/mozilla/readability)
-- **Linting/Formatting**: ESLint
+- **15-Minute Bytes**: High-impact lessons designed for peak learning velocity.
+- **Metaphor-First Pedagogy**: We anchor technical AI concepts in everyday mental models.
+- **The Rule of 4**: Every lesson is structured with 4 purposeful visuals (Hook, Engine, Proof, Recap).
+- **Sterling AI Coach**: A sophisticated, British-accented tutoring engine for real-time guidance.
 
-## Getting Started
+## 🎭 Meet Sterling
+**Sterling** (Structured Tutoring Engine for Responsive Learning & Instructional Guidance) is our resident AI coach. He is sophisticated, academically smug but impeccably polite, and values your time above all else. He despises rambling and is here to ensure you reach Peak Learning Velocity.
 
-Follow these instructions to get the project up and running on your local machine for development and testing purposes.
+## 🛠 Tech Stack
+- **Core**: Next.js 16 (App Router), TypeScript, Tailwind CSS 4.
+- **AI Intelligence**: Google Gemini 2.0 (Multimodal Voice & Text), Groq.
+- **Infrastructure**: Supabase (Auth, DB, Storage).
+- **Payments**: Stripe (UK-based pricing in GBP £).
 
-### Prerequisites
+## 📂 Project Structure
+- `/app`: Next.js 16 App Router (Courses, Dashboard, Admin, Sterling Voice).
+- `/components`: High-fidelity UI components following the "Dark Pro" aesthetic.
+- `/lib/voice`: Sterling's knowledge base and voice configurations.
+- `/supabase`: Database migrations and schema definitions.
 
-- Node.js (v18 or later recommended)
-- npm or yarn
+## 🏁 Getting Started
+1. **Clone & Install**: `npm install`
+2. **Environment**: Copy `.env.example` to `.env.local` and add your keys (Supabase, Gemini, NewsAPI).
+3. **Run**: `npm run dev`
 
-### Installation & Setup
-
-1.  **Clone the repository:**
-    ```bash
-    git clone <repository-url>
-    cd ai-bytes-learning
-    ```
-
-2.  **Install dependencies:**
-    ```bash
-    npm install
-    ```
-
-3.  **Set up environment variables:**
-    Create a new file named `.env.local` in the root of the project by copying the example file:
-    ```bash
-    cp .env.example .env.local
-    ```
-    Now, open `.env.local` and add your News API key. You can get a free key from [newsapi.org](https://newsapi.org).
-
-4.  **Run the development server:**
-    ```bash
-    npm run dev
-    ```
-
-The application will be available at [http://localhost:3000](http://localhost:3000).
-
-## Project Structure
-
-A brief overview of the key directories:
-
--   `/app`: Contains all the routes and pages for the application, following the Next.js App Router structure.
--   `/components`: Contains all shared React components, such as the Header, UI elements (Buttons, Cards), etc.
--   `/lib`: Contains library code and utility functions.
--   `/public`: Contains static assets like images and fonts.
-
-## Key Features Implemented
-
--   **Dynamic News Feed**: The homepage features a "Trending in AI" section that fetches and displays the latest AI-related news from a live API.
--   **Article Scraping & Display**: Clicking a news article opens a page within the application that displays the full, cleaned article content, scraped from the source.
--   **Robust Error Handling**: If an article cannot be scraped, the page displays a user-friendly message with a direct link to the original source.
--   **Responsive Design**: The application is designed to be fully responsive across mobile, tablet, and desktop devices.
--   **Theme Switching**: Supports light and dark mode themes.
+---
+© 2026 AI Bytes Learning. All rights reserved.

@@ -4,3 +4,4 @@ export default function AdminPage() {
     redirect("/admin/courses");
     return null;
 }
+

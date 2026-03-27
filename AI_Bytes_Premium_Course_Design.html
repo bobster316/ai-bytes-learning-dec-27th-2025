@@ -1,0 +1,2034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Bytes — Premium Course Design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:       #0A0E1A;
+    --ink-soft:  #1C2235;
+    --ink-muted: #2D3550;
+    --surface:   #111827;
+    --surface-2: #161D2E;
+    --surface-3: #1E2740;
+    --border:    rgba(255,255,255,0.07);
+    --border-hi: rgba(255,255,255,0.14);
+    --cyan:      #00D4F5;
+    --cyan-dim:  #00A8C4;
+    --cyan-glow: rgba(0,212,245,0.15);
+    --violet:    #7C5CFC;
+    --violet-dim:#5B3FD4;
+    --gold:      #F5C842;
+    --mint:      #00E5A0;
+    --text-1:    #F0F4FF;
+    --text-2:    #A8B4CC;
+    --text-3:    #6B7A99;
+    --text-4:    #3D4F70;
+    --serif:     'Instrument Serif', Georgia, serif;
+    --sans:      'DM Sans', system-ui, sans-serif;
+    --mono:      'DM Mono', monospace;
+    --r-sm:      6px;
+    --r-md:      12px;
+    --r-lg:      18px;
+    --r-xl:      24px;
+    --sidebar-w: 280px;
+    --topbar-h:  56px;
+    --ease-out:  cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--ink);
+    color: var(--text-1);
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── ANNOTATIONS (design callouts) ──────────────────── */
+  .note {
+    position: absolute;
+    z-index: 200;
+    pointer-events: none;
+  }
+  .note-bubble {
+    background: var(--gold);
+    color: #0A0E1A;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1.4;
+    padding: 6px 10px;
+    border-radius: 6px;
+    max-width: 200px;
+    box-shadow: 0 8px 24px rgba(245,200,66,0.3);
+  }
+  .note-bubble::after {
+    content: '';
+    position: absolute;
+    width: 6px; height: 6px;
+    background: var(--gold);
+    border-radius: 50%;
+  }
+
+  /* ── TOP BAR ─────────────────────────────────────────── */
+  .topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: var(--topbar-h);
+    background: rgba(10,14,26,0.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px 0 0;
+    z-index: 100;
+  }
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  .logo-zone {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px;
+    height: var(--topbar-h);
+    border-right: 1px solid var(--border);
+  }
+  .logo-mark {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, var(--cyan), var(--violet));
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: white;
+    letter-spacing: -0.5px;
+  }
+  .logo-text {
+    font-family: var(--serif);
+    font-size: 15px;
+    color: var(--text-1);
+    letter-spacing: 0.02em;
+  }
+  .course-crumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 20px;
+  }
+  .crumb-sep { color: var(--text-4); font-size: 12px; }
+  .crumb-course {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-3);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .crumb-lesson {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-2);
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .topbar-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface-3);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: var(--text-2);
+    font-weight: 500;
+  }
+  .streak-dot {
+    width: 6px; height: 6px;
+    background: var(--gold);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--gold);
+    animation: pulse-gold 2s ease-in-out infinite;
+  }
+  @keyframes pulse-gold {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(0.8); }
+  }
+  .focus-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    color: var(--text-3);
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    padding: 5px 10px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .focus-btn:hover { color: var(--cyan); border-color: var(--cyan-dim); }
+  .avatar-dot {
+    width: 30px; height: 30px;
+    background: linear-gradient(135deg, var(--violet), var(--cyan));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: white;
+  }
+
+  /* ── APP SHELL ───────────────────────────────────────── */
+  .app-shell {
+    display: grid;
+    grid-template-columns: var(--sidebar-w) 1fr;
+    min-height: 100vh;
+    padding-top: var(--topbar-h);
+  }
+
+  /* ── SIDEBAR ─────────────────────────────────────────── */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    height: calc(100vh - var(--topbar-h));
+    position: sticky;
+    top: var(--topbar-h);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .sidebar-header {
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .sidebar-title {
+    font-family: var(--serif);
+    font-size: 14px;
+    color: var(--text-1);
+    line-height: 1.4;
+    margin-bottom: 10px;
+  }
+  .course-progress-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .course-progress-track {
+    flex: 1;
+    height: 4px;
+    background: var(--surface-3);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .course-progress-fill {
+    height: 100%;
+    width: 38%;
+    background: linear-gradient(90deg, var(--cyan), var(--violet));
+    border-radius: 2px;
+    position: relative;
+  }
+  .course-progress-fill::after {
+    content: '';
+    position: absolute;
+    right: 0; top: -2px;
+    width: 8px; height: 8px;
+    background: var(--cyan);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--cyan);
+  }
+  .progress-pct {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--cyan);
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .sidebar-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--surface-3) transparent;
+  }
+  .module-group { margin-bottom: 4px; }
+  .module-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    cursor: pointer;
+  }
+  .module-icon {
+    width: 22px; height: 22px;
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px;
+    font-family: var(--mono);
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .module-icon.done { background: rgba(0,229,160,0.12); color: var(--mint); }
+  .module-icon.active { background: rgba(0,212,245,0.12); color: var(--cyan); }
+  .module-icon.todo { background: var(--surface-3); color: var(--text-4); }
+  .module-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    flex: 1;
+  }
+  .module-chevron {
+    font-size: 9px;
+    color: var(--text-4);
+    transition: transform 0.2s;
+  }
+  .module-group.open .module-chevron { transform: rotate(90deg); }
+  .lesson-list { padding: 0 0 4px; }
+  .lesson-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 16px 7px 24px;
+    cursor: pointer;
+    border-radius: 0;
+    transition: background 0.15s;
+    position: relative;
+  }
+  .lesson-item:hover { background: rgba(255,255,255,0.03); }
+  .lesson-item.active {
+    background: rgba(0,212,245,0.06);
+  }
+  .lesson-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--cyan);
+    border-radius: 0 2px 2px 0;
+  }
+  .lesson-ring {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8px;
+  }
+  .lesson-ring.done {
+    background: rgba(0,229,160,0.15);
+    color: var(--mint);
+    border: 1px solid rgba(0,229,160,0.3);
+  }
+  .lesson-ring.active {
+    background: rgba(0,212,245,0.12);
+    border: 2px solid var(--cyan);
+  }
+  .lesson-ring.todo {
+    border: 1.5px solid var(--surface-3);
+    background: transparent;
+  }
+  .lesson-ring.half {
+    background: conic-gradient(var(--cyan) 0deg, var(--cyan) 180deg, var(--surface-3) 180deg);
+    border: none;
+  }
+  .lesson-ring-inner {
+    width: 7px; height: 7px;
+    background: var(--cyan);
+    border-radius: 50%;
+  }
+  .lesson-label {
+    flex: 1;
+    font-size: 12px;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .lesson-item.active .lesson-label { color: var(--text-1); font-weight: 500; }
+  .lesson-item.done .lesson-label { color: var(--text-3); }
+  .lesson-item.todo .lesson-label { color: var(--text-3); }
+  .lesson-time {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-4);
+    flex-shrink: 0;
+  }
+  .sidebar-footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .sterling-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    background: linear-gradient(135deg, rgba(124,92,252,0.12), rgba(0,212,245,0.08));
+    border: 1px solid rgba(124,92,252,0.25);
+    border-radius: var(--r-md);
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .sterling-btn:hover {
+    border-color: rgba(124,92,252,0.5);
+    background: linear-gradient(135deg, rgba(124,92,252,0.2), rgba(0,212,245,0.12));
+  }
+  .sterling-orb {
+    width: 24px; height: 24px;
+    background: linear-gradient(135deg, var(--violet), var(--cyan));
+    border-radius: 50%;
+    position: relative;
+    box-shadow: 0 0 12px rgba(124,92,252,0.5);
+    animation: orb-pulse 3s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes orb-pulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(124,92,252,0.4); }
+    50% { box-shadow: 0 0 20px rgba(124,92,252,0.7), 0 0 40px rgba(0,212,245,0.2); }
+  }
+  .sterling-text { flex: 1; text-align: left; }
+  .sterling-name { font-size: 11px; font-weight: 600; color: var(--text-1); display: block; }
+  .sterling-sub { font-size: 10px; color: var(--text-3); }
+
+  /* ── MAIN CONTENT ────────────────────────────────────── */
+  .main {
+    background: var(--surface-2);
+    min-height: calc(100vh - var(--topbar-h));
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── LESSON PROGRESS BAND ────────────────────────────── */
+  .lesson-progress-band {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 28px;
+    height: 36px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .lpb-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+  .lpb-segments {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+  }
+  .lpb-seg {
+    height: 4px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .lpb-seg.done { background: var(--mint); width: 32px; }
+  .lpb-seg.active {
+    background: linear-gradient(90deg, var(--cyan) 60%, rgba(0,212,245,0.3));
+    width: 32px;
+    position: relative;
+    overflow: visible;
+  }
+  .lpb-seg.todo { background: var(--surface-3); width: 32px; }
+  .lpb-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .lpb-stat {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-3);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .lpb-stat .hi { color: var(--cyan); font-weight: 500; }
+  .lpb-stat .gold { color: var(--gold); font-weight: 500; }
+
+  /* ── LESSON AREA ─────────────────────────────────────── */
+  .lesson-area {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 0;
+    flex: 1;
+    align-items: start;
+  }
+
+  /* ── VIDEO + CONTENT COLUMN ──────────────────────────── */
+  .lesson-main-col {
+    padding: 24px 24px 40px;
+    border-right: 1px solid var(--border);
+  }
+
+  /* ── MISSION BRIEFING ────────────────────────────────── */
+  .mission-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 18px 20px;
+    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: start;
+    position: relative;
+    overflow: hidden;
+  }
+  .mission-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--cyan), var(--violet));
+  }
+  .mission-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(0,212,245,0.08);
+    border: 1px solid rgba(0,212,245,0.2);
+    border-radius: 20px;
+    padding: 3px 10px;
+    margin-bottom: 8px;
+  }
+  .mission-badge-dot {
+    width: 5px; height: 5px;
+    background: var(--cyan);
+    border-radius: 50%;
+    box-shadow: 0 0 6px var(--cyan);
+    animation: pulse-cyan 2s ease-in-out infinite;
+  }
+  @keyframes pulse-cyan {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  .mission-badge-text {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .mission-lesson-title {
+    font-family: var(--serif);
+    font-size: 22px;
+    color: var(--text-1);
+    line-height: 1.25;
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+  .mission-objectives {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .obj-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.5;
+  }
+  .obj-tick {
+    width: 14px; height: 14px;
+    background: rgba(0,229,160,0.1);
+    border: 1px solid rgba(0,229,160,0.3);
+    border-radius: 3px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8px;
+    color: var(--mint);
+  }
+  .mission-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+    flex-shrink: 0;
+  }
+  .mission-time-circle {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: conic-gradient(var(--cyan) 0deg, var(--cyan) 77deg, var(--surface-3) 77deg);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .mission-time-inner {
+    width: 42px; height: 42px;
+    background: var(--surface);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .mission-time-num {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-1);
+    line-height: 1;
+  }
+  .mission-time-unit {
+    font-family: var(--mono);
+    font-size: 8px;
+    color: var(--text-4);
+  }
+  .diff-badge {
+    background: rgba(245,200,66,0.08);
+    border: 1px solid rgba(245,200,66,0.2);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── VIDEO PLAYER ────────────────────────────────────── */
+  .video-shell {
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    background: #000;
+    margin-bottom: 20px;
+    position: relative;
+    aspect-ratio: 16/9;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px var(--border);
+  }
+  .video-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(160deg, #0D1B2A 0%, #0A0F1E 40%, #141025 100%);
+  }
+  .avatar-video {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 95%;
+    object-fit: contain;
+    z-index: 1;
+  }
+  .avatar-video-placeholder {
+    position: absolute;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    height: 90%;
+    width: auto;
+    z-index: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .avatar-silhouette {
+    width: 220px;
+    height: 330px;
+    background: linear-gradient(180deg, rgba(60,80,140,0.6) 0%, rgba(30,40,80,0.4) 100%);
+    border-radius: 40% 40% 0 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .avatar-silhouette::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 100px; height: 200px;
+    background: rgba(0,212,245,0.04);
+    border-radius: 50% 50% 0 0;
+  }
+  .video-gradient-btm {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 50%;
+    background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 100%);
+    z-index: 2;
+  }
+  .video-gradient-top {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 80px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%);
+    z-index: 2;
+  }
+
+  /* Video top bar */
+  .video-topbar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    gap: 12px;
+  }
+  .chapter-chips {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .chapter-chip {
+    height: 3px;
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+  .chapter-chip.done { background: rgba(255,255,255,0.5); width: 20px; }
+  .chapter-chip.active { background: var(--cyan); width: 32px; }
+  .chapter-chip.todo { background: rgba(255,255,255,0.15); width: 20px; }
+  .video-chapter-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: rgba(255,255,255,0.5);
+    margin-left: auto;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* Video scrubber + controls */
+  .video-controls {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    z-index: 10;
+    padding: 8px 16px 12px;
+  }
+  .scrubber-track {
+    width: 100%;
+    height: 3px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
+    margin-bottom: 10px;
+    position: relative;
+    cursor: pointer;
+  }
+  .scrubber-fill {
+    height: 100%;
+    width: 38%;
+    background: linear-gradient(90deg, var(--cyan), var(--violet));
+    border-radius: 2px;
+    position: relative;
+  }
+  .scrubber-thumb {
+    position: absolute;
+    right: -5px; top: -4px;
+    width: 11px; height: 11px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(0,212,245,0.6);
+  }
+  /* Chapter markers on scrubber */
+  .scrubber-marks {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+  }
+  .scrubber-mark {
+    position: absolute;
+    width: 2px; height: 6px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 1px;
+    top: -1.5px;
+  }
+  .control-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .ctrl-btn {
+    background: none; border: none;
+    color: rgba(255,255,255,0.8);
+    cursor: pointer;
+    font-size: 14px;
+    display: flex; align-items: center;
+    transition: color 0.15s;
+    padding: 0;
+  }
+  .ctrl-btn:hover { color: white; }
+  .ctrl-time {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+  }
+  .ctrl-spacer { flex: 1; }
+  .ctrl-speed {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 4px;
+    padding: 2px 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .ctrl-speed:hover { color: var(--cyan); border-color: rgba(0,212,245,0.4); }
+  .ctrl-icon-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 5px;
+    color: rgba(255,255,255,0.7);
+    cursor: pointer;
+    font-size: 10px;
+    font-family: var(--mono);
+    padding: 3px 6px;
+    transition: all 0.15s;
+  }
+  .ctrl-icon-btn:hover { color: white; border-color: rgba(255,255,255,0.3); }
+  /* Captions live indicator */
+  .live-captions {
+    position: absolute;
+    bottom: 68px; left: 0; right: 0;
+    z-index: 8;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .captions-bubble {
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 8px 16px;
+    max-width: 80%;
+    text-align: center;
+    font-size: 13px;
+    color: rgba(255,255,255,0.9);
+    line-height: 1.5;
+  }
+  .captions-bubble span.hi { color: var(--cyan); font-weight: 500; }
+  /* Watermark */
+  .video-watermark {
+    position: absolute;
+    top: 12px; right: 16px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    opacity: 0.35;
+  }
+  .wm-dot {
+    width: 16px; height: 16px;
+    background: linear-gradient(135deg, var(--cyan), var(--violet));
+    border-radius: 4px;
+  }
+  .wm-text {
+    font-family: var(--serif);
+    font-size: 11px;
+    color: white;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── LESSON CONTENT ──────────────────────────────────── */
+  .lesson-content {
+    margin-bottom: 20px;
+  }
+  .content-section-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .csl-line { flex: 1; height: 1px; background: var(--border); }
+  .csl-text {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--text-4);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+  }
+  /* 4-visual zones */
+  .visual-zones {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .vz-card {
+    border-radius: var(--r-md);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    position: relative;
+  }
+  .vz-img {
+    width: 100%;
+    aspect-ratio: 16/9;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .vz-hook { background: linear-gradient(135deg, #0D2535, #1A1030); }
+  .vz-engine { background: linear-gradient(135deg, #0F1A30, #0D2535); }
+  .vz-proof { background: linear-gradient(135deg, #0D2022, #0F1A30); }
+  .vz-wrap { background: linear-gradient(135deg, #1A1030, #0D2022); }
+  .vz-label {
+    position: absolute;
+    top: 8px; left: 8px;
+    font-family: var(--mono);
+    font-size: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 2px 7px;
+    border-radius: 3px;
+  }
+  .vz-hook .vz-label { background: rgba(0,212,245,0.15); color: var(--cyan); }
+  .vz-engine .vz-label { background: rgba(124,92,252,0.15); color: var(--violet); }
+  .vz-proof .vz-label { background: rgba(0,229,160,0.12); color: var(--mint); }
+  .vz-wrap .vz-label { background: rgba(245,200,66,0.12); color: var(--gold); }
+  .vz-caption {
+    padding: 8px 10px;
+    font-size: 11px;
+    color: var(--text-3);
+    line-height: 1.4;
+    background: var(--surface);
+  }
+  /* Text content */
+  .lesson-text {
+    max-width: 640px;
+  }
+  .lesson-text p {
+    font-size: 14px;
+    color: var(--text-2);
+    line-height: 1.75;
+    margin-bottom: 14px;
+  }
+  .lesson-text p .emphasis {
+    color: var(--text-1);
+    font-weight: 500;
+  }
+  /* Key Takeaways */
+  .takeaway-box {
+    background: linear-gradient(135deg, rgba(0,212,245,0.05), rgba(124,92,252,0.04));
+    border: 1px solid rgba(0,212,245,0.15);
+    border-radius: var(--r-lg);
+    padding: 16px 18px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .takeaway-box::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--cyan), var(--violet));
+  }
+  .takeaway-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+  .takeaway-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 7px;
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.5;
+  }
+  .takeaway-item:last-child { margin-bottom: 0; }
+  .ti-diamond {
+    width: 6px; height: 6px;
+    background: var(--cyan);
+    transform: rotate(45deg);
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+
+  /* ── QUIZ CARD ───────────────────────────────────────── */
+  .quiz-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .quiz-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .quiz-icon {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, var(--violet-dim), var(--violet));
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    box-shadow: 0 4px 12px rgba(124,92,252,0.3);
+  }
+  .quiz-title {
+    font-family: var(--serif);
+    font-size: 15px;
+    color: var(--text-1);
+  }
+  .quiz-meta {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-3);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .quiz-body { padding: 18px; }
+  .quiz-q {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-1);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .quiz-opt {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface-2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 11px 14px;
+    cursor: pointer;
+    transition: all 0.2s var(--ease-out);
+  }
+  .quiz-opt:hover { border-color: var(--border-hi); background: var(--surface-3); }
+  .quiz-opt.selected { border-color: var(--cyan); background: rgba(0,212,245,0.06); }
+  .quiz-opt.correct { border-color: var(--mint); background: rgba(0,229,160,0.06); }
+  .quiz-opt.wrong { border-color: #EF4444; background: rgba(239,68,68,0.06); }
+  .opt-letter {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-hi);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-3);
+    flex-shrink: 0;
+  }
+  .quiz-opt.selected .opt-letter { border-color: var(--cyan); color: var(--cyan); }
+  .quiz-opt.correct .opt-letter { border-color: var(--mint); color: var(--mint); background: rgba(0,229,160,0.1); }
+  .quiz-opt.wrong .opt-letter { border-color: #EF4444; color: #EF4444; background: rgba(239,68,68,0.1); }
+  .opt-text { font-size: 13px; color: var(--text-2); line-height: 1.4; }
+  .quiz-opt.correct .opt-text { color: var(--text-1); }
+
+  /* ── COMPLETION MOMENT ───────────────────────────────── */
+  .completion-card {
+    background: linear-gradient(135deg, rgba(0,229,160,0.08), rgba(0,212,245,0.05));
+    border: 1px solid rgba(0,229,160,0.2);
+    border-radius: var(--r-lg);
+    padding: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .completion-icon {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, var(--mint), rgba(0,212,245,0.6));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    box-shadow: 0 8px 24px rgba(0,229,160,0.3);
+  }
+  .completion-text h3 {
+    font-family: var(--serif);
+    font-size: 17px;
+    color: var(--text-1);
+    margin-bottom: 3px;
+  }
+  .completion-text p {
+    font-size: 12px;
+    color: var(--text-3);
+    line-height: 1.4;
+  }
+  .completion-xp {
+    margin-left: auto;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .xp-badge {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--gold);
+    line-height: 1;
+    display: block;
+  }
+  .xp-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-4);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* ── NEXT LESSON BTN ─────────────────────────────────── */
+  .next-lesson-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: linear-gradient(135deg, rgba(0,212,245,0.12), rgba(124,92,252,0.08));
+    border: 1px solid rgba(0,212,245,0.25);
+    border-radius: var(--r-lg);
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: all 0.25s var(--ease-out);
+    text-align: left;
+  }
+  .next-lesson-btn:hover {
+    border-color: rgba(0,212,245,0.5);
+    background: linear-gradient(135deg, rgba(0,212,245,0.18), rgba(124,92,252,0.12));
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(0,212,245,0.12);
+  }
+  .nlb-left .nlb-pre {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-4);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 3px;
+  }
+  .nlb-left .nlb-title {
+    font-family: var(--serif);
+    font-size: 16px;
+    color: var(--text-1);
+  }
+  .nlb-arrow {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--cyan), var(--violet));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    color: white;
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(0,212,245,0.3);
+    transition: transform 0.2s;
+  }
+  .next-lesson-btn:hover .nlb-arrow { transform: translateX(3px); }
+
+  /* ── RIGHT PANEL ─────────────────────────────────────── */
+  .lesson-right-panel {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    min-height: calc(100vh - var(--topbar-h) - 36px);
+    border-left: 1px solid var(--border);
+  }
+
+  /* Transcript */
+  .transcript-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+  .panel-tab-row {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .panel-tab {
+    flex: 1;
+    padding: 10px 0;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-4);
+    text-align: center;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    background: none; border-left: none; border-right: none; border-top: none;
+  }
+  .panel-tab.active {
+    color: var(--cyan);
+    border-bottom-color: var(--cyan);
+  }
+  .transcript-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--surface-3) transparent;
+  }
+  .transcript-line {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    border-radius: var(--r-sm);
+    padding: 6px 8px;
+    transition: background 0.15s;
+  }
+  .transcript-line:hover { background: var(--surface-2); }
+  .transcript-line.active { background: rgba(0,212,245,0.05); }
+  .tl-time {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-4);
+    width: 36px;
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+  .tl-text {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-3);
+  }
+  .transcript-line.active .tl-time { color: var(--cyan); }
+  .transcript-line.active .tl-text { color: var(--text-1); }
+  .tl-text .active-word {
+    background: rgba(0,212,245,0.2);
+    border-radius: 2px;
+    padding: 0 2px;
+    color: var(--cyan);
+  }
+
+  /* Notes panel */
+  .notes-panel {
+    padding: 14px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .notes-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .notes-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .notes-timestamp {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--cyan);
+    background: rgba(0,212,245,0.08);
+    border: 1px solid rgba(0,212,245,0.2);
+    border-radius: 4px;
+    padding: 2px 6px;
+  }
+  .notes-input-wrap {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .notes-input-wrap:focus-within { border-color: rgba(0,212,245,0.3); }
+  .notes-textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-1);
+    font-family: var(--sans);
+    font-size: 12px;
+    line-height: 1.6;
+    padding: 10px 12px;
+    resize: none;
+    height: 64px;
+  }
+  .notes-textarea::placeholder { color: var(--text-4); }
+  .notes-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px 8px;
+    border-top: 1px solid var(--border);
+  }
+  .notes-hint { font-size: 10px; color: var(--text-4); }
+  .notes-save-btn {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--cyan);
+    background: rgba(0,212,245,0.1);
+    border: 1px solid rgba(0,212,245,0.2);
+    border-radius: 4px;
+    padding: 3px 8px;
+    cursor: pointer;
+  }
+
+  /* ── DESIGN SYSTEM ANNOTATIONS ───────────────────────── */
+  .annotation-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* ── BOTTOM ACTION BAR ───────────────────────────────── */
+  .action-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 52px;
+    background: rgba(10,14,26,0.92);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    z-index: 90;
+  }
+  .ab-prev {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    color: var(--text-3);
+    cursor: pointer;
+    font-size: 13px;
+    font-family: var(--sans);
+    font-weight: 500;
+    transition: color 0.15s;
+  }
+  .ab-prev:hover { color: var(--text-1); }
+  .ab-center {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ab-lesson-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--surface-3);
+  }
+  .ab-lesson-dot.active { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+  .ab-next {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, var(--cyan), var(--violet));
+    border: none;
+    border-radius: 20px;
+    color: white;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: var(--sans);
+    font-weight: 600;
+    padding: 8px 18px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(0,212,245,0.25);
+  }
+  .ab-next:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,212,245,0.35); }
+
+  /* ── ANNOTATION CALLOUTS ─────────────────────────────── */
+  .callout-strip {
+    background: var(--ink);
+    border-top: 2px solid rgba(245,200,66,0.5);
+    padding: 32px 40px;
+    margin-top: 60px;
+  }
+  .callout-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .callout-title {
+    font-family: var(--serif);
+    font-size: 28px;
+    color: var(--text-1);
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  .callout-sub {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .callout-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 18px;
+    border-top: 2px solid;
+  }
+  .callout-card.c1 { border-top-color: var(--cyan); }
+  .callout-card.c2 { border-top-color: var(--violet); }
+  .callout-card.c3 { border-top-color: var(--mint); }
+  .callout-card.c4 { border-top-color: var(--gold); }
+  .callout-card h4 {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+  .callout-card.c1 h4 { color: var(--cyan); }
+  .callout-card.c2 h4 { color: var(--violet); }
+  .callout-card.c3 h4 { color: var(--mint); }
+  .callout-card.c4 h4 { color: var(--gold); }
+  .callout-card ul { list-style: none; padding: 0; }
+  .callout-card ul li {
+    font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.5;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+  }
+  .callout-card ul li:last-child { border-bottom: none; }
+  .callout-card ul li::before {
+    content: '→';
+    font-family: var(--mono);
+    font-size: 10px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .callout-card.c1 ul li::before { color: var(--cyan); }
+  .callout-card.c2 ul li::before { color: var(--violet); }
+  .callout-card.c3 ul li::before { color: var(--mint); }
+  .callout-card.c4 ul li::before { color: var(--gold); }
+
+  /* ── DESIGN TOKENS STRIP ─────────────────────────────── */
+  .tokens-strip {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 32px 40px;
+  }
+  .tokens-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-4);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 20px;
+  }
+  .tokens-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    max-width: 1200px;
+  }
+  .token-chip {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .token-swatch {
+    height: 48px;
+    border-radius: var(--r-md);
+    border: 1px solid var(--border);
+  }
+  .token-name {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-3);
+    font-weight: 500;
+  }
+  .token-value {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-4);
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     TOP BAR — Context-aware, not global marketing nav
+═══════════════════════════════════════════════════════ -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="logo-zone">
+      <div class="logo-mark">AB</div>
+      <span class="logo-text">AI Bytes</span>
+    </div>
+    <div class="course-crumb">
+      <span class="crumb-course">Strategic AI Leadership</span>
+      <span class="crumb-sep">›</span>
+      <span class="crumb-lesson">AI Strategy: A Practical Framework</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-pill">
+      <div class="streak-dot"></div>
+      7-day streak
+    </div>
+    <div class="topbar-pill">⚡ 340 XP</div>
+    <button class="focus-btn">Focus Mode</button>
+    <div class="avatar-dot">JD</div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════
+     APP SHELL
+═══════════════════════════════════════════════════════ -->
+<div class="app-shell">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">Strategic AI Leadership:<br><span style="font-style:italic;color:var(--text-3)">From Vision to Value</span></div>
+      <div class="course-progress-bar-wrap">
+        <div class="course-progress-track">
+          <div class="course-progress-fill"></div>
+        </div>
+        <span class="progress-pct">38%</span>
+      </div>
+    </div>
+    <div class="sidebar-body">
+
+      <!-- Module 1 — complete -->
+      <div class="module-group open">
+        <div class="module-header">
+          <div class="module-icon done">M1</div>
+          <span class="module-name">AI Foundations</span>
+          <span class="module-chevron">▶</span>
+        </div>
+        <div class="lesson-list">
+          <div class="lesson-item done">
+            <div class="lesson-ring done">✓</div>
+            <span class="lesson-label">The AI Landscape Today</span>
+            <span class="lesson-time">14m</span>
+          </div>
+          <div class="lesson-item done">
+            <div class="lesson-ring done">✓</div>
+            <span class="lesson-label">How Executives Use AI</span>
+            <span class="lesson-time">12m</span>
+          </div>
+          <div class="lesson-item done">
+            <div class="lesson-ring done">✓</div>
+            <span class="lesson-label">AI Maturity Models</span>
+            <span class="lesson-time">16m</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Module 2 — in progress -->
+      <div class="module-group open">
+        <div class="module-header">
+          <div class="module-icon active">M2</div>
+          <span class="module-name">Strategic Framework</span>
+          <span class="module-chevron" style="transform:rotate(90deg)">▶</span>
+        </div>
+        <div class="lesson-list">
+          <div class="lesson-item done">
+            <div class="lesson-ring done">✓</div>
+            <span class="lesson-label">The Vision-Value Gap</span>
+            <span class="lesson-time">13m</span>
+          </div>
+          <div class="lesson-item active">
+            <div class="lesson-ring active"><div class="lesson-ring-inner"></div></div>
+            <span class="lesson-label" style="color:var(--text-1);font-weight:500">AI Strategy: A Practical Framework</span>
+            <span class="lesson-time" style="color:var(--cyan)">15m</span>
+          </div>
+          <div class="lesson-item todo">
+            <div class="lesson-ring todo"></div>
+            <span class="lesson-label">Case First Approach</span>
+            <span class="lesson-time">18m</span>
+          </div>
+          <div class="lesson-item todo">
+            <div class="lesson-ring todo"></div>
+            <span class="lesson-label">Measuring AI ROI</span>
+            <span class="lesson-time">14m</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Module 3 — locked -->
+      <div class="module-group">
+        <div class="module-header" style="opacity:0.4">
+          <div class="module-icon todo">M3</div>
+          <span class="module-name">Implementation</span>
+          <span class="module-chevron">▶</span>
+        </div>
+      </div>
+      <div class="module-group">
+        <div class="module-header" style="opacity:0.4">
+          <div class="module-icon todo">M4</div>
+          <span class="module-name">Leadership & Culture</span>
+          <span class="module-chevron">▶</span>
+        </div>
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <button class="sterling-btn">
+        <div class="sterling-orb"></div>
+        <div class="sterling-text">
+          <span class="sterling-name">Ask Sterling</span>
+          <span class="sterling-sub">AI tutor · in context</span>
+        </div>
+        <span style="font-size:16px;color:var(--text-4)">›</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="main" style="padding-bottom:52px">
+
+    <!-- Lesson progress band -->
+    <div class="lesson-progress-band">
+      <span class="lpb-label">Lesson 5 of 8</span>
+      <div class="lpb-segments">
+        <div class="lpb-seg done"></div>
+        <div class="lpb-seg done"></div>
+        <div class="lpb-seg done"></div>
+        <div class="lpb-seg done"></div>
+        <div class="lpb-seg active"></div>
+        <div class="lpb-seg todo"></div>
+        <div class="lpb-seg todo"></div>
+        <div class="lpb-seg todo"></div>
+      </div>
+      <div class="lpb-right">
+        <div class="lpb-stat">Module: <span class="hi" style="margin-left:4px">Strategic Framework</span></div>
+        <div class="lpb-stat">Streak: <span class="gold" style="margin-left:4px">🔥 7 days</span></div>
+        <div class="lpb-stat">XP this lesson: <span class="hi" style="margin-left:4px">+50</span></div>
+      </div>
+    </div>
+
+    <!-- Lesson content area -->
+    <div class="lesson-area">
+      <div class="lesson-main-col">
+
+        <!-- MISSION BRIEFING -->
+        <div class="mission-card">
+          <div>
+            <div class="mission-badge">
+              <div class="mission-badge-dot"></div>
+              <span class="mission-badge-text">Mission Briefing · Module 2, Lesson 2</span>
+            </div>
+            <div class="mission-lesson-title">AI Strategy: A Practical Framework</div>
+            <div class="mission-objectives">
+              <div class="obj-item"><div class="obj-tick">○</div>Define the 4 pillars of an AI strategy that executives can actually implement</div>
+              <div class="obj-item"><div class="obj-tick">○</div>Apply a prioritisation matrix to select AI use cases by ROI and feasibility</div>
+              <div class="obj-item"><div class="obj-tick">○</div>Build a 90-day AI roadmap for a real business scenario</div>
+            </div>
+          </div>
+          <div class="mission-meta">
+            <div class="mission-time-circle">
+              <div class="mission-time-inner">
+                <span class="mission-time-num">15</span>
+                <span class="mission-time-unit">min</span>
+              </div>
+            </div>
+            <div class="diff-badge">Intermediate</div>
+          </div>
+        </div>
+
+        <!-- VIDEO PLAYER -->
+        <div class="video-shell">
+          <div class="video-bg"></div>
+
+          <!-- Watermark -->
+          <div class="video-watermark">
+            <div class="wm-dot"></div>
+            <span class="wm-text">AI Bytes</span>
+          </div>
+
+          <!-- Chapter chips top bar -->
+          <div class="video-topbar">
+            <div class="chapter-chips">
+              <div class="chapter-chip done"></div>
+              <div class="chapter-chip active"></div>
+              <div class="chapter-chip todo"></div>
+              <div class="chapter-chip todo"></div>
+            </div>
+            <span class="video-chapter-label">The 4-Pillar Framework</span>
+          </div>
+
+          <!-- Avatar placeholder (graceful render of instructor) -->
+          <div class="avatar-video-placeholder">
+            <div style="position:relative;width:260px;height:340px;display:flex;align-items:flex-end;justify-content:center;">
+              <!-- Glow halo behind avatar -->
+              <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:180px;height:260px;background:radial-gradient(ellipse, rgba(0,212,245,0.08) 0%, transparent 70%);border-radius:50%;"></div>
+              <!-- Stylised avatar silhouette -->
+              <svg width="200" height="300" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:0.5">
+                <ellipse cx="100" cy="75" rx="38" ry="42" fill="rgba(160,180,220,0.3)"/>
+                <path d="M30 300 Q40 180 100 160 Q160 180 170 300Z" fill="rgba(100,130,180,0.25)"/>
+                <path d="M50 300 Q55 200 100 185 Q145 200 150 300Z" fill="rgba(120,150,200,0.2)"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="video-gradient-top"></div>
+          <div class="video-gradient-btm"></div>
+
+          <!-- Live captions -->
+          <div class="live-captions">
+            <div class="captions-bubble">
+              "The first pillar is <span class="hi">use case selection</span> — and most organisations get this completely wrong."
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <div class="video-controls">
+            <div class="scrubber-track">
+              <div class="scrubber-fill">
+                <div class="scrubber-thumb"></div>
+              </div>
+              <div class="scrubber-marks">
+                <div class="scrubber-mark" style="left:25%"></div>
+                <div class="scrubber-mark" style="left:50%"></div>
+                <div class="scrubber-mark" style="left:75%"></div>
+              </div>
+            </div>
+            <div class="control-row">
+              <button class="ctrl-btn">⏸</button>
+              <button class="ctrl-btn">⏭</button>
+              <span class="ctrl-time">5:42 / 14:51</span>
+              <div class="ctrl-spacer"></div>
+              <button class="ctrl-speed">1.25×</button>
+              <button class="ctrl-icon-btn">CC</button>
+              <button class="ctrl-icon-btn">⛶</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- LESSON TEXT CONTENT -->
+        <div class="lesson-content">
+          <div class="content-section-label">
+            <div class="csl-line"></div>
+            <span class="csl-text">Lesson Content</span>
+            <div class="csl-line"></div>
+          </div>
+
+          <!-- 4 Visual Zones -->
+          <div class="visual-zones">
+            <div class="vz-card vz-hook">
+              <div class="vz-img">
+                <span class="vz-label">Hook</span>
+                <div style="opacity:0.15;font-size:64px;filter:blur(1px)">🎯</div>
+                <div style="position:absolute;inset:0;background:radial-gradient(circle at 60% 40%, rgba(0,212,245,0.15), transparent 70%)"></div>
+              </div>
+              <div class="vz-caption">Most AI initiatives fail not from bad technology — but from choosing the wrong problem to solve first.</div>
+            </div>
+            <div class="vz-card vz-engine">
+              <div class="vz-img">
+                <span class="vz-label">Engine</span>
+                <div style="opacity:0.12;font-size:64px;filter:blur(1px)">⚙️</div>
+                <div style="position:absolute;inset:0;background:radial-gradient(circle at 40% 60%, rgba(124,92,252,0.15), transparent 70%)"></div>
+              </div>
+              <div class="vz-caption">The 4-Pillar Framework: Use Case Selection → Data Readiness → Governance → Scale Pathways.</div>
+            </div>
+            <div class="vz-card vz-proof">
+              <div class="vz-img">
+                <span class="vz-label">Proof</span>
+                <div style="opacity:0.12;font-size:64px;filter:blur(1px)">📊</div>
+                <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 50%, rgba(0,229,160,0.12), transparent 70%)"></div>
+              </div>
+              <div class="vz-caption">Rolls-Royce saved £200M annually by applying exactly this framework to predictive engine maintenance.</div>
+            </div>
+            <div class="vz-card vz-wrap">
+              <div class="vz-img">
+                <span class="vz-label">Byte-Wrap</span>
+                <div style="opacity:0.12;font-size:64px;filter:blur(1px)">✨</div>
+                <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 50%, rgba(245,200,66,0.1), transparent 70%)"></div>
+              </div>
+              <div class="vz-caption">After this lesson: you can score any AI use case on a 2×2 Impact vs Feasibility matrix in under 10 minutes.</div>
+            </div>
+          </div>
+
+          <!-- Text -->
+          <div class="lesson-text">
+            <p>Most AI strategy documents are works of <span class="emphasis">corporate fiction</span>. They describe what AI could do in theory, not what the organisation is actually equipped to deliver in the next 12 months. The gap between aspiration and execution has a name: the Vision-Value gap — and crossing it requires a framework, not a vision statement.</p>
+            <p>The 4-Pillar Framework was built from analysing 340 AI transformations across financial services, manufacturing, and professional services between 2019 and 2024. The organisations that succeeded didn't necessarily have the best data or the most sophisticated models. They had <span class="emphasis">a repeatable process for choosing which problem to solve first.</span></p>
+          </div>
+        </div>
+
+        <!-- KEY TAKEAWAYS -->
+        <div class="takeaway-box">
+          <div class="takeaway-title">⬡ Key Takeaways</div>
+          <div class="takeaway-item"><div class="ti-diamond"></div>AI strategy is a selection problem before it is a technology problem — choose use cases by business impact, not technical novelty.</div>
+          <div class="takeaway-item"><div class="ti-diamond"></div>The 4 pillars must be implemented in sequence: you cannot scale what you haven't governed, and you cannot govern what you haven't selected.</div>
+          <div class="takeaway-item"><div class="ti-diamond"></div>A 90-day roadmap beats a 3-year strategy every time — it forces specificity and creates visible wins that build organisational trust.</div>
+        </div>
+
+        <!-- QUIZ CARD -->
+        <div class="quiz-card">
+          <div class="quiz-header">
+            <div class="quiz-icon">🧠</div>
+            <span class="quiz-title">Knowledge Check</span>
+            <div class="quiz-meta">
+              <span>Question 1 of 2</span>
+              <span style="color:var(--border-hi)">•</span>
+              <span>⏱ 30s</span>
+            </div>
+          </div>
+          <div class="quiz-body">
+            <div class="quiz-q">An organisation wants to implement AI but their data is siloed across 12 legacy systems. Which pillar of the 4-Pillar Framework should they address first?</div>
+            <div class="quiz-options">
+              <div class="quiz-opt">
+                <div class="opt-letter">A</div>
+                <div class="opt-text">Use Case Selection — identify the highest-value problem regardless of data state</div>
+              </div>
+              <div class="quiz-opt correct">
+                <div class="opt-letter">✓</div>
+                <div class="opt-text">Data Readiness — siloed data is a prerequisite blocker that must be resolved before any use case can succeed</div>
+              </div>
+              <div class="quiz-opt">
+                <div class="opt-letter">C</div>
+                <div class="opt-text">Governance — establish policies before touching data infrastructure</div>
+              </div>
+              <div class="quiz-opt">
+                <div class="opt-letter">D</div>
+                <div class="opt-text">Scale Pathways — plan for scale from the beginning to avoid rework</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMPLETION MOMENT -->
+        <div class="completion-card">
+          <div class="completion-icon">✦</div>
+          <div class="completion-text">
+            <h3>Lesson Complete</h3>
+            <p>You've grasped the 4-Pillar Framework. You're now ahead of 72% of learners on this course.</p>
+          </div>
+          <div class="completion-xp">
+            <span class="xp-badge">+50</span>
+            <span class="xp-label">XP earned</span>
+          </div>
+        </div>
+
+        <!-- NEXT LESSON -->
+        <button class="next-lesson-btn">
+          <div class="nlb-left">
+            <span class="nlb-pre">Next up · 18 min</span>
+            <span class="nlb-title">Building an AI Strategy: A Case First Approach</span>
+          </div>
+          <div class="nlb-arrow">→</div>
+        </button>
+
+      </div>
+
+      <!-- ── RIGHT PANEL ── -->
+      <div class="lesson-right-panel">
+        <div class="panel-tab-row">
+          <button class="panel-tab active">Transcript</button>
+          <button class="panel-tab">Notes</button>
+          <button class="panel-tab">Resources</button>
+        </div>
+        <div class="transcript-panel">
+          <div class="transcript-body">
+            <div class="transcript-line done">
+              <span class="tl-time">0:00</span>
+              <span class="tl-text">Let's start with a question most boards have never been asked: what is the one thing your organisation could do with AI in the next 90 days that would be undeniably valuable?</span>
+            </div>
+            <div class="transcript-line done">
+              <span class="tl-time">0:42</span>
+              <span class="tl-text">Most leaders can't answer that. Not because they lack ambition — but because they've never had a framework for turning ambition into a prioritised shortlist.</span>
+            </div>
+            <div class="transcript-line active">
+              <span class="tl-time">5:42</span>
+              <span class="tl-text">The first pillar is <span class="active-word">use case selection</span> — and most organisations get this completely wrong. They chase the most exciting use case, not the most feasible one.</span>
+            </div>
+            <div class="transcript-line">
+              <span class="tl-time">6:18</span>
+              <span class="tl-text">The Impact-Feasibility matrix changes this. On the vertical axis: potential business impact. On the horizontal: data and technical readiness. Your first AI initiative should sit in the top-right quadrant.</span>
+            </div>
+            <div class="transcript-line">
+              <span class="tl-time">7:55</span>
+              <span class="tl-text">Pillar two is data readiness — and it is almost always the rate-limiting factor. Organisations consistently overestimate the quality of their data before they've actually looked at it.</span>
+            </div>
+            <div class="transcript-line">
+              <span class="tl-time">9:30</span>
+              <span class="tl-text">Rolls-Royce is the canonical example. They had 25 years of engine sensor data. The insight wasn't the data — it was recognising that they had it and that competitors didn't.</span>
+            </div>
+            <div class="transcript-line">
+              <span class="tl-time">11:14</span>
+              <span class="tl-text">By the end of this lesson you'll be able to run a 4-pillar audit on any organisation in under an hour. Not as a consultant's exercise — as a decision-making tool.</span>
+            </div>
+          </div>
+        </div>
+        <div class="notes-panel">
+          <div class="notes-header">
+            <span class="notes-label">My Notes</span>
+            <span class="notes-timestamp">@ 5:42</span>
+          </div>
+          <div class="notes-input-wrap">
+            <textarea class="notes-textarea" placeholder="Type a note — it'll be saved at this timestamp…"></textarea>
+            <div class="notes-footer">
+              <span class="notes-hint">Auto-saved to your Learning Journal</span>
+              <button class="notes-save-btn">Save Note</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ── PERSISTENT BOTTOM ACTION BAR ── -->
+<div class="action-bar">
+  <button class="ab-prev">← The Vision-Value Gap</button>
+  <div class="ab-center">
+    <div class="ab-lesson-dot done"></div>
+    <div class="ab-lesson-dot done"></div>
+    <div class="ab-lesson-dot done"></div>
+    <div class="ab-lesson-dot done"></div>
+    <div class="ab-lesson-dot active"></div>
+    <div class="ab-lesson-dot"></div>
+    <div class="ab-lesson-dot"></div>
+    <div class="ab-lesson-dot"></div>
+  </div>
+  <button class="ab-next">Continue → Case First Approach</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     DESIGN SYSTEM CALLOUTS
+═══════════════════════════════════════════════════════ -->
+<div class="callout-strip">
+  <div class="callout-title">What This Design Achieves</div>
+  <div class="callout-sub">Premium improvements over the current screenshot — benchmarked against MasterClass, Brilliant & Duolingo</div>
+  <div class="callout-grid">
+    <div class="callout-card c1">
+      <h4>Navigation & Orientation</h4>
+      <ul>
+        <li>Sticky sidebar with full curriculum always visible</li>
+        <li>Per-lesson completion rings with conic-gradient fills</li>
+        <li>Progress band above content — lesson X of Y + segment dots</li>
+        <li>Context-aware topbar replaces full global nav</li>
+        <li>Persistent bottom action bar — prev/next always reachable</li>
+      </ul>
+    </div>
+    <div class="callout-card c2">
+      <h4>Engagement & Retention</h4>
+      <ul>
+        <li>Mission Briefing card with learning objectives upfront</li>
+        <li>Conic-gradient time circle communicates lesson length visually</li>
+        <li>Lesson completion moment with XP, streak, and progress rank</li>
+        <li>Streak + XP displayed in topbar — always visible motivation</li>
+        <li>Quiz card with full-width answer options and immediate feedback</li>
+      </ul>
+    </div>
+    <div class="callout-card c3">
+      <h4>Premium Visual Language</h4>
+      <ul>
+        <li>Instrument Serif + DM Sans — editorial, not generic</li>
+        <li>Ink palette (#0A0E1A) — deeper and richer than slate-900</li>
+        <li>Cyan-to-violet gradient system across all interactive elements</li>
+        <li>Gradient mesh glow effects on video player and cards</li>
+        <li>Chapter markers on video scrubber — MasterClass-level detail</li>
+      </ul>
+    </div>
+    <div class="callout-card c4">
+      <h4>Content & Learning Design</h4>
+      <ul>
+        <li>4-zone visual grid (Hook, Engine, Proof, Byte-Wrap) visible</li>
+        <li>Lesson text rendered below video with max-width reading column</li>
+        <li>Live captions bubble over video — WCAG 2.1 AA compliance</li>
+        <li>Sync'd transcript panel with active-word highlighting</li>
+        <li>Timestamp-linked notes panel with auto-save to Learning Journal</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Design tokens -->
+<div class="tokens-strip">
+  <div class="tokens-title">Design Tokens — Colour System</div>
+  <div class="tokens-grid">
+    <div class="token-chip">
+      <div class="token-swatch" style="background:linear-gradient(135deg,#00D4F5,#00A8C4)"></div>
+      <div class="token-name">Cyan Primary</div>
+      <div class="token-value">#00D4F5</div>
+    </div>
+    <div class="token-chip">
+      <div class="token-swatch" style="background:linear-gradient(135deg,#7C5CFC,#5B3FD4)"></div>
+      <div class="token-name">Violet Accent</div>
+      <div class="token-value">#7C5CFC</div>
+    </div>
+    <div class="token-chip">
+      <div class="token-swatch" style="background:linear-gradient(135deg,#00E5A0,#00B87A)"></div>
+      <div class="token-name">Mint Success</div>
+      <div class="token-value">#00E5A0</div>
+    </div>
+    <div class="token-chip">
+      <div class="token-swatch" style="background:linear-gradient(135deg,#F5C842,#D4A020)"></div>
+      <div class="token-name">Gold Reward</div>
+      <div class="token-value">#F5C842</div>
+    </div>
+    <div class="token-chip">
+      <div class="token-swatch" style="background:linear-gradient(180deg,#111827,#0A0E1A)"></div>
+      <div class="token-name">Ink Base</div>
+      <div class="token-value">#0A0E1A</div>
+    </div>
+    <div class="token-chip">
+      <div class="token-swatch" style="background:linear-gradient(135deg,#00D4F5,#7C5CFC)"></div>
+      <div class="token-name">Gradient Brand</div>
+      <div class="token-value">Cyan → Violet</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

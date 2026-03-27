@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Bytes Learning — Lesson Preview: How Machines Actually Learn</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS (from prototype)
+   ═══════════════════════════════════════════ */
+:root {
+  --pulse: #00FFB3;
+  --pulse-dark: #00CC8F;
+  --pulse-glow: rgba(0, 255, 179, 0.15);
+  --iris: #9B8FFF;
+  --iris-glow: rgba(155, 143, 255, 0.15);
+  --amber: #FFB347;
+  --amber-glow: rgba(255, 179, 71, 0.15);
+  --nova: #FF6B6B;
+
+  --void: #05050A;
+  --obsidian: #0D0D18;
+  --carbon: #141422;
+  --slate: #1E1E35;
+  --silver: #8A8AB0;
+  --ghost: #C8C8E0;
+  --white: #F0F0FF;
+
+  --glass-bg: rgba(5, 5, 10, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.06);
+
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'Instrument Serif', serif;
+  --font-mono: 'DM Mono', monospace;
+
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--void);
+  color: var(--ghost);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════════════
+   LAYOUT — Main content column
+   ═══════════════════════════════════════════ */
+.lesson-wrapper {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 40px 24px 120px;
+}
+
+/* ═══════════════════════════════════════════
+   BLOCK: Lesson Header
+   ═══════════════════════════════════════════ */
+.lesson-header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+.lesson-header__tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--pulse);
+  margin-bottom: 20px;
+}
+.lesson-header__title {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  font-weight: 800;
+  color: var(--white);
+  line-height: 1.1;
+  margin-bottom: 24px;
+}
+.lesson-header__title em {
+  font-family: var(--font-body);
+  font-style: italic;
+  color: var(--iris);
+}
+.lesson-header__meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
+  color: var(--silver);
+}
+.meta-chip svg { width: 14px; height: 14px; opacity: 0.7; }
+.difficulty-badge {
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  background: var(--pulse-glow);
+  color: var(--pulse);
+  border: 1px solid rgba(0, 255, 179, 0.2);
+}
+
+/* ═══════════════════════════════════════════
+   BLOCK: Objective Card
+   ═══════════════════════════════════════════ */
+.objective-card {
+  position: relative;
+  padding: 28px 32px;
+  border-radius: var(--radius);
+  background: var(--carbon);
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  margin-bottom: 48px;
+}
+.objective-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--pulse), var(--iris));
+  z-index: -1;
+  opacity: 0.5;
+}
+.objective-card__label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--pulse);
+  margin-bottom: 10px;
+}
+.objective-card__text {
+  font-family: var(--font-body);
+  font-size: 19px;
+  color: var(--ghost);
+  line-height: 1.6;
+}
+.objective-card__text strong {
+  color: var(--white);
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════
+   BLOCK: Text Section
+   ═══════════════════════════════════════════ */
+.text-block {
+  margin-bottom: 48px;
+}
+.text-block__heading {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 20px;
+  padding-left: 16px;
+  position: relative;
+}
+.text-block__heading::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--pulse);
+}
+.text-block p {
+  font-family: var(--font-body);
+  font-size: 18px;
+  color: var(--ghost);
+  line-height: 1.75;
+  margin-bottom: 16px;
+}
+.text-block p:last-child { margin-bottom: 0; }
+.text-block strong {
+  color: var(--pulse);
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════
+   BLOCK: Full Image
+   ═══════════════════════════════════════════ */
+.full-image {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 48px;
+  aspect-ratio: 16 / 9;
+  background: var(--carbon);
+}
+.full-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.full-image__caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 32px 24px 20px;
+  background: linear-gradient(to top, rgba(5,5,10,0.95), transparent);
+}
+.full-image__caption p {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--silver);
+  letter-spacing: 0.02em;
+}
+.full-image__caption .highlight {
+  color: var(--pulse);
+}
+
+/* Placeholder for images not yet generated */
+.full-image--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--carbon), var(--slate));
+  border: 1px solid var(--glass-border);
+}
+.full-image--placeholder__inner {
+  text-align: center;
+  padding: 40px;
+}
+.full-image--placeholder__icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: var(--pulse-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.full-image--placeholder__icon svg {
+  width: 24px;
+  height: 24px;
+  color: var(--pulse);
+}
+.full-image--placeholder__text {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--silver);
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════
+   BLOCK: Type Cards (3-column comparison)
+   ═══════════════════════════════════════════ */
+.type-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 48px;
+}
+@media (max-width: 700px) {
+  .type-cards { grid-template-columns: 1fr; }
+}
+.type-card {
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--carbon);
+  border: 1px solid var(--glass-border);
+  transition: border-color 0.3s, transform 0.3s;
+}
+.type-card:hover {
+  border-color: rgba(255,255,255,0.12);
+  transform: translateY(-4px);
+}
+.type-card__image {
+  aspect-ratio: 16 / 10;
+  background: var(--slate);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+.type-card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.type-card__image-placeholder {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--silver);
+  text-align: center;
+  padding: 12px;
+}
+.type-card__badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.badge--pulse { background: var(--pulse-glow); color: var(--pulse); border: 1px solid rgba(0,255,179,0.2); }
+.badge--iris { background: var(--iris-glow); color: var(--iris); border: 1px solid rgba(155,143,255,0.2); }
+.badge--amber { background: var(--amber-glow); color: var(--amber); border: 1px solid rgba(255,179,71,0.2); }
+.type-card__body {
+  padding: 18px 16px;
+}
+.type-card__title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 8px;
+}
+.type-card__desc {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--silver);
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════
+   BLOCK: Image + Text Row
+   ═══════════════════════════════════════════ */
+.image-text-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: center;
+  margin-bottom: 48px;
+}
+.image-text-row.reverse { direction: rtl; }
+.image-text-row.reverse > * { direction: ltr; }
+@media (max-width: 700px) {
+  .image-text-row, .image-text-row.reverse {
+    grid-template-columns: 1fr;
+    direction: ltr;
+  }
+}
+.image-text-row__image {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--carbon);
+  border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.image-text-row__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.image-text-row__label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--iris);
+  margin-bottom: 8px;
+}
+.image-text-row__title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 12px;
+}
+.image-text-row__text {
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--ghost);
+  line-height: 1.65;
+}
+
+/* ═══════════════════════════════════════════
+   BLOCK: Callout Box
+   ═══════════════════════════════════════════ */
+.callout {
+  display: flex;
+  gap: 16px;
+  padding: 24px;
+  border-radius: var(--radius);
+  margin-bottom: 48px;
+  border: 1px solid var(--glass-border);
+}
+.callout--tip {
+  background: rgba(0, 255, 179, 0.04);
+  border-left: 3px solid var(--pulse);
+}
+.callout--warning {
+  background: rgba(255, 179, 71, 0.04);
+  border-left: 3px solid var(--amber);
+}
+.callout__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 18px;
+}
+.callout--tip .callout__icon { background: var(--pulse-glow); }
+.callout--warning .callout__icon { background: var(--amber-glow); }
+.callout__title {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+.callout__body {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--ghost);
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════
+   BLOCK: Industry Tabs
+   ═══════════════════════════════════════════ */
+.industry-tabs {
+  margin-bottom: 48px;
+}
+.industry-tabs__heading {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 8px;
+  padding-left: 16px;
+  position: relative;
+}
+.industry-tabs__heading::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--amber);
+}
+.industry-tabs__intro {
+  font-family: var(--font-body);
+  font-size: 17px;
+  color: var(--silver);
+  margin-bottom: 24px;
+}
+.tab-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  background: var(--carbon);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  border: 1px solid var(--glass-border);
+  overflow-x: auto;
+}
+.tab-btn {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 16px;
+  border: none;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--silver);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  text-align: center;
+}
+.tab-btn:hover { background: rgba(255,255,255,0.04); color: var(--ghost); }
+.tab-btn.active {
+  background: var(--slate);
+  color: var(--white);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.tab-panel {
+  display: none;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--carbon);
+  border: 1px solid var(--glass-border);
+}
+.tab-panel.active { display: block; }
+.tab-panel__image {
+  aspect-ratio: 16 / 7;
+  background: var(--slate);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tab-panel__image-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px 24px 14px;
+  background: linear-gradient(to top, rgba(5,5,10,0.9), transparent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--silver);
+}
+.tab-panel__body {
+  padding: 24px;
+}
+.tab-panel__title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tab-panel__text {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--ghost);
+  line-height: 1.6;
+}
+.tab-panel__text mark {
+  background: var(--pulse-glow);
+  color: var(--pulse);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+/* ═══════════════════════════════════════════
+   BLOCK: Quiz
+   ═══════════════════════════════════════════ */
+.quiz-block {
+  margin-bottom: 48px;
+  padding: 32px;
+  border-radius: var(--radius);
+  background: var(--carbon);
+  border: 1px solid var(--glass-border);
+}
+.quiz-block__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+.quiz-block__title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--white);
+}
+.quiz-block__counter {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--silver);
+}
+.quiz-question__image {
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 20px;
+  background: var(--slate);
+  aspect-ratio: 16 / 8;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.quiz-question__scenario {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px 20px 12px;
+  background: linear-gradient(to top, rgba(5,5,10,0.9), transparent);
+}
+.quiz-question__scenario-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--silver);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.quiz-question__scenario-label .highlight {
+  color: var(--amber);
+}
+.quiz-question__text {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+.quiz-question__text em {
+  font-family: var(--font-body);
+  font-style: italic;
+  color: var(--iris);
+}
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.quiz-option:hover {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.12);
+}
+.quiz-option__letter {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--slate);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--silver);
+  flex-shrink: 0;
+}
+.quiz-option__text {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--ghost);
+}
+
+/* ═══════════════════════════════════════════
+   BLOCK: Key Terms
+   ═══════════════════════════════════════════ */
+.key-terms {
+  margin-bottom: 48px;
+}
+.key-terms__title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 16px;
+  padding-left: 16px;
+  position: relative;
+}
+.key-terms__title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 3px;
+  bottom: 3px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--iris);
+}
+.key-term {
+  border-bottom: 1px solid var(--glass-border);
+}
+.key-term:last-child { border-bottom: none; }
+.key-term__trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+.key-term__word {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--white);
+}
+.key-term__chevron {
+  color: var(--silver);
+  transition: transform 0.2s;
+  font-size: 14px;
+}
+.key-term.open .key-term__chevron { transform: rotate(180deg); }
+.key-term__def {
+  display: none;
+  padding: 0 0 14px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--silver);
+  line-height: 1.6;
+}
+.key-term.open .key-term__def { display: block; }
+
+/* ═══════════════════════════════════════════
+   BLOCK: Completion Card
+   ═══════════════════════════════════════════ */
+.completion-card {
+  text-align: center;
+  padding: 48px 32px;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--carbon), var(--slate));
+  border: 1px solid var(--glass-border);
+  margin-bottom: 48px;
+}
+.completion-card__trophy {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+.completion-card__title {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--white);
+  margin-bottom: 8px;
+}
+.completion-card__subtitle {
+  font-family: var(--font-body);
+  font-size: 17px;
+  color: var(--silver);
+  margin-bottom: 24px;
+}
+.completion-card__xp {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-radius: 100px;
+  background: var(--pulse-glow);
+  border: 1px solid rgba(0,255,179,0.2);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--pulse);
+  margin-bottom: 24px;
+}
+.completion-card__skills {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+.skill-tag {
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+.skill-tag--pulse { background: var(--pulse-glow); color: var(--pulse); border: 1px solid rgba(0,255,179,0.15); }
+.skill-tag--iris { background: var(--iris-glow); color: var(--iris); border: 1px solid rgba(155,143,255,0.15); }
+.skill-tag--amber { background: var(--amber-glow); color: var(--amber); border: 1px solid rgba(255,179,71,0.15); }
+.completion-card__next {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: var(--radius-sm);
+  background: var(--pulse);
+  color: var(--void);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.completion-card__next:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,255,179,0.3);
+}
+
+/* ═══════════════════════════════════════════
+   Placeholder shimmer for images
+   ═══════════════════════════════════════════ */
+.img-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(110deg, var(--slate) 0%, var(--carbon) 40%, var(--slate) 60%);
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.img-placeholder span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--silver);
+  opacity: 0.5;
+  text-align: center;
+  padding: 12px;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="lesson-wrapper">
+
+  <!-- ═══ BLOCK 1: LESSON HEADER ═══ -->
+  <header class="lesson-header">
+    <div class="lesson-header__tag">Module 3 · Foundations of AI</div>
+    <h1 class="lesson-header__title">
+      How Machines <em>Actually</em> Learn
+    </h1>
+    <div class="lesson-header__meta">
+      <span class="meta-chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        15 min
+      </span>
+      <span class="meta-chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        3 Questions
+      </span>
+      <span class="meta-chip">⚡ 120 XP</span>
+      <span class="difficulty-badge">Beginner</span>
+    </div>
+  </header>
+
+  <!-- ═══ BLOCK 2: OBJECTIVE CARD ═══ -->
+  <div class="objective-card">
+    <div class="objective-card__label">Learning Objective</div>
+    <div class="objective-card__text">
+      Understand how <strong>machine learning algorithms</strong> identify patterns in data, and explain the difference between <strong>supervised</strong>, <strong>unsupervised</strong>, and <strong>reinforcement learning</strong> using everyday analogies.
+    </div>
+  </div>
+
+  <!-- ═══ BLOCK 3: TEXT (Hook) ═══ -->
+  <div class="text-block">
+    <h2 class="text-block__heading">Teaching a Child to Recognise Dogs</h2>
+    <p>Imagine showing a toddler hundreds of pictures of dogs. You don't explain fur density or snout ratios — you just point and say <strong>"dog"</strong>. After enough examples, the child starts spotting dogs on their own, even breeds they've never seen.</p>
+    <p>That's machine learning in a nutshell. Instead of writing explicit rules, we feed a computer thousands of examples and let it <strong>figure out the patterns itself</strong>.</p>
+  </div>
+
+  <!-- ═══ BLOCK 4: FULL IMAGE ═══ -->
+  <div class="full-image full-image--placeholder">
+    <div class="full-image--placeholder__inner">
+      <div class="full-image--placeholder__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </div>
+      <div class="full-image--placeholder__text">4K cinematic render: a neural network visualised as glowing interconnected nodes over a dark void, teal and purple light trails — abstract, elegant, no text</div>
+    </div>
+    <div class="full-image__caption">
+      <p>Machine learning models build internal representations by processing <span class="highlight">millions of data points</span></p>
+    </div>
+  </div>
+
+  <!-- ═══ BLOCK 5: TEXT ═══ -->
+  <div class="text-block">
+    <h2 class="text-block__heading">The Three Flavours of Learning</h2>
+    <p>Not all learning works the same way. Just as humans learn differently in a classroom, from exploration, or through trial and error — machines have <strong>three core approaches</strong> to finding patterns.</p>
+  </div>
+
+  <!-- ═══ BLOCK 6: TYPE CARDS ═══ -->
+  <div class="type-cards">
+    <div class="type-card">
+      <div class="type-card__image">
+        <div class="img-placeholder"><span>Teacher showing labelled examples to a student</span></div>
+        <span class="type-card__badge badge--pulse">Supervised</span>
+      </div>
+      <div class="type-card__body">
+        <div class="type-card__title">Supervised Learning</div>
+        <div class="type-card__desc">Like a teacher marking homework — the model learns from labelled examples with known correct answers.</div>
+      </div>
+    </div>
+    <div class="type-card">
+      <div class="type-card__image">
+        <div class="img-placeholder"><span>Explorer discovering hidden clusters in a dark landscape</span></div>
+        <span class="type-card__badge badge--iris">Unsupervised</span>
+      </div>
+      <div class="type-card__body">
+        <div class="type-card__title">Unsupervised Learning</div>
+        <div class="type-card__desc">Like sorting a box of unlabelled photos into groups — the model finds hidden structure without being told what to look for.</div>
+      </div>
+    </div>
+    <div class="type-card">
+      <div class="type-card__image">
+        <div class="img-placeholder"><span>Robot learning to balance through trial and error</span></div>
+        <span class="type-card__badge badge--amber">Reinforcement</span>
+      </div>
+      <div class="type-card__body">
+        <div class="type-card__title">Reinforcement Learning</div>
+        <div class="type-card__desc">Like training a puppy with treats — the model learns by taking actions and receiving rewards or penalties.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ BLOCK 7: IMAGE + TEXT ROW ═══ -->
+  <div class="image-text-row">
+    <div class="image-text-row__image">
+      <div class="img-placeholder"><span>Chef tasting and adjusting a recipe — warm kitchen glow</span></div>
+    </div>
+    <div>
+      <div class="image-text-row__label">The Human Parallel</div>
+      <div class="image-text-row__title">Learning by Doing</div>
+      <div class="image-text-row__text">A chef doesn't memorise every recipe perfectly on the first try. They taste, adjust, and improve. Machine learning works the same way — the model makes predictions, checks how wrong it was, and <strong>adjusts its internal settings</strong> to get closer next time.</div>
+    </div>
+  </div>
+
+  <!-- ═══ BLOCK 8: IMAGE + TEXT ROW (reversed) ═══ -->
+  <div class="image-text-row reverse">
+    <div class="image-text-row__image">
+      <div class="img-placeholder"><span>Data flowing into a funnel, transforming into predictions</span></div>
+    </div>
+    <div>
+      <div class="image-text-row__label">Under the Hood</div>
+      <div class="image-text-row__title">The Training Loop</div>
+      <div class="image-text-row__text">Every ML model follows the same cycle: <strong>input data → make a prediction → measure the error → adjust weights → repeat</strong>. This loop runs millions of times until the model's predictions become reliably accurate.</div>
+    </div>
+  </div>
+
+  <!-- ═══ BLOCK 9: CALLOUT (Tip) ═══ -->
+  <div class="callout callout--tip">
+    <div class="callout__icon">💡</div>
+    <div>
+      <div class="callout__title">The 80/20 Rule of Data</div>
+      <div class="callout__body">In practice, data scientists spend roughly 80% of their time cleaning and preparing data, and only 20% building models. The quality of your data matters far more than the complexity of your algorithm.</div>
+    </div>
+  </div>
+
+  <!-- ═══ BLOCK 10: INDUSTRY TABS ═══ -->
+  <div class="industry-tabs">
+    <h2 class="industry-tabs__heading">ML in the Real World</h2>
+    <p class="industry-tabs__intro">Machine learning isn't just a lab experiment — it's driving decisions across every major industry right now.</p>
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="showTab('healthcare')">🏥 Healthcare</button>
+      <button class="tab-btn" onclick="showTab('finance')">💰 Finance</button>
+      <button class="tab-btn" onclick="showTab('retail')">🛒 Retail</button>
+      <button class="tab-btn" onclick="showTab('manufacturing')">🏭 Manufacturing</button>
+    </div>
+    <div class="tab-panel active" id="tab-healthcare">
+      <div class="tab-panel__image">
+        <div class="img-placeholder"><span>AI scanning medical imagery — glowing diagnostic overlay</span></div>
+        <div class="tab-panel__image-caption">ML models now detect certain cancers with <span class="highlight">94% accuracy</span></div>
+      </div>
+      <div class="tab-panel__body">
+        <div class="tab-panel__title">🏥 Early Disease Detection</div>
+        <div class="tab-panel__text">Supervised learning models trained on millions of medical scans can spot tumours that human radiologists might miss. Google's DeepMind system achieved <mark>superhuman accuracy</mark> in breast cancer screening, reducing both false positives and false negatives.</div>
+      </div>
+    </div>
+    <div class="tab-panel" id="tab-finance">
+      <div class="tab-panel__image">
+        <div class="img-placeholder"><span>Financial dashboard with anomaly detection highlights</span></div>
+        <div class="tab-panel__image-caption">Banks process <span class="highlight">millions of transactions</span> through ML fraud filters daily</div>
+      </div>
+      <div class="tab-panel__body">
+        <div class="tab-panel__title">💰 Fraud Detection</div>
+        <div class="tab-panel__text">Banks use unsupervised learning to spot unusual transaction patterns in real-time. The system learns what "normal" looks like for each customer and flags <mark>anomalies instantly</mark> — catching fraud before the customer even notices.</div>
+      </div>
+    </div>
+    <div class="tab-panel" id="tab-retail">
+      <div class="tab-panel__image">
+        <div class="img-placeholder"><span>Recommendation engine showing personalised product suggestions</span></div>
+        <div class="tab-panel__image-caption">Recommendation engines drive <span class="highlight">35% of Amazon's revenue</span></div>
+      </div>
+      <div class="tab-panel__body">
+        <div class="tab-panel__title">🛒 Personalised Shopping</div>
+        <div class="tab-panel__text">Every time Netflix suggests a film or Amazon recommends a product, that's ML at work. Collaborative filtering analyses <mark>millions of user behaviours</mark> to predict what you'll want next — often before you know it yourself.</div>
+      </div>
+    </div>
+    <div class="tab-panel" id="tab-manufacturing">
+      <div class="tab-panel__image">
+        <div class="img-placeholder"><span>Robotic arm on assembly line with predictive maintenance overlay</span></div>
+        <div class="tab-panel__image-caption">Predictive maintenance reduces downtime by <span class="highlight">up to 50%</span></div>
+      </div>
+      <div class="tab-panel__body">
+        <div class="tab-panel__title">🏭 Predictive Maintenance</div>
+        <div class="tab-panel__text">Sensors on factory equipment feed data into ML models that predict when a machine is about to fail. Engineers fix problems <mark>before they cause shutdowns</mark>, saving millions in unplanned downtime.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ BLOCK 11: CALLOUT (Warning) ═══ -->
+  <div class="callout callout--warning">
+    <div class="callout__icon">⚠️</div>
+    <div>
+      <div class="callout__title">Garbage In, Garbage Out</div>
+      <div class="callout__body">If your training data is biased — for example, if a hiring model is trained mostly on data from male applicants — the model will learn and amplify that bias. Always audit your data before training.</div>
+    </div>
+  </div>
+
+  <!-- ═══ BLOCK 12: QUIZ ═══ -->
+  <div class="quiz-block">
+    <div class="quiz-block__header">
+      <div class="quiz-block__title">🧠 Knowledge Check</div>
+      <div class="quiz-block__counter">Question 1 of 3</div>
+    </div>
+    <div class="quiz-question__image">
+      <div class="img-placeholder"><span>A spam email being analysed by an ML classifier</span></div>
+      <div class="quiz-question__scenario">
+        <div class="quiz-question__scenario-label">Scenario: <span class="highlight">Email Spam Filter</span></div>
+      </div>
+    </div>
+    <div class="quiz-question__text">
+      A spam filter learns from thousands of emails labelled "spam" or "not spam". Which type of <em>learning</em> is this?
+    </div>
+    <div class="quiz-options">
+      <div class="quiz-option">
+        <span class="quiz-option__letter">A</span>
+        <span class="quiz-option__text">Reinforcement Learning</span>
+      </div>
+      <div class="quiz-option">
+        <span class="quiz-option__letter">B</span>
+        <span class="quiz-option__text">Supervised Learning</span>
+      </div>
+      <div class="quiz-option">
+        <span class="quiz-option__letter">C</span>
+        <span class="quiz-option__text">Unsupervised Learning</span>
+      </div>
+      <div class="quiz-option">
+        <span class="quiz-option__letter">D</span>
+        <span class="quiz-option__text">Transfer Learning</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ BLOCK 13: KEY TERMS ═══ -->
+  <div class="key-terms">
+    <h3 class="key-terms__title">Key Terms</h3>
+    <div class="key-term open">
+      <button class="key-term__trigger" onclick="this.parentElement.classList.toggle('open')">
+        <span class="key-term__word">Supervised Learning</span>
+        <span class="key-term__chevron">▾</span>
+      </button>
+      <div class="key-term__def">A type of ML where the model is trained on labelled data — input/output pairs where the correct answer is known. Used for classification and regression tasks.</div>
+    </div>
+    <div class="key-term">
+      <button class="key-term__trigger" onclick="this.parentElement.classList.toggle('open')">
+        <span class="key-term__word">Training Loop</span>
+        <span class="key-term__chevron">▾</span>
+      </button>
+      <div class="key-term__def">The iterative process of feeding data through a model, calculating the error, adjusting weights, and repeating until accuracy improves to acceptable levels.</div>
+    </div>
+    <div class="key-term">
+      <button class="key-term__trigger" onclick="this.parentElement.classList.toggle('open')">
+        <span class="key-term__word">Feature</span>
+        <span class="key-term__chevron">▾</span>
+      </button>
+      <div class="key-term__def">An individual measurable property of the data being observed. For a house price model, features might include square footage, number of bedrooms, and location.</div>
+    </div>
+    <div class="key-term">
+      <button class="key-term__trigger" onclick="this.parentElement.classList.toggle('open')">
+        <span class="key-term__word">Overfitting</span>
+        <span class="key-term__chevron">▾</span>
+      </button>
+      <div class="key-term__def">When a model memorises the training data too closely and performs poorly on new, unseen data. Like a student who memorises exam answers but can't apply the knowledge to a new problem.</div>
+    </div>
+  </div>
+
+  <!-- ═══ BLOCK 14: COMPLETION CARD ═══ -->
+  <div class="completion-card">
+    <div class="completion-card__trophy">🏆</div>
+    <div class="completion-card__title">Lesson Complete!</div>
+    <div class="completion-card__subtitle">You now understand the three types of machine learning</div>
+    <div class="completion-card__xp">⚡ +120 XP Earned</div>
+    <div class="completion-card__skills">
+      <span class="skill-tag skill-tag--pulse">ML Fundamentals</span>
+      <span class="skill-tag skill-tag--iris">Supervised Learning</span>
+      <span class="skill-tag skill-tag--amber">Pattern Recognition</span>
+    </div>
+    <button class="completion-card__next">
+      Continue to Next Lesson →
+    </button>
+  </div>
+
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+
+</body>
+</html>

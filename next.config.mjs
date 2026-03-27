@@ -14,6 +14,10 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'randomuser.me',
+      },
+      {
+        protocol: 'https',
         hostname: 'logo.clearbit.com',
       },
       {
@@ -123,6 +127,10 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'plus.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'aysqedgkpdbcbubadrrr.supabase.co',
       },
     ],
     // Allow any HTTPS image as fallback

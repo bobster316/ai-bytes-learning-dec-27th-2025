@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import Image from 'next/image';
 import {
     ArrowLeft,
     Save,
@@ -16,7 +17,14 @@ import {
     Plus,
     Settings,
     Eye,
-    Loader2
+    Loader2,
+    Upload,
+    ImageIcon,
+    CheckCircle2,
+    RefreshCw,
+    Headphones,
+    PlayCircle,
+
 } from 'lucide-react';
 
 interface Lesson {
@@ -25,12 +33,14 @@ interface Lesson {
     order_index: number;
     content_type: string;
     duration_minutes: number;
+    video_url?: string | null;
 }
 
 interface Topic {
     id: string;
     title: string;
     order_index: number;
+    audio_url?: string | null;
     course_lessons: Lesson[];
 }
 
@@ -41,6 +51,7 @@ interface Course {
     difficulty_level: string;
     price: number | string;
     published: boolean;
+    thumbnail_url?: string;
     course_topics: Topic[];
 }
 
@@ -50,6 +61,18 @@ export default function AdminCourseEditClientPage() {
     const courseId = params.id as string;
     const [course, setCourse] = useState<Course | null>(null);
     const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [saveSuccess, setSaveSuccess] = useState(false);
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Form state
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [difficulty, setDifficulty] = useState('beginner');
+    const [price, setPrice] = useState<number>(0);
+    const [thumbnailUrl, setThumbnailUrl] = useState<string>('');
+
     const supabase = createClient();
 
     useEffect(() => {
@@ -62,12 +85,14 @@ export default function AdminCourseEditClientPage() {
                         id,
                         title,
                         order_index,
+                        audio_url,
                         course_lessons (
                             id,
                             title,
                             order_index,
                             content_type,
-                            duration_minutes
+                            duration_minutes,
+                            video_url
                         )
                     )
                 `)
@@ -87,6 +112,11 @@ export default function AdminCourseEditClientPage() {
             });
 
             setCourse(data);
+            setTitle(data.title);
+            setDescription(data.description);
+            setDifficulty(data.difficulty_level || 'beginner');
+            setPrice(Number(data.price) || 0);
+            setThumbnailUrl(data.thumbnail_url || '');
             setLoading(false);
         }
 
@@ -94,6 +124,142 @@ export default function AdminCourseEditClientPage() {
             fetchCourse();
         }
     }, [courseId]);
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploadingImage(true);
+        try {
+            // Upload to Supabase Storage
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${courseId}-${Date.now()}.${fileExt}`;
+            const filePath = `course-thumbnails/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('course-images')
+                .upload(filePath, file, {
+                    cacheControl: '3600',
+                    upsert: true
+                });
+
+            if (uploadError) {
+                console.error('Upload error:', uploadError);
+                alert('Failed to upload image. Please try again.');
+                return;
+            }
+
+            // Get public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('course-images')
+                .getPublicUrl(filePath);
+
+            setThumbnailUrl(publicUrl);
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            alert('Failed to upload image. Please try again.');
+        } finally {
+            setUploadingImage(false);
+        }
+    };
+
+    const handleSave = async () => {
+        if (!course) return;
+
+        setSaving(true);
+        setSaveSuccess(false);
+
+        try {
+            const { error } = await supabase
+                .from('courses')
+                .update({
+                    title,
+                    description,
+                    difficulty_level: difficulty,
+                    price: Number(price),
+                    thumbnail_url: thumbnailUrl,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', courseId);
+
+            if (error) {
+                console.error('Save error:', error);
+                alert('Failed to save changes. Please try again.');
+                return;
+            }
+
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 3000);
+        } catch (error) {
+            console.error('Error saving course:', error);
+            alert('Failed to save changes. Please try again.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const [regenerating, setRegenerating] = useState<Record<string, 'audio' | 'video' | null>>({});
+    const [generatingAll, setGeneratingAll] = useState(false);
+
+    // Update a lesson's url in local state without re-fetching
+    const updateLessonField = (lessonId: string, field: 'audio_url' | 'video_url', value: string | null) => {
+        setCourse(prev => {
+            if (!prev) return prev;
+            return {
+                ...prev,
+                course_topics: prev.course_topics.map(t => ({
+                    ...t,
+                    course_lessons: t.course_lessons?.map(l =>
+                        l.id === lessonId ? { ...l, [field]: value } : l
+                    )
+                }))
+            };
+        });
+    };
+
+    const handleRegenerate = async (lessonId: string, type: 'audio' | 'video' | 'video_block') => {
+        setRegenerating(prev => ({ ...prev, [lessonId]: type }));
+        try {
+            const res = await fetch('/api/admin/lessons/regenerate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lessonId, type })
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ error: 'Regeneration failed' }));
+                throw new Error(err.error || 'Regeneration failed');
+            }
+            const data = await res.json();
+            if (type === 'audio') updateLessonField(lessonId, 'audio_url', data.url);
+            if (type === 'video') updateLessonField(lessonId, 'video_url', data.url);
+            if (type === 'video_block') alert(`✅ Video block generated (${data.generated}/${data.total} videos). Refresh to see the update.`);
+        } catch (error: any) {
+            alert(`Failed: ${error.message}`);
+        } finally {
+            setRegenerating(prev => ({ ...prev, [lessonId]: null }));
+        }
+    };
+
+
+    const handleGenerateAllAudio = async (force = false) => {
+        if (!course) return;
+        setGeneratingAll(true);
+        try {
+            const res = await fetch('/api/admin/courses/generate-audio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ courseId, force })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed');
+            alert(`Done — ${data.generated} generated, ${data.skipped} already had audio.${data.errors?.length ? `\n\nErrors:\n${data.errors.join('\n')}` : ''}`);
+            window.location.reload();
+        } catch (error: any) {
+            alert(`Failed: ${error.message}`);
+        } finally {
+            setGeneratingAll(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -121,7 +287,7 @@ export default function AdminCourseEditClientPage() {
 
     return (
         <div className="min-h-screen bg-black text-white font-sans selection:bg-indigo-500/30">
-            {/* Top Bar - Keep existing styling, NO COLOR CHANGES */}
+            {/* Top Bar */}
             <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/10 h-16 flex items-center justify-between px-6">
                 <div className="flex items-center gap-4">
                     <Link href="/admin/courses">
@@ -145,21 +311,83 @@ export default function AdminCourseEditClientPage() {
                             <span className="hidden sm:inline">Preview</span>
                         </Button>
                     </Link>
-                    <Button size="sm" className="bg-indigo-600 hover:bg-indigo-500 text-white gap-2 h-9">
-                        <Save className="w-4 h-4" />
-                        <span className="hidden sm:inline">Save Changes</span>
+                    <Button
+                        size="sm"
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="bg-indigo-600 hover:bg-indigo-500 text-white gap-2 h-9 min-w-[120px]"
+                    >
+                        {saving ? (
+                            <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <span className="hidden sm:inline">Saving...</span>
+                            </>
+                        ) : saveSuccess ? (
+                            <>
+                                <CheckCircle2 className="w-4 h-4" />
+                                <span className="hidden sm:inline">Saved!</span>
+                            </>
+                        ) : (
+                            <>
+                                <Save className="w-4 h-4" />
+                                <span className="hidden sm:inline">Save Changes</span>
+                            </>
+                        )}
                     </Button>
                 </div>
             </header>
 
             <main className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-12 gap-10">
-                {/* Left Col: Metadata - Keep existing styling */}
+                {/* Left Col: Metadata */}
                 <div className="lg:col-span-4 space-y-8">
+                    {/* Course Thumbnail */}
+                    <div className="space-y-3">
+                        <label className="text-xs font-bold uppercase tracking-wider text-white/40">Course Thumbnail</label>
+                        <div className="relative group">
+                            <div className="aspect-video w-full rounded-xl overflow-hidden bg-white/5 border border-white/10 relative">
+                                {thumbnailUrl ? (
+                                    <Image
+                                        src={thumbnailUrl}
+                                        alt="Course thumbnail"
+                                        fill
+                                        className="object-cover"
+                                    />
+                                ) : (
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <ImageIcon className="w-12 h-12 text-white/20" />
+                                    </div>
+                                )}
+                                {uploadingImage && (
+                                    <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
+                                        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                                    </div>
+                                )}
+                            </div>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                                className="hidden"
+                            />
+                            <Button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={uploadingImage}
+                                className="w-full mt-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white gap-2"
+                            >
+                                <Upload className="w-4 h-4" />
+                                {uploadingImage ? 'Uploading...' : 'Upload New Image'}
+                            </Button>
+                        </div>
+                    </div>
+
                     <div className="space-y-6">
                         <div className="space-y-2">
                             <label className="text-xs font-bold uppercase tracking-wider text-white/40">Title</label>
                             <Input
-                                defaultValue={course.title}
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
                                 className="bg-white/5 border-white/10 text-white text-lg font-medium h-12 focus:border-indigo-500 transition-colors"
                             />
                         </div>
@@ -167,7 +395,8 @@ export default function AdminCourseEditClientPage() {
                         <div className="space-y-2">
                             <label className="text-xs font-bold uppercase tracking-wider text-white/40">Description</label>
                             <Textarea
-                                defaultValue={course.description}
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
                                 className="bg-white/5 border-white/10 text-white min-h-[150px] focus:border-indigo-500 transition-colors resize-none"
                             />
                         </div>
@@ -176,7 +405,8 @@ export default function AdminCourseEditClientPage() {
                             <div className="space-y-2">
                                 <label className="text-xs font-bold uppercase tracking-wider text-white/40">Difficulty</label>
                                 <select
-                                    defaultValue={course.difficulty_level || "beginner"}
+                                    value={difficulty}
+                                    onChange={(e) => setDifficulty(e.target.value)}
                                     className="w-full bg-white/5 border border-white/10 rounded-md h-10 px-3 text-sm text-white focus:outline-none focus:border-indigo-500"
                                 >
                                     <option value="beginner">Beginner</option>
@@ -188,7 +418,8 @@ export default function AdminCourseEditClientPage() {
                                 <label className="text-xs font-bold uppercase tracking-wider text-white/40">Price (£)</label>
                                 <Input
                                     type="number"
-                                    defaultValue={course.price || 0}
+                                    value={price}
+                                    onChange={(e) => setPrice(Number(e.target.value))}
                                     className="bg-white/5 border-white/10 text-white h-10 focus:border-indigo-500"
                                 />
                             </div>
@@ -196,14 +427,27 @@ export default function AdminCourseEditClientPage() {
                     </div>
                 </div>
 
-                {/* Right Col: Curriculum - Keep existing styling */}
+                {/* Right Col: Curriculum */}
                 <div className="lg:col-span-8 space-y-6">
                     <div className="flex items-center justify-between">
                         <h2 className="text-xl font-bold text-white">Curriculum</h2>
-                        <Button size="sm" variant="outline" className="border-white/10 hover:bg-white/5 text-indigo-400 gap-2">
-                            <Plus className="w-4 h-4" />
-                            Add Module
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleGenerateAllAudio(false)}
+                                disabled={generatingAll}
+                                className="border-[#00FFB3]/30 hover:bg-[#00FFB3]/10 text-[#00FFB3] gap-2"
+                                title="Generate Gemini TTS audio overview for all lessons in this course"
+                            >
+                                {generatingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <Headphones className="w-4 h-4" />}
+                                {generatingAll ? 'Generating...' : 'Generate All Audio'}
+                            </Button>
+                            <Button size="sm" variant="outline" className="border-white/10 hover:bg-white/5 text-indigo-400 gap-2">
+                                <Plus className="w-4 h-4" />
+                                Add Module
+                            </Button>
+                        </div>
                     </div>
 
                     <div className="space-y-4">
@@ -221,10 +465,29 @@ export default function AdminCourseEditClientPage() {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-white/40 hover:text-white">
-                                            <Settings className="w-4 h-4" />
-                                        </Button>
+                                    <div className="flex items-center gap-2">
+                                        {/* Module audio status */}
+                                        {topic.audio_url && (
+                                            <span title="Module audio ready" className="flex items-center gap-1 text-[10px] text-[#00FFB3] font-mono">
+                                                <Headphones className="w-3 h-3" />
+                                                Audio
+                                            </span>
+                                        )}
+                                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                                            <Button
+                                                size="sm" variant="ghost"
+                                                disabled={!!regenerating[topic.id]}
+                                                onClick={() => handleRegenerate(topic.id, 'audio')}
+                                                className="h-7 px-2 text-[10px] font-bold text-white/40 hover:text-[#00FFB3] gap-1"
+                                                title={topic.audio_url ? 'Re-generate module audio' : 'Generate module audio'}
+                                            >
+                                                {regenerating[topic.id] === 'audio' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Headphones className="w-3 h-3" />}
+                                                {topic.audio_url ? 'Re-gen Audio' : 'Gen Audio'}
+                                            </Button>
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-white/40 hover:text-white">
+                                                <Settings className="w-4 h-4" />
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="border-t border-white/5 p-2 space-y-1">
@@ -237,6 +500,36 @@ export default function AdminCourseEditClientPage() {
                                                 <span className="text-sm text-white/80 font-medium group-hover/lesson:text-white">
                                                     {lesson.title}
                                                 </span>
+                                                {/* Media status dots */}
+                                                <div className="flex items-center gap-1">
+                                                    {lesson.video_url && (
+                                                        <span title="Video ready" className="w-1.5 h-1.5 rounded-full bg-[#4b98ad] shadow-[0_0_6px_#4b98ad]" />
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-1 opacity-30 group-hover/lesson:opacity-100 transition-opacity">
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    disabled={!!regenerating[lesson.id]}
+                                                    onClick={(e) => { e.stopPropagation(); handleRegenerate(lesson.id, 'video'); }}
+                                                    className="h-8 px-2 text-[10px] font-bold text-white/40 hover:text-[#4b98ad] gap-1.5"
+                                                    title={lesson.video_url ? 'Re-generate overview video' : 'Generate overview video'}
+                                                >
+                                                    {regenerating[lesson.id] === 'video' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <PlayCircle className="w-3.5 h-3.5" />}
+                                                    {lesson.video_url ? 'Re-gen' : 'Video'}
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    disabled={!!regenerating[lesson.id]}
+                                                    onClick={(e) => { e.stopPropagation(); handleRegenerate(lesson.id, 'video_block'); }}
+                                                    className="h-8 px-2 text-[10px] font-bold text-white/40 hover:text-[#00FFB3] gap-1.5"
+                                                    title="Generate missing Veo video for video_snippet block in content"
+                                                >
+                                                    {regenerating[lesson.id] === 'video_block' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                                                    Block Vid
+                                                </Button>
                                             </div>
                                         </div>
                                     ))}

@@ -1,0 +1,2314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Bytes — New Lesson Design Vision</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --pulse:   #00FFB3;
+    --iris:    #9B8FFF;
+    --amber:   #FFB347;
+    --nova:    #FF6B6B;
+    --void:    #05050A;
+    --base:    #0D0D1A;
+    --surface: #141422;
+    --glass:   rgba(255,255,255,0.04);
+    --border:  rgba(255,255,255,0.07);
+    --text-hi: #F0F0FF;
+    --text-lo: #8A8AB0;
+    --text-mu: #3A3A5C;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--void);
+    color: var(--text-hi);
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 19px;
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  /* ─── CONCEPT ANCHOR SIDEBAR ─────────────────────────────── */
+  .anchor {
+    position: fixed;
+    left: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+  }
+  .anchor.visible { opacity: 1; pointer-events: all; }
+  .anchor-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .anchor-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-mu);
+    transition: all 0.35s ease;
+    flex-shrink: 0;
+  }
+  .anchor-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--text-mu);
+    transition: all 0.35s ease;
+    white-space: nowrap;
+  }
+  .anchor-item.active .anchor-dot   { background: var(--pulse); box-shadow: 0 0 8px var(--pulse); width: 8px; height: 8px; }
+  .anchor-item.active .anchor-label { color: var(--pulse); }
+  .anchor-item:hover .anchor-label  { color: var(--text-lo); }
+
+  /* ─── SCROLL REVEAL ──────────────────────────────────────── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.75s cubic-bezier(0.16,1,0.3,1), transform 0.75s cubic-bezier(0.16,1,0.3,1);
+  }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.35s; }
+  .reveal-delay-4 { transition-delay: 0.5s; }
+
+  /* ─── SECTIONS ────────────────────────────────────────────── */
+  section { position: relative; }
+
+  /* ─── SCENE 0: OPENING HOOK ──────────────────────────────── */
+  .scene-hook {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 80px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hook-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(155,143,255,0.06) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 40% at 80% 70%, rgba(0,255,179,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .hook-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.35em;
+    color: var(--pulse);
+    border: 1px solid rgba(0,255,179,0.2);
+    background: rgba(0,255,179,0.05);
+    padding: 6px 18px;
+    border-radius: 100px;
+    margin-bottom: 48px;
+    backdrop-filter: blur(8px);
+  }
+
+  .hook-q {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 3.5vw, 3rem);
+    font-weight: 800;
+    line-height: 1.08;
+    color: var(--text-hi);
+    max-width: 900px;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+
+  .hook-q em {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    color: var(--iris);
+    font-weight: 400;
+  }
+
+  .hook-sub {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(1.1rem, 2vw, 1.4rem);
+    color: var(--text-lo);
+    max-width: 560px;
+    line-height: 1.65;
+    margin-bottom: 60px;
+  }
+
+  .hook-meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .chip {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 8px 16px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: var(--glass);
+    color: var(--text-lo);
+    backdrop-filter: blur(8px);
+  }
+  .chip.hi { border-color: rgba(0,255,179,0.25); background: rgba(0,255,179,0.08); color: var(--pulse); }
+
+  .scroll-cue {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .scroll-cue-track {
+    width: 1px;
+    height: 48px;
+    background: linear-gradient(to bottom, transparent, var(--pulse), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  @keyframes scrollPulse {
+    0%,100% { opacity: 0.2; transform: scaleY(0.7); }
+    50%      { opacity: 1;   transform: scaleY(1);   }
+  }
+  .scroll-cue-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.4em;
+    color: var(--text-mu);
+  }
+
+  /* ─── SCENE 1: PUNCH QUOTE ────────────────────────────────── */
+  .scene-punch {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    padding: 80px 10vw;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, var(--base) 0%, var(--void) 100%);
+  }
+
+  .punch-inner {
+    max-width: 900px;
+  }
+
+  .punch-rule {
+    width: 48px;
+    height: 3px;
+    border-radius: 2px;
+    margin-bottom: 40px;
+  }
+
+  .punch-text {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 3vw, 2.8rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    color: var(--text-hi);
+  }
+
+  .punch-text em {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .punch-source {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: var(--text-mu);
+    margin-top: 40px;
+  }
+
+  /* ─── SCENE 2: EXPLORATION ────────────────────────────────── */
+  .scene-explore {
+    padding: 120px 10vw;
+  }
+
+  .explore-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .concept-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--pulse);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .concept-label::before {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 1px;
+    background: var(--pulse);
+  }
+
+  .explore-heading {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--text-hi);
+    margin-bottom: 28px;
+  }
+
+  .explore-body p {
+    color: var(--text-lo);
+    margin-bottom: 18px;
+    font-size: 1.05rem;
+    line-height: 1.8;
+  }
+  .explore-body p strong { color: var(--text-hi); font-style: normal; font-family: 'DM Mono', monospace; font-size: 0.9em; }
+
+  /* Prompt comparison visual */
+  .prompt-compare {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: sticky;
+    top: 80px;
+  }
+
+  .prompt-card {
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .prompt-card-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .prompt-card-label .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  .prompt-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    border-radius: 8px;
+    padding: 14px;
+    background: var(--base);
+    border: 1px solid var(--border);
+    color: var(--text-lo);
+  }
+
+  .prompt-output {
+    margin-top: 12px;
+    font-size: 0.88rem;
+    line-height: 1.65;
+    padding-left: 12px;
+    border-left: 2px solid;
+  }
+
+  .bad  .prompt-card-label { color: var(--nova); }
+  .bad  .dot               { background: var(--nova); }
+  .bad  .prompt-output     { border-color: var(--nova); color: var(--text-lo); }
+
+  .good .prompt-card-label { color: var(--pulse); }
+  .good .dot               { background: var(--pulse); }
+  .good .prompt-output     { border-color: var(--pulse); color: var(--text-hi); }
+
+  /* ─── SCENE 3: ANATOMY REVEAL ─────────────────────────────── */
+  .scene-anatomy {
+    padding: 120px 10vw;
+    background: var(--base);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .anatomy-header {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 72px;
+  }
+
+  .anatomy-prompt-box {
+    max-width: 860px;
+    margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.4);
+  }
+
+  .anatomy-bar {
+    background: var(--base);
+    padding: 12px 20px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .anatomy-bar-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+  }
+
+  .anatomy-prompt {
+    padding: 32px 36px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.95rem;
+    line-height: 2;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: flex-start;
+  }
+
+  .ap {
+    border-radius: 6px;
+    padding: 3px 10px;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    position: relative;
+    cursor: default;
+  }
+  .ap.in { opacity: 1; transform: translateY(0); }
+  .ap:hover .ap-tip { opacity: 1; transform: translateY(-4px); }
+
+  .ap-role    { background: rgba(0,255,179,0.12);  color: var(--pulse); }
+  .ap-context { background: rgba(155,143,255,0.12); color: var(--iris);  }
+  .ap-task    { background: rgba(255,179,71,0.12);  color: var(--amber); }
+  .ap-format  { background: rgba(255,107,107,0.12); color: var(--nova);  }
+
+  .ap-tip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(0);
+    background: var(--void);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    white-space: nowrap;
+    opacity: 0;
+    transition: all 0.2s ease;
+    pointer-events: none;
+  }
+
+  .anatomy-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 36px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  .legend-item.in { opacity: 1; }
+
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* ─── SCENE 4: PREDICTION ─────────────────────────────────── */
+  .scene-predict {
+    padding: 100px 10vw;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  .predict-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--iris);
+    margin-bottom: 16px;
+  }
+
+  .predict-q {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.4rem, 2.8vw, 2rem);
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--text-hi);
+    margin-bottom: 36px;
+    max-width: 680px;
+  }
+
+  .predict-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .predict-opt {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 24px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--glass);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-family: 'Instrument Serif', serif;
+    font-size: 1rem;
+    color: var(--text-lo);
+    text-align: left;
+  }
+
+  .predict-opt:hover { border-color: rgba(155,143,255,0.4); background: rgba(155,143,255,0.06); color: var(--text-hi); }
+  .predict-opt.selected { border-color: var(--iris); background: rgba(155,143,255,0.1); color: var(--text-hi); }
+  .predict-opt.correct  { border-color: var(--pulse); background: rgba(0,255,179,0.08); color: var(--text-hi); }
+  .predict-opt.wrong    { border-color: rgba(255,107,107,0.3); background: rgba(255,107,107,0.05); color: var(--text-mu); }
+
+  .predict-opt-letter {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.25s ease;
+  }
+
+  .predict-opt.correct .predict-opt-letter { border-color: var(--pulse); color: var(--pulse); }
+  .predict-opt.wrong   .predict-opt-letter { border-color: var(--text-mu); color: var(--text-mu); }
+
+  .predict-reveal {
+    margin-top: 24px;
+    padding: 24px 28px;
+    border-radius: 14px;
+    background: var(--base);
+    border: 1px solid rgba(0,255,179,0.2);
+    display: none;
+  }
+  .predict-reveal.show { display: block; animation: fadeUp 0.4s ease forwards; }
+  .predict-reveal-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--pulse);
+    margin-bottom: 10px;
+  }
+  .predict-reveal p { font-size: 0.95rem; color: var(--text-lo); line-height: 1.7; }
+  .predict-reveal strong { color: var(--text-hi); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── SCENE 5: MISTAKES STRIP ─────────────────────────────── */
+  .scene-mistakes {
+    padding: 120px 10vw;
+    background: var(--void);
+    border-top: 1px solid var(--border);
+  }
+
+  .mistakes-intro {
+    max-width: 700px;
+    margin: 0 auto 72px;
+    text-align: center;
+  }
+
+  .mistakes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    max-width: 1100px;
+    margin: 0 auto;
+    background: var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .mistake-cell {
+    background: var(--base);
+    padding: 36px 28px;
+    transition: background 0.25s ease;
+  }
+  .mistake-cell:hover { background: var(--surface); }
+
+  .mistake-number {
+    font-family: 'Syne', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--text-mu);
+    margin-bottom: 20px;
+    letter-spacing: -0.04em;
+  }
+
+  .mistake-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--nova);
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+
+  .mistake-desc {
+    font-size: 0.88rem;
+    color: var(--text-lo);
+    line-height: 1.65;
+    margin-bottom: 20px;
+  }
+
+  .mistake-fix {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--pulse);
+    line-height: 1.6;
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: rgba(0,255,179,0.06);
+    border: 1px solid rgba(0,255,179,0.15);
+  }
+  .mistake-fix::before {
+    content: '→ Fix: ';
+    opacity: 0.5;
+  }
+
+  /* ─── SCENE 6: PUNCH 2 ────────────────────────────────────── */
+  .scene-punch-2 {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 10vw;
+    text-align: center;
+    background: var(--base);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .scene-punch-2::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 70% at 50% 50%, rgba(255,179,71,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .punch-2-text {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.7rem, 3vw, 2.6rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    max-width: 800px;
+  }
+
+  .punch-2-text .line-1 { color: var(--text-lo); display: block; }
+  .punch-2-text .line-2 { color: var(--text-hi); display: block; }
+  .punch-2-text .line-3 { color: var(--amber); display: block; font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; }
+
+  /* ─── SCENE 7: POWER TECHNIQUES ───────────────────────────── */
+  .scene-power {
+    padding: 120px 10vw;
+  }
+
+  .power-header {
+    max-width: 700px;
+    margin: 0 auto 72px;
+    text-align: center;
+  }
+
+  .techniques {
+    max-width: 860px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .technique {
+    border-radius: 0;
+    border: 1px solid var(--border);
+    background: var(--base);
+    overflow: hidden;
+    transition: background 0.2s ease;
+  }
+  .technique:first-child { border-radius: 16px 16px 0 0; }
+  .technique:last-child  { border-radius: 0 0 16px 16px; }
+
+  .technique-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 32px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .technique-header:hover { background: var(--glass); }
+
+  .technique-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .technique-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-mu);
+    letter-spacing: 0.1em;
+    width: 28px;
+  }
+
+  .technique-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-hi);
+  }
+
+  .technique-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+
+  .technique-chevron {
+    font-size: 1rem;
+    color: var(--text-mu);
+    transition: transform 0.3s ease;
+  }
+  .technique.open .technique-chevron { transform: rotate(45deg); }
+
+  .technique-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.16,1,0.3,1);
+  }
+  .technique.open .technique-body { max-height: 300px; }
+
+  .technique-content {
+    padding: 0 32px 32px 80px;
+    color: var(--text-lo);
+    font-size: 0.95rem;
+    line-height: 1.75;
+  }
+
+  .technique-example {
+    margin-top: 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    padding: 14px 18px;
+    border-radius: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    line-height: 1.6;
+  }
+
+  /* ─── SCENE 8: ENDING ─────────────────────────────────────── */
+  .scene-end {
+    padding: 120px 10vw 160px;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    background: var(--base);
+  }
+
+  .end-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.35em;
+    color: var(--text-mu);
+    margin-bottom: 48px;
+  }
+
+  .end-skills {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-width: 520px;
+    margin: 0 auto 56px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .end-skill {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 22px 28px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    background: var(--base);
+  }
+  .end-skill:last-child { border-bottom: none; }
+
+  .end-skill-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .end-skill-text {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1rem;
+    color: var(--text-lo);
+    line-height: 1.55;
+  }
+  .end-skill-text strong { color: var(--text-hi); font-family: 'DM Mono', monospace; font-size: 0.88em; }
+
+  .end-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 36px;
+    border-radius: 14px;
+    background: var(--pulse);
+    color: var(--void);
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    border: none;
+    transition: all 0.25s ease;
+  }
+  .end-cta:hover {
+    box-shadow: 0 8px 32px rgba(0,255,179,0.3);
+    transform: translateY(-2px);
+  }
+  .end-cta-arrow {
+    font-size: 1.1rem;
+    transition: transform 0.25s ease;
+  }
+  .end-cta:hover .end-cta-arrow { transform: translateX(4px); }
+
+  .end-course { font-family: 'DM Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--text-mu); margin-top: 20px; }
+
+  /* ─── PROGRESS STRIP ──────────────────────────────────────── */
+  .progress-strip {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--border);
+    z-index: 200;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(to right, var(--iris), var(--pulse));
+    width: 0%;
+    transition: width 0.1s linear;
+  }
+
+  /* ─── SHARED HEADINGS ─────────────────────────────────────── */
+  .section-heading {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--text-hi);
+    margin-bottom: 16px;
+  }
+
+  .section-sub {
+    font-size: 1.05rem;
+    color: var(--text-lo);
+    max-width: 520px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* ─── DESIGN NOTES BAR ────────────────────────────────────── */
+  .note {
+    position: fixed;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 220px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--text-lo);
+    line-height: 1.6;
+    z-index: 50;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .note.show { opacity: 1; }
+  .note-title { color: var(--amber); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 8px; font-size: 8px; }
+  .note p { margin-bottom: 6px; }
+  .note p:last-child { margin-bottom: 0; }
+
+  /* ─── NETWORK CANVAS (hook bg) ───────────────────────────── */
+  #networkCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0.55;
+  }
+
+  /* ─── SVG FLOW DIAGRAM ────────────────────────────────────── */
+  .flow-diagram-wrap {
+    position: sticky;
+    top: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .flow-diagram-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: var(--text-mu);
+    margin-bottom: 6px;
+  }
+
+  .flow-svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* ─── SVG MINDMAP ─────────────────────────────────────────── */
+  .scene-mindmap {
+    padding: 100px 10vw;
+    background: var(--base);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mindmap-wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    overflow: visible;
+  }
+
+  .mindmap-svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .mm-line {
+    stroke-dasharray: 220;
+    stroke-dashoffset: 220;
+    transition: stroke-dashoffset 0.9s cubic-bezier(0.16,1,0.3,1);
+  }
+  .mm-line.draw { stroke-dashoffset: 0; }
+
+  .mm-node {
+    opacity: 0;
+    transform: scale(0.6);
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.16,1,0.3,1);
+  }
+  .mm-node.show { opacity: 1; transform: scale(1); }
+
+  /* ─── MISTAKE ICONS ───────────────────────────────────────── */
+  .mistake-icon {
+    margin-bottom: 16px;
+    opacity: 0.75;
+  }
+
+  /* ─── COT FLOW ────────────────────────────────────────────── */
+  .cot-flow-wrap {
+    margin-top: 20px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .cot-svg {
+    display: block;
+    min-width: 480px;
+    height: auto;
+  }
+
+  .cot-node {
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .cot-node.show { opacity: 1; }
+
+  /* ─── IMAGE PLACEHOLDERS ──────────────────────────────────── */
+  .img-placeholder {
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    text-align: center;
+    gap: 16px;
+  }
+  .img-placeholder-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+  .img-placeholder-desc {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--text-mu);
+    max-width: 220px;
+    line-height: 1.7;
+  }
+  .img-placeholder-label {
+    font-family: 'Instrument Serif', serif;
+    font-size: 0.9rem;
+    color: var(--text-lo);
+    font-style: italic;
+  }
+
+  /* ─── SCENE 3c: LIVE PROMPT BUILDER ──────────────── */
+  .scene-builder {
+    padding: 120px 10vw;
+    background: var(--void);
+    border-top: 1px solid var(--border);
+  }
+
+  .builder-header {
+    text-align: center;
+    max-width: 640px;
+    margin: 0 auto 64px;
+  }
+
+  .builder-stage {
+    max-width: 900px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+
+  /* Left: blocks to click */
+  .builder-blocks {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .builder-block {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px 22px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .builder-block::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .builder-block.added { cursor: default; }
+
+  .builder-block[data-part="role"]    { --bc: var(--pulse); --bca: rgba(0,255,179,0.07); }
+  .builder-block[data-part="context"] { --bc: var(--iris);  --bca: rgba(155,143,255,0.07); }
+  .builder-block[data-part="task"]    { --bc: var(--amber); --bca: rgba(255,179,71,0.07); }
+  .builder-block[data-part="format"]  { --bc: var(--nova);  --bca: rgba(255,107,107,0.07); }
+
+  .builder-block:hover:not(.added) {
+    border-color: var(--bc);
+    background: var(--bca);
+    transform: translateX(4px);
+  }
+  .builder-block.added {
+    border-color: var(--bc);
+    background: var(--bca);
+    opacity: 0.7;
+  }
+
+  .bb-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+  }
+  .builder-block.added .bb-icon {
+    background: var(--bca);
+    border-color: var(--bc);
+  }
+
+  .bb-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--bc);
+    margin-bottom: 4px;
+  }
+
+  .bb-text {
+    font-family: 'Instrument Serif', serif;
+    font-size: 0.88rem;
+    color: var(--text-lo);
+    line-height: 1.55;
+    transition: color 0.3s ease;
+  }
+  .builder-block.added .bb-text { color: var(--text-hi); }
+
+  .bb-add {
+    margin-left: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--bc);
+    opacity: 0.6;
+    flex-shrink: 0;
+    align-self: center;
+    transition: opacity 0.3s ease;
+  }
+  .builder-block.added .bb-add { opacity: 0; }
+
+  /* Right: assembled prompt display */
+  .builder-output {
+    position: sticky;
+    top: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .builder-output-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: var(--text-mu);
+  }
+
+  .builder-prompt-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    min-height: 160px;
+    transition: border-color 0.4s ease;
+  }
+
+  .builder-prompt-box.has-content { border-color: rgba(255,255,255,0.12); }
+
+  .builder-prompt-bar {
+    background: var(--base);
+    padding: 10px 16px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .builder-prompt-bar-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+
+  .builder-prompt-text {
+    padding: 20px 22px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.8;
+    min-height: 120px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-content: flex-start;
+  }
+
+  .bp-empty {
+    font-family: 'Instrument Serif', serif;
+    font-size: 0.9rem;
+    font-style: italic;
+    color: var(--text-mu);
+    align-self: center;
+    width: 100%;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .bp-part {
+    display: inline;
+    border-radius: 4px;
+    padding: 2px 8px;
+    animation: partIn 0.45s cubic-bezier(0.16,1,0.3,1) forwards;
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  @keyframes partIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .bp-part[data-part="role"]    { background: rgba(0,255,179,0.12);   color: var(--pulse); }
+  .bp-part[data-part="context"] { background: rgba(155,143,255,0.12); color: var(--iris); }
+  .bp-part[data-part="task"]    { background: rgba(255,179,71,0.12);  color: var(--amber); }
+  .bp-part[data-part="format"]  { background: rgba(255,107,107,0.12); color: var(--nova); }
+
+  .builder-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .builder-copy-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 10px;
+    background: rgba(0,255,179,0.1);
+    border: 1px solid rgba(0,255,179,0.25);
+    color: var(--pulse);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .builder-copy-btn.show { opacity: 1; pointer-events: all; }
+  .builder-copy-btn:hover { background: rgba(0,255,179,0.18); transform: translateY(-1px); }
+  .builder-copy-btn.copied { background: rgba(0,255,179,0.25); }
+
+  .builder-reset-btn {
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-mu);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .builder-reset-btn.show { opacity: 1; pointer-events: all; }
+  .builder-reset-btn:hover { color: var(--text-lo); border-color: rgba(255,255,255,0.15); }
+
+  /* Simulated AI response */
+  .builder-response {
+    background: var(--base);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    display: none;
+  }
+  .builder-response.show { display: block; animation: partIn 0.5s ease forwards; }
+
+  .builder-response-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--text-mu);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .builder-response-label::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--pulse);
+    box-shadow: 0 0 8px var(--pulse);
+    animation: breathe 2s ease-in-out infinite;
+  }
+  @keyframes breathe { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+  .builder-response-text {
+    font-family: 'Instrument Serif', serif;
+    font-size: 0.9rem;
+    color: var(--text-lo);
+    line-height: 1.7;
+  }
+  .builder-response-text strong { color: var(--text-hi); }
+
+  .builder-score {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+
+  .builder-score-bar {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .builder-score-fill {
+    height: 100%;
+    border-radius: 2px;
+    width: 0%;
+    transition: width 1s cubic-bezier(0.16,1,0.3,1);
+  }
+
+  .builder-hint {
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--text-mu);
+    padding: 10px 0;
+  }
+  .builder-hint span { color: var(--pulse); }
+
+  @media (max-width: 900px) {
+    .builder-stage { grid-template-columns: 1fr; }
+    .builder-output { position: static; }
+  }
+
+  @media (max-width: 900px) {
+    .anchor, .note { display: none; }
+    .explore-grid          { grid-template-columns: 1fr; gap: 48px; }
+    .mistakes-grid         { grid-template-columns: 1fr; }
+    .flow-diagram-wrap     { position: static; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Progress Strip -->
+<div class="progress-strip"><div class="progress-fill" id="progress"></div></div>
+
+<!-- Concept Anchor Sidebar -->
+<nav class="anchor" id="anchor">
+  <a href="#s-explore" class="anchor-item active" data-section="explore">
+    <div class="anchor-dot"></div>
+    <span class="anchor-label">What a Prompt Is</span>
+  </a>
+  <a href="#s-anatomy" class="anchor-item" data-section="anatomy">
+    <div class="anchor-dot"></div>
+    <span class="anchor-label">Anatomy of a Prompt</span>
+  </a>
+  <a href="#s-mistakes" class="anchor-item" data-section="mistakes">
+    <div class="anchor-dot"></div>
+    <span class="anchor-label">Common Mistakes</span>
+  </a>
+  <a href="#s-power" class="anchor-item" data-section="power">
+    <div class="anchor-dot"></div>
+    <span class="anchor-label">Power Techniques</span>
+  </a>
+</nav>
+
+<!-- Design Note -->
+<div class="note" id="designNote">
+  <div class="note-title">Design Note</div>
+  <p>— No "Continue" buttons. Scroll is the pace.</p>
+  <p>— Concept anchor updates as you read.</p>
+  <p>— Prediction is embedded mid-lesson, not at the end.</p>
+  <p>— Ending: clean. No confetti. No trophy.</p>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCENE 0: OPENING HOOK                          -->
+<!-- ═══════════════════════════════════════════════ -->
+<section class="scene-hook" id="s-top">
+  <canvas id="networkCanvas"></canvas>
+
+  <div class="hook-label reveal">Prompt Engineering · 12 min · Beginner</div>
+
+  <h1 class="hook-q reveal reveal-delay-1">
+    Most people talk to AI like it's<br>
+    <em>a very fast search engine.</em>
+  </h1>
+
+  <p class="hook-sub reveal reveal-delay-2">
+    That's why they get mediocre answers. This lesson changes how you communicate with AI — permanently.
+  </p>
+
+  <div class="hook-meta reveal reveal-delay-3">
+    <div class="chip">3 concepts</div>
+    <div class="chip">2 knowledge checks</div>
+    <div class="chip hi">No prior experience needed</div>
+  </div>
+
+  <div class="scroll-cue">
+    <div class="scroll-cue-track"></div>
+    <span class="scroll-cue-text">Scroll</span>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCENE 1: PUNCH QUOTE                           -->
+<!-- ═══════════════════════════════════════════════ -->
+<section class="scene-punch">
+  <div class="punch-inner">
+    <div class="punch-rule reveal" style="background: var(--iris);"></div>
+    <div class="punch-text reveal reveal-delay-1">
+      A prompt is not a question.<br>
+      It is a <em style="color: var(--iris);">contract</em><br>
+      between you and the model.
+    </div>
+    <div class="punch-source reveal reveal-delay-2">— The first thing every expert prompter learns</div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCENE 2: EXPLORATION — What a Prompt Is        -->
+<!-- ═══════════════════════════════════════════════ -->
+<section class="scene-explore" id="s-explore">
+  <div class="explore-grid">
+
+    <div>
+      <div class="concept-label reveal">Concept 01</div>
+      <h2 class="explore-heading reveal reveal-delay-1">What "prompting" actually means</h2>
+      <div class="explore-body">
+        <p class="reveal reveal-delay-2">
+          When you type into ChatGPT, you are not <strong>searching</strong> — you are <strong>instructing</strong>. The model has no memory, no intent, and no agenda. It simply pattern-matches your words to the most statistically likely response.
+        </p>
+        <p class="reveal reveal-delay-3">
+          This means the quality of your output is entirely determined by the quality of your input. A vague instruction produces a vague result. A precise instruction — with role, context, task, and format — produces something usable.
+        </p>
+        <p class="reveal reveal-delay-4">
+          OpenAI's internal research shows that structured prompts improve output quality by <strong>47%</strong> on average. Not because the model got smarter. Because the human got clearer.
+        </p>
+      </div>
+    </div>
+
+    <div class="flow-diagram-wrap reveal reveal-delay-1">
+      <div class="flow-diagram-label">The difference a structured prompt makes</div>
+
+      <!-- SVG Flow Diagram: Vague vs Structured -->
+      <svg class="flow-svg" viewBox="0 0 640 210" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Vague vs structured prompt flow diagram">
+        <!-- Defs: arrowheads -->
+        <defs>
+          <marker id="arr-nova" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#FF6B6B" opacity="0.7"/>
+          </marker>
+          <marker id="arr-pulse" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#00FFB3" opacity="0.7"/>
+          </marker>
+        </defs>
+
+        <!-- Row 1: Vague (nova/red) -->
+        <text x="0" y="14" font-family="'DM Mono',monospace" font-size="8" fill="#FF6B6B" letter-spacing="2" text-transform="uppercase" opacity="0.7">VAGUE PROMPT</text>
+
+        <!-- Input box -->
+        <rect x="0" y="20" width="155" height="58" rx="10" fill="rgba(255,107,107,0.07)" stroke="#FF6B6B" stroke-opacity="0.35" stroke-width="1"/>
+        <text x="10" y="40" font-family="'DM Mono',monospace" font-size="9" fill="#FF6B6B" opacity="0.85">"Write something</text>
+        <text x="10" y="54" font-family="'DM Mono',monospace" font-size="9" fill="#FF6B6B" opacity="0.85">about AI for my</text>
+        <text x="10" y="68" font-family="'DM Mono',monospace" font-size="9" fill="#FF6B6B" opacity="0.85">team."</text>
+
+        <!-- Arrow 1 -->
+        <line x1="157" y1="49" x2="220" y2="49" stroke="#FF6B6B" stroke-opacity="0.4" stroke-width="1.5" marker-end="url(#arr-nova)"/>
+
+        <!-- AI box -->
+        <rect x="222" y="24" width="90" height="50" rx="10" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+        <text x="267" y="44" font-family="'Syne',sans-serif" font-size="10" fill="#F0F0FF" text-anchor="middle" font-weight="700">AI</text>
+        <text x="267" y="58" font-family="'DM Mono',monospace" font-size="7" fill="#8A8AB0" text-anchor="middle">Model</text>
+
+        <!-- Arrow 2 -->
+        <line x1="314" y1="49" x2="377" y2="49" stroke="#FF6B6B" stroke-opacity="0.4" stroke-width="1.5" marker-end="url(#arr-nova)"/>
+
+        <!-- Output box -->
+        <rect x="379" y="20" width="261" height="58" rx="10" fill="rgba(255,107,107,0.04)" stroke="#FF6B6B" stroke-opacity="0.2" stroke-width="1"/>
+        <text x="390" y="40" font-family="'Instrument Serif',serif" font-size="9.5" fill="#8A8AB0" font-style="italic">Here is a general overview</text>
+        <text x="390" y="55" font-family="'Instrument Serif',serif" font-size="9.5" fill="#8A8AB0" font-style="italic">of AI across industries…</text>
+        <text x="390" y="70" font-family="'DM Mono',monospace" font-size="8" fill="#FF6B6B" opacity="0.6">Generic. Unusable.</text>
+
+        <!-- Divider -->
+        <line x1="0" y1="105" x2="640" y2="105" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+
+        <!-- Row 2: Structured (pulse/green) -->
+        <text x="0" y="120" font-family="'DM Mono',monospace" font-size="8" fill="#00FFB3" letter-spacing="2" opacity="0.7">STRUCTURED PROMPT</text>
+
+        <!-- Input box -->
+        <rect x="0" y="126" width="155" height="72" rx="10" fill="rgba(0,255,179,0.07)" stroke="#00FFB3" stroke-opacity="0.35" stroke-width="1"/>
+        <text x="10" y="144" font-family="'DM Mono',monospace" font-size="8.5" fill="#00FFB3" opacity="0.85">"You are a senior</text>
+        <text x="10" y="158" font-family="'DM Mono',monospace" font-size="8.5" fill="#00FFB3" opacity="0.85">tech director. Write</text>
+        <text x="10" y="172" font-family="'DM Mono',monospace" font-size="8.5" fill="#00FFB3" opacity="0.85">3 bullets on AI &amp;</text>
+        <text x="10" y="186" font-family="'DM Mono',monospace" font-size="8.5" fill="#00FFB3" opacity="0.85">customer service."</text>
+
+        <!-- Arrow 1 -->
+        <line x1="157" y1="162" x2="220" y2="162" stroke="#00FFB3" stroke-opacity="0.4" stroke-width="1.5" marker-end="url(#arr-pulse)"/>
+
+        <!-- AI box -->
+        <rect x="222" y="137" width="90" height="50" rx="10" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+        <text x="267" y="157" font-family="'Syne',sans-serif" font-size="10" fill="#F0F0FF" text-anchor="middle" font-weight="700">AI</text>
+        <text x="267" y="171" font-family="'DM Mono',monospace" font-size="7" fill="#8A8AB0" text-anchor="middle">Model</text>
+
+        <!-- Arrow 2 -->
+        <line x1="314" y1="162" x2="377" y2="162" stroke="#00FFB3" stroke-opacity="0.4" stroke-width="1.5" marker-end="url(#arr-pulse)"/>
+
+        <!-- Output box -->
+        <rect x="379" y="126" width="261" height="72" rx="10" fill="rgba(0,255,179,0.04)" stroke="#00FFB3" stroke-opacity="0.2" stroke-width="1"/>
+        <text x="390" y="148" font-family="'Instrument Serif',serif" font-size="9.5" fill="#F0F0FF" font-style="italic">1. Team handles 40% fewer</text>
+        <text x="390" y="162" font-family="'Instrument Serif',serif" font-size="9.5" fill="#F0F0FF" font-style="italic">tier-1 tickets from day one.</text>
+        <text x="390" y="178" font-family="'Instrument Serif',serif" font-size="9.5" fill="#8A8AB0" font-style="italic">2. Agents shift to complex,</text>
+        <text x="390" y="192" font-family="'Instrument Serif',serif" font-size="9.5" fill="#8A8AB0" font-style="italic">high-value cases…</text>
+      </svg>
+
+      <!-- Image placeholder: AI in workplace -->
+      <div class="img-placeholder reveal reveal-delay-3" style="height:160px; background: linear-gradient(135deg, rgba(0,255,179,0.04) 0%, rgba(155,143,255,0.04) 100%);">
+        <div class="img-placeholder-icon" style="background:rgba(0,255,179,0.1);">📸</div>
+        <div class="img-placeholder-label">Visualising AI in a modern workplace</div>
+        <div class="img-placeholder-desc">Photorealistic — AI-generated, 16:9</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCENE 3: ANATOMY REVEAL                        -->
+<!-- ═══════════════════════════════════════════════ -->
+<section class="scene-anatomy" id="s-anatomy">
+  <div class="anatomy-header">
+    <div class="concept-label reveal" style="justify-content: center;">Concept 02</div>
+    <h2 class="section-heading reveal reveal-delay-1">The four parts of every great prompt</h2>
+    <p class="section-sub reveal reveal-delay-2">Hover each highlighted segment to see what role it plays.</p>
+  </div>
+
+  <div class="anatomy-prompt-box reveal reveal-delay-2">
+    <div class="anatomy-bar">
+      <div class="anatomy-bar-dot" style="background:#FF6B6B"></div>
+      <div class="anatomy-bar-dot" style="background:#FFB347"></div>
+      <div class="anatomy-bar-dot" style="background:#00FFB3"></div>
+    </div>
+
+    <div class="anatomy-prompt" id="anatomyPrompt">
+      <span class="ap ap-role" data-delay="0">You are a senior UX researcher</span>
+      <span style="color:var(--text-mu); font-family:'DM Mono',monospace; font-size:0.85rem;">&nbsp;with 10 years of experience in B2B SaaS.&nbsp;</span>
+      <span class="ap ap-context" data-delay="300">We are redesigning our onboarding flow for enterprise clients.</span>
+      <span style="color:var(--text-mu); font-family:'DM Mono',monospace; font-size:0.85rem;">&nbsp;</span>
+      <span class="ap ap-task" data-delay="600">Identify the three most common failure points in SaaS onboarding and suggest one specific fix for each.</span>
+      <span style="color:var(--text-mu); font-family:'DM Mono',monospace; font-size:0.85rem;">&nbsp;</span>
+      <span class="ap ap-format" data-delay="900">Format as a numbered list. Keep each point under 60 words. Use plain language — no buzzwords.</span>
+
+      <div class="ap-tip" style="display:none"></div>
+    </div>
+  </div>
+
+  <div class="anatomy-legend" id="anatomyLegend">
+    <div class="legend-item" data-delay="200"><div class="legend-dot" style="background:var(--pulse)"></div><span style="color:var(--pulse)">Role</span> — who the AI should be</div>
+    <div class="legend-item" data-delay="400"><div class="legend-dot" style="background:var(--iris)"></div><span style="color:var(--iris)">Context</span> — the situation</div>
+    <div class="legend-item" data-delay="600"><div class="legend-dot" style="background:var(--amber)"></div><span style="color:var(--amber)">Task</span> — exactly what to do</div>
+    <div class="legend-item" data-delay="800"><div class="legend-dot" style="background:var(--nova)"></div><span style="color:var(--nova)">Format</span> — how to deliver it</div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCENE 3b: SVG MINDMAP — Prompt Architecture    -->
+<!-- ═══════════════════════════════════════════════ -->
+<section class="scene-mindmap" id="s-mindmap">
+  <div style="text-align:center; margin-bottom: 56px;">
+    <div class="concept-label reveal" style="justify-content:center;">Visual Model</div>
+    <h2 class="section-heading reveal reveal-delay-1">The four parts, visualised</h2>
+    <p class="section-sub reveal reveal-delay-2">Every great prompt branches from one centre of gravity. Hover each node to explore.</p>
+  </div>
+
+  <div class="mindmap-wrap reveal reveal-delay-2" id="mindmapWrap">
+    <svg class="mindmap-svg" viewBox="0 0 700 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+      <!-- Branch lines (drawn in on scroll) -->
+      <!-- Role: centre (350,200) → (108,88) -->
+      <line class="mm-line" id="mm-l1" x1="305" y1="178" x2="158" y2="102" stroke="#00FFB3" stroke-width="1.5" stroke-opacity="0.5"/>
+      <!-- Context: centre → (592,88) -->
+      <line class="mm-line" id="mm-l2" x1="395" y1="178" x2="542" y2="102" stroke="#9B8FFF" stroke-width="1.5" stroke-opacity="0.5" style="transition-delay:0.15s"/>
+      <!-- Task: centre → (108,312) -->
+      <line class="mm-line" id="mm-l3" x1="305" y1="222" x2="158" y2="298" stroke="#FFB347" stroke-width="1.5" stroke-opacity="0.5" style="transition-delay:0.3s"/>
+      <!-- Format: centre → (592,312) -->
+      <line class="mm-line" id="mm-l4" x1="395" y1="222" x2="542" y2="298" stroke="#FF6B6B" stroke-width="1.5" stroke-opacity="0.5" style="transition-delay:0.45s"/>
+
+      <!-- Subtle radial glow at centre -->
+      <circle cx="350" cy="200" r="80" fill="rgba(155,143,255,0.04)"/>
+
+      <!-- Centre node: YOUR PROMPT -->
+      <circle cx="350" cy="200" r="56" fill="rgba(20,20,34,0.9)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+      <text x="350" y="194" font-family="'DM Mono',monospace" font-size="10" fill="#F0F0FF" text-anchor="middle" letter-spacing="1" opacity="0.6">YOUR</text>
+      <text x="350" y="212" font-family="'Syne',sans-serif" font-size="13" fill="#F0F0FF" text-anchor="middle" font-weight="700">PROMPT</text>
+
+      <!-- Role node (top-left, pulse/green) -->
+      <g class="mm-node" id="mm-n1" style="transition-delay:0.1s">
+        <circle cx="108" cy="88" r="52" fill="rgba(0,255,179,0.08)" stroke="#00FFB3" stroke-opacity="0.4" stroke-width="1.5"/>
+        <text x="108" y="81" font-family="'Syne',sans-serif" font-size="13" fill="#00FFB3" text-anchor="middle" font-weight="700">Role</text>
+        <text x="108" y="97" font-family="'Instrument Serif',serif" font-size="9.5" fill="#8A8AB0" text-anchor="middle" font-style="italic">who the AI should be</text>
+      </g>
+
+      <!-- Context node (top-right, iris/purple) -->
+      <g class="mm-node" id="mm-n2" style="transition-delay:0.25s">
+        <circle cx="592" cy="88" r="52" fill="rgba(155,143,255,0.08)" stroke="#9B8FFF" stroke-opacity="0.4" stroke-width="1.5"/>
+        <text x="592" y="81" font-family="'Syne',sans-serif" font-size="13" fill="#9B8FFF" text-anchor="middle" font-weight="700">Context</text>
+        <text x="592" y="97" font-family="'Instrument Serif',serif" font-size="9.5" fill="#8A8AB0" text-anchor="middle" font-style="italic">the situation &amp; background</text>
+      </g>
+
+      <!-- Task node (bottom-left, amber) -->
+      <g class="mm-node" id="mm-n3" style="transition-delay:0.4s">
+        <circle cx="108" cy="312" r="52" fill="rgba(255,179,71,0.08)" stroke="#FFB347" stroke-opacity="0.4" stroke-width="1.5"/>
+        <text x="108" y="305" font-family="'Syne',sans-serif" font-size="13" fill="#FFB347" text-anchor="middle" font-weight="700">Task</text>
+        <text x="108" y="321" font-family="'Instrument Serif',serif" font-size="9.5" fill="#8A8AB0" text-anchor="middle" font-style="italic">exactly what to produce</text>
+      </g>
+
+      <!-- Format node (bottom-right, nova/red) -->
+      <g class="mm-node" id="mm-n4" style="transition-delay:0.55s">
+        <circle cx="592" cy="312" r="52" fill="rgba(255,107,107,0.08)" stroke="#FF6B6B" stroke-opacity="0.4" stroke-width="1.5"/>
+        <text x="592" y="305" font-family="'Syne',sans-serif" font-size="13" fill="#FF6B6B" text-anchor="middle" font-weight="700">Format</text>
+        <text x="592" y="321" font-family="'Instrument Serif',serif" font-size="9.5" fill="#8A8AB0" text-anchor="middle" font-style="italic">how to deliver the answer</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCENE 3c: LIVE PROMPT BUILDER                  -->
+<!-- ═══════════════════════════════════════════════ -->
+<section class="scene-builder" id="s-builder">
+
+  <div class="builder-header">
+    <div class="concept-label reveal" style="justify-content:center;">Build It Yourself</div>
+    <h2 class="section-heading reveal reveal-delay-1">Construct a real prompt, right now</h2>
+    <p class="section-sub reveal reveal-delay-2">Click each part to add it. Watch the prompt — and the quality of the response — transform.</p>
+  </div>
+
+  <div class="builder-stage reveal reveal-delay-2">
+
+    <!-- Left: clickable building blocks -->
+    <div class="builder-blocks" id="builderBlocks">
+
+      <div class="builder-block" data-part="role" onclick="addPart(this)">
+        <div class="bb-icon">🎭</div>
+        <div>
+          <div class="bb-label">Role</div>
+          <div class="bb-text">You are a senior marketing strategist with 12 years of B2B experience.</div>
+        </div>
+        <div class="bb-add">+ Add</div>
+      </div>
+
+      <div class="builder-block" data-part="context" onclick="addPart(this)">
+        <div class="bb-icon">📍</div>
+        <div>
+          <div class="bb-label">Context</div>
+          <div class="bb-text">We are launching a new AI productivity tool aimed at mid-size law firms.</div>
+        </div>
+        <div class="bb-add">+ Add</div>
+      </div>
+
+      <div class="builder-block" data-part="task" onclick="addPart(this)">
+        <div class="bb-icon">🎯</div>
+        <div>
+          <div class="bb-label">Task</div>
+          <div class="bb-text">Write 3 subject lines for a cold outreach email targeting managing partners.</div>
+        </div>
+        <div class="bb-add">+ Add</div>
+      </div>
+
+      <div class="builder-block" data-part="format" onclick="addPart(this)">
+        <div class="bb-icon">📐</div>
+        <div>
+          <div class="bb-label">Format</div>
+          <div class="bb-text">Each line under 10 words. Lead with the outcome, not the product. No buzzwords.</div>
+        </div>
+        <div class="bb-add">+ Add</div>
+      </div>
+
+      <div class="builder-hint" id="builderHint"><span>0 / 4</span> parts added</div>
+
+    </div>
+
+    <!-- Right: live output -->
+    <div class="builder-output">
+      <div class="builder-output-label">Your prompt</div>
+
+      <div class="builder-prompt-box" id="builderBox">
+        <div class="builder-prompt-bar">
+          <div class="builder-prompt-bar-dot" style="background:#FF6B6B"></div>
+          <div class="builder-prompt-bar-dot" style="background:#FFB347"></div>
+          <div class="builder-prompt-bar-dot" style="background:#00FFB3"></div>
+        </div>
+        <div class="builder-prompt-text" id="builderPromptText">
+          <div class="bp-empty" id="builderEmpty">Click a block on the left to start building…</div>
+        </div>
+      </div>
+
+      <div class="builder-actions">
+        <button class="builder-copy-btn" id="builderCopyBtn" onclick="copyPrompt()">
+          <span id="builderCopyLabel">⧉ Copy Prompt</span>
+        </button>
+        <button class="builder-reset-btn" id="builderResetBtn" onclick="resetBuilder()">↺ Reset</button>
+      </div>
+
+      <!-- Simulated AI response — appears after all 4 parts added -->
+      <div class="builder-response" id="builderResponse">
+        <div class="builder-response-label">Simulated AI response</div>
+        <div class="builder-response-text">
+          <strong>1.</strong> "Cut billing admin by 40% — without changing your practice software."<br>
+          <strong>2.</strong> "Your rivals are billing faster. Here's how."<br>
+          <strong>3.</strong> "Three hours back per fee-earner, every week."
+        </div>
+        <div class="builder-score">
+          <span style="color:var(--pulse)">Quality</span>
+          <div class="builder-score-bar">
+            <div class="builder-score-fill" id="builderScoreFill" style="background: linear-gradient(to right, var(--iris), var(--pulse));"></div>
+          </div>
+          <span id="builderScoreLabel" style="color:var(--pulse)">96%</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCENE 4: PREDICTION (mid-lesson micro-check)   -->
+<!-- ═══════════════════════════════════════════════ -->
+<section class="scene-predict" id="s-predict">
+  <div class="predict-eyebrow reveal">Quick check — before we continue</div>
+  <div class="predict-q reveal reveal-delay-1">
+    You send this prompt to GPT-4: <em style="color:var(--iris);">"Help me write an email."</em><br>What's the most likely problem with the response?
+  </div>
+
+  <div class="predict-options reveal reveal-delay-2" id="predictOpts">
+    <button class="predict-opt" onclick="selectAnswer(this, false)">
+      <span class="predict-opt-letter">A</span>
+      The model will refuse to help with emails
+    </button>
+    <button class="predict-opt" onclick="selectAnswer(this, false)">
+      <span class="predict-opt-letter">B</span>
+      The email will be too long
+    </button>
+    <button class="predict-opt" onclick="selectAnswer(this, true)">
+      <span class="predict-opt-letter">C</span>
+      The response will be generic — it doesn't know who, what, or why
+    </button>
+  </div>
+
+  <div class="predict-reveal" id="predictReveal">
+    <div class="predict-reveal-label">Exactly right</div>
+    <p>Without a recipient, purpose, or tone, the model has no contract to work from. It produces a <strong>placeholder email</strong> — technically correct, practically useless. Adding four words — "to my CEO, requesting budget approval" — changes everything.</p>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCENE 5: COMMON MISTAKES                       -->
+<!-- ═══════════════════════════════════════════════ -->
+<section class="scene-mistakes" id="s-mistakes">
+  <div class="mistakes-intro">
+    <div class="concept-label reveal" style="justify-content:center;">What Goes Wrong</div>
+    <h2 class="section-heading reveal reveal-delay-1">Three mistakes 90% of people make</h2>
+    <p class="section-sub reveal reveal-delay-2">Recognising these will immediately improve every prompt you write.</p>
+  </div>
+
+  <div class="mistakes-grid">
+    <div class="mistake-cell reveal">
+      <!-- Icon: person silhouette with question mark -->
+      <svg class="mistake-icon" viewBox="0 0 60 72" width="60" height="72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="30" cy="20" r="13" stroke="#FF6B6B" stroke-opacity="0.5" stroke-width="1.5" fill="rgba(255,107,107,0.08)"/>
+        <path d="M10 55 C10 40 50 40 50 55" stroke="#FF6B6B" stroke-opacity="0.5" stroke-width="1.5" fill="rgba(255,107,107,0.06)"/>
+        <text x="30" y="26" font-family="'Syne',sans-serif" font-size="16" fill="#FF6B6B" text-anchor="middle" opacity="0.7">?</text>
+        <text x="30" y="68" font-family="'DM Mono',monospace" font-size="7" fill="#FF6B6B" text-anchor="middle" opacity="0.4" letter-spacing="1">NO ROLE</text>
+      </svg>
+      <div class="mistake-number">01</div>
+      <div class="mistake-title">No role assigned</div>
+      <div class="mistake-desc">The model doesn't know whose perspective to take. A general response is its only option.</div>
+      <div class="mistake-fix">Start every prompt with "You are a [specific expert]..."</div>
+    </div>
+
+    <div class="mistake-cell reveal reveal-delay-1">
+      <!-- Icon: speech bubble with ellipsis -->
+      <svg class="mistake-icon" viewBox="0 0 60 72" width="60" height="72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="5" y="8" width="50" height="38" rx="10" fill="rgba(255,179,71,0.08)" stroke="#FFB347" stroke-opacity="0.45" stroke-width="1.5"/>
+        <path d="M18 46 L12 58 L26 46" fill="rgba(255,179,71,0.08)" stroke="#FFB347" stroke-opacity="0.45" stroke-width="1.5" stroke-linejoin="round"/>
+        <circle cx="20" cy="27" r="3.5" fill="#FFB347" opacity="0.5"/>
+        <circle cx="30" cy="27" r="3.5" fill="#FFB347" opacity="0.5"/>
+        <circle cx="40" cy="27" r="3.5" fill="#FFB347" opacity="0.5"/>
+        <text x="30" y="68" font-family="'DM Mono',monospace" font-size="7" fill="#FFB347" text-anchor="middle" opacity="0.4" letter-spacing="1">ASSUMED</text>
+      </svg>
+      <div class="mistake-number">02</div>
+      <div class="mistake-title">The task is assumed</div>
+      <div class="mistake-desc">You know what "help me with this" means. The model doesn't — it guesses, and guesses generically.</div>
+      <div class="mistake-fix">State the deliverable explicitly: "Write / Analyse / Compare / Summarise"</div>
+    </div>
+
+    <div class="mistake-cell reveal reveal-delay-2">
+      <!-- Icon: document with conflicting layouts -->
+      <svg class="mistake-icon" viewBox="0 0 60 72" width="60" height="72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="4" width="44" height="56" rx="6" fill="rgba(155,143,255,0.08)" stroke="#9B8FFF" stroke-opacity="0.4" stroke-width="1.5"/>
+        <!-- conflicting lines inside -->
+        <line x1="15" y1="18" x2="45" y2="18" stroke="#9B8FFF" stroke-opacity="0.5" stroke-width="1.5"/>
+        <line x1="15" y1="26" x2="30" y2="26" stroke="#9B8FFF" stroke-opacity="0.3" stroke-width="1.5"/>
+        <rect x="15" y="33" width="18" height="10" rx="2" fill="rgba(155,143,255,0.1)" stroke="#9B8FFF" stroke-opacity="0.35" stroke-width="1"/>
+        <line x1="36" y1="36" x2="45" y2="36" stroke="#9B8FFF" stroke-opacity="0.3" stroke-width="1.5"/>
+        <line x1="15" y1="50" x2="38" y2="50" stroke="#9B8FFF" stroke-opacity="0.2" stroke-width="1.5"/>
+        <text x="30" y="68" font-family="'DM Mono',monospace" font-size="7" fill="#9B8FFF" text-anchor="middle" opacity="0.4" letter-spacing="1">NO FORMAT</text>
+      </svg>
+      <div class="mistake-number">03</div>
+      <div class="mistake-title">No format specified</div>
+      <div class="mistake-desc">Without format instructions, the model defaults to paragraphs. Always. Even when you needed a table.</div>
+      <div class="mistake-fix">End every prompt with "Format as: [bullet list / table / one sentence]"</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCENE 6: PUNCH QUOTE 2                         -->
+<!-- ═══════════════════════════════════════════════ -->
+<section class="scene-punch-2">
+  <div class="punch-2-text reveal">
+    <span class="line-1">The model doesn't read your mind.</span>
+    <span class="line-2">It reads your words.</span>
+    <span class="line-3">Every word is a decision.</span>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCENE 7: POWER TECHNIQUES                      -->
+<!-- ═══════════════════════════════════════════════ -->
+<section class="scene-power" id="s-power">
+  <div class="power-header">
+    <div class="concept-label reveal" style="justify-content:center;">Concept 03</div>
+    <h2 class="section-heading reveal reveal-delay-1">Three techniques that separate experts from beginners</h2>
+    <p class="section-sub reveal reveal-delay-2">Use any one of these today and you will immediately see better results.</p>
+  </div>
+
+  <div class="techniques reveal reveal-delay-2">
+
+    <div class="technique" id="t1">
+      <div class="technique-header" onclick="toggleTechnique('t1')">
+        <div class="technique-left">
+          <div class="technique-num">01</div>
+          <div class="technique-name">Chain of Thought</div>
+          <span class="technique-tag" style="background:rgba(0,255,179,0.1);color:var(--pulse)">Reasoning</span>
+        </div>
+        <div class="technique-chevron">+</div>
+      </div>
+      <div class="technique-body">
+        <div class="technique-content">
+          Tell the model to <strong>think step by step</strong> before answering. This forces it to reason through the problem rather than pattern-match to a quick response. Works especially well for analysis, decisions, and calculations.
+          <div class="technique-example" style="color:var(--pulse)">
+            "...Think through this step by step before giving your final answer."
+          </div>
+          <!-- CoT visual flow -->
+          <div class="cot-flow-wrap" id="cotFlow">
+            <svg class="cot-svg" viewBox="0 0 560 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <marker id="arr-cot" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+                  <path d="M0,0 L0,6 L7,3 z" fill="#00FFB3" opacity="0.5"/>
+                </marker>
+              </defs>
+              <!-- Nodes -->
+              <g class="cot-node" id="cot-0">
+                <rect x="0" y="14" width="78" height="44" rx="8" fill="rgba(0,255,179,0.06)" stroke="#00FFB3" stroke-opacity="0.3" stroke-width="1"/>
+                <text x="39" y="34" font-family="'DM Mono',monospace" font-size="8" fill="#00FFB3" text-anchor="middle" opacity="0.8">Question</text>
+                <text x="39" y="48" font-family="'Instrument Serif',serif" font-size="8" fill="#8A8AB0" text-anchor="middle" font-style="italic">the prompt</text>
+              </g>
+              <line class="cot-node" id="cot-a1" x1="80" y1="36" x2="115" y2="36" stroke="#00FFB3" stroke-opacity="0.35" stroke-width="1.5" marker-end="url(#arr-cot)"/>
+              <g class="cot-node" id="cot-1" style="transition-delay:0.12s">
+                <rect x="117" y="14" width="78" height="44" rx="8" fill="rgba(0,255,179,0.06)" stroke="#00FFB3" stroke-opacity="0.25" stroke-width="1"/>
+                <text x="156" y="34" font-family="'DM Mono',monospace" font-size="8" fill="#00FFB3" text-anchor="middle" opacity="0.7">Step 1</text>
+                <text x="156" y="48" font-family="'Instrument Serif',serif" font-size="8" fill="#8A8AB0" text-anchor="middle" font-style="italic">understand</text>
+              </g>
+              <line class="cot-node" id="cot-a2" x1="197" y1="36" x2="232" y2="36" stroke="#00FFB3" stroke-opacity="0.35" stroke-width="1.5" marker-end="url(#arr-cot)" style="transition-delay:0.12s"/>
+              <g class="cot-node" id="cot-2" style="transition-delay:0.24s">
+                <rect x="234" y="14" width="78" height="44" rx="8" fill="rgba(0,255,179,0.06)" stroke="#00FFB3" stroke-opacity="0.25" stroke-width="1"/>
+                <text x="273" y="34" font-family="'DM Mono',monospace" font-size="8" fill="#00FFB3" text-anchor="middle" opacity="0.7">Step 2</text>
+                <text x="273" y="48" font-family="'Instrument Serif',serif" font-size="8" fill="#8A8AB0" text-anchor="middle" font-style="italic">reason</text>
+              </g>
+              <line class="cot-node" id="cot-a3" x1="314" y1="36" x2="349" y2="36" stroke="#00FFB3" stroke-opacity="0.35" stroke-width="1.5" marker-end="url(#arr-cot)" style="transition-delay:0.24s"/>
+              <g class="cot-node" id="cot-3" style="transition-delay:0.36s">
+                <rect x="351" y="14" width="78" height="44" rx="8" fill="rgba(0,255,179,0.06)" stroke="#00FFB3" stroke-opacity="0.25" stroke-width="1"/>
+                <text x="390" y="34" font-family="'DM Mono',monospace" font-size="8" fill="#00FFB3" text-anchor="middle" opacity="0.7">Step 3</text>
+                <text x="390" y="48" font-family="'Instrument Serif',serif" font-size="8" fill="#8A8AB0" text-anchor="middle" font-style="italic">verify</text>
+              </g>
+              <line class="cot-node" id="cot-a4" x1="431" y1="36" x2="466" y2="36" stroke="#00FFB3" stroke-opacity="0.35" stroke-width="1.5" marker-end="url(#arr-cot)" style="transition-delay:0.36s"/>
+              <g class="cot-node" id="cot-4" style="transition-delay:0.48s">
+                <rect x="468" y="14" width="92" height="44" rx="8" fill="rgba(0,255,179,0.1)" stroke="#00FFB3" stroke-opacity="0.45" stroke-width="1.5"/>
+                <text x="514" y="34" font-family="'DM Mono',monospace" font-size="8" fill="#00FFB3" text-anchor="middle" font-weight="700">Answer</text>
+                <text x="514" y="48" font-family="'Instrument Serif',serif" font-size="8" fill="#00FFB3" text-anchor="middle" font-style="italic" opacity="0.7">precise output</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="technique" id="t2">
+      <div class="technique-header" onclick="toggleTechnique('t2')">
+        <div class="technique-left">
+          <div class="technique-num">02</div>
+          <div class="technique-name">Persona Anchoring</div>
+          <span class="technique-tag" style="background:rgba(155,143,255,0.1);color:var(--iris)">Tone</span>
+        </div>
+        <div class="technique-chevron">+</div>
+      </div>
+      <div class="technique-body">
+        <div class="technique-content">
+          Give the model a <strong>specific person to emulate</strong>, not just a job title. "Write like a CFO presenting to skeptical board members" is 10× more effective than "write professionally." The more specific, the better calibrated the tone.
+          <div class="technique-example" style="color:var(--iris)">
+            "You are a CFO explaining this to a non-technical board who will challenge every assumption..."
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="technique" id="t3">
+      <div class="technique-header" onclick="toggleTechnique('t3')">
+        <div class="technique-left">
+          <div class="technique-num">03</div>
+          <div class="technique-name">Constraint Stacking</div>
+          <span class="technique-tag" style="background:rgba(255,179,71,0.1);color:var(--amber)">Quality</span>
+        </div>
+        <div class="technique-chevron">+</div>
+      </div>
+      <div class="technique-body">
+        <div class="technique-content">
+          Add <strong>what NOT to do</strong> alongside what to do. Constraints eliminate the model's default behaviours — corporate speak, bullet-point overuse, vague hedging. The more constraints you stack, the tighter and more usable the output.
+          <div class="technique-example" style="color:var(--amber)">
+            "...Do NOT use buzzwords. Do NOT hedge with 'it depends'. Do NOT exceed 100 words."
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCENE 8: ENDING — Clean, Minimal               -->
+<!-- ═══════════════════════════════════════════════ -->
+<section class="scene-end" id="s-end">
+
+  <div class="end-label reveal">Lesson complete</div>
+
+  <div class="end-skills reveal reveal-delay-1">
+    <div class="end-skill">
+      <div class="end-skill-icon" style="background:rgba(0,255,179,0.1);">✓</div>
+      <div class="end-skill-text">You can explain why <strong>vague prompts produce vague results</strong> — and what to do instead</div>
+    </div>
+    <div class="end-skill">
+      <div class="end-skill-icon" style="background:rgba(155,143,255,0.1);">✓</div>
+      <div class="end-skill-text">You know the <strong>four-part structure</strong> (Role, Context, Task, Format) that makes any prompt work</div>
+    </div>
+    <div class="end-skill">
+      <div class="end-skill-icon" style="background:rgba(255,179,71,0.1);">✓</div>
+      <div class="end-skill-text">You have three <strong>expert techniques</strong> you can use in your next AI interaction today</div>
+    </div>
+  </div>
+
+  <button class="end-cta reveal reveal-delay-2">
+    Next Lesson <span class="end-cta-arrow">→</span>
+  </button>
+
+  <div class="end-course reveal reveal-delay-3">Prompt Engineering · Lesson 2 of 4</div>
+
+</section>
+
+
+<script>
+  // ── NETWORK CANVAS (hook background) ────────────
+  (function initNetworkCanvas() {
+    const canvas = document.getElementById('networkCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+      canvas.width  = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const NODE_COUNT = 22;
+    const nodes = Array.from({ length: NODE_COUNT }, () => ({
+      x:     Math.random() * canvas.width,
+      y:     Math.random() * canvas.height,
+      vx:    (Math.random() - 0.5) * 0.28,
+      vy:    (Math.random() - 0.5) * 0.28,
+      r:     Math.random() * 2.5 + 1,
+      phase: Math.random() * Math.PI * 2,
+    }));
+
+    function draw() {
+      const W = canvas.width;
+      const H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      // Connections
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx   = nodes[i].x - nodes[j].x;
+          const dy   = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 170) {
+            const alpha = (1 - dist / 170) * 0.18;
+            ctx.strokeStyle = `rgba(155,143,255,${alpha})`;
+            ctx.lineWidth   = 1;
+            ctx.beginPath();
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Nodes
+      nodes.forEach(n => {
+        n.phase += 0.025;
+        const pulse = n.r + Math.sin(n.phase) * 1.2;
+        const alpha = 0.28 + Math.sin(n.phase) * 0.18;
+        ctx.fillStyle = `rgba(155,143,255,${alpha})`;
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, pulse, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Move & bounce
+        n.x += n.vx;
+        n.y += n.vy;
+        if (n.x < 0 || n.x > W) n.vx *= -1;
+        if (n.y < 0 || n.y > H) n.vy *= -1;
+      });
+
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+
+  // ── MINDMAP ANIMATION ────────────────────────────
+  const mindmapObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      // Animate lines
+      document.querySelectorAll('.mm-line').forEach(l => l.classList.add('draw'));
+      // Animate nodes (slightly delayed per node via CSS transition-delay)
+      setTimeout(() => {
+        document.querySelectorAll('.mm-node').forEach(n => n.classList.add('show'));
+      }, 100);
+      mindmapObs.unobserve(e.target);
+    });
+  }, { threshold: 0.3 });
+  const mmWrap = document.getElementById('mindmapWrap');
+  if (mmWrap) mindmapObs.observe(mmWrap);
+
+  // ── COT FLOW ANIMATION ───────────────────────────
+  const cotObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      document.querySelectorAll('.cot-node').forEach(n => n.classList.add('show'));
+      cotObs.unobserve(e.target);
+    });
+  }, { threshold: 0.5 });
+  const cotFlow = document.getElementById('cotFlow');
+  if (cotFlow) cotObs.observe(cotFlow);
+
+  // ── PROGRESS BAR ────────────────────────────────
+  const fill = document.getElementById('progress');
+  window.addEventListener('scroll', () => {
+    const total = document.documentElement.scrollHeight - window.innerHeight;
+    fill.style.width = (window.scrollY / total * 100) + '%';
+  }, { passive: true });
+
+  // ── SCROLL REVEAL ────────────────────────────────
+  const revealObs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); revealObs.unobserve(e.target); } });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+  // ── ANCHOR SIDEBAR ───────────────────────────────
+  const anchor = document.getElementById('anchor');
+  const designNote = document.getElementById('designNote');
+
+  const sectionMap = {
+    explore:  document.getElementById('s-explore'),
+    anatomy:  document.getElementById('s-anatomy'),
+    mistakes: document.getElementById('s-mistakes'),
+    power:    document.getElementById('s-power'),
+  };
+
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    const topSection = document.getElementById('s-top');
+    const topH = topSection ? topSection.offsetHeight : 0;
+
+    if (y > topH * 0.6) {
+      anchor.classList.add('visible');
+      designNote.classList.add('show');
+    } else {
+      anchor.classList.remove('visible');
+      designNote.classList.remove('show');
+    }
+
+    let active = 'explore';
+    for (const [key, el] of Object.entries(sectionMap)) {
+      if (el && el.getBoundingClientRect().top < window.innerHeight * 0.5) active = key;
+    }
+    document.querySelectorAll('.anchor-item').forEach(a => {
+      a.classList.toggle('active', a.dataset.section === active);
+    });
+  }, { passive: true });
+
+  // ── ANATOMY REVEAL ───────────────────────────────
+  const anatomyObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        document.querySelectorAll('.ap').forEach(ap => {
+          const delay = parseInt(ap.dataset.delay || '0');
+          setTimeout(() => ap.classList.add('in'), delay);
+        });
+        document.querySelectorAll('.legend-item').forEach(li => {
+          const delay = parseInt(li.dataset.delay || '0');
+          setTimeout(() => li.classList.add('in'), delay + 800);
+        });
+        anatomyObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  const apBox = document.getElementById('anatomyPrompt');
+  if (apBox) anatomyObs.observe(apBox);
+
+  // Tooltips for anatomy segments
+  const apTips = {
+    'ap-role':    'ROLE — who the AI should be',
+    'ap-context': 'CONTEXT — the situation',
+    'ap-task':    'TASK — what to produce',
+    'ap-format':  'FORMAT — how to deliver it',
+  };
+  document.querySelectorAll('.ap').forEach(el => {
+    const tipText = Object.entries(apTips).find(([cls]) => el.classList.contains(cls))?.[1] || '';
+    const tip = document.createElement('div');
+    tip.className = 'ap-tip';
+    tip.textContent = tipText;
+    tip.style.display = 'block';
+    el.appendChild(tip);
+  });
+
+  // ── PREDICTION ───────────────────────────────────
+  let answered = false;
+  function selectAnswer(btn, isCorrect) {
+    if (answered) return;
+    answered = true;
+    const opts = document.querySelectorAll('.predict-opt');
+    opts.forEach(o => {
+      if (o === btn) o.classList.add(isCorrect ? 'correct' : 'wrong');
+      else if (o.getAttribute('onclick').includes('true')) o.classList.add('correct');
+      else o.classList.add('wrong');
+    });
+    document.getElementById('predictReveal').classList.add('show');
+  }
+
+  // ── TECHNIQUES ACCORDION ─────────────────────────
+  function toggleTechnique(id) {
+    const el = document.getElementById(id);
+    const isOpen = el.classList.contains('open');
+    document.querySelectorAll('.technique').forEach(t => t.classList.remove('open'));
+    if (!isOpen) el.classList.add('open');
+  }
+
+  // Open first technique on load
+  setTimeout(() => { document.getElementById('t1')?.classList.add('open'); }, 800);
+
+  // ── LIVE PROMPT BUILDER ──────────────────────────
+  const builderParts = {
+    role:    'You are a senior marketing strategist with 12 years of B2B experience.',
+    context: 'We are launching a new AI productivity tool aimed at mid-size law firms.',
+    task:    'Write 3 subject lines for a cold outreach email targeting managing partners.',
+    format:  'Each line under 10 words. Lead with the outcome, not the product. No buzzwords.',
+  };
+  const builderAdded = new Set();
+
+  function addPart(block) {
+    const part = block.dataset.part;
+    if (builderAdded.has(part)) return;
+    builderAdded.add(part);
+    block.classList.add('added');
+
+    // Remove empty placeholder
+    const empty = document.getElementById('builderEmpty');
+    if (empty) empty.remove();
+
+    // Insert coloured span into prompt
+    const box = document.getElementById('builderPromptText');
+    const span = document.createElement('span');
+    span.className = 'bp-part';
+    span.dataset.part = part;
+    span.textContent = builderParts[part];
+    box.appendChild(span);
+
+    // Update hint
+    const hint = document.getElementById('builderHint');
+    hint.innerHTML = `<span>${builderAdded.size} / 4</span> parts added`;
+
+    // Show copy + reset
+    document.getElementById('builderCopyBtn').classList.add('show');
+    document.getElementById('builderResetBtn').classList.add('show');
+    document.getElementById('builderBox').classList.add('has-content');
+
+    // When all 4 added — show response
+    if (builderAdded.size === 4) {
+      setTimeout(() => {
+        const resp = document.getElementById('builderResponse');
+        resp.classList.add('show');
+        setTimeout(() => {
+          document.getElementById('builderScoreFill').style.width = '96%';
+        }, 300);
+      }, 400);
+    }
+  }
+
+  function copyPrompt() {
+    const parts = Object.values(builderParts).filter((_, i) =>
+      builderAdded.has(['role','context','task','format'][i])
+    );
+    const text = parts.join(' ');
+    navigator.clipboard.writeText(text).catch(() => {});
+    const label = document.getElementById('builderCopyLabel');
+    const btn   = document.getElementById('builderCopyBtn');
+    label.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { label.textContent = '⧉ Copy Prompt'; btn.classList.remove('copied'); }, 2000);
+  }
+
+  function resetBuilder() {
+    builderAdded.clear();
+    document.querySelectorAll('.builder-block').forEach(b => b.classList.remove('added'));
+    const box = document.getElementById('builderPromptText');
+    box.innerHTML = '<div class="bp-empty" id="builderEmpty">Click a block on the left to start building…</div>';
+    document.getElementById('builderBox').classList.remove('has-content');
+    document.getElementById('builderCopyBtn').classList.remove('show', 'copied');
+    document.getElementById('builderResetBtn').classList.remove('show');
+    document.getElementById('builderResponse').classList.remove('show');
+    document.getElementById('builderScoreFill').style.width = '0%';
+    document.getElementById('builderHint').innerHTML = '<span>0 / 4</span> parts added';
+  }
+
+  // ── INITIAL REVEAL for above-fold ────────────────
+  document.querySelectorAll('.scene-hook .reveal').forEach((el, i) => {
+    setTimeout(() => el.classList.add('in'), 100 + i * 150);
+  });
+</script>
+
+</body>
+</html>

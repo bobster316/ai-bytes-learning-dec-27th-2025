@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { metadataBase } from "@/lib/seo";
 
 const inter = Inter({
     variable: "--font-inter",
@@ -9,8 +10,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-    title: "AI Bytes Learning - Master AI in 60 Minutes",
+    metadataBase,
+    title: "AI Bytes Learning - Master AI with Micro Courses",
     description: "Transform from AI beginner to confident AI practitioner",
+    robots: {
+        index: true,
+        follow: true,
+    },
 };
 
 export default function RootLayout({
@@ -26,3 +32,4 @@ export default function RootLayout({
         </html>
     );
 }
+

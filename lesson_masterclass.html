@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt Engineering — Lesson 01 — AI Bytes Learning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Serif:ital@1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ─────────────────────────────────────────────────
+   RESET & TOKENS
+───────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #050510;
+  --surface:  #09091F;
+  --raised:   #10102A;
+  --border:   rgba(255,255,255,0.07);
+  --heading:  #F0F0FF;
+  --body:     #9090C0;
+  --muted:    #3A3A6A;
+  --accent:   #00FFB3;
+  --purple:   #8B7FFF;
+  --amber:    #FFB347;
+  --red:      #FF6B6B;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--body);
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 18px;
+  line-height: 1.75;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  /* NO cursor:none */
+}
+
+/* ─────────────────────────────────────────────────
+   PROGRESS BAR
+───────────────────────────────────────────────── */
+#progress-bar {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  width: 0%;
+  background: var(--accent);
+  z-index: 9999;
+  transition: width 0.1s linear;
+  box-shadow: 0 0 8px var(--accent);
+}
+
+/* ─────────────────────────────────────────────────
+   TYPOGRAPHY UTILITIES
+───────────────────────────────────────────────── */
+.font-syne    { font-family: 'Syne', sans-serif; }
+.font-mono    { font-family: 'DM Mono', monospace; }
+.font-serif-i { font-family: 'Instrument Serif', serif; font-style: italic; }
+
+.label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  color: var(--accent);
+}
+
+.section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+h1, h2, h3 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  color: var(--heading);
+  line-height: 1.05;
+}
+
+/* ─────────────────────────────────────────────────
+   SCROLL REVEAL  (.rv)
+   Below-fold elements start offset — JS reveals them.
+   Falls back gracefully: if JS never runs, content
+   is still readable (just slightly shifted).
+───────────────────────────────────────────────── */
+.rv {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+.rv.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger delays */
+.rv-d1 { transition-delay: 0.08s; }
+.rv-d2 { transition-delay: 0.16s; }
+.rv-d3 { transition-delay: 0.24s; }
+.rv-d4 { transition-delay: 0.32s; }
+.rv-d5 { transition-delay: 0.40s; }
+
+/* ─────────────────────────────────────────────────
+   HERO FADE-IN KEYFRAMES
+   Runs on load — no JS needed.
+───────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─────────────────────────────────────────────────
+   SECTION 1 — HERO
+───────────────────────────────────────────────── */
+#hero {
+  position: relative;
+  min-height: 100vh;
+  padding: 120px 80px 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+#hero-canvas {
+  position: absolute;
+  right: 0; bottom: 0;
+  width: 400px; height: 400px;
+  opacity: 0.28;
+  pointer-events: none;
+}
+
+.hero-label {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  color: var(--accent);
+  margin-bottom: 36px;
+  animation: fadeUp 0.7s ease 0.1s both;
+}
+
+.hero-label::before {
+  content: '';
+  display: block;
+  width: 32px;
+  height: 1px;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.hero-headline {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(2.8rem, 5.5vw, 5rem);
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+  color: var(--heading);
+  max-width: 800px;
+  margin-bottom: 36px;
+  animation: fadeUp 0.7s ease 0.25s both;
+}
+
+.hero-headline .expert {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  color: var(--accent);
+}
+
+.hero-meta {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  margin-bottom: 48px;
+  animation: fadeUp 0.7s ease 0.4s both;
+}
+
+.hero-scroll {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  animation: fadeUp 0.7s ease 0.55s both;
+}
+
+.hero-scroll-line {
+  width: 200px;
+  height: 1px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.scroll-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  animation: bounceDown 1.8s ease-in-out 1.2s infinite;
+}
+
+@keyframes bounceDown {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+
+.scroll-arrow span {
+  display: block;
+  width: 1px;
+  background: var(--muted);
+}
+.scroll-arrow span:nth-child(1) { height: 12px; }
+.scroll-arrow span:nth-child(2) {
+  width: 6px; height: 6px;
+  border-right: 1px solid var(--muted);
+  border-bottom: 1px solid var(--muted);
+  transform: rotate(45deg);
+  margin-top: -5px;
+  background: transparent;
+}
+
+/* ─────────────────────────────────────────────────
+   SECTION 2 — ANATOMY
+───────────────────────────────────────────────── */
+#anatomy {
+  padding: 120px 80px;
+  background: var(--surface);
+}
+
+.anatomy-header { margin-bottom: 56px; }
+
+.anatomy-header h2 {
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  max-width: 620px;
+  margin-top: 16px;
+}
+
+/* Prompt display box */
+.prompt-box {
+  max-width: 860px;
+  background: var(--bg);
+  border-radius: 16px;
+  padding: 36px;
+  border: 1px solid rgba(255,255,255,0.09);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+  margin-bottom: 32px;
+}
+
+.prompt-text {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.875rem;
+  line-height: 2.2;
+  color: var(--body);
+}
+
+/* Prompt spans */
+.p-span {
+  position: relative;
+  border-radius: 3px;
+  padding: 2px 0;
+  cursor: default;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.p-span .tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--raised);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 10;
+}
+
+.p-span:hover .tooltip,
+.p-span.active .tooltip { opacity: 1; }
+
+/* Individual span colours */
+.p-role   { color: #5A8A74; }
+.p-role:hover, .p-role.active { color: var(--accent); background: rgba(0,255,179,0.06); }
+.p-role .tooltip { color: var(--accent); border-color: rgba(0,255,179,0.2); }
+
+.p-context { color: #6B6599; }
+.p-context:hover, .p-context.active { color: var(--purple); background: rgba(139,127,255,0.06); }
+.p-context .tooltip { color: var(--purple); border-color: rgba(139,127,255,0.2); }
+
+.p-task { color: #8A7A55; }
+.p-task:hover, .p-task.active { color: var(--amber); background: rgba(255,179,71,0.06); }
+.p-task .tooltip { color: var(--amber); border-color: rgba(255,179,71,0.2); }
+
+.p-format { color: #8A5555; }
+.p-format:hover, .p-format.active { color: var(--red); background: rgba(255,107,107,0.06); }
+.p-format .tooltip { color: var(--red); border-color: rgba(255,107,107,0.2); }
+
+/* Legend chips */
+.legend-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 56px;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  border-radius: 40px;
+  border: 1px solid var(--border);
+  background: var(--raised);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  color: var(--body);
+  transition: border-color 0.2s, background 0.2s;
+  user-select: none;
+}
+
+.chip-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.chip[data-target="role"]   .chip-dot { background: var(--accent); }
+.chip[data-target="context"].chip-dot { background: var(--purple); }
+.chip[data-target="task"]   .chip-dot { background: var(--amber); }
+.chip[data-target="format"] .chip-dot { background: var(--red); }
+
+.chip[data-target="role"]:hover,
+.chip[data-target="role"].chip-active   { border-color: rgba(0,255,179,0.3); background: rgba(0,255,179,0.05); color: var(--accent); }
+.chip[data-target="context"]:hover,
+.chip[data-target="context"].chip-active{ border-color: rgba(139,127,255,0.3); background: rgba(139,127,255,0.05); color: var(--purple); }
+.chip[data-target="task"]:hover,
+.chip[data-target="task"].chip-active   { border-color: rgba(255,179,71,0.3); background: rgba(255,179,71,0.05); color: var(--amber); }
+.chip[data-target="format"]:hover,
+.chip[data-target="format"].chip-active { border-color: rgba(255,107,107,0.3); background: rgba(255,107,107,0.05); color: var(--red); }
+
+/* Role compare grid */
+.role-compare {
+  max-width: 860px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.role-col {
+  background: var(--surface);
+  padding: 28px 32px;
+}
+
+.role-col-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  margin-bottom: 12px;
+}
+
+.role-col:first-child .role-col-label { color: var(--red); }
+.role-col:last-child  .role-col-label { color: var(--accent); }
+
+.role-col p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--body);
+}
+
+/* ─────────────────────────────────────────────────
+   SECTION 3 — CONTRAST
+───────────────────────────────────────────────── */
+#contrast {
+  padding: 120px 80px;
+  background: var(--bg);
+}
+
+#contrast h2 {
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  max-width: 700px;
+  margin-top: 16px;
+  margin-bottom: 56px;
+}
+
+.contrast-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  max-width: 1000px;
+}
+
+.contrast-col {
+  background: var(--surface);
+  padding: 40px;
+}
+
+.contrast-tag {
+  display: inline-block;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  padding: 5px 12px;
+  border-radius: 4px;
+  margin-bottom: 24px;
+}
+
+.contrast-tag.before { background: rgba(255,107,107,0.1); color: var(--red); border: 1px solid rgba(255,107,107,0.2); }
+.contrast-tag.after  { background: rgba(0,255,179,0.1); color: var(--accent); border: 1px solid rgba(0,255,179,0.2); }
+
+.contrast-prompt {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.8rem;
+  line-height: 1.7;
+  color: var(--body);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.contrast-output {
+  font-size: 14px;
+  line-height: 1.65;
+  margin-bottom: 28px;
+  color: var(--body);
+}
+
+.contrast-col.col-before .contrast-output { opacity: 0.6; font-style: italic; }
+
+.quality-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 10px;
+}
+
+.quality-label .ql-left { color: var(--muted); }
+.quality-label .ql-right { }
+
+.col-before  .quality-label .ql-right { color: var(--red); }
+.col-after   .quality-label .ql-right { color: var(--accent); }
+
+.quality-track {
+  height: 3px;
+  background: var(--raised);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.quality-fill {
+  height: 100%;
+  border-radius: 2px;
+  width: 0%;
+  transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.col-before .quality-fill { background: var(--red); }
+.col-after  .quality-fill { background: var(--accent); box-shadow: 0 0 8px rgba(0,255,179,0.4); }
+
+/* ─────────────────────────────────────────────────
+   SECTION 4 — QUIZ
+───────────────────────────────────────────────── */
+#quiz {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  padding: 80px;
+  background: var(--surface);
+}
+
+.quiz-inner {
+  max-width: 700px;
+  width: 100%;
+}
+
+.quiz-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  color: var(--purple);
+  margin-bottom: 24px;
+}
+
+.quiz-q {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  color: var(--heading);
+  line-height: 1.2;
+  margin-bottom: 36px;
+}
+
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.quiz-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 24px;
+  color: var(--body);
+  font-family: 'Instrument Serif', serif;
+  font-size: 16px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+  line-height: 1.5;
+}
+
+.quiz-btn:hover:not(:disabled) {
+  border-color: rgba(139,127,255,0.4);
+  background: rgba(139,127,255,0.05);
+  color: var(--heading);
+}
+
+.quiz-btn.correct {
+  border-color: rgba(0,255,179,0.5);
+  background: rgba(0,255,179,0.06);
+  color: var(--accent);
+}
+
+.quiz-btn.wrong {
+  border-color: rgba(255,107,107,0.4);
+  background: rgba(255,107,107,0.05);
+  color: var(--red);
+}
+
+.quiz-btn:disabled { cursor: default; }
+
+.quiz-result {
+  display: none;
+  padding: 20px 24px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--raised);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--body);
+}
+
+.quiz-result.show { display: block; }
+
+.quiz-result strong {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.quiz-result.result-correct strong { color: var(--accent); }
+.quiz-result.result-wrong   strong { color: var(--red); }
+
+/* ─────────────────────────────────────────────────
+   SECTION 5 — TECHNIQUES
+───────────────────────────────────────────────── */
+#techniques {
+  background: var(--bg);
+}
+
+.techniques-header {
+  padding: 80px 80px 48px;
+}
+
+.techniques-header h2 {
+  font-size: clamp(1.6rem, 2.8vw, 2.4rem);
+  max-width: 680px;
+  margin-top: 16px;
+}
+
+.technique-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr;
+  gap: 40px;
+  padding: 48px 80px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.25s ease;
+  align-items: start;
+}
+
+.technique-row:hover { background: var(--surface); }
+.technique-row:last-child { border-bottom: none; }
+
+.t-num {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 2.5rem;
+  color: var(--muted);
+  line-height: 1;
+  padding-top: 6px;
+}
+
+.t-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.35rem;
+  color: var(--heading);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.t-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-weight: 400;
+}
+
+.t-tag.green  { background: rgba(0,255,179,0.1); color: var(--accent); border: 1px solid rgba(0,255,179,0.2); }
+.t-tag.purple { background: rgba(139,127,255,0.1); color: var(--purple); border: 1px solid rgba(139,127,255,0.2); }
+.t-tag.amber  { background: rgba(255,179,71,0.1); color: var(--amber); border: 1px solid rgba(255,179,71,0.2); }
+
+.t-body {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--body);
+}
+
+.t-example {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.78rem;
+  line-height: 1.8;
+  color: var(--body);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 18px 20px;
+}
+
+.t-example .ex-label {
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: var(--muted);
+  margin-bottom: 10px;
+  display: block;
+}
+
+/* ─────────────────────────────────────────────────
+   SECTION 6 — ENDING
+───────────────────────────────────────────────── */
+#ending {
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 80px;
+  background: var(--surface);
+}
+
+.ending-inner { max-width: 600px; }
+
+.ending-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  color: var(--accent);
+  margin-bottom: 48px;
+}
+
+.skills-list {
+  list-style: none;
+  margin-bottom: 56px;
+}
+
+.skills-list li {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 17px;
+  color: var(--heading);
+}
+
+.skills-list li:first-child { border-top: 1px solid var(--border); }
+
+.skill-check {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--accent);
+  flex-shrink: 0;
+  width: 20px;
+}
+
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--accent);
+  color: #050510;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  padding: 16px 36px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.2s, box-shadow 0.2s, transform 0.2s;
+  margin-bottom: 24px;
+}
+
+.cta-btn:hover {
+  opacity: 0.9;
+  box-shadow: 0 8px 24px rgba(0,255,179,0.25);
+  transform: translateY(-1px);
+}
+
+.ending-caption {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+}
+
+/* ─────────────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  #hero             { padding: 100px 32px 60px; }
+  #anatomy          { padding: 80px 32px; }
+  #contrast         { padding: 80px 32px; }
+  #quiz             { padding: 60px 32px; min-height: auto; }
+  .techniques-header{ padding: 60px 32px 36px; }
+  .technique-row    { grid-template-columns: 1fr; gap: 16px; padding: 40px 32px; }
+  .t-num            { font-size: 1.6rem; }
+  #ending           { padding: 60px 32px; min-height: auto; }
+  .contrast-grid    { grid-template-columns: 1fr; }
+  .role-compare     { grid-template-columns: 1fr; }
+  #hero-canvas      { width: 250px; height: 250px; }
+}
+
+@media (max-width: 600px) {
+  .hero-headline  { font-size: 2.2rem; }
+  .hero-scroll-line { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Progress bar -->
+<div id="progress-bar"></div>
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 1 — HERO
+════════════════════════════════════════════════ -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+
+  <p class="hero-label">Prompt Engineering · Lesson 01</p>
+
+  <h1 class="hero-headline">
+    The difference between a mediocre answer and an
+    <span class="expert">expert</span>
+    one is your question.
+  </h1>
+
+  <p class="hero-meta">12 min &nbsp;·&nbsp; 3 concepts &nbsp;·&nbsp; No prior experience needed</p>
+
+  <div class="hero-scroll">
+    <div class="hero-scroll-line"></div>
+    <div class="scroll-arrow">
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 2 — ANATOMY
+════════════════════════════════════════════════ -->
+<section id="anatomy">
+
+  <div class="anatomy-header rv rv-d1">
+    <p class="section-label">Concept 01</p>
+    <h2>Four parts. Every great prompt has them.</h2>
+  </div>
+
+  <div class="prompt-box rv rv-d2">
+    <p class="prompt-text">
+      <span class="p-span p-role" data-part="role">You are a senior UX researcher with 10 years of B2B SaaS experience.<span class="tooltip">ROLE — who the AI should be</span></span>
+      <br><br>
+      <span class="p-span p-context" data-part="context">We are redesigning our onboarding flow for enterprise clients.<span class="tooltip">CONTEXT — the situation</span></span>
+      <br><br>
+      <span class="p-span p-task" data-part="task">Identify the three most common failure points and suggest one specific fix for each.<span class="tooltip">TASK — what you want done</span></span>
+      <br><br>
+      <span class="p-span p-format" data-part="format">Format as a numbered list. Under 60 words each. No buzzwords.<span class="tooltip">FORMAT — how to respond</span></span>
+    </p>
+  </div>
+
+  <div class="legend-row rv rv-d3">
+    <button class="chip" data-target="role">
+      <span class="chip-dot"></span>Role
+    </button>
+    <button class="chip" data-target="context">
+      <span class="chip-dot"></span>Context
+    </button>
+    <button class="chip" data-target="task">
+      <span class="chip-dot"></span>Task
+    </button>
+    <button class="chip" data-target="format">
+      <span class="chip-dot"></span>Format
+    </button>
+  </div>
+
+  <div class="role-compare rv rv-d4">
+    <div class="role-col">
+      <p class="role-col-label">Without role</p>
+      <p>The model responds as a generic assistant — broad advice, vague suggestions, no domain depth. Useful to nobody in particular.</p>
+    </div>
+    <div class="role-col">
+      <p class="role-col-label">With role</p>
+      <p>The model draws on specific UX frameworks, enterprise SaaS patterns, and a decade of implied experience. Advice is immediately actionable.</p>
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 3 — CONTRAST
+════════════════════════════════════════════════ -->
+<section id="contrast">
+
+  <p class="section-label rv rv-d1">Concept 02</p>
+  <h2 class="rv rv-d2">The exact same question. Two completely different results.</h2>
+
+  <div class="contrast-grid rv rv-d3">
+
+    <div class="contrast-col col-before">
+      <span class="contrast-tag before">Before</span>
+      <div class="contrast-prompt">Help me write an email to my team about the project delay.</div>
+      <p class="contrast-output">Sure! Here's an email you could send:<br><br>"Hi team, I wanted to let you know that the project is running a bit behind schedule. We'll keep you updated. Thanks for your understanding."</p>
+      <div class="quality-label">
+        <span class="ql-left">Response quality</span>
+        <span class="ql-right">18%</span>
+      </div>
+      <div class="quality-track">
+        <div class="quality-fill" id="bar-before" data-target="18"></div>
+      </div>
+    </div>
+
+    <div class="contrast-col col-after">
+      <span class="contrast-tag after">After</span>
+      <div class="contrast-prompt">You are an experienced engineering manager. Write a 3-paragraph email to a 12-person product team explaining a 2-week delay on the mobile checkout feature. Tone: honest, calm, solution-focused. Include: the cause (third-party API integration), what's changed in the plan, and next check-in date.</div>
+      <p class="contrast-output">Subject: Mobile Checkout — Updated Timeline + Plan<br><br>"Team — I want to be straight with you about where we stand…" [precise, structured, credible — 3 paragraphs as requested, with specific next steps and a calendar invite placeholder]</p>
+      <div class="quality-label">
+        <span class="ql-left">Response quality</span>
+        <span class="ql-right">94%</span>
+      </div>
+      <div class="quality-track">
+        <div class="quality-fill" id="bar-after" data-target="94"></div>
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 4 — QUIZ
+════════════════════════════════════════════════ -->
+<section id="quiz">
+  <div class="quiz-inner rv rv-d1">
+
+    <p class="quiz-eyebrow">Quick check</p>
+
+    <p class="quiz-q">You send "Help me write an email." What's the most likely problem?</p>
+
+    <div class="quiz-options" id="quiz-options">
+      <button class="quiz-btn" data-correct="false" onclick="handleQuiz(this, false)">
+        The AI doesn't know how to write emails
+      </button>
+      <button class="quiz-btn" data-correct="true" onclick="handleQuiz(this, true)">
+        The prompt has no role, context, or format — so the output will be generic
+      </button>
+      <button class="quiz-btn" data-correct="false" onclick="handleQuiz(this, false)">
+        The request is too short to process
+      </button>
+    </div>
+
+    <div class="quiz-result" id="quiz-result"></div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 5 — TECHNIQUES
+════════════════════════════════════════════════ -->
+<section id="techniques">
+
+  <div class="techniques-header rv rv-d1">
+    <p class="section-label">Concept 03</p>
+    <h2>Three techniques that separate experts from everyone else.</h2>
+  </div>
+
+  <div class="technique-row rv rv-d2">
+    <div class="t-num">01</div>
+    <div class="t-left">
+      <div class="t-name">Chain of Thought <span class="t-tag green">Reasoning</span></div>
+      <p class="t-body">Ask the model to think step by step before giving a final answer. This dramatically reduces errors on anything involving logic, maths, or multi-step decisions — because the model externalises its reasoning rather than jumping straight to a conclusion.</p>
+    </div>
+    <div class="t-example">
+      <span class="ex-label">Example</span>
+      "Before answering, work through this step by step. First identify the key variables, then reason through each one, then give your final recommendation."
+    </div>
+  </div>
+
+  <div class="technique-row rv rv-d3">
+    <div class="t-num">02</div>
+    <div class="t-left">
+      <div class="t-name">Persona Anchoring <span class="t-tag purple">Voice</span></div>
+      <p class="t-body">Assign a specific persona with real stakes — not just a job title, but a point of view, constraints, and expertise level. "A CFO who is sceptical of AI" produces very different analysis than "an AI enthusiast." The more specific the persona, the more useful the lens.</p>
+    </div>
+    <div class="t-example">
+      <span class="ex-label">Example</span>
+      "You are a Series B CFO who has seen three failed digital transformation projects. Review this proposal with healthy scepticism."
+    </div>
+  </div>
+
+  <div class="technique-row rv rv-d4">
+    <div class="t-num">03</div>
+    <div class="t-left">
+      <div class="t-name">Constraint Stacking <span class="t-tag amber">Precision</span></div>
+      <p class="t-body">Add explicit constraints to prevent the vague, padded output that plagues unstructured prompts. Word limits, banned phrases, required structure, and tone boundaries all reduce the model's degrees of freedom — forcing it to be precise rather than comprehensive.</p>
+    </div>
+    <div class="t-example">
+      <span class="ex-label">Example</span>
+      "Under 80 words. No passive voice. No phrases like 'it's important to note'. Three bullet points only. Start with the action, not the context."
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 6 — ENDING
+════════════════════════════════════════════════ -->
+<section id="ending">
+  <div class="ending-inner rv rv-d1">
+
+    <p class="ending-label">Lesson complete</p>
+
+    <ul class="skills-list">
+      <li>
+        <span class="skill-check">✓</span>
+        Understand the four-part anatomy of an effective prompt
+      </li>
+      <li>
+        <span class="skill-check">✓</span>
+        Recognise the difference between a vague and a structured request
+      </li>
+      <li>
+        <span class="skill-check">✓</span>
+        Apply Chain of Thought, Persona Anchoring, and Constraint Stacking
+      </li>
+    </ul>
+
+    <a href="#" class="cta-btn">
+      Next Lesson →
+    </a>
+
+    <p class="ending-caption">Prompt Engineering · Lesson 2 of 4</p>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════ -->
+<script>
+/* ── 1. PROGRESS BAR ───────────────────────────── */
+const progressBar = document.getElementById('progress-bar');
+
+window.addEventListener('scroll', () => {
+  const scrolled = window.scrollY;
+  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+  if (maxScroll > 0) {
+    progressBar.style.width = ((scrolled / maxScroll) * 100) + '%';
+  }
+}, { passive: true });
+
+
+/* ── 2. SCROLL REVEAL ─────────────────────────── */
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12 });
+
+document.querySelectorAll('.rv').forEach(el => revealObserver.observe(el));
+
+
+/* ── 3. QUALITY BARS ──────────────────────────── */
+const barObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const barBefore = document.getElementById('bar-before');
+      const barAfter  = document.getElementById('bar-after');
+      if (barBefore) barBefore.style.width = barBefore.dataset.target + '%';
+      if (barAfter)  barAfter.style.width  = barAfter.dataset.target  + '%';
+      barObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.4 });
+
+const contrastSection = document.getElementById('contrast');
+if (contrastSection) barObserver.observe(contrastSection);
+
+
+/* ── 4. ANATOMY — CHIP TOGGLE ─────────────────── */
+const chips = document.querySelectorAll('.chip');
+const spans = document.querySelectorAll('.p-span');
+
+// Map data attributes to CSS classes
+const partMap = {
+  role:    'p-role',
+  context: 'p-context',
+  task:    'p-task',
+  format:  'p-format'
+};
+
+chips.forEach(chip => {
+  chip.addEventListener('click', () => {
+    const target = chip.dataset.target;
+
+    // If this chip is already active, deactivate everything
+    const isActive = chip.classList.contains('chip-active');
+
+    // Deactivate all
+    chips.forEach(c => c.classList.remove('chip-active'));
+    spans.forEach(s => s.classList.remove('active'));
+
+    if (!isActive) {
+      // Activate selected
+      chip.classList.add('chip-active');
+      const targetClass = partMap[target];
+      document.querySelectorAll('.' + targetClass).forEach(s => s.classList.add('active'));
+    }
+  });
+});
+
+
+/* ── 5. QUIZ ──────────────────────────────────── */
+function handleQuiz(btn, isCorrect) {
+  // Disable all buttons
+  document.querySelectorAll('.quiz-btn').forEach(b => {
+    b.disabled = true;
+    // Mark the correct one
+    if (b.dataset.correct === 'true') {
+      b.classList.add('correct');
+    } else {
+      b.classList.add('wrong');
+    }
+  });
+
+  const result = document.getElementById('quiz-result');
+  result.classList.add('show');
+
+  if (isCorrect) {
+    result.classList.add('result-correct');
+    result.innerHTML = '<strong>Correct.</strong> Without role, context, or format, the model has almost no information to work with. It defaults to the safest, most generic response possible — which is almost never what you actually need.';
+  } else {
+    result.classList.add('result-wrong');
+    result.innerHTML = '<strong>Not quite.</strong> The model can write emails perfectly well. The real problem is that it has no role, no context, and no format instructions — so it will produce something technically correct but utterly generic.';
+  }
+}
+
+
+/* ── 6. HERO CANVAS — NODE NETWORK ───────────── */
+(function() {
+  const canvas = document.getElementById('hero-canvas');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  const W = 400, H = 400;
+  canvas.width = W;
+  canvas.height = H;
+
+  const NODE_COUNT = 18;
+  const MAX_DIST = 110;
+  const ACCENT = '0,255,179';
+
+  // Create nodes
+  const nodes = Array.from({ length: NODE_COUNT }, () => ({
+    x: Math.random() * W,
+    y: Math.random() * H,
+    vx: (Math.random() - 0.5) * 0.5,
+    vy: (Math.random() - 0.5) * 0.5,
+    r: Math.random() * 2 + 1.5
+  }));
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Draw connections
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < MAX_DIST) {
+          const alpha = (1 - dist / MAX_DIST) * 0.45;
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.strokeStyle = `rgba(${ACCENT},${alpha})`;
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Draw nodes
+    nodes.forEach(n => {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${ACCENT},0.7)`;
+      ctx.fill();
+    });
+  }
+
+  function update() {
+    nodes.forEach(n => {
+      n.x += n.vx;
+      n.y += n.vy;
+      if (n.x < 0 || n.x > W) n.vx *= -1;
+      if (n.y < 0 || n.y > H) n.vy *= -1;
+    });
+    draw();
+    requestAnimationFrame(update);
+  }
+
+  update();
+})();
+
+</script>
+</body>
+</html>

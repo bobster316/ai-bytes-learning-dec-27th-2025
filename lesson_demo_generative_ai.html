@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lesson Demo — Generative AI | AI Bytes Learning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+<style>
+/* ─── DESIGN TOKENS ──────────────────────────────────────── */
+:root {
+  --pulse:   #00FFB3;
+  --iris:    #9B8FFF;
+  --amber:   #FFB347;
+  --nova:    #FF6B6B;
+  --bg:      #080810;
+  --surface: #0f0f1a;
+  --surface2:#13131f;
+  --border:  rgba(255,255,255,0.08);
+  --text:    #e2e8f0;
+  --muted:   #64748b;
+}
+
+/* ─── RESET & BASE ───────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 16px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+h1,h2,h3,h4 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  color: #fff;
+}
+p { font-family: 'Instrument Serif', serif; font-size: 1.1rem; line-height: 1.75; color: var(--text); }
+strong { color: #fff; font-weight: 700; }
+
+/* ─── LAYOUT ZONES ───────────────────────────────────────── */
+.zone-narrow  { max-width: 840px;  margin: 0 auto; padding: 0 2rem; }
+.zone-wide    { max-width: 1140px; margin: 0 auto; padding: 0 2rem; }
+.zone-finish  { max-width: 760px;  margin: 0 auto; padding: 0 2rem; }
+
+/* ─── PROGRESS BAR ───────────────────────────────────────── */
+.progress-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 3px; background: rgba(255,255,255,0.06);
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--pulse), var(--iris));
+  width: 0%; transition: width 0.3s ease;
+}
+
+/* ─── TOP NAV ────────────────────────────────────────────── */
+.top-nav {
+  position: sticky; top: 0; z-index: 90;
+  background: rgba(8,8,16,0.85); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 2rem;
+  display: flex; align-items: center; gap: 1rem;
+}
+.top-nav a {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.15em; color: var(--iris); text-decoration: none;
+  background: rgba(155,143,255,0.1); border: 1px solid rgba(155,143,255,0.2);
+  padding: 0.4rem 1rem; border-radius: 999px; transition: all 0.2s;
+}
+.top-nav a:hover { background: rgba(155,143,255,0.2); }
+.top-nav span { font-size: 0.65rem; color: rgba(255,255,255,0.3); margin-left: auto; }
+
+/* ─── BLOCK SPACING ──────────────────────────────────────── */
+.block { padding: 5rem 0; }
+.block + .block { border-top: 1px solid rgba(255,255,255,0.04); }
+.block-sm { padding: 3rem 0; }
+
+/* ─── BLOCK: LESSON HEADER ───────────────────────────────── */
+.lesson-header {
+  padding: 6rem 0 4rem;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(155,143,255,0.12) 0%, transparent 70%);
+}
+.lesson-header .module-tag {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.2em; color: var(--pulse);
+  background: rgba(0,255,179,0.08); border: 1px solid rgba(0,255,179,0.2);
+  padding: 0.35rem 1rem; border-radius: 999px; margin-bottom: 2rem;
+}
+.lesson-header h1 { font-size: clamp(2.8rem, 6vw, 5rem); margin-bottom: 1.5rem; }
+.lesson-header h1 em { font-family: 'Instrument Serif', serif; font-style: italic; color: var(--iris); }
+.lesson-header .chips {
+  display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 2.5rem;
+}
+.chip {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.12em; padding: 0.4rem 0.9rem; border-radius: 0.5rem;
+  border: 1px solid;
+}
+.chip-amber { color: var(--amber); border-color: rgba(255,179,71,0.3); background: rgba(255,179,71,0.08); }
+.chip-iris  { color: var(--iris);  border-color: rgba(155,143,255,0.3); background: rgba(155,143,255,0.08); }
+.chip-pulse { color: var(--pulse); border-color: rgba(0,255,179,0.3);   background: rgba(0,255,179,0.08); }
+.chip-nova  { color: var(--nova);  border-color: rgba(255,107,107,0.3); background: rgba(255,107,107,0.08); }
+
+/* ─── BLOCK: OBJECTIVE CARD ──────────────────────────────── */
+.objective-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  padding: 2rem 2.5rem;
+  overflow: hidden;
+}
+.objective-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(0,255,179,0.06), rgba(155,143,255,0.06));
+  pointer-events: none;
+}
+.objective-label {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.2em; color: var(--pulse); margin-bottom: 0.75rem;
+}
+.objective-text {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.15rem; color: rgba(255,255,255,0.85); line-height: 1.6;
+}
+.objective-text mark {
+  background: none; color: var(--pulse); font-weight: 700;
+}
+
+/* ─── BLOCK: TEXT SECTION ────────────────────────────────── */
+.text-section h2 {
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.text-section h2::before {
+  content: '';
+  display: block; width: 4px; height: 1.4em;
+  background: var(--iris); border-radius: 2px; flex-shrink: 0;
+}
+.text-section p + p { margin-top: 1rem; }
+
+/* ─── BLOCK: CONCEPT ILLUSTRATION ───────────────────────── */
+.concept-illustration {
+  border-radius: 1.25rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+}
+.concept-illustration .svg-area {
+  height: 240px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 2rem;
+}
+.concept-illustration .caption {
+  padding: 1.25rem 1.75rem;
+  border-top: 1px solid var(--border);
+}
+.concept-illustration .caption strong {
+  font-family: 'Syne', sans-serif; font-size: 0.9rem;
+}
+.concept-illustration .caption p {
+  font-size: 0.7rem; color: rgba(255,255,255,0.3);
+  font-family: 'DM Mono', monospace; margin-top: 0.25rem;
+}
+
+/* ─── BLOCK: PUNCH QUOTE ─────────────────────────────────── */
+.punch-quote {
+  padding: 3.5rem 0;
+  border-left: 3px solid var(--iris);
+  padding-left: 2.5rem;
+}
+.punch-quote blockquote {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(1.6rem, 2.8vw, 2.6rem);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+.punch-quote blockquote.pulse-accent { border-color: var(--pulse); }
+.punch-quote .attribution {
+  margin-top: 1rem;
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.2em; color: var(--iris);
+}
+
+/* ─── BLOCK: MINDMAP ─────────────────────────────────────── */
+.mindmap-container {
+  display: flex; justify-content: center;
+  padding: 2rem 0;
+}
+.mindmap-container svg { max-width: 580px; width: 100%; overflow: visible; }
+
+/* ─── BLOCK: FLOW DIAGRAM ────────────────────────────────── */
+.flow-diagram { padding: 2rem 0; }
+.flow-title {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.2em; color: rgba(255,255,255,0.3); margin-bottom: 2rem;
+}
+.flow-row {
+  display: flex; align-items: center; gap: 0.75rem;
+  flex-wrap: wrap; margin-bottom: 1rem;
+}
+.flow-label {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.12em; width: 5.5rem; text-align: right; flex-shrink: 0;
+}
+.flow-label.nova  { color: rgba(255,107,107,0.6); }
+.flow-label.pulse { color: rgba(0,255,179,0.6); }
+.flow-node {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; border-radius: 0.75rem; border: 1px solid;
+  padding: 0.6rem 1rem; min-width: 90px; max-width: 130px;
+}
+.flow-node.default { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); }
+.flow-node.iris    { background: rgba(155,143,255,0.08); border-color: rgba(155,143,255,0.35); color: var(--iris); }
+.flow-node.pulse   { background: rgba(0,255,179,0.08);   border-color: rgba(0,255,179,0.35);   color: var(--pulse); }
+.flow-node.amber   { background: rgba(255,179,71,0.08);  border-color: rgba(255,179,71,0.35);  color: var(--amber); }
+.flow-node.nova    { background: rgba(255,107,107,0.08); border-color: rgba(255,107,107,0.35); color: var(--nova); }
+.flow-node .node-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.2;
+}
+.flow-node .node-desc {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.55rem; color: rgba(255,255,255,0.3); margin-top: 0.2rem; line-height: 1.2;
+}
+.flow-arrow { color: rgba(255,255,255,0.18); flex-shrink: 0; }
+.flow-vs {
+  display: flex; align-items: center; gap: 1rem;
+  margin: 0.5rem 0 0.5rem 6.25rem;
+}
+.flow-vs::before, .flow-vs::after {
+  content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.05);
+}
+.flow-vs span { font-size: 0.6rem; color: rgba(255,255,255,0.2); text-transform: uppercase; letter-spacing: 0.15em; }
+.flow-outcome {
+  padding: 0.6rem 1rem; border-radius: 0.75rem; border: 1px solid;
+  max-width: 140px;
+}
+.flow-outcome.nova  { border-color: rgba(255,107,107,0.25); background: rgba(255,107,107,0.06); }
+.flow-outcome.pulse { border-color: rgba(0,255,179,0.25);   background: rgba(0,255,179,0.06);  }
+.flow-outcome .outcome-text {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem; line-height: 1.35;
+}
+.flow-outcome.nova  .outcome-text { color: var(--nova); }
+.flow-outcome.pulse .outcome-text { color: var(--pulse); }
+
+/* ─── BLOCK: CALLOUT ─────────────────────────────────────── */
+.callout {
+  border-radius: 1rem; padding: 1.5rem 2rem;
+  border: 1px solid; display: flex; gap: 1.25rem; align-items: flex-start;
+}
+.callout.tip {
+  background: rgba(0,255,179,0.05); border-color: rgba(0,255,179,0.2);
+}
+.callout.warning {
+  background: rgba(255,179,71,0.05); border-color: rgba(255,179,71,0.2);
+}
+.callout-icon {
+  width: 2.5rem; height: 2.5rem; border-radius: 0.6rem; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+}
+.callout.tip    .callout-icon { background: rgba(0,255,179,0.12); }
+.callout.warning .callout-icon { background: rgba(255,179,71,0.12); }
+.callout-title {
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem;
+  letter-spacing: -0.01em; margin-bottom: 0.35rem;
+}
+.callout.tip    .callout-title { color: var(--pulse); }
+.callout.warning .callout-title { color: var(--amber); }
+.callout-body {
+  font-family: 'Instrument Serif', serif; font-size: 0.95rem;
+  color: rgba(255,255,255,0.7); line-height: 1.6;
+}
+
+/* ─── BLOCK: TYPE CARDS ──────────────────────────────────── */
+.type-cards-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+.type-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 1.25rem; padding: 1.75rem; position: relative; overflow: hidden;
+  transition: border-color 0.25s, transform 0.25s;
+}
+.type-card:hover { transform: translateY(-3px); }
+.type-card.pulse-card:hover { border-color: rgba(0,255,179,0.3); }
+.type-card.iris-card:hover  { border-color: rgba(155,143,255,0.3); }
+.type-card.amber-card:hover { border-color: rgba(255,179,71,0.3); }
+.type-card .badge {
+  display: inline-block; font-size: 0.55rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.15em;
+  padding: 0.25rem 0.6rem; border-radius: 999px; border: 1px solid; margin-bottom: 1rem;
+}
+.badge-pulse { color: var(--pulse); border-color: rgba(0,255,179,0.3);   background: rgba(0,255,179,0.08); }
+.badge-iris  { color: var(--iris);  border-color: rgba(155,143,255,0.3); background: rgba(155,143,255,0.08); }
+.badge-amber { color: var(--amber); border-color: rgba(255,179,71,0.3);  background: rgba(255,179,71,0.08); }
+.type-card h3 {
+  font-size: 1.1rem; margin-bottom: 0.75rem; letter-spacing: -0.02em;
+}
+.type-card p { font-size: 0.9rem; color: rgba(255,255,255,0.6); line-height: 1.6; }
+
+/* ─── BLOCK: PREDICTION ──────────────────────────────────── */
+.prediction-block {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 1.25rem; padding: 2.5rem 2rem;
+}
+.prediction-label {
+  display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;
+}
+.prediction-label span {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.2em; color: rgba(255,255,255,0.25);
+}
+.prediction-label::after {
+  content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.07);
+}
+.prediction-question {
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 1.2rem; color: #fff; line-height: 1.3; margin-bottom: 2rem;
+}
+.prediction-options { display: flex; flex-direction: column; gap: 0.75rem; }
+.prediction-option {
+  width: 100%; text-align: left; background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08); border-radius: 0.75rem;
+  padding: 1rem 1.25rem; cursor: pointer;
+  font-family: 'DM Mono', monospace; font-size: 0.8rem; color: rgba(255,255,255,0.65);
+  transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem;
+}
+.prediction-option:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.18); }
+.prediction-option.correct { border-color: rgba(0,255,179,0.45); background: rgba(0,255,179,0.07); color: var(--pulse); }
+.prediction-option.wrong   { border-color: rgba(255,107,107,0.2); background: transparent; color: rgba(255,255,255,0.25); }
+.prediction-option.neutral { border-color: rgba(255,255,255,0.05); background: transparent; color: rgba(255,255,255,0.2); }
+.prediction-option .opt-key {
+  font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em;
+  color: rgba(255,255,255,0.2); flex-shrink: 0;
+}
+.prediction-reveal {
+  display: none; margin-top: 1.75rem; padding-top: 1.75rem;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+.prediction-reveal.shown { display: block; animation: slideUp 0.35s ease; }
+.prediction-reveal-label {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.18em; color: var(--pulse); margin-bottom: 0.6rem;
+}
+.prediction-reveal p {
+  font-size: 0.9rem; color: rgba(255,255,255,0.7); line-height: 1.65;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── BLOCK: INDUSTRY TABS ───────────────────────────────── */
+.industry-tabs {}
+.tab-heading { font-size: clamp(1.4rem, 2.5vw, 2rem); margin-bottom: 0.75rem; }
+.tab-intro { font-size: 1rem; color: rgba(255,255,255,0.55); margin-bottom: 2rem; line-height: 1.6; }
+.tab-buttons {
+  display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border); padding-bottom: 0;
+}
+.tab-btn {
+  padding: 0.6rem 1.1rem; border-radius: 0.5rem 0.5rem 0 0;
+  font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; cursor: pointer; border: none;
+  background: transparent; color: rgba(255,255,255,0.35);
+  border-bottom: 2px solid transparent; transition: all 0.2s; margin-bottom: -1px;
+}
+.tab-btn:hover { color: rgba(255,255,255,0.7); }
+.tab-btn.active { color: var(--iris); border-bottom-color: var(--iris); }
+.tab-panel { display: none; }
+.tab-panel.active {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+  animation: fadeIn 0.3s ease;
+}
+@media (max-width: 640px) { .tab-panel.active { grid-template-columns: 1fr; } }
+.tab-image {
+  border-radius: 1rem; overflow: hidden; border: 1px solid var(--border);
+  background: var(--surface); height: 200px; display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.tab-image .img-caption {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+  padding: 1.5rem 1rem 0.75rem;
+  font-size: 0.65rem; color: rgba(255,255,255,0.7); text-align: center;
+}
+.tab-scenario-title {
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem;
+  margin-bottom: 0.75rem; color: var(--iris);
+}
+.tab-scenario-body {
+  font-family: 'Instrument Serif', serif; font-size: 0.95rem;
+  color: rgba(255,255,255,0.7); line-height: 1.65;
+}
+.tab-scenario-body mark {
+  background: rgba(155,143,255,0.18); color: var(--iris);
+  border-radius: 2px; padding: 0 2px;
+}
+
+/* ─── BLOCK: IMAGE TEXT ROW ──────────────────────────────── */
+.image-text-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center;
+}
+.image-text-row.reverse { direction: rtl; }
+.image-text-row.reverse > * { direction: ltr; }
+@media (max-width: 640px) { .image-text-row { grid-template-columns: 1fr; } }
+.itr-image {
+  border-radius: 1.25rem; overflow: hidden; border: 1px solid var(--border);
+  background: var(--surface); height: 280px; display: flex; align-items: center; justify-content: center;
+}
+.itr-label {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.18em; color: var(--pulse); margin-bottom: 0.75rem;
+}
+.itr-title {
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: clamp(1.3rem, 2.5vw, 1.9rem); margin-bottom: 1rem;
+}
+.itr-text { font-family: 'Instrument Serif', serif; font-size: 1rem; color: rgba(255,255,255,0.7); line-height: 1.65; }
+
+/* ─── BLOCK: RECAP ───────────────────────────────────────── */
+.recap-block {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 1.5rem; padding: 2.5rem;
+}
+.recap-title {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.2em; color: var(--pulse); margin-bottom: 1.5rem;
+}
+.recap-points { display: flex; flex-direction: column; gap: 1rem; }
+.recap-point {
+  display: flex; align-items: flex-start; gap: 1rem;
+}
+.recap-number {
+  width: 1.75rem; height: 1.75rem; border-radius: 0.4rem; flex-shrink: 0;
+  background: rgba(0,255,179,0.1); border: 1px solid rgba(0,255,179,0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; font-weight: 700; color: var(--pulse);
+}
+.recap-point p { font-family: 'Instrument Serif', serif; font-size: 1rem; color: rgba(255,255,255,0.8); margin: 0; padding-top: 0.1rem; }
+
+/* ─── BLOCK: KEY TERMS ───────────────────────────────────── */
+.key-terms-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.key-term {
+  border: 1px solid var(--border); border-radius: 0.75rem;
+  overflow: hidden;
+}
+.key-term summary {
+  padding: 0.85rem 1.25rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem;
+  color: rgba(255,255,255,0.85); transition: background 0.2s;
+}
+.key-term summary:hover { background: rgba(255,255,255,0.04); }
+.key-term summary::after { content: '+'; color: var(--iris); font-size: 1.1rem; }
+.key-term[open] summary::after { content: '−'; }
+.key-term-body {
+  padding: 0 1.25rem 1rem 1.25rem;
+  font-family: 'Instrument Serif', serif;
+  font-size: 0.95rem; color: rgba(255,255,255,0.55); line-height: 1.6;
+}
+
+/* ─── BLOCK: COMPLETION (CLEAN) ──────────────────────────── */
+.completion-block { text-align: center; }
+.completion-divider { height: 1px; background: var(--border); margin-bottom: 3.5rem; }
+.completion-label {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.25em; color: var(--pulse); margin-bottom: 1.25rem;
+}
+.completion-title {
+  font-family: 'Syne', sans-serif; font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 800; letter-spacing: -0.04em; color: #fff; margin-bottom: 2.5rem;
+}
+.completion-skills {
+  display: flex; justify-content: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 3rem;
+}
+.completion-skill {
+  padding: 0.45rem 1rem; border-radius: 999px; border: 1px solid; font-size: 0.7rem; font-weight: 700;
+}
+.skill-pulse { color: var(--pulse); border-color: rgba(0,255,179,0.35);   background: rgba(0,255,179,0.07); }
+.skill-iris  { color: var(--iris);  border-color: rgba(155,143,255,0.35); background: rgba(155,143,255,0.07); }
+.skill-amber { color: var(--amber); border-color: rgba(255,179,71,0.35);  background: rgba(255,179,71,0.07); }
+.completion-cta {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  padding: 0.9rem 2.25rem; border-radius: 0.75rem;
+  background: var(--iris); color: var(--bg);
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.8rem;
+  text-transform: uppercase; letter-spacing: 0.1em; text-decoration: none;
+  transition: all 0.2s;
+}
+.completion-cta:hover { background: #b8afff; transform: translateY(-2px); }
+.completion-next {
+  margin-top: 1.25rem; font-size: 0.65rem; color: rgba(255,255,255,0.25);
+  text-transform: uppercase; letter-spacing: 0.12em;
+}
+
+/* ─── SVG PLACEHOLDER ────────────────────────────────────── */
+.svg-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 0.5rem; color: rgba(255,255,255,0.15);
+}
+.svg-placeholder span { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.12em; }
+
+/* ─── SECTION LABEL ──────────────────────────────────────── */
+.section-heading { font-size: clamp(1.4rem, 3vw, 2.2rem); margin-bottom: 1.5rem; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-bar"><div class="progress-bar-fill" id="progressFill"></div></div>
+
+<!-- Top Nav -->
+<div class="top-nav">
+  <a href="#">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M9 2L4 7l5 5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Back to Course
+  </a>
+  <span>Module 2 of 5 &nbsp;·&nbsp; Lesson 1</span>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     BLOCK 1: LESSON HEADER
+═══════════════════════════════════════════════════════════ -->
+<section class="lesson-header block">
+  <div class="zone-narrow">
+    <div class="module-tag">Module 2 · The AI Engine Room</div>
+    <h1>What is <em>Generative</em> AI?</h1>
+    <div class="chips">
+      <span class="chip chip-amber">⏱ 12 min read</span>
+      <span class="chip chip-iris">Intermediate</span>
+      <span class="chip chip-pulse">+80 XP</span>
+      <span class="chip chip-nova">● Live</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     BLOCK 2: OBJECTIVE CARD
+═══════════════════════════════════════════════════════════ -->
+<div class="block-sm">
+  <div class="zone-narrow">
+    <div class="objective-card">
+      <div class="objective-label">Learning Objective</div>
+      <p class="objective-text">
+        By the end of this lesson, you will understand how <mark>Generative AI models produce original content</mark>,
+        distinguish between the three major architectures (LLMs, Diffusion, GANs), and be able to explain
+        the core generation loop to someone who has never heard of it.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     BLOCK 3: TEXT SECTION (Intro)
+═══════════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="zone-narrow">
+    <div class="text-section">
+      <h2>The Machine That Creates</h2>
+      <p>
+        Traditional software retrieves and rearranges. A search engine finds things that already exist.
+        A spreadsheet processes numbers you give it. But Generative AI does something fundamentally
+        different — it <strong>creates content that has never existed before</strong>.
+      </p>
+      <p>
+        When you ask an AI to write a poem, design an image, or compose a melody, it isn't
+        pulling from a database of poems, images, or melodies. It is generating brand-new
+        sequences of tokens, pixels, or audio frames — guided by patterns learned from millions of examples.
+      </p>
+      <p>
+        This is the core leap. Not retrieval. Not assembly. Creation.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     BLOCK 4: CONCEPT ILLUSTRATION — "network" style
+═══════════════════════════════════════════════════════════ -->
+<div class="block-sm">
+  <div class="zone-wide">
+    <div class="concept-illustration">
+      <div class="svg-area">
+        <svg viewBox="0 0 600 240" style="width:100%;max-width:580px;overflow:visible">
+          <!-- Network nodes: GenAI learning patterns -->
+          <defs>
+            <radialGradient id="glowPulse" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#00FFB3" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#00FFB3" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="glowIris" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#9B8FFF" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#9B8FFF" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <!-- Connections -->
+          <line x1="60" y1="60"   x2="200" y2="120" stroke="#9B8FFF" stroke-width="1" stroke-opacity="0.18"/>
+          <line x1="60" y1="60"   x2="200" y2="50"  stroke="#9B8FFF" stroke-width="1" stroke-opacity="0.12"/>
+          <line x1="140" y1="190" x2="200" y2="120" stroke="#9B8FFF" stroke-width="1" stroke-opacity="0.15"/>
+          <line x1="140" y1="190" x2="200" y2="190" stroke="#9B8FFF" stroke-width="1" stroke-opacity="0.12"/>
+          <line x1="200" y1="50"  x2="300" y2="120" stroke="#9B8FFF" stroke-width="1" stroke-opacity="0.2"/>
+          <line x1="200" y1="120" x2="300" y2="120" stroke="#00FFB3" stroke-width="1.5" stroke-opacity="0.3"/>
+          <line x1="200" y1="190" x2="300" y2="120" stroke="#9B8FFF" stroke-width="1" stroke-opacity="0.18"/>
+          <line x1="300" y1="120" x2="420" y2="60"  stroke="#00FFB3" stroke-width="1.5" stroke-opacity="0.25"/>
+          <line x1="300" y1="120" x2="420" y2="120" stroke="#00FFB3" stroke-width="1.5" stroke-opacity="0.35"/>
+          <line x1="300" y1="120" x2="420" y2="185" stroke="#00FFB3" stroke-width="1.5" stroke-opacity="0.25"/>
+          <line x1="420" y1="60"  x2="550" y2="80"  stroke="#9B8FFF" stroke-width="1" stroke-opacity="0.15"/>
+          <line x1="420" y1="120" x2="550" y2="120" stroke="#00FFB3" stroke-width="1" stroke-opacity="0.2"/>
+          <line x1="420" y1="185" x2="550" y2="160" stroke="#9B8FFF" stroke-width="1" stroke-opacity="0.15"/>
+          <!-- Input nodes -->
+          <circle cx="60"  cy="60"  r="8" fill="#9B8FFF" fill-opacity="0.4"/>
+          <circle cx="140" cy="190" r="6" fill="#9B8FFF" fill-opacity="0.3"/>
+          <!-- Hidden nodes -->
+          <circle cx="200" cy="50"  r="7" fill="#9B8FFF" fill-opacity="0.3"/>
+          <circle cx="200" cy="120" r="9" fill="#9B8FFF" fill-opacity="0.4"/>
+          <circle cx="200" cy="190" r="6" fill="#9B8FFF" fill-opacity="0.25"/>
+          <!-- Centre (model) -->
+          <circle cx="300" cy="120" r="26" fill="url(#glowIris)"/>
+          <circle cx="300" cy="120" r="18" fill="#1a1a2e" stroke="#9B8FFF" stroke-width="1.5" stroke-opacity="0.6"/>
+          <text x="300" y="116" text-anchor="middle" fill="#9B8FFF" font-size="7" font-family="DM Mono,monospace" font-weight="700">GenAI</text>
+          <text x="300" y="127" text-anchor="middle" fill="#9B8FFF" font-size="7" font-family="DM Mono,monospace" font-weight="700">Model</text>
+          <!-- Output nodes -->
+          <circle cx="420" cy="60"  r="8" fill="#00FFB3" fill-opacity="0.5"/>
+          <circle cx="420" cy="120" r="10" fill="#00FFB3" fill-opacity="0.6"/>
+          <circle cx="420" cy="185" r="7" fill="#00FFB3" fill-opacity="0.4"/>
+          <!-- Output targets -->
+          <circle cx="550" cy="80"  r="6" fill="#00FFB3" fill-opacity="0.3"/>
+          <circle cx="550" cy="120" r="8" fill="#00FFB3" fill-opacity="0.4"/>
+          <circle cx="550" cy="160" r="5" fill="#00FFB3" fill-opacity="0.25"/>
+          <!-- Labels -->
+          <text x="36"  y="45"  fill="rgba(255,255,255,0.3)" font-size="8" font-family="DM Mono,monospace">Input</text>
+          <text x="282" y="158" fill="rgba(255,255,255,0.25)" font-size="7" font-family="DM Mono,monospace">Transform</text>
+          <text x="538" y="108" fill="rgba(0,255,179,0.6)"    font-size="8" font-family="DM Mono,monospace">Output</text>
+        </svg>
+      </div>
+      <div class="caption">
+        <strong>How a Generative AI Model Processes Information</strong>
+        <p>Inputs are encoded into patterns; the model transforms them into new outputs — text, images, code, audio.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     BLOCK 5: PUNCH QUOTE
+═══════════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="zone-narrow">
+    <div class="punch-quote">
+      <blockquote>
+        Generative AI doesn't retrieve what exists — it calculates what should exist next.
+      </blockquote>
+      <div class="attribution">— The core distinction from all prior software</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     BLOCK 6: TEXT SECTION (How it works)
+═══════════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="zone-narrow">
+    <div class="text-section">
+      <h2>The Generation Loop</h2>
+      <p>
+        Every Generative AI model is trained on a massive corpus of existing content — text, images, code,
+        or audio. During training, it learns <strong>statistical patterns</strong>: which words tend to follow other words,
+        which pixel values cluster together in faces, which chord sequences feel resolved.
+      </p>
+      <p>
+        At inference time (when you use it), you provide a prompt — a starting condition.
+        The model then predicts the most probable next token, pixel, or data point, appends it,
+        and repeats. This loop — called <strong>autoregressive generation</strong> in language models —
+        produces coherent, novel content one step at a time.
+      </p>
+      <p>
+        The quality of the output depends almost entirely on the quality of the prompt you provide.
+        This is why prompt engineering matters far more than most people initially assume.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     BLOCK 7: MINDMAP — GenAI family
+═══════════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="zone-wide">
+    <p class="flow-title" style="margin-bottom:0.5rem">The Generative AI Family</p>
+    <p style="font-size:0.75rem;color:rgba(255,255,255,0.35);margin-bottom:2rem">Five domains powered by the same generation principle</p>
+    <div class="mindmap-container">
+      <svg id="mindmapSvg" viewBox="0 0 620 420" style="width:100%;max-width:600px;overflow:visible" aria-label="GenAI mindmap">
+        <!-- Lines -->
+        <line class="mm-line" x1="310" y1="210" x2="310" y2="65"   stroke="#9B8FFF" stroke-width="1.5" stroke-opacity="0.3"/>
+        <line class="mm-line" x1="310" y1="210" x2="458" y2="125"  stroke="#00FFB3" stroke-width="1.5" stroke-opacity="0.3"/>
+        <line class="mm-line" x1="310" y1="210" x2="458" y2="295"  stroke="#FFB347" stroke-width="1.5" stroke-opacity="0.3"/>
+        <line class="mm-line" x1="310" y1="210" x2="162" y2="295"  stroke="#FF6B6B" stroke-width="1.5" stroke-opacity="0.3"/>
+        <line class="mm-line" x1="310" y1="210" x2="162" y2="125"  stroke="#9B8FFF" stroke-width="1.5" stroke-opacity="0.3"/>
+
+        <!-- Branch: Text (top) -->
+        <circle cx="310" cy="65"  r="50" fill="rgba(155,143,255,0.1)" stroke="#9B8FFF" stroke-width="1" stroke-opacity="0.5"/>
+        <text x="310" y="60" text-anchor="middle" fill="#9B8FFF" font-size="11" font-family="DM Mono,monospace" font-weight="700">Text</text>
+        <text x="310" y="76" text-anchor="middle" fill="#9B8FFF" font-size="11" font-family="DM Mono,monospace" font-weight="700">Generation</text>
+        <text x="310" y="91" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="8.5" font-family="DM Mono,monospace">GPT, Claude, Gemini</text>
+
+        <!-- Branch: Images (top-right) -->
+        <circle cx="458" cy="125" r="50" fill="rgba(0,255,179,0.1)" stroke="#00FFB3" stroke-width="1" stroke-opacity="0.5"/>
+        <text x="458" y="120" text-anchor="middle" fill="#00FFB3" font-size="11" font-family="DM Mono,monospace" font-weight="700">Image</text>
+        <text x="458" y="136" text-anchor="middle" fill="#00FFB3" font-size="11" font-family="DM Mono,monospace" font-weight="700">Generation</text>
+        <text x="458" y="151" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="8.5" font-family="DM Mono,monospace">DALL-E, Midjourney</text>
+
+        <!-- Branch: Code (bottom-right) -->
+        <circle cx="458" cy="295" r="50" fill="rgba(255,179,71,0.1)" stroke="#FFB347" stroke-width="1" stroke-opacity="0.5"/>
+        <text x="458" y="290" text-anchor="middle" fill="#FFB347" font-size="11" font-family="DM Mono,monospace" font-weight="700">Code</text>
+        <text x="458" y="306" text-anchor="middle" fill="#FFB347" font-size="11" font-family="DM Mono,monospace" font-weight="700">Generation</text>
+        <text x="458" y="321" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="8.5" font-family="DM Mono,monospace">Copilot, Cursor</text>
+
+        <!-- Branch: Audio (bottom-left) -->
+        <circle cx="162" cy="295" r="50" fill="rgba(255,107,107,0.1)" stroke="#FF6B6B" stroke-width="1" stroke-opacity="0.5"/>
+        <text x="162" y="290" text-anchor="middle" fill="#FF6B6B" font-size="11" font-family="DM Mono,monospace" font-weight="700">Audio</text>
+        <text x="162" y="306" text-anchor="middle" fill="#FF6B6B" font-size="11" font-family="DM Mono,monospace" font-weight="700">Generation</text>
+        <text x="162" y="321" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="8.5" font-family="DM Mono,monospace">ElevenLabs, Suno</text>
+
+        <!-- Branch: Video (top-left) -->
+        <circle cx="162" cy="125" r="50" fill="rgba(155,143,255,0.1)" stroke="#9B8FFF" stroke-width="1" stroke-opacity="0.5"/>
+        <text x="162" y="120" text-anchor="middle" fill="#9B8FFF" font-size="11" font-family="DM Mono,monospace" font-weight="700">Video</text>
+        <text x="162" y="136" text-anchor="middle" fill="#9B8FFF" font-size="11" font-family="DM Mono,monospace" font-weight="700">Generation</text>
+        <text x="162" y="151" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="8.5" font-family="DM Mono,monospace">Sora, Veo 2</text>
+
+        <!-- Central node -->
+        <circle cx="310" cy="210" r="52" fill="#0f0f1a" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+        <text x="310" y="204" text-anchor="middle" fill="white" font-size="13" font-family="Syne,sans-serif" font-weight="800">Generative</text>
+        <text x="310" y="222" text-anchor="middle" fill="white" font-size="13" font-family="Syne,sans-serif" font-weight="800">AI</text>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     BLOCK 8: FLOW DIAGRAM — Prompt quality contrast
+═══════════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="zone-wide">
+    <div class="flow-diagram">
+      <div class="flow-title">How prompt quality affects output quality</div>
+
+      <!-- Path A: Vague -->
+      <div class="flow-row">
+        <span class="flow-label nova">Vague</span>
+        <div class="flow-node nova">
+          <span class="node-label">"Write something"</span>
+        </div>
+        <svg class="flow-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 10h14M11 4l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="flow-node default">
+          <span class="node-label">AI Model</span>
+          <span class="node-desc">Pattern matching</span>
+        </div>
+        <svg class="flow-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 10h14M11 4l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="flow-outcome nova">
+          <span class="outcome-text">Generic, off-target response</span>
+        </div>
+      </div>
+
+      <div class="flow-vs"><span>vs</span></div>
+
+      <!-- Path B: Structured -->
+      <div class="flow-row">
+        <span class="flow-label pulse">Structured</span>
+        <div class="flow-node pulse">
+          <span class="node-label">Role + Context</span>
+          <span class="node-desc">+ Task + Format</span>
+        </div>
+        <svg class="flow-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 10h14M11 4l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="flow-node default">
+          <span class="node-label">AI Model</span>
+          <span class="node-desc">Pattern matching</span>
+        </div>
+        <svg class="flow-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 10h14M11 4l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="flow-outcome pulse">
+          <span class="outcome-text">Precise, expert-level output</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     BLOCK 9: CALLOUT — Tip
+═══════════════════════════════════════════════════════════ -->
+<div class="block-sm">
+  <div class="zone-narrow">
+    <div class="callout tip">
+      <div class="callout-icon">💡</div>
+      <div>
+        <div class="callout-title">The Prompt Is Your Programme</div>
+        <p class="callout-body">
+          With traditional software, you write code. With Generative AI, your prompt <em>is</em> the code.
+          Spend as much care on your prompt as a developer spends on their function signature.
+          Vague in = vague out, always.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     BLOCK 10: TYPE CARDS — Three model families
+═══════════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="zone-wide">
+    <h2 class="section-heading">Three Architectures Worth Knowing</h2>
+    <p style="font-size:0.95rem;color:rgba(255,255,255,0.5);margin-bottom:2.5rem;max-width:600px">
+      Generative AI isn't one thing — it's a family of architectures, each suited to different modalities.
+    </p>
+    <div class="type-cards-grid">
+
+      <div class="type-card iris-card">
+        <span class="badge badge-iris">LLMs</span>
+        <h3>Large Language Models</h3>
+        <p>
+          Transformer-based models trained on trillions of text tokens. They predict the next token
+          in a sequence, which produces coherent writing, code, reasoning, and conversation.
+          Examples: GPT-4, Claude, Gemini.
+        </p>
+      </div>
+
+      <div class="type-card pulse-card">
+        <span class="badge badge-pulse">Diffusion</span>
+        <h3>Diffusion Models</h3>
+        <p>
+          Trained by learning to reverse a noise-adding process. Given a noisy image, the model
+          learns to "denoise" it step by step. With a text prompt, it denoise toward the described
+          image. Examples: DALL-E 3, Stable Diffusion, Midjourney.
+        </p>
+      </div>
+
+      <div class="type-card amber-card">
+        <span class="badge badge-amber">GANs</span>
+        <h3>Generative Adversarial Networks</h3>
+        <p>
+          Two networks in competition: a Generator that creates fake samples, and a Discriminator
+          that tries to spot them. Over millions of rounds, the Generator gets so good that the
+          Discriminator can't tell the difference. Pioneered realistic face synthesis.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     BLOCK 11: PREDICTION — Inline before-you-continue
+═══════════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="zone-narrow">
+    <div class="prediction-block">
+      <div class="prediction-label"><span>Before you continue</span></div>
+      <p class="prediction-question">
+        When a large language model generates the word "intelligence", what is it actually doing?
+      </p>
+      <div class="prediction-options" id="predictionOptions">
+        <button class="prediction-option" onclick="selectAnswer(0)">
+          <span class="opt-key">A</span>
+          Looking up "intelligence" in a knowledge database
+        </button>
+        <button class="prediction-option" onclick="selectAnswer(1)">
+          <span class="opt-key">B</span>
+          Calculating the most probable next token given the preceding context
+        </button>
+        <button class="prediction-option" onclick="selectAnswer(2)">
+          <span class="opt-key">C</span>
+          Translating the concept of intelligence into binary code
+        </button>
+      </div>
+      <div class="prediction-reveal" id="predictionReveal">
+        <div class="prediction-reveal-label" id="predictionRevealLabel">The answer is —</div>
+        <p>
+          LLMs work by predicting probability distributions over the vocabulary. At each step,
+          the model computes a score for every possible next token and samples from the highest-scoring ones.
+          There is no database, no lookup, no explicit knowledge store — just learned statistical patterns
+          over billions of training examples, encoded in the model weights.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     BLOCK 12: INDUSTRY TABS
+═══════════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="zone-wide">
+    <div class="industry-tabs">
+      <h2 class="tab-heading">Generative AI Across Industries</h2>
+      <p class="tab-intro">The same generation principle manifests differently depending on the domain. Here's what it looks like in practice.</p>
+
+      <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab('healthcare')">Healthcare</button>
+        <button class="tab-btn" onclick="switchTab('legal')">Legal</button>
+        <button class="tab-btn" onclick="switchTab('finance')">Finance</button>
+        <button class="tab-btn" onclick="switchTab('creative')">Creative</button>
+      </div>
+
+      <div class="tab-panel active" id="tab-healthcare">
+        <div class="tab-image">
+          <div class="svg-placeholder">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="rgba(0,255,179,0.4)" stroke-width="1.5">
+              <rect x="8" y="8" width="32" height="32" rx="4"/>
+              <path d="M24 16v16M16 24h16"/>
+            </svg>
+            <span>Clinical AI Visualisation</span>
+          </div>
+          <div class="img-caption">AI-assisted radiology report generation at scale</div>
+        </div>
+        <div>
+          <div class="tab-scenario-title">Accelerating Clinical Documentation</div>
+          <p class="tab-scenario-body">
+            A hospital using <mark>Generative AI for radiology</mark> reduced report turnaround from
+            4 hours to 22 minutes. The model generates a first-draft report from scan data and
+            physician annotations — the radiologist then reviews and approves rather than writing
+            from scratch. <mark>Documentation burden dropped by 67%</mark>, freeing clinicians for
+            higher-complexity cases that still require full human attention.
+          </p>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="tab-legal">
+        <div class="tab-image">
+          <div class="svg-placeholder">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="rgba(155,143,255,0.4)" stroke-width="1.5">
+              <path d="M24 4l4 12h12l-10 7 4 12-10-7-10 7 4-12L8 16h12z"/>
+            </svg>
+            <span>Contract Analysis Platform</span>
+          </div>
+          <div class="img-caption">AI reviewing hundreds of clauses per minute</div>
+        </div>
+        <div>
+          <div class="tab-scenario-title">Contract Review at Machine Speed</div>
+          <p class="tab-scenario-body">
+            A major law firm deployed an LLM to <mark>review M&A due diligence documents</mark>.
+            What previously took a team of associates three weeks was reduced to 48 hours.
+            The model identifies non-standard clauses, flags risk language, and generates
+            comparison summaries. Associates now focus on <mark>negotiation strategy</mark>
+            rather than initial document triage.
+          </p>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="tab-finance">
+        <div class="tab-image">
+          <div class="svg-placeholder">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="rgba(255,179,71,0.4)" stroke-width="1.5">
+              <polyline points="8,36 18,24 26,30 38,12"/>
+              <line x1="8" y1="40" x2="40" y2="40"/>
+            </svg>
+            <span>Financial Intelligence Dashboard</span>
+          </div>
+          <div class="img-caption">Real-time earnings analysis across 500+ companies</div>
+        </div>
+        <div>
+          <div class="tab-scenario-title">Earnings Reports in Seconds</div>
+          <p class="tab-scenario-body">
+            Investment banks now use Generative AI to <mark>summarise quarterly earnings calls</mark>
+            the moment the transcript is released. The model extracts key metrics, management sentiment,
+            forward guidance, and risk factors — producing a structured briefing in under 90 seconds.
+            Analysts receive a <mark>pre-digested intelligence layer</mark>, letting them focus on
+            interpretation and client communication.
+          </p>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="tab-creative">
+        <div class="tab-image">
+          <div class="svg-placeholder">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="rgba(255,107,107,0.4)" stroke-width="1.5">
+              <circle cx="24" cy="24" r="16"/>
+              <path d="M24 8v4M24 36v4M8 24h4M36 24h4"/>
+            </svg>
+            <span>Creative Production Suite</span>
+          </div>
+          <div class="img-caption">AI co-production in film, music, and advertising</div>
+        </div>
+        <div>
+          <div class="tab-scenario-title">The AI Creative Co-Pilot</div>
+          <p class="tab-scenario-body">
+            A global advertising agency uses Generative AI to produce <mark>100+ ad variants</mark>
+            per campaign in the time it previously took to produce 5. The AI generates copy variations,
+            visual concepts, and storyboard frames — human creatives then curate, refine, and
+            direct. Creative output tripled while <mark>time-to-market dropped by 40%</mark>.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     BLOCK 13: IMAGE TEXT ROW
+═══════════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="zone-wide">
+    <div class="image-text-row">
+      <div class="itr-image">
+        <div class="svg-placeholder">
+          <svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke="rgba(155,143,255,0.35)" stroke-width="1.5">
+            <rect x="10" y="10" width="40" height="40" rx="8"/>
+            <circle cx="30" cy="25" r="6"/>
+            <path d="M14 50c0-8.84 7.16-16 16-16s16 7.16 16 16"/>
+          </svg>
+          <span>The Hallucinaton Problem</span>
+        </div>
+      </div>
+      <div>
+        <div class="itr-label">Critical Limitation</div>
+        <h3 class="itr-title">When the Model Confidently Gets It Wrong</h3>
+        <p class="itr-text">
+          Generative AI models can produce information that sounds authoritative but is factually incorrect —
+          a phenomenon known as <strong>hallucination</strong>. Because the model is predicting probable sequences
+          rather than retrieving verified facts, it will generate a plausible-sounding answer even when
+          it doesn't "know" the correct one.
+        </p>
+        <p class="itr-text" style="margin-top:0.75rem">
+          Understanding this limitation is not optional for AI practitioners. It shapes how you design
+          verification workflows, how you present AI outputs to stakeholders, and which tasks you
+          can safely automate versus which require human oversight.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     BLOCK 14: CALLOUT — Warning
+═══════════════════════════════════════════════════════════ -->
+<div class="block-sm">
+  <div class="zone-narrow">
+    <div class="callout warning">
+      <div class="callout-icon">⚠️</div>
+      <div>
+        <div class="callout-title">Never Use AI Output Without Verification for High-Stakes Decisions</div>
+        <p class="callout-body">
+          Legal filings, medical recommendations, financial advice, and safety-critical documentation
+          must always be verified by a qualified human professional. AI-generated content in these
+          domains should be treated as a draft requiring expert review — not a final output.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     BLOCK 15: PUNCH QUOTE #2
+═══════════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="zone-narrow">
+    <div class="punch-quote" style="border-left-color: var(--pulse)">
+      <blockquote>
+        The most valuable skill in the AI era is knowing when <em style="font-family:'Instrument Serif',serif;font-style:italic;color:var(--pulse)">not</em> to trust the output.
+      </blockquote>
+      <div class="attribution" style="color:var(--pulse)">— Prompt literacy starts with critical evaluation</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     BLOCK 16: RECAP
+═══════════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="zone-narrow">
+    <div class="recap-block">
+      <div class="recap-title">If you remember only three things from this lesson</div>
+      <div class="recap-points">
+        <div class="recap-point">
+          <div class="recap-number">01</div>
+          <p>Generative AI <strong>creates new content</strong> by predicting the next token, pixel, or data point — it does not retrieve from a database.</p>
+        </div>
+        <div class="recap-point">
+          <div class="recap-number">02</div>
+          <p>The three major architectures — <strong>LLMs, Diffusion Models, and GANs</strong> — use fundamentally different mechanisms to achieve generation.</p>
+        </div>
+        <div class="recap-point">
+          <div class="recap-number">03</div>
+          <p><strong>Hallucination is an inherent property</strong>, not a bug to be fixed — understanding it determines how safely you can deploy AI in real contexts.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     BLOCK 17: KEY TERMS
+═══════════════════════════════════════════════════════════ -->
+<div class="block">
+  <div class="zone-narrow">
+    <h2 class="section-heading" style="margin-bottom:1.5rem">Key Terms</h2>
+    <div class="key-terms-list">
+      <details class="key-term">
+        <summary>Autoregressive Generation</summary>
+        <div class="key-term-body">A generation strategy where the model produces output one token at a time, each token conditioned on all previous tokens. Used by GPT-style LLMs.</div>
+      </details>
+      <details class="key-term">
+        <summary>Diffusion Model</summary>
+        <div class="key-term-body">A model that learns to reverse a noise-adding (diffusion) process. During training, images are progressively corrupted with noise; the model learns to reconstruct them. At inference, it starts from pure noise and denoises toward the described image.</div>
+      </details>
+      <details class="key-term">
+        <summary>Hallucination</summary>
+        <div class="key-term-body">When a Generative AI model produces output that is factually incorrect, internally inconsistent, or completely fabricated — presented with the same fluency and confidence as correct information.</div>
+      </details>
+      <details class="key-term">
+        <summary>Token</summary>
+        <div class="key-term-body">The basic unit of text that language models process. A token is roughly 3-4 characters or about 0.75 words. "Generative AI" is typically 3 tokens: "Gener", "ative", " AI".</div>
+      </details>
+      <details class="key-term">
+        <summary>Foundation Model</summary>
+        <div class="key-term-body">A large model trained on broad data at scale, designed to be adapted to a wide range of downstream tasks. GPT-4, Claude, and Gemini are foundation models.</div>
+      </details>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     BLOCK 18: COMPLETION — Clean ending (no confetti)
+═══════════════════════════════════════════════════════════ -->
+<div class="block" style="padding-bottom:8rem">
+  <div class="zone-finish">
+    <div class="completion-divider"></div>
+    <div class="completion-block">
+      <div class="completion-label">Lesson Complete</div>
+      <h2 class="completion-title">You now understand<br/>Generative AI</h2>
+      <div class="completion-skills">
+        <span class="completion-skill skill-pulse">How generation works</span>
+        <span class="completion-skill skill-iris">Three model architectures</span>
+        <span class="completion-skill skill-amber">The hallucination problem</span>
+      </div>
+      <a href="#" class="completion-cta">
+        Next Lesson
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <p class="completion-next">Up next: How LLMs Are Trained</p>
+    </div>
+  </div>
+</div>
+
+<!-- ─── JAVASCRIPT ────────────────────────────────────────── -->
+<script>
+// Progress bar
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+});
+
+// Prediction
+const CORRECT_INDEX = 1;
+function selectAnswer(idx) {
+  const options = document.querySelectorAll('.prediction-option');
+  options.forEach((opt, i) => {
+    opt.disabled = true;
+    if (i === CORRECT_INDEX)   opt.classList.add('correct');
+    else if (i === idx)         opt.classList.add('wrong');
+    else                        opt.classList.add('neutral');
+  });
+  const reveal = document.getElementById('predictionReveal');
+  const label  = document.getElementById('predictionRevealLabel');
+  label.textContent = idx === CORRECT_INDEX ? 'Correct —' : 'The answer is —';
+  reveal.classList.add('shown');
+}
+
+// Industry tabs
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+}
+
+// Mindmap line animation on load
+window.addEventListener('load', () => {
+  const lines = document.querySelectorAll('.mm-line');
+  lines.forEach((line, i) => {
+    const dx = +line.getAttribute('x2') - +line.getAttribute('x1');
+    const dy = +line.getAttribute('y2') - +line.getAttribute('y1');
+    const len = Math.sqrt(dx*dx + dy*dy);
+    line.style.strokeDasharray = len;
+    line.style.strokeDashoffset = len;
+    setTimeout(() => {
+      line.style.transition = `stroke-dashoffset 0.55s ease ${i * 0.12}s`;
+      line.style.strokeDashoffset = 0;
+    }, 200);
+  });
+});
+</script>
+</body>
+</html>

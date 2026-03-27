@@ -1,0 +1,126 @@
+{
+  "course_id": 788,
+  "course_topic": "The intricate architecture of a multi-agent AI system: Perception, Planning, Action",
+  "domain_history": [
+    "Sports",
+    "Culinary",
+    "Architecture",
+    "Gardening"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey",
+    "The Contrast",
+    "The Build"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer",
+    "Confident Expert",
+    "Playful Storyteller"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "robot farm tending",
+    "lighthouse beam sweeping",
+    "airport radar sweeping",
+    "robot arm assembling"
+  ],
+  "used_image_urls": [
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774104608985-kw8yxq-temperature%20sensor%20r.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774104610524-kisb4-pressure%20sensor%20gaug.jpeg",
+    "https://images.pexels.com/photos/3726313/pexels-photo-3726313.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/36598669/pexels-photo-36598669.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/7108356/pexels-photo-7108356.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/69976/pexels-photo-69976.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/4134179/pexels-photo-4134179.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/5703426/pexels-photo-5703426.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/6130916/pexels-photo-6130916.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/267391/pexels-photo-267391.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/3688260/pexels-photo-3688260.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/257775/pexels-photo-257775.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/3861957/pexels-photo-3861957.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/6474450/pexels-photo-6474450.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/6720526/pexels-photo-6720526.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774104664667-mkx7cp-lidar%20point%20cloud.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774104673762-l429vr-digital%20map%20interfac.jpeg",
+    "https://images.pexels.com/photos/7288970/pexels-photo-7288970.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/6759307/pexels-photo-6759307.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/6807304/pexels-photo-6807304.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/734535/pexels-photo-734535.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/5378434/pexels-photo-5378434.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/36028039/pexels-photo-36028039.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/36423816/pexels-photo-36423816.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/5478088/pexels-photo-5478088.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/2599244/pexels-photo-2599244.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/2132171/pexels-photo-2132171.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/620332/pexels-photo-620332.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/4769122/pexels-photo-4769122.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/1545754/pexels-photo-1545754.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774104732149-5ffoz-traffic%20control%20syst.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774104730594-sfig4-warehouse%20robot%20team.jpeg",
+    "https://images.pexels.com/photos/4513456/pexels-photo-4513456.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/7715396/pexels-photo-7715396.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/7095737/pexels-photo-7095737.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/5532222/pexels-photo-5532222.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/4330787/pexels-photo-4330787.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/7422341/pexels-photo-7422341.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/48022/bees-beehive-beekeeping-honey-48022.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/7381786/pexels-photo-7381786.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/7519246/pexels-photo-7519246.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/163347/war-desert-guns-gunshow-163347.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774104786427-d6wwbn-team%20huddle%20strategy.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774104785323-nznx8s-relay%20race%20baton.jpeg",
+    "https://images.pexels.com/photos/3361471/pexels-photo-3361471.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/6767002/pexels-photo-6767002.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/7227683/pexels-photo-7227683.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/4132538/pexels-photo-4132538.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/7007930/pexels-photo-7007930.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/5196823/pexels-photo-5196823.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/36606029/pexels-photo-36606029.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/6291071/pexels-photo-6291071.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/3743622/pexels-photo-3743622.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/36423812/pexels-photo-36423812.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/7495196/pexels-photo-7495196.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/1445653/pexels-photo-1445653.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "https://images.pexels.com/photos/5532666/pexels-photo-5532666.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+  ],
+  "used_video_urls": [
+    {
+      "query": "robot farm tending",
+      "url": "https://videos.pexels.com/video-files/8328094/8328094-hd_1280_720_25fps.mp4",
+      "source": "pexels"
+    },
+    {
+      "query": "lighthouse beam sweeping",
+      "url": "https://videos.pexels.com/video-files/15435566/15435566-hd_1280_720_24fps.mp4",
+      "source": "pexels"
+    },
+    {
+      "query": "airport radar sweeping",
+      "url": "https://videos.pexels.com/video-files/13244609/13244609-hd_1280_720_24fps.mp4",
+      "source": "pexels"
+    },
+    {
+      "query": "robot arm assembling",
+      "url": "https://videos.pexels.com/video-files/6450803/6450803-hd_1280_720_25fps.mp4",
+      "source": "pexels"
+    }
+  ],
+  "narration_history": [],
+  "visual_type_counts": {
+    "cinematic_photo": 0,
+    "animated_diagram": 0,
+    "split_comparison": 0,
+    "data_narrative": 0,
+    "interactive_reveal": 0,
+    "metaphor_morph": 0,
+    "type_cards": 12,
+    "flow_diagram": 4,
+    "concept_illustration": 4,
+    "interactive_vis": 1
+  },
+  "validation_log": []
+}

@@ -1,0 +1,53 @@
+{
+  "course_id": 814,
+  "course_topic": "Neural Architecture Search 101",
+  "domain_history": [
+    "Gardening",
+    "Music"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "limitations of manual neural network architecture design",
+    "future of automated architecture engineering"
+  ],
+  "used_image_urls": [],
+  "used_video_urls": [
+    {
+      "query": "## The Need for Automated Architecture Engineering: \"The Future is Automated\" - Technical Blueprint\n",
+      "url": "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/videos/veo-1774296462828-nsdvz.mp4",
+      "source": "veo-3.1"
+    },
+    {
+      "query": "GEOMETRY: The initial frame presents a wireframe model of a mixing console. The console's surface is",
+      "url": "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/videos/veo-1774296475440-b1vi8f.mp4",
+      "source": "veo-3.1"
+    }
+  ],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 1,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 0,
+    "type_cards": 0,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 1,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

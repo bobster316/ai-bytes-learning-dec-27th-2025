@@ -1,7 +1,7 @@
 /**
- * @fileoverview Defines the Model Context Protocol for AI course generation.
- * This file specifies the exact structures for providing context to the AI
- * and the expected shape of the AI-generated course content.
+ * @fileoverview Defines the Model Context Protocol for course creation.
+ * This file specifies the exact structures for providing context
+ * and the expected shape of the generated course content.
  */
 
 import type { AIGeneratedOutline } from '@/lib/types/course-generator';
@@ -42,7 +42,7 @@ export interface CourseGenerationContext {
 }
 
 /**
- * Defines the expected JSON output from the AI after course generation.
+ * Defines the expected JSON output after course creation.
  * This mirrors the AIGeneratedOutline but is redefined here for clarity within the MCP.
  */
 export type AIGeneratedCourseOutput = AIGeneratedOutline;

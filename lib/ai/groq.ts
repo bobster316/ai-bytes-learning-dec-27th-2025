@@ -152,66 +152,52 @@ export class GroqClient {
       - Research-level depth where appropriate`
     }[difficulty] || '';
 
-    const prompt = `Act as an Elite Educational Consultant for Google DeepMind. Your mission is to create a "Best in Class", comprehensive, and deeply detailed academic lesson.
-    
+    const prompt = `SYSTEM: You are an elite instructional designer for AI Bytes Learning. Your mission is to produce a SINGLE LESSON as a structured JSON object containing an array of content blocks.
+
     Topic: "${lessonTitle}" within "${topicContext}".
     Level: ${difficulty}
     Language: British English (strict - use "optimise", "programme", "colour", "behaviour", etc.)
     Context: Ensure the content is strictly related to Artificial Intelligence and its applications.
     
     ${difficultyInstructions}
-    
-    CRITICAL WRITING RULES:
-    1. EXTENSIVE DEPTH: The content must be massive, detailed, and exhaustive. MINIMUM ${wordCounts} words (count carefully!).
-    2. MICRO-PARAGRAPHS: Every paragraph must be SHORT (2-3 sentences max). Large blocks of text are forbidden.
-    3. PARAGRAPH SPACING: Add a blank line (line break) between EVERY paragraph for readability.
-    4. NO IN-TEXT BOLDING: Do NOT bold words inside paragraphs. Only headings/subheadings can be bold.
-    5. ACADEMIC RIGOR: Use professional, technical, and precise language appropriate to ${difficulty} level.
-    6. AGE-APPROPRIATE: Content must be accessible to ages ${difficulty === 'beginner' ? '10-60' : difficulty === 'intermediate' ? '14-60' : '18-60'}.
-    
-    STRUCTURE REQUIREMENTS:
-    1. Introduction: 200-word deep-dive overview with clear value proposition. Break into 3-4 SHORT paragraphs with LINE SPACING.
-    2. Main Content: 6 detailed sections. Each section must cover a specific sub-topic in depth.
-       - Use frequent spacing between paragraphs.
-       - Use <ul>/<ol> lists frequently for readability.
-       - Use rich HTML headers (<h3>, <h4>) to structure the long text.
-       - EVERY paragraph should be 2-3 sentences maximum.
-    3. Instructor Insight: Practical advice from a technical lead persona.
-    4. Hands-On Lab: A ${difficulty === 'beginner' ? 'simple, guided' : difficulty === 'intermediate' ? 'moderately complex' : 'complex'} step-by-step practical implementation guide.
-    5. Mastery Checklist: 8-10 items for self-assessment.
-    6. Practical Application: A detailed real-world case study with quantifiable results.
-    7. Data & Analytics: 3 high-impact {label, value} facts/stats.
-    8. Reference Library: 4 useful external reference links {type, label, link}.
-    9. Visual Strategy: EXACTLY 6 HIGH-QUALITY image prompts (one for each section), ALTERNATING between styles:
-       
-       PROMPTS 1, 3, 5 - PHOTOREALISTIC HD PHOTOS:
-       - Must start with "PHOTOREALISTIC:" prefix
-       - Real-world photographs of people, technology, environments
-       - Examples: "PHOTOREALISTIC: Professional photograph of a diverse team of data scientists collaborating around multiple monitors displaying neural network visualizations, modern tech office, natural lighting, 8K HD"
-       - Examples: "PHOTOREALISTIC: Close-up HD photograph of a robotic arm in a real factory setting, industrial automation, sharp focus, professional photography"
-       
-       PROMPTS 2, 4, 6 - EDUCATIONAL ILLUSTRATIONS:
-       - Must start with "ILLUSTRATION:" prefix  
-       - Technical diagrams, infographics, cyber-minimalist aesthetic
-       - Examples: "ILLUSTRATION: Educational technical diagram showing the flow of data through a neural network, minimalist style with labeled nodes, clean geometric shapes on dark background"
-       - Examples: "ILLUSTRATION: Isometric infographic of machine learning pipeline stages, educational diagram style, clean labels, vector aesthetic"
-       
-    10. Video Strategy: Provide a highly specific YouTube search term to find a relevant educational video for this lesson.
-    
-    Return VALID JSON ONLY:
+
+    CRITICAL: Do NOT produce a markdown essay. Produce an array of typed blocks that map directly to UI components. The lesson should feel like an interactive tech magazine, NOT a textbook. The total lesson should be equivalent to ${wordCounts} words. Never write long walls of text.
+
+    BLOCK TYPES AVAILABLE (use a healthy mix — variety is key):
+    - "text": Short prose (1-3 sentences max per paragraph). If you include a code snippet, you MUST provide explanatory scaffolding before AND after the code.
+    - "full_image": Full-width image with caption. Must be highly instructional (diagrams, flowcharts).
+    - "image_text_row": Side-by-side instructional image + text (use reverse:true to alternate).
+    - "type_cards": 2-3 cards for comparing concepts. Use this instead of long bulleted lists!
+    - "callout": Tip or warning box. Use frequently to break up text and highlight pitfalls.
+    - "industry_tabs": Tabbed real-world examples across different industries.
+    - "quiz": Inline knowledge check (1 question with image context).
+    - "key_terms": Glossary of 4-6 terms introduced in the lesson.
+    - "objective": The learning objective statement.
+    - "recap": 3 absolute core insights to remember. DO NOT just recap headings. Distil the most valuable, actionable takeaways.
+    - "completion": End-of-lesson celebration with XP and skills gained.
+
+    STRUCTURE RULES - STRICT ATTENTION REQUIRED:
+    1. Start with an "objective" block, then a "text" block that hooks the reader.
+    2. PACING: Never put more than 2 "text" blocks in a row. Aggressively break up prose using "callout", "type_cards", or "image_text_row" blocks.
+    3. INTERLEAVED QUIZZES: Insert a 1-question "quiz" block immediately after every major conceptual section to test retention. Do not save them all for the end.
+    4. INSTRUCTIONAL VISUALS: Images must teach, not just decorate. Every imagePrompt must be highly specific and instructional. Use prefixes: "DIAGRAM: Educational flowchart showing...", "INFOGRAPHIC: clean minimalist breakdown of...", or "TECHNICAL ILLUSTRATION: ...". Avoid generic or decorative sci-fi art.
+    5. End the lesson strictly with a "recap" block, then "key_terms", then the "completion" block.
+    6. CODE SCAFFOLDING: If writing code in a text block, you must explain what the code does before it, and explain the expected output/implications after it. No isolated code blocks.
+
+    OUTPUT: Return ONLY a valid JSON object matching exactly this schema:
     {
-      "title": "Module: ${lessonTitle}",
-      "introduction": "html_string_with_line_spacing",
-      "sections": [{ "title": "Section Title", "content": "html_string_with_short_paragraphs_and_spacing" }],
-      "instructorInsight": { "name": "Dr. Sarah Chen", "title": "AI Research Scientist", "wisdom": "Practical advice" },
-      "handsOnChallenge": { "objective": "Apply the concept", "steps": ["Step 1", "Step 2"], "deliverables": "The output" },
-      "masteryChecklist": ["Skill 1", "Skill 2"],
-      "caseStudy": { "title": "Application", "content": "html", "outcomes": "text", "stats": "text" },
-      "stats": [{ "label": "Efficiency Gap", "value": "15%" }],
-      "resources": [{ "type": "Paper", "label": "Research", "link": "/docs" }],
-      "keyTakeaways": ["Point 1"],
-      "imagePrompts": ["PHOTOREALISTIC: prompt 1", "ILLUSTRATION: prompt 2", "PHOTOREALISTIC: prompt 3", "ILLUSTRATION: prompt 4", "PHOTOREALISTIC: prompt 5", "ILLUSTRATION: prompt 6"],
-      "videoSearchTerm": "Specific search query to find a relevant educational video on YouTube (e.g. 'Neural Networks explained for beginners')"
+      "blocks": [
+        {
+          "type": "text | full_image | image_text_row | type_cards | callout | industry_tabs | quiz | key_terms | objective | completion",
+          "id": "unique string id",
+          "order": number,
+          ... include other relevant fields based on block type such as "paragraphs" for text, "imagePrompt" for full_image, etc.
+        }
+      ],
+      "metadata": {
+        "estimatedDuration": number,
+        "imagePrompts": ["list", "all", "imagePrompts", "used", "in", "any", "block", "here"]
+      }
     }`;
     return await this.makeRequest(prompt);
   }

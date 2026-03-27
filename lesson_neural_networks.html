@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How Neural Networks Learn — Module 1, Lesson 2 | AI Bytes</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400&family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,300;1,9..144,400&display=swap" rel="stylesheet">
+
+<!-- GSAP + ScrollTrigger + Lenis -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+
+<style>
+/* ═══════════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --pulse:   #00FFB3;
+  --iris:    #9B8FFF;
+  --amber:   #FFB347;
+  --nova:    #FF6B6B;
+  --bg:      #080810;
+  --surface: #0f0f1a;
+  --border:  rgba(255,255,255,0.06);
+  --text:    #e8e8f0;
+  --muted:   #6b6b80;
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-body:    'Instrument Serif', serif;
+  --font-reading: 'Inter', system-ui, sans-serif;
+  --font-mono:    'DM Mono', monospace;
+}
+
+html { scroll-behavior: auto; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+  line-height: 1.8;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible { outline: 2px solid #9B8FFF; outline-offset: 3px; border-radius: 4px; }
+:focus:not(:focus-visible) { outline: none; }
+
+/* ═══════════════════════════════════════════════════
+   PROGRESS RAIL
+═══════════════════════════════════════════════════ */
+.progress-rail {
+  position: fixed;
+  right: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+.rail-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+  position: relative;
+}
+.rail-dot.active {
+  background: var(--pulse);
+  transform: scale(1.5);
+  box-shadow: 0 0 12px var(--pulse);
+}
+.rail-dot:hover::after {
+  content: attr(data-label);
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text);
+  background: rgba(15,15,26,0.9);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════
+   TOP NAV BAR
+═══════════════════════════════════════════════════ */
+.lesson-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  padding: 1rem 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(8,8,16,0.7);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-brand { font-family: var(--font-display); font-weight: 800; font-size: 1rem; letter-spacing: -0.02em; color: var(--pulse); }
+.nav-info { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+.nav-progress-bar {
+  position: absolute; bottom: -1px; left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--pulse), var(--iris));
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
+/* ═══════════════════════════════════════════════════
+   SCENE 1 — HOOK
+═══════════════════════════════════════════════════ */
+.scene-hook { min-height: 100vh; position: relative; overflow: hidden; }
+
+.hook-grid {
+  position: relative; z-index: 2;
+  max-width: 1380px; margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 80px 1fr;
+  min-height: 100vh;
+  width: 100%;
+}
+.hook-left {
+  display: flex; flex-direction: column; justify-content: flex-start;
+  padding: calc(80px + 7vh) 3vw 8vh 6vw;
+}
+.hook-right {
+  display: flex; flex-direction: column; justify-content: flex-start;
+  padding: calc(80px + 7vh) 6vw 8vh 3vw;
+  gap: 1.5rem;
+}
+.hook-middle {
+  display: flex; flex-direction: column; align-items: center;
+  padding: calc(80px + 10vh) 0 8vh;
+}
+.hook-mid-line {
+  width: 1px; flex: 1; min-height: 48px;
+  background: linear-gradient(180deg, transparent, rgba(155,143,255,0.22) 40%, rgba(155,143,255,0.22) 60%, transparent);
+}
+.hook-mid-node {
+  font-family: var(--font-mono); font-size: 0.5rem; letter-spacing: 0.18em;
+  text-transform: uppercase; padding: 0.3rem 0.6rem; border-radius: 100px; border: 1px solid;
+  white-space: nowrap; background: rgba(8,8,16,0.6); margin: 0;
+}
+
+.hook-course-card {
+  margin-top: 2.5rem; padding: 1.1rem 1.4rem;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px;
+}
+.hook-course-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+.hook-course-name { font-family: var(--font-reading); font-size: 0.9rem; color: var(--text); font-weight: 500; }
+.hook-course-pos { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.1em; color: var(--muted); }
+.hook-course-bar { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; margin-bottom: 0.6rem; }
+.hook-course-fill { height: 100%; width: 14%; background: linear-gradient(90deg, var(--iris), var(--pulse)); border-radius: 2px; transition: width 1.4s cubic-bezier(0.16,1,0.3,1); }
+.hook-course-meta { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.08em; color: var(--muted); }
+
+.hook-outcomes {
+  margin-top: 1.25rem; padding: 1.25rem 1.4rem;
+  background: rgba(0,255,179,0.03); border: 1px solid rgba(0,255,179,0.1); border-radius: 12px;
+}
+.hook-outcomes-title { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--pulse); margin-bottom: 0.9rem; }
+.hook-outcome-row {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-family: var(--font-reading); font-size: 0.9rem; color: #c0c0d8; line-height: 1.45;
+}
+.hook-outcome-row:last-child { border-bottom: none; }
+.hook-outcome-arrow { color: var(--pulse); font-size: 0.75rem; flex-shrink: 0; margin-top: 0.18rem; opacity: 0.7; }
+
+.hook-img-card { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
+.hook-img-card img { width: 100%; height: 260px; object-fit: cover; display: block; filter: brightness(0.65) saturate(0.8); }
+.hook-img-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(8,8,16,0.85)); display: flex; flex-direction: column; justify-content: flex-end; padding: 1.5rem; }
+.hook-img-caption { font-family: var(--font-reading); font-size: 0.95rem; color: rgba(255,255,255,0.85); line-height: 1.55; }
+.hook-img-tag { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--pulse); margin-bottom: 0.5rem; }
+
+.hook-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.hook-fact { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem; transition: border-color 0.3s ease; }
+.hook-fact:hover { border-color: rgba(155,143,255,0.3); }
+.hook-fact-value { font-family: var(--font-display); font-weight: 800; font-size: 1.6rem; letter-spacing: -0.02em; line-height: 1; margin-bottom: 0.25rem; }
+.hook-fact-label { font-family: var(--font-reading); font-size: 0.8rem; color: var(--muted); line-height: 1.4; }
+
+.hook-learn { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 1.5rem; }
+.hook-learn-title { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--iris); margin-bottom: 1rem; }
+.hook-learn-item { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-family: var(--font-reading); font-size: 0.95rem; color: #c8c8dc; line-height: 1.45; }
+.hook-learn-item:last-child { border-bottom: none; }
+.hook-learn-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--pulse); flex-shrink: 0; margin-top: 0.45rem; }
+
+@media (max-width: 900px) {
+  .hook-grid { grid-template-columns: 1fr; }
+  .hook-right, .hook-middle { display: none; }
+  .hook-left { padding: 14vh 8vw 8vh; }
+}
+
+/* Mesh gradient */
+.mesh-bg { position: absolute; inset: 0; z-index: 0; }
+.mesh-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.18; animation: drift linear infinite; }
+.mesh-blob:nth-child(1) { width: 600px; height: 600px; background: var(--iris); top: -200px; left: -100px; animation-duration: 25s; }
+.mesh-blob:nth-child(2) { width: 500px; height: 500px; background: var(--pulse); top: 20%; right: -150px; animation-duration: 32s; animation-direction: reverse; }
+.mesh-blob:nth-child(3) { width: 400px; height: 400px; background: var(--nova); bottom: -100px; left: 30%; animation-duration: 20s; animation-delay: -10s; }
+@keyframes drift {
+  0%   { transform: translate(0,0) scale(1); }
+  33%  { transform: translate(40px,-30px) scale(1.05); }
+  66%  { transform: translate(-20px,20px) scale(0.95); }
+  100% { transform: translate(0,0) scale(1); }
+}
+.hook-canvas { position: absolute; inset: 0; z-index: 1; opacity: 0.4; }
+
+.hook-label { z-index: 2; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--pulse); margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem; }
+.hook-label::before { content: ''; display: block; width: 40px; height: 1px; background: var(--pulse); }
+
+.hook-title { position: relative; z-index: 2; font-family: var(--font-display); font-weight: 800; font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.05; letter-spacing: -0.02em; color: #f0f0f8; margin-bottom: 2.5rem; max-width: 16ch; }
+.hook-title em { font-family: var(--font-body); font-style: italic; font-weight: 400; color: var(--pulse); }
+
+.hook-sub { position: relative; z-index: 2; font-family: var(--font-reading); font-size: 1.15rem; color: #c8c8dc; max-width: 48ch; margin-bottom: 2.5rem; line-height: 1.75; }
+
+.hook-meta { position: relative; z-index: 2; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
+.meta-chip { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 14px; border-radius: 100px; border: 1px solid var(--border); color: var(--muted); }
+.meta-chip.accent { border-color: var(--pulse); color: var(--pulse); }
+
+.scroll-hint { display: flex; align-items: center; gap: 0.75rem; font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); animation: bounceY 2s ease-in-out infinite; }
+.scroll-hint svg { width: 16px; opacity: 0.5; }
+@keyframes bounceY { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
+
+/* ═══════════════════════════════════════════════════
+   SECTION WRAPPER
+═══════════════════════════════════════════════════ */
+.section { padding: 10vh 8vw; max-width: 1140px; margin: 0 auto; position: relative; }
+.section-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 0 8vw; }
+.section-label { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--iris); margin-bottom: 1rem; }
+.section-title { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.5rem, 3vw, 2.4rem); letter-spacing: -0.01em; line-height: 1.2; margin-bottom: 1rem; }
+
+/* ═══════════════════════════════════════════════════
+   SCENE 2 — STAT PUNCH / INSIGHT CARD
+═══════════════════════════════════════════════════ */
+.stat-punch { padding: 8vh 8vw; max-width: 840px; margin: 0 auto; }
+.insight-card { display: grid; grid-template-columns: auto 1fr; gap: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.insight-accent { width: 4px; background: linear-gradient(180deg, var(--iris), var(--pulse)); }
+.insight-body { padding: 2rem 2.5rem; }
+.insight-label { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--iris); margin-bottom: 1rem; }
+.insight-text { font-family: 'Fraunces', Georgia, serif; font-weight: 300; font-style: italic; font-size: clamp(1.1rem,1.8vw,1.35rem); line-height: 1.65; color: var(--text); }
+.insight-text strong { font-style: normal; font-weight: 400; color: var(--pulse); }
+.insight-meta { margin-top: 1.25rem; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); display: flex; align-items: center; gap: 0.75rem; }
+.insight-meta::before { content: ''; display: block; width: 20px; height: 1px; background: var(--muted); }
+
+/* ═══════════════════════════════════════════════════
+   SCENE 3 — ANATOMY
+═══════════════════════════════════════════════════ */
+.anatomy-cards { max-width: 1140px; margin: 0 auto; padding: 6vh 8vw 10vh; display: flex; flex-direction: column; gap: 6rem; }
+.anatomy-card { display: grid; grid-template-columns: 1fr 1.1fr; gap: 4rem; align-items: center; }
+.anatomy-card:nth-child(odd) .anatomy-card-visual  { order: 1; }
+.anatomy-card:nth-child(odd) .anatomy-card-content { order: 2; }
+.anatomy-card:nth-child(even) .anatomy-card-visual  { order: 2; }
+.anatomy-card:nth-child(even) .anatomy-card-content { order: 1; }
+.anatomy-card-visual { border-radius: 16px; overflow: hidden; border: 1px solid var(--border); position: relative; flex-shrink: 0; }
+.anatomy-card-visual img { width: 100%; height: 360px; object-fit: cover; object-position: top center; display: block; filter: brightness(0.72) saturate(0.85); }
+.anatomy-card-visual::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 55%, rgba(8,8,16,0.55)); pointer-events: none; }
+.anatomy-card-content { display: flex; flex-direction: column; justify-content: center; padding: 0.5rem 0; }
+@media (max-width: 768px) {
+  .anatomy-card { grid-template-columns: 1fr; gap: 2rem; }
+  .anatomy-card:nth-child(even) .anatomy-card-visual, .anatomy-card:nth-child(even) .anatomy-card-content { order: unset; }
+  .anatomy-card-visual img { height: 240px; }
+}
+.step-tag { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem; }
+.step-tag-dot { width: 10px; height: 10px; border-radius: 50%; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.anatomy-card:hover .step-tag-dot { transform: scale(1.4); box-shadow: 0 0 0 4px rgba(255,255,255,0.08); }
+.step-title { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.3rem,2.5vw,1.9rem); letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 1.2rem; }
+.step-body { font-family: var(--font-reading); font-size: 1.125rem; line-height: 1.95; color: #d0d0e4; }
+.step-body strong { color: var(--text); font-style: normal; }
+.step-example { margin-top: 1.5rem; padding: 1rem 1.25rem; border-left: 2px solid; border-radius: 0 8px 8px 0; font-family: var(--font-mono); font-size: 0.95rem; line-height: 1.7; background: rgba(255,255,255,0.03); }
+
+/* ═══════════════════════════════════════════════════
+   SCENE 4 — FLOW DIAGRAM
+═══════════════════════════════════════════════════ */
+.flow-section { padding: 10vh 8vw; max-width: 1140px; margin: 0 auto; }
+.flow-diagram-wrap { margin-top: 2.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem; overflow: hidden; }
+.flow-columns { display: grid; grid-template-columns: 1fr auto 1fr; gap: 2rem; align-items: center; }
+.flow-col-label { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+.flow-step-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.flow-step-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid; font-family: var(--font-mono); font-size: 0.85rem; }
+.flow-step-item.iris { border-color: rgba(155,143,255,0.3); background: rgba(155,143,255,0.07); color: var(--iris); }
+.flow-step-item.pulse { border-color: rgba(0,255,179,0.3); background: rgba(0,255,179,0.07); color: var(--pulse); }
+.flow-middle-node { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+.flow-loss-badge { padding: 0.75rem 1.25rem; background: rgba(255,107,107,0.12); border: 1px solid rgba(255,107,107,0.4); border-radius: 50px; font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.1em; color: var(--nova); text-align: center; white-space: nowrap; }
+.flow-mid-arrow { font-size: 1.2rem; color: var(--muted); }
+.flow-outcome { margin-top: 1rem; padding: 0.75rem 1rem; border-radius: 8px; font-family: var(--font-reading); font-size: 0.9rem; line-height: 1.5; }
+.flow-outcome.iris { background: rgba(155,143,255,0.06); border: 1px solid rgba(155,143,255,0.2); color: #c0b8ff; }
+.flow-outcome.pulse { background: rgba(0,255,179,0.06); border: 1px solid rgba(0,255,179,0.2); color: #80ffd4; }
+@media (max-width: 768px) { .flow-columns { grid-template-columns: 1fr; } }
+
+/* ═══════════════════════════════════════════════════
+   SCENE 5 — PUNCH QUOTE
+═══════════════════════════════════════════════════ */
+.punch-scene { padding: 12vh 8vw; max-width: 840px; margin: 0 auto; position: relative; }
+.punch-quote { font-family: 'Fraunces', Georgia, serif; font-weight: 300; font-style: italic; font-optical-sizing: auto; font-size: clamp(1.2rem,2.2vw,1.75rem); letter-spacing: 0.01em; line-height: 1.55; color: #e8e8f0; }
+.punch-quote em { font-style: normal; color: var(--iris); font-weight: 400; }
+.punch-attr { margin-top: 2rem; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em; color: var(--muted); display: flex; align-items: center; gap: 1rem; }
+.punch-attr::before { content: ''; display: block; width: 30px; height: 1px; background: var(--muted); }
+
+/* ═══════════════════════════════════════════════════
+   SCENE 6 — BENTO GRID
+═══════════════════════════════════════════════════ */
+.bento-header { text-align: left; padding: 10vh 8vw 5vh; max-width: 1140px; margin: 0 auto; }
+.bento-grid { display: grid; grid-template-columns: repeat(12, 1fr); grid-template-rows: auto; gap: 1rem; padding: 0 8vw 10vh; max-width: 1140px; margin: 0 auto; }
+.bento-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; position: relative; overflow: hidden; transition: border-color 0.3s ease, transform 0.3s ease; }
+.bento-card:hover { border-color: rgba(155,143,255,0.3); transform: translateY(-2px); }
+.bento-card::before { content: ''; position: absolute; inset: 0; border-radius: inherit; background: radial-gradient(400px circle at var(--mouse-x,50%) var(--mouse-y,50%), rgba(155,143,255,0.04), transparent 70%); opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+.bento-card:hover::before { opacity: 1; }
+.bento-card.span-5  { grid-column: span 5; }
+.bento-card.span-3  { grid-column: span 3; }
+.bento-card.span-4  { grid-column: span 4; }
+.bento-card.span-7  { grid-column: span 7; }
+.bento-card.span-8  { grid-column: span 8; }
+.bento-card.span-12 { grid-column: span 12; }
+.bento-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem; font-size: 1.25rem; }
+.bento-card-title { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+.bento-card-body { font-family: var(--font-reading); font-size: 1.05rem; color: #a8a8c0; line-height: 1.8; }
+@media (max-width: 768px) { .bento-card.span-5,.bento-card.span-3,.bento-card.span-4,.bento-card.span-7,.bento-card.span-8 { grid-column: span 12; } }
+
+/* ═══════════════════════════════════════════════════
+   SCENE 7 — PREDICTION
+═══════════════════════════════════════════════════ */
+.prediction-scene { padding: 10vh 8vw; max-width: 840px; margin: 0 auto; text-align: center; }
+.prediction-prompt { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.4rem,3vw,2rem); letter-spacing: -0.01em; line-height: 1.3; margin-bottom: 2.5rem; }
+.prediction-prompt em { color: var(--iris); font-style: italic; }
+.prediction-options { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 0; }
+.pred-option { padding: 1.1rem 1.75rem; font-family: var(--font-body); font-size: 1rem; border: 1px solid var(--border); border-radius: 12px; text-align: left; cursor: pointer; color: var(--text); background: transparent; transition: all 0.25s ease; display: flex; align-items: center; gap: 1rem; position: relative; overflow: hidden; }
+.pred-option:hover { border-color: rgba(155,143,255,0.4); background: rgba(155,143,255,0.05); transform: translateX(4px); }
+.pred-option .opt-letter { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em; width: 28px; height: 28px; border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.25s ease; }
+.pred-option:hover .opt-letter { border-color: var(--iris); color: var(--iris); }
+.pred-option.correct { border-color: var(--pulse); background: rgba(0,255,179,0.08); transform: translateX(0); }
+.pred-option.correct .opt-letter { background: var(--pulse); border-color: var(--pulse); color: #080810; }
+.pred-option.wrong { border-color: rgba(255,107,107,0.3); opacity: 0.5; }
+.prediction-reveal { margin-top: 1.5rem; padding: 1.5rem 2rem; background: rgba(0,255,179,0.06); border: 1px solid rgba(0,255,179,0.2); border-radius: 12px; text-align: left; max-height: 0; overflow: hidden; transition: max-height 0.5s cubic-bezier(0.16,1,0.3,1), padding 0.3s ease; }
+.prediction-reveal.open { max-height: 400px; padding: 1.5rem 2rem; }
+.reveal-title { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--pulse); margin-bottom: 0.75rem; }
+.reveal-body { font-family: var(--font-reading); font-size: 1.05rem; color: var(--text); line-height: 1.85; }
+
+/* ═══════════════════════════════════════════════════
+   SCENE 8 — EXERCISE
+═══════════════════════════════════════════════════ */
+.exercise-scene { padding: 8vh 8vw; max-width: 840px; margin: 0 auto; }
+.exercise-intro { font-family: var(--font-reading); font-size: 1.05rem; color: rgba(255,255,255,0.6); line-height: 1.7; margin-bottom: 2.5rem; }
+.exercise-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 2.5rem; }
+.exercise-weak-label { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: #FF6B6B; margin-bottom: 0.75rem; }
+.exercise-weak-prompt { font-family: var(--font-body); font-style: italic; font-size: 1.05rem; color: rgba(255,255,255,0.55); background: rgba(255,107,107,0.06); border: 1px solid rgba(255,107,107,0.2); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 2rem; }
+.exercise-fields { display: flex; flex-direction: column; gap: 1.25rem; }
+.exercise-field { display: flex; flex-direction: column; gap: 0.5rem; }
+.exercise-field-label { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.3); }
+.exercise-textarea { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.85rem 1rem; color: rgba(255,255,255,0.8); font-family: var(--font-reading); font-size: 0.95rem; line-height: 1.6; resize: none; outline: none; transition: border-color 0.2s ease, background 0.2s ease; width: 100%; }
+.exercise-textarea:focus { border-color: rgba(155,143,255,0.45); background: rgba(255,255,255,0.06); }
+.exercise-textarea::placeholder { color: rgba(255,255,255,0.2); }
+.exercise-submit { margin-top: 0.5rem; width: 100%; padding: 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.25); font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; cursor: not-allowed; transition: all 0.25s ease; }
+.exercise-submit.ready { border-color: rgba(0,255,179,0.4); background: rgba(0,255,179,0.08); color: #00FFB3; cursor: pointer; }
+.exercise-submit.ready:hover { background: rgba(0,255,179,0.14); }
+.exercise-reveal { display: none; margin-top: 2rem; flex-direction: column; gap: 1.25rem; }
+.exercise-reveal.open { display: flex; animation: fadeUp 0.4s ease forwards; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+.exercise-your-answer { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1.25rem 1.5rem; font-family: var(--font-reading); font-size: 0.95rem; color: rgba(255,255,255,0.7); line-height: 1.7; }
+.exercise-model-answer { background: rgba(0,255,179,0.06); border: 1px solid rgba(0,255,179,0.25); border-radius: 12px; padding: 1.25rem 1.5rem; }
+.exercise-model-label { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: #00FFB3; margin-bottom: 0.75rem; }
+.exercise-model-text { font-family: var(--font-reading); font-size: 0.95rem; color: rgba(255,255,255,0.75); line-height: 1.7; }
+
+/* ═══════════════════════════════════════════════════
+   SCENE 9 — MINDMAP
+═══════════════════════════════════════════════════ */
+.mindmap-section { padding: 10vh 4vw; max-width: 1140px; margin: 0 auto; text-align: center; }
+.mindmap-svg { width: 100%; max-width: 900px; margin: 3rem auto 0; display: block; }
+.mindmap-line { stroke-dasharray: 220; stroke-dashoffset: 220; transition: stroke-dashoffset 0.8s cubic-bezier(0.16,1,0.3,1); }
+.mindmap-line.drawn { stroke-dashoffset: 0; }
+.mindmap-node-circle { opacity: 0; transform: scale(0.5); transform-box: fill-box; transform-origin: center; transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+.mindmap-node-circle.visible { opacity: 1; transform: scale(1); }
+#nnMindmapSVG g[id^="nn-node"] { cursor: pointer; transition: filter 0.2s ease; }
+#nnMindmapSVG g[id^="nn-node"]:hover { filter: brightness(1.3) drop-shadow(0 0 8px currentColor); }
+#nnMindmapSVG g[id^="nn-node"] rect { transition: stroke-width 0.2s ease; }
+#nnMindmapSVG g[id^="nn-node"]:hover rect { stroke-width: 2.5; }
+
+/* ═══════════════════════════════════════════════════
+   SCENE 10 — TECHNIQUES TABS
+═══════════════════════════════════════════════════ */
+.techniques-section { padding: 10vh 8vw; max-width: 1140px; margin: 0 auto; }
+.technique-tabs { display: flex; gap: 0.5rem; margin-bottom: 2.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+.technique-tab { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding: 0.75rem 1.25rem; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.25s ease; background: none; border-left: none; border-right: none; border-top: none; }
+.technique-tab:hover { color: var(--text); }
+.technique-tab.active { color: var(--iris); border-bottom-color: var(--iris); }
+.technique-panel { display: none; }
+.technique-panel.active { display: flex; flex-direction: column; gap: 2rem; }
+.technique-name { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.2rem,2.2vw,1.7rem); letter-spacing: -0.02em; margin-bottom: 1rem; }
+.technique-body { font-family: var(--font-reading); font-size: 1.1rem; color: #d0d0e4; line-height: 1.9; margin-bottom: 1.5rem; }
+.technique-code { padding: 1.25rem 1.5rem; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 10px; font-family: var(--font-mono); font-size: 0.9rem; line-height: 1.8; color: #b8e8d0; white-space: pre-wrap; word-break: break-word; overflow-wrap: break-word; }
+.technique-panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: start; }
+@media (max-width: 900px) { .technique-panel-grid { grid-template-columns: 1fr; } }
+
+/* Learning rate SVG styles */
+.lr-chart { width: 100%; max-width: 380px; display: block; margin: 0 auto; }
+
+/* Transfer learning two-col */
+.tl-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+.tl-col { padding: 1.25rem; border-radius: 12px; display: flex; flex-direction: column; gap: 0.6rem; }
+.tl-col-label { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.25rem; }
+.tl-row { font-family: var(--font-reading); font-size: 0.9rem; line-height: 1.5; color: rgba(255,255,255,0.6); display: flex; align-items: center; gap: 0.6rem; }
+.tl-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+/* ═══════════════════════════════════════════════════
+   SCENE 11 — CLEAN ENDING
+═══════════════════════════════════════════════════ */
+.ending-scene { padding: 15vh 8vw 20vh; max-width: 760px; margin: 0 auto; text-align: center; }
+.ending-label { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--pulse); margin-bottom: 2rem; }
+.ending-title { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.5rem,3vw,2.2rem); letter-spacing: -0.01em; margin-bottom: 3rem; line-height: 1; }
+.skills-earned { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 4rem; text-align: left; }
+.skill-row { display: flex; align-items: center; gap: 1.25rem; padding: 1rem 1.25rem; border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,0.02); transform: translateX(-20px); opacity: 0; transition: all 0.5s cubic-bezier(0.16,1,0.3,1); }
+.skill-row.visible { transform: translateX(0); opacity: 1; }
+.skill-check { width: 28px; height: 28px; border-radius: 50%; background: rgba(0,255,179,0.15); border: 1px solid var(--pulse); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.skill-text { font-family: var(--font-reading); font-size: 1.05rem; color: var(--text); }
+.cta-wrap { display: inline-block; position: relative; }
+.cta-btn { display: inline-flex; align-items: center; gap: 0.75rem; padding: 1.1rem 2.5rem; background: linear-gradient(135deg, var(--iris), var(--pulse)); border: none; border-radius: 100px; font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; letter-spacing: -0.01em; color: #080810; cursor: pointer; position: relative; transition: transform 0.15s ease, box-shadow 0.3s ease; text-decoration: none; }
+.cta-btn:hover { box-shadow: 0 0 40px rgba(155,143,255,0.4), 0 0 80px rgba(0,255,179,0.15); }
+.cta-btn svg { width: 18px; }
+
+/* ═══════════════════════════════════════════════════
+   SCROLL REVEAL
+═══════════════════════════════════════════════════ */
+.reveal { opacity: 0.75; transform: translateY(16px); transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1); }
+.reveal.in-view { opacity: 1; transform: translateY(0); }
+.reveal-stagger > * { opacity: 0.7; transform: translateY(12px); transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1); }
+.reveal-stagger.in-view > *:nth-child(1) { opacity:1;transform:translateY(0);transition-delay:0s; }
+.reveal-stagger.in-view > *:nth-child(2) { opacity:1;transform:translateY(0);transition-delay:0.07s; }
+.reveal-stagger.in-view > *:nth-child(3) { opacity:1;transform:translateY(0);transition-delay:0.14s; }
+.reveal-stagger.in-view > *:nth-child(4) { opacity:1;transform:translateY(0);transition-delay:0.21s; }
+.reveal-stagger.in-view > *:nth-child(5) { opacity:1;transform:translateY(0);transition-delay:0.28s; }
+
+@media (max-width: 768px) {
+  .progress-rail { display: none; }
+  .technique-panel.active { grid-template-columns: 1fr; }
+  .tl-cols { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     TOP NAV
+════════════════════════════════════════ -->
+<nav class="lesson-nav" role="navigation" aria-label="Lesson navigation">
+  <div class="nav-brand">AI Bytes</div>
+  <div class="nav-info">Neural Networks · Lesson 02 of 06</div>
+  <div class="nav-progress-bar" id="navProgress"></div>
+</nav>
+
+<!-- ════════════════════════════════════════
+     PROGRESS RAIL
+════════════════════════════════════════ -->
+<div class="progress-rail" id="progressRail">
+  <div class="rail-dot active" data-label="Hook"        data-section="0"></div>
+  <div class="rail-dot"        data-label="Neurons"     data-section="1"></div>
+  <div class="rail-dot"        data-label="Forward Pass" data-section="2"></div>
+  <div class="rail-dot"        data-label="Backprop"    data-section="3"></div>
+  <div class="rail-dot"        data-label="Quick check" data-section="4"></div>
+  <div class="rail-dot"        data-label="Your turn"   data-section="5"></div>
+  <div class="rail-dot"        data-label="Concept map" data-section="6"></div>
+  <div class="rail-dot"        data-label="Techniques"  data-section="7"></div>
+  <div class="rail-dot"        data-label="Done"        data-section="8"></div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SCENE 1 — HOOK
+════════════════════════════════════════ -->
+<section class="scene-hook" id="section-0" data-section="0">
+  <div class="mesh-bg" aria-hidden="true">
+    <div class="mesh-blob"></div>
+    <div class="mesh-blob"></div>
+    <div class="mesh-blob"></div>
+  </div>
+  <canvas class="hook-canvas" id="networkCanvas" aria-hidden="true"></canvas>
+
+  <div class="hook-grid">
+
+  <!-- LEFT: Text content -->
+  <div class="hook-left">
+    <div class="hook-label">Neural Networks · Lesson 02</div>
+
+    <h1 class="hook-title" id="hookTitle">
+      How Neural Networks <em>Actually</em> Learn
+    </h1>
+
+    <p class="hook-sub">
+      Every time you use an AI, millions of tiny mathematical adjustments fire in sequence. This is how that happens — explained clearly, once.
+    </p>
+
+    <div class="hook-meta">
+      <span class="meta-chip accent">⏱ 14 minutes</span>
+      <span class="meta-chip">+120 XP</span>
+      <span class="meta-chip">Intermediate</span>
+    </div>
+
+    <div class="scroll-hint" style="position:relative;bottom:auto;right:auto;margin-top:2rem;" aria-label="Scroll to continue">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 5v14M5 12l7 7 7-7"/>
+      </svg>
+      Scroll to begin
+    </div>
+
+    <!-- Course context card -->
+    <div class="hook-course-card">
+      <div class="hook-course-top">
+        <span class="hook-course-name">Introduction to Neural Networks</span>
+        <span class="hook-course-pos">Lesson 2 of 6</span>
+      </div>
+      <div class="hook-course-bar">
+        <div class="hook-course-fill" id="courseProgressFill"></div>
+      </div>
+      <div class="hook-course-meta">In progress · 6 lessons · ~84 min total</div>
+    </div>
+
+    <!-- Practical outcomes card -->
+    <div class="hook-outcomes">
+      <div class="hook-outcomes-title">After this lesson you can</div>
+      <div class="hook-outcome-row">
+        <span class="hook-outcome-arrow">→</span>
+        <span>Explain how a neural network adjusts its weights during training</span>
+      </div>
+      <div class="hook-outcome-row">
+        <span class="hook-outcome-arrow">→</span>
+        <span>Describe forward pass, loss calculation, and backpropagation in plain language</span>
+      </div>
+      <div class="hook-outcome-row">
+        <span class="hook-outcome-arrow">→</span>
+        <span>Identify where neural networks excel and where they fail</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MIDDLE: Vertical accent column -->
+  <div class="hook-middle" aria-hidden="true">
+    <div class="hook-mid-line"></div>
+    <div class="hook-mid-node" style="border-color:rgba(0,255,179,0.4);color:#00FFB3;">INPUT</div>
+    <div class="hook-mid-line"></div>
+    <div class="hook-mid-node" style="border-color:rgba(155,143,255,0.4);color:#9B8FFF;">LEARN</div>
+    <div class="hook-mid-line"></div>
+    <div class="hook-mid-node" style="border-color:rgba(255,179,71,0.4);color:#FFB347;">ADJUST</div>
+    <div class="hook-mid-line"></div>
+    <div class="hook-mid-node" style="border-color:rgba(255,107,107,0.4);color:#FF6B6B;">REPEAT</div>
+    <div class="hook-mid-line"></div>
+  </div>
+
+  <!-- RIGHT: Visual panel -->
+  <div class="hook-right">
+
+    <div class="hook-img-card">
+      <img
+        src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80"
+        alt="Abstract network of glowing nodes — a neural network learning"
+        loading="eager"
+      />
+      <div class="hook-img-overlay">
+        <div class="hook-img-tag">Inside the training loop</div>
+        <div class="hook-img-caption">Each forward pass makes a prediction. Each backward pass makes the network slightly less wrong. Repeated billions of times, this is learning.</div>
+      </div>
+    </div>
+
+    <div class="hook-facts">
+      <div class="hook-fact">
+        <div class="hook-fact-value" style="color:var(--pulse)">86B</div>
+        <div class="hook-fact-label">Neurons in the human brain</div>
+      </div>
+      <div class="hook-fact">
+        <div class="hook-fact-value" style="color:var(--iris)">1.8T</div>
+        <div class="hook-fact-label">Parameters in GPT-4-scale models</div>
+      </div>
+      <div class="hook-fact">
+        <div class="hook-fact-value" style="color:var(--amber)">14</div>
+        <div class="hook-fact-label">Minutes to understand it all</div>
+      </div>
+      <div class="hook-fact">
+        <div class="hook-fact-value" style="color:var(--nova)">2</div>
+        <div class="hook-fact-label">Passes that form every training step</div>
+      </div>
+    </div>
+
+    <div class="hook-learn">
+      <div class="hook-learn-title">What you'll learn</div>
+      <div class="hook-learn-item">
+        <span class="hook-learn-dot"></span>
+        How input, hidden, and output layers each contribute to a prediction
+      </div>
+      <div class="hook-learn-item">
+        <span class="hook-learn-dot" style="background:var(--iris)"></span>
+        What the forward pass and backpropagation actually do — step by step
+      </div>
+      <div class="hook-learn-item">
+        <span class="hook-learn-dot" style="background:var(--amber)"></span>
+        Why loss functions are the engine of all learning
+      </div>
+      <div class="hook-learn-item">
+        <span class="hook-learn-dot" style="background:var(--nova)"></span>
+        The real limits of neural networks — hallucination, overfitting, and emergent capabilities
+      </div>
+    </div>
+
+  </div>
+
+  </div><!-- end .hook-grid -->
+</section>
+
+<!-- ════════════════════════════════════════
+     SCENE 2 — STAT PUNCH
+════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<div class="stat-punch reveal" id="section-1" data-section="1">
+  <div class="insight-card">
+    <div class="insight-accent"></div>
+    <div class="insight-body">
+      <div class="insight-label">The scale is almost absurd</div>
+      <p class="insight-text">
+        The human brain contains roughly <strong>86 billion</strong> neurons. A GPT-4-scale model has roughly 1.8 trillion parameters — each one a number, adjusted billions of times during training. Parameters are not neurons — they are the connection weights between neurons. The number of parameters determines how much the network can memorise and generalise.
+      </p>
+      <div class="insight-meta">AI Bytes · Introduction to Neural Networks</div>
+    </div>
+  </div>
+</div>
+
+<!-- Callout box -->
+<div style="padding: 3vh 8vw 6vh; max-width: 840px; margin: 0 auto;">
+  <div style="display:grid;grid-template-columns:auto 1fr;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;" class="reveal">
+    <div style="width:4px;background:linear-gradient(180deg,var(--amber),var(--nova));"></div>
+    <div style="padding:1.75rem 2.25rem;">
+      <div style="font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--amber);margin-bottom:0.75rem;">Key distinction</div>
+      <p style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:clamp(1rem,1.8vw,1.25rem);letter-spacing:-0.02em;color:#f0f0f8;line-height:1.4;margin:0 0 0.65rem;">Parameters are not neurons — they are the connection weights between neurons.</p>
+      <p style="font-family:'Inter',sans-serif;font-size:0.975rem;color:#a0a0b8;line-height:1.7;margin:0;">The number of parameters determines how much the network can memorise and generalise. More parameters means more capacity — but also more data and compute required to train effectively.</p>
+    </div>
+  </div>
+</div>
+<div class="section-divider"></div>
+
+<!-- ════════════════════════════════════════
+     SCENE 3 — ANATOMY
+════════════════════════════════════════ -->
+<div id="section-2" data-section="2">
+  <div style="padding: 8vh 8vw 2vh; max-width: 1140px; margin: 0 auto;" class="reveal">
+    <div class="section-label">How it works</div>
+    <h2 class="section-title">The four parts of every neural network</h2>
+    <p style="font-family:var(--font-reading);font-size:1.05rem;color:#a0a0b8;line-height:1.7;max-width:52ch;margin:1rem 0 0;">Every neural network — from a simple classifier to a frontier language model — shares the same fundamental structure. Understanding these four components explains how any AI learns from data.</p>
+  </div>
+
+  <div class="anatomy-cards">
+
+    <!-- CARD 1: INPUT LAYER -->
+    <div class="anatomy-card">
+      <div class="anatomy-card-visual">
+        <img src="https://images.unsplash.com/photo-1518432031352-d6fc5734c3c4?w=800&q=80"
+          alt="Grid of numbers — how data is represented as numbers for neural networks"
+          loading="lazy"/>
+      </div>
+      <div class="anatomy-card-content">
+        <div class="step-tag">
+          <span class="step-tag-dot" style="background:#00FFB3"></span>
+          <span style="color:#00FFB3">Input Layer</span>
+          <span style="color:var(--muted)">— Part 1 of 4</span>
+        </div>
+        <h3 class="step-title">Data enters as numbers</h3>
+        <p class="step-body">Every input — a pixel, a word, a temperature reading — is converted to a number before a neural network can process it. There are no exceptions. Images become grids of pixel values. Words become vectors of hundreds of floating-point numbers. This numerical translation is the foundation that makes the maths possible.</p>
+        <p class="step-body" style="margin-top:1rem;">This translation step is not trivial. Good representations capture meaningful structure — similar words end up with similar vectors, similar images end up with similar pixel patterns. The quality of this encoding limits everything downstream.</p>
+        <div class="step-example" style="border-color:#00FFB3; color:#00FFB3; margin-top:1.25rem;">
+          "The word 'cat' might be represented as a vector of 768 numbers — each capturing a different semantic dimension."
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 2: HIDDEN LAYERS -->
+    <div class="anatomy-card">
+      <div class="anatomy-card-visual">
+        <img src="https://images.unsplash.com/photo-1617791160505-6f00504e3519?w=800&q=80"
+          alt="Layered structure with nodes — hidden layers detecting patterns"
+          loading="lazy"/>
+      </div>
+      <div class="anatomy-card-content">
+        <div class="step-tag">
+          <span class="step-tag-dot" style="background:#9B8FFF"></span>
+          <span style="color:#9B8FFF">Hidden Layers</span>
+          <span style="color:var(--muted)">— Part 2 of 4</span>
+        </div>
+        <h3 class="step-title">Patterns emerge in the middle</h3>
+        <p class="step-body">Hidden layers are where the real work happens. Each neuron takes a weighted sum of its inputs, applies a non-linear function (called an activation function), and passes the result forward. Early layers detect simple patterns — edges, tones, syllables. Deeper layers combine these into complex concepts — faces, sentiment, meaning.</p>
+        <p class="step-body" style="margin-top:1rem;">The depth of a network — how many hidden layers it has — determines how abstract its representations can become. This is why deep neural networks are so powerful: each layer builds on the one before it.</p>
+        <div class="step-example" style="border-color:#9B8FFF; color:#9B8FFF; margin-top:1.25rem;">
+          "In a vision model, layer 3 might detect 'curved edge facing right'. Layer 12 might detect 'ear of a cat'."
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 3: OUTPUT LAYER -->
+    <div class="anatomy-card">
+      <div class="anatomy-card-visual">
+        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80"
+          alt="Probability distribution chart — a neural network making a prediction"
+          loading="lazy"/>
+      </div>
+      <div class="anatomy-card-content">
+        <div class="step-tag">
+          <span class="step-tag-dot" style="background:#FFB347"></span>
+          <span style="color:#FFB347">Output Layer</span>
+          <span style="color:var(--muted)">— Part 3 of 4</span>
+        </div>
+        <h3 class="step-title">A prediction is made</h3>
+        <p class="step-body">The output layer produces the network's answer. For classification, this is a probability distribution — the network assigns a likelihood to each possible class. For language models, it's a probability over every word in the vocabulary. The highest probability wins and becomes the prediction.</p>
+        <p class="step-body" style="margin-top:1rem;">The output layer design is task-specific. Classification tasks use softmax to produce probabilities. Regression tasks use a linear output. Language models use a vocabulary-sized softmax that can output tens of thousands of possible next tokens.</p>
+        <div class="step-example" style="border-color:#FFB347; color:#FFB347; margin-top:1.25rem;">
+          "Output: [cat: 0.91, dog: 0.07, bird: 0.02] — the network is 91% confident this image shows a cat."
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 4: LOSS FUNCTION -->
+    <div class="anatomy-card">
+      <div class="anatomy-card-visual">
+        <img src="https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=800&q=80"
+          alt="Error measurement on a chart — loss function scoring a wrong prediction"
+          loading="lazy"/>
+      </div>
+      <div class="anatomy-card-content">
+        <div class="step-tag">
+          <span class="step-tag-dot" style="background:#FF6B6B"></span>
+          <span style="color:#FF6B6B">Loss Function</span>
+          <span style="color:var(--muted)">— Part 4 of 4</span>
+        </div>
+        <h3 class="step-title">The network measures its own mistake</h3>
+        <p class="step-body">After each prediction, the loss function calculates how wrong the answer was. A perfect prediction gives a loss of zero. A catastrophically wrong prediction gives a high loss. This single number — the loss — is the signal that drives all learning. Without it, the network has no way to improve.</p>
+        <p class="step-body" style="margin-top:1rem;">Common loss functions include cross-entropy (for classification) and mean squared error (for regression). The choice of loss function shapes what the network considers "good" — choose the wrong one and the network optimises for the wrong thing.</p>
+        <div class="step-example" style="border-color:#FF6B6B; color:#FF6B6B; margin-top:1.25rem;">
+          "Predicted: cat (0.91). Actual: dog. Loss = 2.4. The network was confident and completely wrong."
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SCENE 4 — FLOW DIAGRAM
+════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<div class="flow-section reveal" id="section-3" data-section="3">
+  <div class="section-label">The training loop</div>
+  <h2 class="section-title">Two passes. One learning loop.</h2>
+  <p style="font-family:var(--font-reading);font-size:1.05rem;color:#a0a0b8;line-height:1.7;max-width:55ch;margin:1rem 0 0;">Every training step involves exactly two passes through the network. The forward pass makes a prediction. The backward pass fixes the mistake. Repeat this millions of times and the network learns.</p>
+
+  <div class="flow-diagram-wrap reveal">
+    <div class="flow-columns">
+      <!-- Forward pass column -->
+      <div>
+        <div class="flow-col-label" style="color:var(--iris);">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--iris);flex-shrink:0;display:inline-block;"></span>
+          Forward Pass
+        </div>
+        <div class="flow-step-list">
+          <div class="flow-step-item iris">
+            <span style="font-size:0.7rem;opacity:0.6;">01</span> Input Data
+          </div>
+          <div style="text-align:center;color:var(--muted);font-size:1rem;padding:0.15rem 0;">↓</div>
+          <div class="flow-step-item iris">
+            <span style="font-size:0.7rem;opacity:0.6;">02</span> Weighted Sum
+          </div>
+          <div style="text-align:center;color:var(--muted);font-size:1rem;padding:0.15rem 0;">↓</div>
+          <div class="flow-step-item iris">
+            <span style="font-size:0.7rem;opacity:0.6;">03</span> Activation
+          </div>
+          <div style="text-align:center;color:var(--muted);font-size:1rem;padding:0.15rem 0;">↓</div>
+          <div class="flow-step-item iris">
+            <span style="font-size:0.7rem;opacity:0.6;">04</span> Prediction
+          </div>
+        </div>
+        <div class="flow-outcome iris" style="margin-top:1.25rem;">Produces a prediction and a loss score</div>
+      </div>
+
+      <!-- Centre -->
+      <div class="flow-middle-node">
+        <div class="flow-mid-arrow">→</div>
+        <div class="flow-loss-badge">Loss Score</div>
+        <div class="flow-mid-arrow">→</div>
+      </div>
+
+      <!-- Backprop column -->
+      <div>
+        <div class="flow-col-label" style="color:var(--pulse);">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--pulse);flex-shrink:0;display:inline-block;"></span>
+          Backpropagation
+        </div>
+        <div class="flow-step-list">
+          <div class="flow-step-item pulse">
+            <span style="font-size:0.7rem;opacity:0.6;">01</span> Gradient Calc
+          </div>
+          <div style="text-align:center;color:var(--muted);font-size:1rem;padding:0.15rem 0;">↓</div>
+          <div class="flow-step-item pulse">
+            <span style="font-size:0.7rem;opacity:0.6;">02</span> Weight Update
+          </div>
+          <div style="text-align:center;color:var(--muted);font-size:1rem;padding:0.15rem 0;">↓</div>
+          <div class="flow-step-item pulse">
+            <span style="font-size:0.7rem;opacity:0.6;">03</span> Repeat
+          </div>
+        </div>
+        <div class="flow-outcome pulse" style="margin-top:1.25rem;">Adjusts every weight to reduce future loss</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SCENE 5 — PUNCH QUOTE
+════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<div class="punch-scene reveal">
+  <blockquote class="punch-quote">
+    "The network doesn't understand anything. It just gets very good at being <em>wrong slightly less often</em> than before."
+  </blockquote>
+  <div class="punch-attr">The AI Bytes Method</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SCENE 6 — BENTO GRID
+════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<div id="section-4" data-section="4">
+  <div class="bento-header reveal">
+    <div class="section-label">What makes them powerful</div>
+    <h2 class="section-title">What makes neural networks powerful?</h2>
+  </div>
+
+  <div class="bento-grid reveal-stagger">
+
+    <!-- Card 1: Universal approximators — span 5 -->
+    <div class="bento-card span-5">
+      <div class="bento-icon" style="background:rgba(155,143,255,0.12);">∞</div>
+      <div class="bento-card-title">Universal approximators</div>
+      <div class="bento-card-body">Given enough layers and data, a neural network can approximate any mathematical function. This is not a metaphor — it is a proven theorem (the Universal Approximation Theorem). It means the architecture itself has no ceiling.</div>
+    </div>
+
+    <!-- Card 2: Hallucination risk — span 3, nova border -->
+    <div class="bento-card span-3" style="border-color:rgba(255,107,107,0.25);background:rgba(255,107,107,0.04);">
+      <div class="bento-icon" style="background:rgba(255,107,107,0.12);">⚠</div>
+      <div class="bento-card-title" style="color:var(--nova);">Hallucination risk</div>
+      <div class="bento-card-body">Neural networks do not know when they don't know. They always produce an output, even when the input is completely outside their training distribution. This is why human verification matters for high-stakes decisions.</div>
+    </div>
+
+    <!-- Card 3: Transfer learning — span 4 -->
+    <div class="bento-card span-4">
+      <div class="bento-icon" style="background:rgba(0,255,179,0.1);">⇄</div>
+      <div class="bento-card-title">Transfer learning</div>
+      <div class="bento-card-body">A network trained on 1 billion images can be fine-tuned on 500 medical scans and become a world-class diagnostic tool. The general knowledge transfers. Only the final specialisation needs new data.</div>
+    </div>
+
+    <!-- Card 4: Gradient descent — span 3 -->
+    <div class="bento-card span-3">
+      <div class="bento-icon" style="background:rgba(255,179,71,0.1);">↘</div>
+      <div class="bento-card-title">Gradient descent</div>
+      <div class="bento-card-body">Every weight update follows the direction that reduces loss most steeply. Like a ball rolling downhill, the network finds lower and lower loss valleys through millions of tiny steps.</div>
+    </div>
+
+    <!-- Card 5: Emergent capabilities — span 5, pulse border -->
+    <div class="bento-card span-5" style="border-color:rgba(0,255,179,0.25);background:rgba(0,255,179,0.03);">
+      <div class="bento-icon" style="background:rgba(0,255,179,0.1);">✦</div>
+      <div class="bento-card-title" style="color:var(--pulse);">Emergent capabilities</div>
+      <div class="bento-card-body">Scale a neural network enough and unexpected abilities appear — translation, code generation, logical reasoning — that nobody explicitly programmed. These are not designed; they emerge.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SCENE 7 — PREDICTION QUIZ
+════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="prediction-scene" id="section-5" data-section="5">
+  <div class="section-label reveal">Quick check</div>
+  <p class="prediction-prompt reveal">
+    A neural network has just made a <em>wrong prediction</em>. What happens next?
+  </p>
+  <div class="prediction-options reveal-stagger" id="predictionOptions">
+    <button class="pred-option" onclick="selectAnswer(this, false)">
+      <span class="opt-letter">A</span>
+      <span>The network resets to its initial random weights and starts again</span>
+    </button>
+    <button class="pred-option" onclick="selectAnswer(this, true)">
+      <span class="opt-letter">B</span>
+      <span>The loss function scores the error, and backpropagation adjusts every weight slightly</span>
+    </button>
+    <button class="pred-option" onclick="selectAnswer(this, false)">
+      <span class="opt-letter">C</span>
+      <span>The training data is removed and replaced with the correct example</span>
+    </button>
+  </div>
+  <div class="prediction-reveal" id="predReveal">
+    <div class="reveal-title">✓ Option B is correct</div>
+    <div class="reveal-body">The network never resets — it adjusts incrementally. The loss function measures the error, backpropagation calculates how much each weight contributed to that error, and gradient descent nudges every weight in the direction that would have produced a better answer. This happens millions of times per training run.</div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SCENE 8 — OPEN EXERCISE
+════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="exercise-scene" id="section-6" data-section="6">
+  <div class="section-label reveal">Your turn</div>
+  <h2 class="section-title reveal">Explain backpropagation in plain language</h2>
+  <p class="exercise-intro reveal">A colleague asks: "How does a neural network actually learn from its mistakes?" Use the four parts below to build a clear, jargon-free explanation.</p>
+
+  <div class="exercise-card reveal">
+    <div class="exercise-weak-label">Weak explanation to improve</div>
+    <div class="exercise-weak-prompt">"The network uses backpropagation to update the weights."</div>
+
+    <div class="exercise-fields" id="ex2-fields">
+      <div class="exercise-field">
+        <label class="exercise-field-label" for="ex2-analogy">Analogy</label>
+        <textarea class="exercise-textarea" id="ex2-analogy" rows="2" placeholder="Compare it to something familiar — a chef, a student, a musician…" oninput="checkExerciseReady2()"></textarea>
+      </div>
+      <div class="exercise-field">
+        <label class="exercise-field-label" for="ex2-what">What happens</label>
+        <textarea class="exercise-textarea" id="ex2-what" rows="2" placeholder="Describe the actual process in plain terms…" oninput="checkExerciseReady2()"></textarea>
+      </div>
+      <div class="exercise-field">
+        <label class="exercise-field-label" for="ex2-why">Why it matters</label>
+        <textarea class="exercise-textarea" id="ex2-why" rows="2" placeholder="Why is this process essential to learning?…" oninput="checkExerciseReady2()"></textarea>
+      </div>
+      <div class="exercise-field">
+        <label class="exercise-field-label" for="ex2-example">One concrete example</label>
+        <textarea class="exercise-textarea" id="ex2-example" rows="2" placeholder="e.g. If a model misclassifies a cat as a dog…" oninput="checkExerciseReady2()"></textarea>
+      </div>
+      <button class="exercise-submit" id="ex2-submit" disabled onclick="submitExercise2()">
+        Fill in all parts to continue
+      </button>
+    </div>
+
+    <div class="exercise-reveal" id="ex2-reveal">
+      <div class="exercise-your-answer" id="ex2-yourAnswer"></div>
+      <div class="exercise-model-answer">
+        <div class="exercise-model-label">Model answer</div>
+        <p class="exercise-model-text">Think of it like a chef tasting a dish after it's been served and realising it's too salty. Backpropagation works backwards through every decision that led to that mistake — how much salt each cook added — and tells each one to adjust slightly next time. In a neural network: after a wrong prediction, the loss score flows backwards through every layer, and each weight gets a small nudge in the direction that would have made the answer slightly more correct. Over millions of iterations, these tiny nudges compound into genuine knowledge. In practice: if a model incorrectly classifies a cat as a dog, backpropagation identifies which neuron connections were most responsible and reduces their influence on future cat-vs-dog decisions.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     SCENE 9 — MINDMAP SVG
+════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<div class="mindmap-section" id="section-7" data-section="7">
+  <div class="section-label reveal">Concept map</div>
+  <h2 class="section-title reveal">How the learning loop connects</h2>
+
+  <svg class="mindmap-svg" viewBox="0 0 900 400" fill="none" xmlns="http://www.w3.org/2000/svg" id="nnMindmapSVG">
+    <!-- Central node -->
+    <rect x="355" y="160" width="190" height="80" rx="14" fill="rgba(155,143,255,0.12)" stroke="#9B8FFF" stroke-width="1.5"/>
+    <text x="450" y="191" text-anchor="middle" font-family="DM Mono" font-size="9" fill="#9B8FFF" letter-spacing="1.5">TRAINING</text>
+    <text x="450" y="207" text-anchor="middle" font-family="DM Mono" font-size="9" fill="#9B8FFF" letter-spacing="1.5">LOOP</text>
+    <text x="450" y="227" text-anchor="middle" font-family="Instrument Serif" font-size="11" fill="rgba(255,255,255,0.65)" font-style="italic">= intelligence</text>
+
+    <!-- Lines -->
+    <line id="nn-line1" x1="355" y1="185" x2="195" y2="95"  stroke="#9B8FFF" stroke-width="1.5" stroke-dasharray="220" stroke-dashoffset="220"/>
+    <line id="nn-line2" x1="450" y1="160" x2="450" y2="60"  stroke="#FF6B6B" stroke-width="1.5" stroke-dasharray="220" stroke-dashoffset="220"/>
+    <line id="nn-line3" x1="545" y1="185" x2="705" y2="95"  stroke="#00FFB3" stroke-width="1.5" stroke-dasharray="220" stroke-dashoffset="220"/>
+    <line id="nn-line4" x1="355" y1="215" x2="195" y2="315" stroke="#FFB347" stroke-width="1.5" stroke-dasharray="220" stroke-dashoffset="220"/>
+    <line id="nn-line5" x1="450" y1="240" x2="450" y2="340" stroke="#00FFB3" stroke-width="1.5" stroke-dasharray="220" stroke-dashoffset="220"/>
+    <line id="nn-line6" x1="545" y1="215" x2="705" y2="315" stroke="#9B8FFF" stroke-width="1.5" stroke-dasharray="220" stroke-dashoffset="220"/>
+
+    <!-- Node 1: Forward Pass -->
+    <g id="nn-node1" style="opacity:0">
+      <rect x="80" y="50" width="150" height="80" rx="12" fill="rgba(155,143,255,0.08)" stroke="#9B8FFF" stroke-width="1.5"/>
+      <text x="155" y="78" text-anchor="middle" font-family="DM Mono" font-size="9" fill="#9B8FFF" letter-spacing="1.2">FORWARD PASS</text>
+      <text x="155" y="95" text-anchor="middle" font-family="Instrument Serif" font-size="11" fill="rgba(255,255,255,0.6)" font-style="italic">input → prediction</text>
+      <text x="155" y="113" text-anchor="middle" font-family="Instrument Serif" font-size="10" fill="rgba(255,255,255,0.5)" font-style="italic">→ weights applied</text>
+    </g>
+
+    <!-- Node 2: Loss Score -->
+    <g id="nn-node2" style="opacity:0">
+      <rect x="370" y="5" width="160" height="80" rx="12" fill="rgba(255,107,107,0.08)" stroke="#FF6B6B" stroke-width="1.5"/>
+      <text x="450" y="33" text-anchor="middle" font-family="DM Mono" font-size="9" fill="#FF6B6B" letter-spacing="1.2">LOSS SCORE</text>
+      <text x="450" y="50" text-anchor="middle" font-family="Instrument Serif" font-size="11" fill="rgba(255,255,255,0.6)" font-style="italic">measures the error</text>
+      <text x="450" y="70" text-anchor="middle" font-family="Instrument Serif" font-size="10" fill="rgba(255,255,255,0.5)" font-style="italic">→ drives all learning</text>
+    </g>
+
+    <!-- Node 3: Backprop -->
+    <g id="nn-node3" style="opacity:0">
+      <rect x="670" y="50" width="150" height="80" rx="12" fill="rgba(0,255,179,0.08)" stroke="#00FFB3" stroke-width="1.5"/>
+      <text x="745" y="78" text-anchor="middle" font-family="DM Mono" font-size="9" fill="#00FFB3" letter-spacing="1.2">BACKPROP</text>
+      <text x="745" y="95" text-anchor="middle" font-family="Instrument Serif" font-size="11" fill="rgba(255,255,255,0.6)" font-style="italic">traces responsibility</text>
+      <text x="745" y="113" text-anchor="middle" font-family="Instrument Serif" font-size="10" fill="rgba(255,255,255,0.5)" font-style="italic">→ each weight blamed</text>
+    </g>
+
+    <!-- Node 4: Gradient -->
+    <g id="nn-node4" style="opacity:0">
+      <rect x="80" y="270" width="150" height="80" rx="12" fill="rgba(255,179,71,0.08)" stroke="#FFB347" stroke-width="1.5"/>
+      <text x="155" y="298" text-anchor="middle" font-family="DM Mono" font-size="9" fill="#FFB347" letter-spacing="1.2">GRADIENT</text>
+      <text x="155" y="315" text-anchor="middle" font-family="Instrument Serif" font-size="11" fill="rgba(255,255,255,0.6)" font-style="italic">direction of change</text>
+      <text x="155" y="333" text-anchor="middle" font-family="Instrument Serif" font-size="10" fill="rgba(255,255,255,0.5)" font-style="italic">→ steepest descent</text>
+    </g>
+
+    <!-- Node 5: Weight Update -->
+    <g id="nn-node5" style="opacity:0">
+      <rect x="370" y="315" width="160" height="80" rx="12" fill="rgba(0,255,179,0.08)" stroke="#00FFB3" stroke-width="1.5"/>
+      <text x="450" y="343" text-anchor="middle" font-family="DM Mono" font-size="9" fill="#00FFB3" letter-spacing="1.2">WEIGHT UPDATE</text>
+      <text x="450" y="360" text-anchor="middle" font-family="Instrument Serif" font-size="11" fill="rgba(255,255,255,0.6)" font-style="italic">nudge every connection</text>
+      <text x="450" y="380" text-anchor="middle" font-family="Instrument Serif" font-size="10" fill="rgba(255,255,255,0.5)" font-style="italic">→ tiny but consistent</text>
+    </g>
+
+    <!-- Node 6: Repeat -->
+    <g id="nn-node6" style="opacity:0">
+      <rect x="670" y="270" width="150" height="80" rx="12" fill="rgba(155,143,255,0.08)" stroke="#9B8FFF" stroke-width="1.5"/>
+      <text x="745" y="298" text-anchor="middle" font-family="DM Mono" font-size="9" fill="#9B8FFF" letter-spacing="1.2">REPEAT</text>
+      <text x="745" y="315" text-anchor="middle" font-family="Instrument Serif" font-size="11" fill="rgba(255,255,255,0.6)" font-style="italic">millions of times</text>
+      <text x="745" y="333" text-anchor="middle" font-family="Instrument Serif" font-size="10" fill="rgba(255,255,255,0.5)" font-style="italic">→ converges to skill</text>
+    </g>
+  </svg>
+</div>
+
+<!-- ════════════════════════════════════════
+     SCENE 10 — TECHNIQUES TABS
+════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<div class="techniques-section" id="section-8" data-section="8">
+  <div class="reveal" style="margin-bottom: 2rem;">
+    <div class="section-label">Going deeper</div>
+    <h2 class="section-title">Key concepts in depth</h2>
+  </div>
+
+  <div class="technique-tabs">
+    <button class="technique-tab active" onclick="switchTab(this, 'activation')">Activation Functions</button>
+    <button class="technique-tab" onclick="switchTab(this, 'learningrate')">Learning Rate</button>
+    <button class="technique-tab" onclick="switchTab(this, 'overfitting')">Overfitting</button>
+    <button class="technique-tab" onclick="switchTab(this, 'transfer')">Transfer Learning</button>
+  </div>
+
+  <!-- ACTIVATION FUNCTIONS -->
+  <div id="panel-activation" class="technique-panel active">
+    <div class="technique-name">Activation Functions</div>
+    <div class="technique-panel-grid">
+      <div>
+        <p class="technique-body">ReLU (Rectified Linear Unit) is the most widely used activation function. It outputs zero for negative inputs and passes positive inputs unchanged. This simple rule creates the non-linearity that lets deep networks learn complex patterns. Without it, stacking layers would be mathematically equivalent to having a single layer.</p>
+        <p class="technique-body">Non-linearity is the key. A network with only linear operations — no matter how deep — collapses to a single linear function. Activation functions break this collapse, allowing each layer to learn genuinely different representations.</p>
+        <pre class="technique-code">def relu(x):
+    return max(0, x)
+
+# Example:
+relu(-3.5)  →  0      # negative: blocked
+relu(0)     →  0      # zero: blocked
+relu(4.2)   →  4.2    # positive: passes through</pre>
+      </div>
+      <div>
+        <!-- ReLU SVG -->
+        <svg viewBox="0 0 340 260" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:340px;display:block;margin:0 auto;">
+          <!-- Axes -->
+          <line x1="40" y1="200" x2="300" y2="200" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+          <line x1="170" y1="20"  x2="170" y2="220" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+          <!-- Axis labels -->
+          <text x="305" y="204" font-family="DM Mono" font-size="10" fill="rgba(255,255,255,0.3)">x</text>
+          <text x="173" y="15"  font-family="DM Mono" font-size="10" fill="rgba(255,255,255,0.3)">y</text>
+          <!-- Zero label -->
+          <text x="160" y="215" font-family="DM Mono" font-size="9" fill="rgba(255,255,255,0.25)">0</text>
+          <!-- ReLU line: flat from left to 0, then diagonal -->
+          <polyline points="40,200 170,200 290,80" stroke="#00FFB3" stroke-width="2.5" fill="none"/>
+          <!-- Shaded area under positive part -->
+          <polygon points="170,200 290,80 290,200" fill="rgba(0,255,179,0.06)"/>
+          <!-- Labels -->
+          <text x="80" y="192" font-family="Instrument Serif" font-size="11" fill="rgba(255,107,107,0.7)" font-style="italic">blocked (0)</text>
+          <text x="200" y="130" font-family="Instrument Serif" font-size="11" fill="rgba(0,255,179,0.8)" font-style="italic">passes through</text>
+          <!-- Dot at origin -->
+          <circle cx="170" cy="200" r="4" fill="#00FFB3"/>
+          <!-- Title -->
+          <text x="170" y="248" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(255,255,255,0.35)" letter-spacing="1.5">ReLU FUNCTION</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEARNING RATE -->
+  <div id="panel-learningrate" class="technique-panel">
+    <div class="technique-name">Learning Rate</div>
+    <div class="technique-panel-grid">
+      <div>
+        <p class="technique-body">The learning rate controls how large each weight update step is. Too high: the network overshoots the optimal weights and diverges. Too low: training takes impossibly long and often gets stuck. Most modern training uses adaptive learning rates (Adam optimiser) that adjust automatically based on recent gradient history.</p>
+        <p class="technique-body">Finding the right learning rate is one of the most important hyperparameter choices in training. Too small and the network never converges. Too large and the loss bounces around unpredictably. Adaptive methods like Adam and AdamW largely solve this in practice.</p>
+        <pre class="technique-code"># Learning rate examples:
+lr = 0.1      # too high: diverges, loss explodes
+lr = 0.000001 # too low: glacially slow, gets stuck
+lr = 0.001    # commonly used default (Adam)
+
+# Adaptive: Adam optimiser adjusts lr per-weight
+optimizer = Adam(lr=0.001)  # standard starting point</pre>
+      </div>
+      <div>
+        <!-- Learning rate SVG -->
+        <svg viewBox="0 0 340 280" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:340px;display:block;margin:0 auto;">
+          <!-- Axes -->
+          <line x1="40" y1="220" x2="300" y2="220" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+          <line x1="40" y1="30"  x2="40"  y2="230" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+          <text x="305" y="224" font-family="DM Mono" font-size="9" fill="rgba(255,255,255,0.25)">epochs</text>
+          <text x="43"  y="25"  font-family="DM Mono" font-size="9" fill="rgba(255,255,255,0.25)">loss</text>
+          <!-- Too high: bouncy line -->
+          <polyline points="40,80 80,130 120,70 160,150 200,85 240,160 280,90" stroke="#FF6B6B" stroke-width="1.5" fill="none" stroke-dasharray="4,2"/>
+          <!-- Too low: barely moves -->
+          <polyline points="40,80 80,76 120,72 160,69 200,67 240,65 280,63" stroke="#FFB347" stroke-width="1.5" fill="none" stroke-dasharray="4,2"/>
+          <!-- Just right: smooth descent -->
+          <polyline points="40,80 80,60 120,46 160,36 200,30 240,27 280,25" stroke="#00FFB3" stroke-width="2" fill="none"/>
+          <!-- Labels -->
+          <text x="285" y="88" font-family="DM Mono" font-size="8" fill="#FF6B6B">too high</text>
+          <text x="285" y="61" font-family="DM Mono" font-size="8" fill="#FFB347">too low</text>
+          <text x="285" y="23" font-family="DM Mono" font-size="8" fill="#00FFB3">just right</text>
+          <!-- Title -->
+          <text x="170" y="260" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(255,255,255,0.35)" letter-spacing="1.5">LEARNING RATE EFFECT</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERFITTING -->
+  <div id="panel-overfitting" class="technique-panel">
+    <div class="technique-name">Overfitting</div>
+    <div class="technique-panel-grid">
+      <div>
+        <p class="technique-body">A network that memorises training data instead of learning general patterns. It performs perfectly on training data and fails on new inputs. Signs: training loss falls while validation loss rises. This is the most common failure mode in machine learning.</p>
+        <p class="technique-body">The fix is regularisation. Dropout randomly disables a fraction of neurons during training, forcing the network to learn redundant representations. L2 regularisation penalises large weights. More training data is usually the most effective cure of all.</p>
+        <pre class="technique-code"># Overfitting example:
+training_accuracy   = 99.8%   # memorised the data
+validation_accuracy = 61.2%   # generalises badly
+
+# Fix: add dropout
+model.add(Dropout(0.3))   # randomly zero 30% of neurons
+
+# After fix:
+training_accuracy   = 94.1%   # slightly lower
+validation_accuracy = 91.7%   # much better generalisation</pre>
+      </div>
+      <div>
+        <!-- Overfitting SVG -->
+        <svg viewBox="0 0 340 280" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:340px;display:block;margin:0 auto;">
+          <line x1="40" y1="220" x2="300" y2="220" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+          <line x1="40" y1="30"  x2="40"  y2="230" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+          <text x="305" y="224" font-family="DM Mono" font-size="9" fill="rgba(255,255,255,0.25)">epochs</text>
+          <text x="43"  y="25"  font-family="DM Mono" font-size="9" fill="rgba(255,255,255,0.25)">loss</text>
+          <!-- Training loss: smooth descent -->
+          <polyline points="40,180 80,140 120,110 160,80 200,55 240,38 280,25" stroke="#00FFB3" stroke-width="2" fill="none"/>
+          <!-- Validation loss: descends then rises -->
+          <polyline points="40,180 80,145 120,118 160,105 200,110 240,125 280,145" stroke="#FF6B6B" stroke-width="2" fill="none"/>
+          <!-- Overfitting zone shading -->
+          <rect x="160" y="30" width="120" height="190" fill="rgba(255,107,107,0.05)"/>
+          <line x1="160" y1="30" x2="160" y2="220" stroke="rgba(255,107,107,0.25)" stroke-width="1" stroke-dasharray="4,3"/>
+          <text x="165" y="50" font-family="DM Mono" font-size="8" fill="rgba(255,107,107,0.6)">overfitting</text>
+          <text x="165" y="62" font-family="DM Mono" font-size="8" fill="rgba(255,107,107,0.6)">zone</text>
+          <!-- Labels -->
+          <text x="285" y="23" font-family="DM Mono" font-size="8" fill="#00FFB3">train</text>
+          <text x="285" y="143" font-family="DM Mono" font-size="8" fill="#FF6B6B">valid</text>
+          <text x="170" y="260" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(255,255,255,0.35)" letter-spacing="1.5">OVERFITTING PATTERN</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRANSFER LEARNING -->
+  <div id="panel-transfer" class="technique-panel">
+    <div class="technique-name">Transfer Learning</div>
+    <div style="display:flex;flex-direction:column;gap:1.5rem;">
+      <p class="technique-body">Take a network already trained on millions of examples, freeze most of its layers (preserving the general knowledge), and only retrain the final few layers on your specific task. This reduces the data and compute required by orders of magnitude.</p>
+      <p class="technique-body">Transfer learning is why most real-world AI applications are affordable. Fine-tuning a pre-trained model costs a fraction of training from scratch. A small team with a few hundred labelled examples can reach state-of-the-art performance on a specialised task.</p>
+      <div class="tl-cols">
+        <div class="tl-col" style="background:rgba(255,107,107,0.05);border:1px solid rgba(255,107,107,0.2);">
+          <div class="tl-col-label" style="color:var(--nova);">Before (General Model)</div>
+          <div class="tl-row"><span class="tl-dot" style="background:var(--nova);"></span>Trained on millions of images</div>
+          <div class="tl-row"><span class="tl-dot" style="background:var(--nova);"></span>Weeks of compute time</div>
+          <div class="tl-row"><span class="tl-dot" style="background:var(--nova);"></span>Thousands of GPU-hours</div>
+          <div class="tl-row"><span class="tl-dot" style="background:var(--nova);"></span>Rich general visual features</div>
+        </div>
+        <div class="tl-col" style="background:rgba(0,255,179,0.05);border:1px solid rgba(0,255,179,0.2);">
+          <div class="tl-col-label" style="color:var(--pulse);">After (Fine-tuned)</div>
+          <div class="tl-row"><span class="tl-dot" style="background:var(--pulse);"></span>Fine-tuned on 500 medical scans</div>
+          <div class="tl-row"><span class="tl-dot" style="background:var(--pulse);"></span>~2 hours of training</div>
+          <div class="tl-row"><span class="tl-dot" style="background:var(--pulse);"></span>Single GPU sufficient</div>
+          <div class="tl-row"><span class="tl-dot" style="background:var(--pulse);"></span>World-class diagnostic accuracy</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SCENE 11 — CLEAN ENDING
+════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="ending-scene" id="section-end" data-section="8">
+  <div class="ending-label reveal">Lesson complete</div>
+  <h2 class="ending-title reveal">You now understand how machines learn.</h2>
+
+  <div class="skills-earned" id="skillsEarned">
+    <div class="skill-row">
+      <div class="skill-check">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#00FFB3" stroke-width="2">
+          <polyline points="2,6 5,9 10,3"/>
+        </svg>
+      </div>
+      <span class="skill-text">How forward pass and backpropagation work together in a training loop</span>
+    </div>
+    <div class="skill-row" style="transition-delay:0.15s;">
+      <div class="skill-check">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#00FFB3" stroke-width="2">
+          <polyline points="2,6 5,9 10,3"/>
+        </svg>
+      </div>
+      <span class="skill-text">Why loss functions and gradient descent are the engine of every neural network</span>
+    </div>
+    <div class="skill-row" style="transition-delay:0.3s;">
+      <div class="skill-check">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#00FFB3" stroke-width="2">
+          <polyline points="2,6 5,9 10,3"/>
+        </svg>
+      </div>
+      <span class="skill-text">The difference between overfitting, transfer learning, and emergent capabilities</span>
+    </div>
+  </div>
+
+  <div class="cta-wrap reveal" id="ctaWrap" style="margin-top:3rem;">
+    <a class="cta-btn" href="#" id="nextBtn">
+      Next lesson →
+      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 9h10M9 4l5 5-5 5"/>
+      </svg>
+    </a>
+  </div>
+</section>
+
+<div style="height:8vh;"></div>
+
+<!-- ════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════ -->
+<script>
+// ─── 1. LENIS SMOOTH SCROLL ───────────────────────────────────────
+const lenis = new Lenis({
+  duration: 1.1,
+  easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+  smoothWheel: true,
+});
+function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+requestAnimationFrame(raf);
+
+// ─── 2. GSAP + ScrollTrigger ──────────────────────────────────────
+gsap.registerPlugin(ScrollTrigger);
+lenis.on('scroll', ScrollTrigger.update);
+gsap.ticker.add((time) => { lenis.raf(time * 1000); });
+gsap.ticker.lagSmoothing(0);
+
+// Nav progress bar
+const navProgress = document.getElementById('navProgress');
+window.addEventListener('scroll', () => {
+  const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+  navProgress.style.width = pct + '%';
+}, { passive: true });
+
+// ─── 3. CANVAS NODE NETWORK ───────────────────────────────────────
+(function() {
+  const canvas = document.getElementById('networkCanvas');
+  const ctx = canvas.getContext('2d');
+  function resize() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  const nodes = Array.from({ length: 28 }, () => ({
+    x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+    vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4,
+    r: Math.random() * 2.5 + 1,
+  }));
+  function draw() {
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 160) {
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(155,143,255,${(1 - dist/160) * 0.25})`;
+          ctx.lineWidth = 0.5;
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+    nodes.forEach(n => {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(155,143,255,0.6)';
+      ctx.fill();
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < 0 || n.x > canvas.width) n.vx *= -1;
+      if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ─── 4. SCROLL REVEAL ────────────────────────────────────────────
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in-view'); revealObs.unobserve(e.target); }
+  });
+}, { threshold: 0.05 });
+document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => revealObs.observe(el));
+
+// ─── 5. ANATOMY CARDS ────────────────────────────────────────────
+document.querySelectorAll('.anatomy-card').forEach((card) => {
+  card.style.opacity = '0';
+  card.style.transform = 'translateY(28px)';
+  card.style.transition = 'opacity 0.6s ease, transform 0.6s cubic-bezier(0.16,1,0.3,1)';
+  const obs = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) {
+      setTimeout(() => { card.style.opacity = '1'; card.style.transform = 'translateY(0)'; }, 80);
+      obs.disconnect();
+    }
+  }, { threshold: 0.12 });
+  obs.observe(card);
+});
+
+// ─── 6. RAIL DOTS + SECTION TRACKING ─────────────────────────────
+const sections = document.querySelectorAll('[data-section]');
+const dots = document.querySelectorAll('.rail-dot');
+const sectionObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting && e.intersectionRatio > 0.3) {
+      const idx = parseInt(e.target.dataset.section);
+      dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+    }
+  });
+}, { threshold: 0.3 });
+sections.forEach(s => sectionObs.observe(s));
+dots.forEach((dot, i) => {
+  dot.addEventListener('click', () => {
+    const target = document.querySelector(`[data-section="${i}"]`);
+    if (target) lenis.scrollTo(target, { offset: -80 });
+  });
+});
+
+// ─── 7. MINDMAP ANIMATION ─────────────────────────────────────────
+const mmObs = new IntersectionObserver((entries) => {
+  if (!entries[0].isIntersecting) return;
+  const lineDelays = [0, 150, 300, 450, 600, 750];
+  ['nn-line1','nn-line2','nn-line3','nn-line4','nn-line5','nn-line6'].forEach((id, i) => {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) { el.style.transition = 'stroke-dashoffset 0.8s cubic-bezier(0.16,1,0.3,1)'; el.style.strokeDashoffset = '0'; }
+    }, lineDelays[i]);
+  });
+  ['nn-node1','nn-node2','nn-node3','nn-node4','nn-node5','nn-node6'].forEach((id, i) => {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.transition = 'opacity 0.5s ease, transform 0.5s cubic-bezier(0.34,1.56,0.64,1)';
+        el.style.opacity = '1';
+        el.style.transform = 'scale(1)';
+        el.style.transformBox = 'fill-box';
+        el.style.transformOrigin = 'center';
+      }
+    }, lineDelays[i] + 250);
+  });
+  mmObs.disconnect();
+}, { threshold: 0.2 });
+const mmEl = document.getElementById('nnMindmapSVG');
+if (mmEl) mmObs.observe(mmEl);
+
+// ─── 8. PREDICTION QUIZ ───────────────────────────────────────────
+let answered = false;
+
+function selectAnswer(btn, correct) {
+  if (answered) return;
+  answered = true;
+  const allOpts = document.querySelectorAll('.pred-option');
+  allOpts.forEach(opt => {
+    opt.style.pointerEvents = 'none';
+    if (opt === btn) {
+      opt.classList.add(correct ? 'correct' : 'wrong');
+    } else if (!correct && opt === allOpts[1]) {
+      opt.classList.add('correct');
+    } else {
+      opt.classList.add('wrong');
+    }
+  });
+  setTimeout(() => {
+    const reveal = document.getElementById('predReveal');
+    if (reveal) reveal.classList.add('open');
+  }, 400);
+}
+
+// ─── 9. OPEN EXERCISE ────────────────────────────────────────────
+function checkExerciseReady2() {
+  const ids = ['ex2-analogy','ex2-what','ex2-why','ex2-example'];
+  const allFilled = ids.every(id => {
+    const el = document.getElementById(id);
+    return el && el.value.trim().length > 3;
+  });
+  const btn = document.getElementById('ex2-submit');
+  if (btn) {
+    btn.disabled = !allFilled;
+    btn.classList.toggle('ready', allFilled);
+    btn.textContent = allFilled ? 'See model answer →' : 'Fill in all parts to continue';
+  }
+}
+
+function submitExercise2() {
+  const analogy  = document.getElementById('ex2-analogy').value.trim();
+  const what     = document.getElementById('ex2-what').value.trim();
+  const why      = document.getElementById('ex2-why').value.trim();
+  const example  = document.getElementById('ex2-example').value.trim();
+
+  const yourDiv = document.getElementById('ex2-yourAnswer');
+  if (yourDiv) {
+    yourDiv.innerHTML = `
+      <div style="font-family:var(--font-mono);font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:0.75rem;">Your explanation</div>
+      <p style="margin-bottom:0.5rem;"><span style="color:#9B8FFF;font-family:var(--font-mono);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;margin-right:0.5rem;">Analogy:</span>${analogy}</p>
+      <p style="margin-bottom:0.5rem;"><span style="color:#9B8FFF;font-family:var(--font-mono);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;margin-right:0.5rem;">What happens:</span>${what}</p>
+      <p style="margin-bottom:0.5rem;"><span style="color:#9B8FFF;font-family:var(--font-mono);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;margin-right:0.5rem;">Why it matters:</span>${why}</p>
+      <p><span style="color:#9B8FFF;font-family:var(--font-mono);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;margin-right:0.5rem;">Example:</span>${example}</p>
+    `;
+  }
+  document.getElementById('ex2-fields').style.display = 'none';
+  const reveal = document.getElementById('ex2-reveal');
+  if (reveal) reveal.classList.add('open');
+}
+
+// ─── 10. TECHNIQUE TABS ───────────────────────────────────────────
+function switchTab(tab, panelId) {
+  document.querySelectorAll('.technique-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.technique-panel').forEach(p => p.classList.remove('active'));
+  tab.classList.add('active');
+  const panel = document.getElementById('panel-' + panelId);
+  if (panel) panel.classList.add('active');
+}
+
+// ─── 11. ENDING SKILLS REVEAL ────────────────────────────────────
+const skillObs = new IntersectionObserver((entries) => {
+  if (!entries[0].isIntersecting) return;
+  document.querySelectorAll('.skill-row').forEach((el, i) => {
+    setTimeout(() => el.classList.add('visible'), i * 150);
+  });
+  skillObs.disconnect();
+}, { threshold: 0.3 });
+const skillsEl = document.getElementById('skillsEarned');
+if (skillsEl) skillObs.observe(skillsEl);
+
+// ─── 12. MAGNETIC BUTTON ─────────────────────────────────────────
+const ctaBtn = document.getElementById('nextBtn');
+const ctaWrap = document.getElementById('ctaWrap');
+if (ctaWrap && ctaBtn) {
+  ctaWrap.addEventListener('mousemove', (e) => {
+    const rect = ctaBtn.getBoundingClientRect();
+    const dx = (e.clientX - (rect.left + rect.width / 2)) * 0.25;
+    const dy = (e.clientY - (rect.top + rect.height / 2)) * 0.25;
+    ctaBtn.style.transform = `translate(${dx}px,${dy}px)`;
+  });
+  ctaWrap.addEventListener('mouseleave', () => {
+    ctaBtn.style.transition = 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1)';
+    ctaBtn.style.transform = 'translate(0,0)';
+    setTimeout(() => ctaBtn.style.transition = '', 500);
+  });
+}
+
+// ─── 13. TEXT SCRAMBLE ON HOOK TITLE ─────────────────────────────
+(function() {
+  const el = document.getElementById('hookTitle');
+  if (!el) return;
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const textNode = el.firstChild;
+  if (!textNode || textNode.nodeType !== 3) return;
+  const target = textNode.textContent;
+  let frame = 0;
+  const totalFrames = 30;
+  function scramble() {
+    if (frame > totalFrames) { textNode.textContent = target; return; }
+    const resolved = Math.floor((frame / totalFrames) * target.length);
+    textNode.textContent = target.split('').map((ch, i) => {
+      if (i < resolved || ch === ' ') return ch;
+      return chars[Math.floor(Math.random() * chars.length)];
+    }).join('');
+    frame++;
+    requestAnimationFrame(scramble);
+  }
+  setTimeout(scramble, 300);
+})();
+
+// ─── 14. BENTO CARD MOUSE GLOW ────────────────────────────────────
+document.querySelectorAll('.bento-card').forEach(card => {
+  card.addEventListener('mousemove', (e) => {
+    const rect = card.getBoundingClientRect();
+    card.style.setProperty('--mouse-x', ((e.clientX - rect.left) / rect.width * 100) + '%');
+    card.style.setProperty('--mouse-y', ((e.clientY - rect.top) / rect.height * 100) + '%');
+  });
+});
+</script>
+
+</body>
+</html>

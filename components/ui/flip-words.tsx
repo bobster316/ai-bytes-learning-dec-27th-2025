@@ -12,29 +12,19 @@ export const FlipWords = ({
     duration?: number;
     className?: string;
 }) => {
-    const [currentWord, setCurrentWord] = useState(words[0]);
-    const [isAnimating, setIsAnimating] = useState<boolean>(false);
-
-    const startAnimation = useCallback(() => {
-        const word = words[words.indexOf(currentWord) + 1] || words[0];
-        setCurrentWord(word);
-        setIsAnimating(true);
-    }, [currentWord, words]);
+    const [index, setIndex] = useState(0);
 
     useEffect(() => {
-        if (!isAnimating) {
-            setTimeout(() => {
-                startAnimation();
-            }, duration);
-        }
-    }, [isAnimating, duration, startAnimation]);
+        const interval = setInterval(() => {
+            setIndex((prev) => (prev + 1) % words.length);
+        }, duration);
+        return () => clearInterval(interval);
+    }, [words.length, duration]);
+
+    const currentWord = words[index];
 
     return (
-        <AnimatePresence
-            onExitComplete={() => {
-                setIsAnimating(false);
-            }}
-        >
+        <AnimatePresence mode="wait">
             <motion.div
                 initial={{
                     opacity: 0,

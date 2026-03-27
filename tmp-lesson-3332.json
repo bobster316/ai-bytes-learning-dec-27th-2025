@@ -1,0 +1,162 @@
+[
+  {
+    "id": "les_002_header",
+    "tag": "AI Foundations",
+    "type": "lesson_header",
+    "order": 1,
+    "title": "AI Applications in Aviation: An Overview",
+    "duration": 15,
+    "difficulty": "beginner"
+  },
+  {
+    "id": "les_002_objective",
+    "type": "objective",
+    "order": 2,
+    "objective": "Identify key areas where AI is applied in aviation."
+  },
+  {
+    "id": "les_002_intro",
+    "body": "Imagine ordering a pizza online. AI helps predict your favorite toppings and the fastest delivery route. Similarly, AI is transforming aviation, making flights safer, more efficient, and even more enjoyable for passengers.",
+    "type": "text",
+    "order": 3,
+    "heading": "Taking Flight with AI"
+  },
+  {
+    "id": "les_002_full_image",
+    "url": "https://source.unsplash.com/1600x900/?airplane,cockpit",
+    "type": "full_image",
+    "order": 4,
+    "caption": "AI is changing how we fly, from the cockpit to air traffic control.",
+    "alt_text": "Cinematic view of a modern airplane cockpit during flight, focusing on the instrument panel and the horizon."
+  },
+  {
+    "id": "les_002_text_flight_planning",
+    "body": "AI algorithms analyze vast amounts of data, including weather patterns, air traffic, and aircraft performance. This enables airlines to optimize flight routes, saving fuel and reducing delays. Think of it as finding the shortest, safest route on Google Maps, but for airplanes!",
+    "type": "text",
+    "order": 5,
+    "heading": "AI in Flight Planning"
+  },
+  {
+    "id": "les_002_image_text_row_maintenance",
+    "text": "AI plays a crucial role in predictive maintenance. By analyzing sensor data from aircraft, AI can identify potential mechanical issues before they lead to failures. This reduces downtime and improves safety.",
+    "type": "image_text_row",
+    "order": 6,
+    "reverse": false,
+    "image_url": "https://source.unsplash.com/800x600/?airplane,maintenance",
+    "image_alt_text": "Aviation mechanic inspecting an airplane engine during maintenance."
+  },
+  {
+    "id": "les_002_text_air_traffic_control",
+    "body": "AI can help manage air traffic more efficiently by predicting potential conflicts and optimizing flight paths. This leads to reduced congestion, shorter flight times, and fewer delays for passengers. It's like having an AI traffic cop in the sky!",
+    "type": "text",
+    "order": 7,
+    "heading": "AI and Air Traffic Control"
+  },
+  {
+    "id": "les_002_callout",
+    "body": "AI systems in aviation are designed to assist, not replace, human operators. Pilots and air traffic controllers remain in control, using AI as a powerful tool to enhance their decision-making.",
+    "icon": "warning",
+    "type": "callout",
+    "order": 8
+  },
+  {
+    "id": "les_002_image_text_row_autopilot",
+    "text": "Modern autopilot systems use AI algorithms to control the aircraft's flight path, altitude, and speed. This reduces pilot workload, especially on long flights, and improves fuel efficiency.",
+    "type": "image_text_row",
+    "order": 9,
+    "reverse": true,
+    "image_url": "https://source.unsplash.com/800x600/?airplane,autopilot",
+    "image_alt_text": "Close-up of an airplane autopilot system in operation during flight."
+  },
+  {
+    "id": "les_002_industry_tabs",
+    "tabs": [
+      {
+        "title": "Commercial Airlines",
+        "content": "Airlines use AI for dynamic pricing, personalized customer service, and optimizing crew schedules. This leads to increased revenue and improved customer satisfaction."
+      },
+      {
+        "title": "Cargo Transportation",
+        "content": "AI optimizes cargo loading, routing, and delivery schedules for increased efficiency. This ensures timely delivery of goods and reduces transportation costs."
+      },
+      {
+        "title": "Military Aviation",
+        "content": "AI powers autonomous drones, enhances pilot training simulations, and improves threat detection capabilities. This strengthens national security and protects military personnel."
+      }
+    ],
+    "type": "industry_tabs",
+    "order": 10
+  },
+  {
+    "id": "les_002_quiz",
+    "type": "quiz",
+    "order": 11,
+    "questions": [
+      {
+        "answer": "In-flight Entertainment Selection",
+        "options": [
+          "Predictive Maintenance",
+          "Optimized Flight Planning",
+          "Automated Baggage Handling",
+          "In-flight Entertainment Selection"
+        ],
+        "question": "Which of these is NOT a typical application of AI in aviation?"
+      },
+      {
+        "answer": "By predicting potential mechanical issues",
+        "options": [
+          "By replacing human pilots entirely",
+          "By predicting potential mechanical issues",
+          "By increasing the number of flights",
+          "By eliminating the need for air traffic control"
+        ],
+        "question": "How does AI contribute to safer air travel?"
+      },
+      {
+        "answer": "By predicting potential conflicts and optimizing flight paths",
+        "options": [
+          "By creating new airport runways",
+          "By predicting potential conflicts and optimizing flight paths",
+          "By reducing the number of air traffic controllers",
+          "By allowing planes to fly closer together"
+        ],
+        "question": "What is one way AI enhances efficiency in air traffic control?"
+      }
+    ]
+  },
+  {
+    "id": "les_002_key_terms",
+    "type": "key_terms",
+    "order": 12,
+    "terms": [
+      {
+        "term": "Predictive Maintenance",
+        "definition": "Using AI to anticipate and prevent equipment failures."
+      },
+      {
+        "term": "Flight Planning",
+        "definition": "Optimizing routes for fuel efficiency and safety."
+      },
+      {
+        "term": "Air Traffic Control",
+        "definition": "Managing aircraft movements to prevent collisions."
+      },
+      {
+        "term": "Autopilot",
+        "definition": "A system that automatically controls an aircraft's flight."
+      }
+    ]
+  },
+  {
+    "id": "les_002_completion",
+    "xp": 75,
+    "text": "You've successfully identified key areas where AI is applied in aviation.",
+    "type": "completion",
+    "order": 13,
+    "title": "Congratulations!",
+    "skills": [
+      "AI Awareness",
+      "Aviation Basics"
+    ]
+  }
+]

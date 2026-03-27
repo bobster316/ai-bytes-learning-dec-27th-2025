@@ -1,0 +1,50 @@
+{
+  "course_id": 828,
+  "course_topic": "Intro to Transformer Architecture",
+  "domain_history": [
+    "Sports"
+  ],
+  "structure_history": [
+    "The Hook"
+  ],
+  "tone_history": [
+    "Warm Mentor"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "recurrent neural network animation",
+    "AI applications demo"
+  ],
+  "used_image_urls": [],
+  "used_video_urls": [
+    {
+      "query": "This video demonstrates applications of Transformer Models from the \"AI Lesson\". The initial view sh",
+      "url": "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/videos/veo-1774613127495-idu6kg.mp4",
+      "source": "veo"
+    },
+    {
+      "query": "This video demonstrates the limitations of Recurrent Neural Networks from \"AI Lesson\". Initially, a ",
+      "url": "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/videos/veo-1774613128340-y4aia8.mp4",
+      "source": "veo"
+    }
+  ],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 0,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 0,
+    "type_cards": 0,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 0,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

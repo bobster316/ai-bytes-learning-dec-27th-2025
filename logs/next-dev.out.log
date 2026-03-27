@@ -1,0 +1,117 @@
+
+> ai-bytes-learning@0.1.0 dev
+> next dev
+
+   ▲ Next.js 16.0.1 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.167:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1051ms
+ ○ Compiling / ...
+ GET / 200 in 3.9s (compile: 3.6s, render: 331ms)
+Fetching fresh news from RSS feeds
+Fetching from AI News...
+Fetching from VentureBeat AI...
+Fetching from TechCrunch AI...
+Fetching from The Verge AI...
+Fetching from Wired AI...
+Fetching from Ars Technica...
+Fetching from ZDNet AI...
+Fetching from MIT Tech Review...
+Fetching from Google AI Blog...
+Fetching from OpenAI Blog...
+Successfully fetched 10 items from The Verge AI
+Successfully fetched 20 items from TechCrunch AI
+Successfully fetched 10 items from Wired AI
+Successfully fetched 10 items from MIT Tech Review
+Successfully fetched 12 items from AI News
+Successfully fetched 7 items from VentureBeat AI
+Successfully fetched 20 items from ZDNet AI
+Successfully fetched 20 items from Ars Technica
+Total articles fetched: 109
+[Article 1] "Forget the flagship - this midrange Galaxy checks all the right boxes at less than $200" - Image: NONE
+[Article 2] "6 days left to lock in the lowest TechCrunch Disrupt 2026 rates" - Image: NONE
+[Article 3] "I've tested dozens of power stations - this one handled at everything I threw at it" - Image: NONE
+Mapped 30 articles
+After deduplication: 30 unique articles
+Found 3 articles
+Successfully cached 3 articles. Cache valid until 2026-02-22T22:31:16.247Z
+ GET /api/news 200 in 692ms (compile: 297ms, render: 395ms)
+ GET / 200 in 99ms (compile: 5ms, render: 94ms)
+Returning cached news data
+ GET /api/news 200 in 10ms (compile: 2ms, render: 8ms)
+ ✓ Compiled in 162ms
+ GET / 200 in 233ms (compile: 56ms, render: 177ms)
+Returning cached news data
+ GET /api/news 200 in 10ms (compile: 2ms, render: 7ms)
+ ✓ Compiled in 178ms
+ ✓ Compiled in 182ms
+ ✓ Compiled in 156ms
+ ✓ Compiled in 150ms
+ GET / 200 in 255ms (compile: 55ms, render: 200ms)
+Returning cached news data
+ GET /api/news 200 in 13ms (compile: 6ms, render: 7ms)
+ POST /api/sterling/tts 200 in 1370ms (compile: 101ms, render: 1269ms)
+ POST /api/sterling/tts 200 in 1027ms (compile: 3ms, render: 1024ms)
+ GET / 200 in 94ms (compile: 6ms, render: 88ms)
+Returning cached news data
+ GET /api/news 200 in 9ms (compile: 1604µs, render: 7ms)
+ GET /categories/AI Product Development.png 404 in 445ms (compile: 380ms, render: 65ms)
+ POST /api/sterling/tts 200 in 1012ms (compile: 3ms, render: 1008ms)
+ GET / 200 in 92ms (compile: 5ms, render: 87ms)
+ GET / 200 in 123ms (compile: 7ms, render: 116ms)
+ GET / 200 in 107ms (compile: 6ms, render: 101ms)
+ GET / 200 in 117ms (compile: 4ms, render: 112ms)
+ GET / 200 in 117ms (compile: 4ms, render: 112ms)
+Returning cached news data
+ GET /api/news 200 in 14ms (compile: 2ms, render: 12ms)
+ POST /api/sterling/tts 200 in 1012ms (compile: 3ms, render: 1009ms)
+ POST /api/sterling/tts 200 in 2.2s (compile: 2ms, render: 2.2s)
+ POST /api/sterling/tts 200 in 1810ms (compile: 2ms, render: 1808ms)
+ POST /api/sterling/tts 200 in 3.8s (compile: 2ms, render: 3.8s)
+ POST /api/sterling/tts 200 in 1908ms (compile: 2ms, render: 1906ms)
+ POST /api/sterling/tts 200 in 2.1s (compile: 2ms, render: 2.1s)
+ POST /api/sterling/tts 200 in 2.1s (compile: 2ms, render: 2.1s)
+ ✓ Compiled in 7ms
+ ✓ Compiled in 153ms
+ ✓ Compiled in 152ms
+ ✓ Compiled in 4ms
+ GET / 200 in 330ms (compile: 75ms, render: 255ms)
+Fetching fresh news from RSS feeds
+Fetching from AI News...
+Fetching from VentureBeat AI...
+Fetching from TechCrunch AI...
+Fetching from The Verge AI...
+Fetching from Wired AI...
+Fetching from Ars Technica...
+Fetching from ZDNet AI...
+Fetching from MIT Tech Review...
+Fetching from Google AI Blog...
+Fetching from OpenAI Blog...
+Successfully fetched 20 items from TechCrunch AI
+Successfully fetched 10 items from The Verge AI
+Successfully fetched 10 items from Wired AI
+Successfully fetched 20 items from Ars Technica
+Successfully fetched 12 items from AI News
+Successfully fetched 10 items from MIT Tech Review
+Successfully fetched 7 items from VentureBeat AI
+Successfully fetched 20 items from ZDNet AI
+Total articles fetched: 109
+[Article 1] "Samsung is adding Perplexity to Galaxy AI" - Image: https://platform.theverge.com/wp-content/uploads/sites/2/2026/02/Samsung-Mobile-Galaxy-AI-Perplexity-AI-Agent-Expansion-of-Galaxy-AI_main1.jpg?quality=90&strip=all&crop=0,0,100,100
+[Article 2] "Forget the flagship - this midrange Galaxy checks all the right boxes at less than $200" - Image: NONE
+[Article 3] "6 days left to lock in the lowest TechCrunch Disrupt 2026 rates" - Image: NONE
+Mapped 30 articles
+After deduplication: 30 unique articles
+Found 4 articles
+Successfully cached 4 articles. Cache valid until 2026-02-22T23:02:14.637Z
+ GET /api/news 200 in 641ms (compile: 2ms, render: 639ms)
+ GET /api/news/image?url=https%3A%2F%2Fplatform.theverge.com%2Fwp-content%2Fuploads%2Fsites%2F2%2F2026%2F02%2FSamsung-Mobile-Galaxy-AI-Perplexity-AI-Agent-Expansion-of-Galaxy-AI_main1.jpg%3Fquality%3D90%26strip%3Dall%26crop%3D0%2C0%2C100%2C100 200 in 129ms (compile: 81ms, render: 48ms)
+ POST /api/sterling/tts 200 in 1011ms (compile: 2ms, render: 1009ms)
+ POST /api/sterling/tts 200 in 1071ms (compile: 2ms, render: 1068ms)
+ POST /api/sterling/tts 200 in 1116ms (compile: 2ms, render: 1114ms)
+ POST /api/sterling/tts 200 in 1151ms (compile: 1770µs, render: 1150ms)
+ POST /api/sterling/tts 200 in 1009ms (compile: 3ms, render: 1006ms)
+ ✓ Compiled in 5ms
+ ✓ Compiled in 157ms

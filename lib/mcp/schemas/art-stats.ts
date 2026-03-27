@@ -1,6 +1,6 @@
 /**
  * @fileoverview Defines the Model Context Protocol for generating structured stats of art.
- * This file specifies the context for the AI and the expected shape of the AI-generated elements.
+ * This file specifies the context and the expected shape of the generated elements.
  */
 
 /**

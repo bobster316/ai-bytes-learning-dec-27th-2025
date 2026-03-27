@@ -1,0 +1,418 @@
+{
+  "videoScript": {
+    "hook": {
+      "duration": 8,
+      "script": "Imagine teaching a computer to recognise cats. Neural networks learn by example, just like us!"
+    },
+    "totalDuration": 43
+  },
+  "blocks": [
+    {
+      "id": "lesson_header_001",
+      "order": 1,
+      "type": "lesson_header",
+      "tag": "AI Fundamentals",
+      "title": "What Is a Neural Network?",
+      "duration": 15,
+      "difficulty": "beginner"
+    },
+    {
+      "id": "objective_001",
+      "order": 2,
+      "type": "objective",
+      "statement": "After this lesson, you will be able to explain how a neural network learns from examples using weights, layers, and activation functions — without needing any maths background."
+    },
+    {
+      "id": "text_001",
+      "order": 3,
+      "type": "text",
+      "content": "Neural networks are a type of machine learning algorithm inspired by the structure of the human brain. They are the engine behind many modern AI applications, from image recognition to language translation. But how do these networks actually 'learn'? The core idea is learning from examples. Instead of explicitly programming rules, we feed the network data and let it adjust itself to find patterns. This adjustment happens through interconnected nodes organised in layers. These connections have 'weights' which are critical to the learning process.\n\nThink of it like teaching a child to identify apples. You show them many pictures of apples, and they gradually learn to distinguish them from other fruits. A neural network does something similar. Each layer in the network processes the input data in a specific way. The first layer might look for basic features like edges and colours. Subsequent layers combine these features to recognise more complex shapes and patterns. The 'weights' on the connections between these layers determine how much importance is given to each feature.\n\nActivation functions introduce non-linearity, allowing networks to learn complex patterns. Without them, the network would simply be a linear regression model, severely limiting its ability to learn intricate relationships in data. The entire network's goal is to refine these weights through a process called 'training'. During training, the network compares its predictions to the actual values and adjusts the weights to reduce the error. This process is repeated many times until the network can accurately predict the output for new, unseen data."
+    },
+    {
+      "id": "full_image_001",
+      "order": 4,
+      "type": "full_image",
+      "url": "https://images.unsplash.com/photo-1588289443127-c4fd25c647d1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=Mnw0MDc0Mzl8MHwxfHNlYXJjaHwxfHxuZXVyYWwlMjBmb3Jlc3R8ZW58MHx8fHwxNjg1NjU3Njk5&ixlib=rb-4.0.3&q=80&w=2000",
+      "caption": "Neural networks are inspired by the interconnected nature of the brain, learning through complex patterns."
+    },
+    {
+      "id": "video_snippet_001",
+      "order": 5,
+      "type": "video_snippet",
+      "url": "https://example.com/neural_network_intro.mp4"
+    },
+    {
+      "id": "text_002",
+      "order": 6,
+      "type": "text",
+      "content": "Weights are the key to learning. They determine the strength of the connection between neurons. Higher weight means the signal has a stronger influence. During training, the network adjusts these weights to improve its accuracy. If the network makes an incorrect prediction, the weights are adjusted to reduce the error in the next prediction."
+    },
+    {
+      "id": "callout_001",
+      "order": 7,
+      "type": "callout",
+      "variant": "tip",
+      "content": "Think of weights as dials that control the flow of information through the network. Turning the dials correctly is how the network learns!"
+    },
+    {
+      "id": "interactive_vis_001",
+      "order": 8,
+      "type": "interactive_vis",
+      "title": "Weight Adjustment",
+      "description": "See how weights change during training:",
+      "codeSnippet": "[\n  {\"input\": 0.5, \"weight\": 0.8, \"output\": 0.4},\n  {\"input\": 0.5, \"weight\": 0.9, \"output\": 0.45},\n  {\"input\": 0.5, \"weight\": 0.7, \"output\": 0.35}\n]",
+      "language": "json"
+    },
+    {
+      "id": "text_003",
+      "order": 9,
+      "type": "text",
+      "content": "Layers are the building blocks of a neural network. Each layer performs a specific transformation on the input data. A typical network consists of an input layer, one or more hidden layers, and an output layer. The input layer receives the initial data. The hidden layers perform calculations. The output layer produces the final prediction."
+    },
+    {
+      "id": "image_text_row_001",
+      "order": 10,
+      "type": "image_text_row",
+      "image_url": "https://images.unsplash.com/photo-1518770660439-464ef5093458?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=Mnw0MDc0Mzl8MHwxfHNlYXJjaHw0fHxjb21wdXRlciUyMG5ldHdvcmslMjBjb25uZWN0aW9uc3xlbnwwfHx8fDE2ODU2NTc3OTc&ixlib=rb-4.0.3&q=80&w=1000",
+      "text": "The deeper the network (more hidden layers), the more complex patterns it can learn. However, deeper networks also require more data and computational power to train.",
+      "reverse": false
+    },
+    {
+      "id": "callout_002",
+      "order": 11,
+      "type": "callout",
+      "variant": "warning",
+      "content": "Adding too many layers can lead to 'overfitting,' where the network learns the training data too well and performs poorly on new data."
+    },
+    {
+      "id": "type_cards_001",
+      "order": 12,
+      "type": "type_cards",
+      "cards": [
+        {
+          "title": "Input Layer",
+          "content": "Receives the initial data. No calculations performed here."
+        },
+        {
+          "title": "Hidden Layers",
+          "content": "Perform complex calculations to extract patterns."
+        },
+        {
+          "title": "Output Layer",
+          "content": "Produces the final prediction based on calculations."
+        }
+      ]
+    },
+    {
+      "id": "punch_quote_001",
+      "order": 13,
+      "type": "punch_quote",
+      "content": "Neural networks learn by adjusting internal weights to match desired outputs."
+    },
+    {
+      "id": "text_004",
+      "order": 14,
+      "type": "text",
+      "content": "Activation functions introduce non-linearity into the network. This allows the network to learn complex patterns that a linear model could not. Common activation functions include ReLU, sigmoid, and tanh. Each has its own characteristics and suitability for different tasks."
+    },
+    {
+      "id": "interactive_vis_002",
+      "order": 15,
+      "type": "interactive_vis",
+      "title": "ReLU Activation Function",
+      "description": "Explore how ReLU transforms input values:",
+      "codeSnippet": "function relu(x) {\n  return Math.max(0, x);\n}\n\nconsole.log(relu(-2)); // Output: 0\nconsole.log(relu(5));  // Output: 5",
+      "language": "javascript"
+    },
+    {
+      "id": "callout_003",
+      "order": 16,
+      "type": "callout",
+      "variant": "tip",
+      "content": "Activation functions are like switches that turn neurons on or off based on the input they receive."
+    },
+    {
+      "id": "prediction_001",
+      "order": 17,
+      "type": "prediction",
+      "questionText": "Which part of a neural network adjusts during learning?",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Activation functions",
+          "isCorrect": false
+        },
+        {
+          "letter": "B",
+          "text": "Weights",
+          "isCorrect": true
+        },
+        {
+          "letter": "C",
+          "text": "The number of layers",
+          "isCorrect": false
+        }
+      ],
+      "correctFeedback": "Correct! Weights are adjusted to minimize prediction errors.",
+      "incorrectFeedback": "Not quite. The weights are the parameters that the network adjusts."
+    },
+    {
+      "id": "applied_case_001",
+      "order": 18,
+      "type": "applied_case",
+      "title": "Fraud Detection",
+      "scenario": "A bank wants to use machine learning to detect fraudulent transactions. They have a large dataset of past transactions, including features like transaction amount, location, and time. The challenge is to build a model that can accurately identify fraudulent transactions in real-time.",
+      "challenge": "Build a neural network that can classify transactions as either fraudulent or legitimate.",
+      "resolution": "The bank trains a neural network using the historical transaction data. The network learns to identify patterns associated with fraudulent transactions. When a new transaction occurs, the network analyzes the transaction data and predicts the probability of fraud. If the probability exceeds a certain threshold, the transaction is flagged for further investigation."
+    },
+    {
+      "id": "industry_tabs_001",
+      "order": 19,
+      "type": "industry_tabs",
+      "tabs": [
+        {
+          "title": "Healthcare",
+          "content": "Neural networks are used for medical image analysis, drug discovery, and personalized medicine."
+        },
+        {
+          "title": "Finance",
+          "content": "Neural networks are used for fraud detection, risk assessment, and algorithmic trading."
+        },
+        {
+          "title": "Retail",
+          "content": "Neural networks are used for recommendation systems, inventory management, and customer segmentation."
+        },
+        {
+          "title": "Manufacturing",
+          "content": "Neural networks are used for quality control, predictive maintenance, and process optimization."
+        },
+        {
+          "title": "Transportation",
+          "content": "Neural networks are used for autonomous driving, traffic prediction, and route optimization."
+        }
+      ]
+    },
+    {
+      "id": "callout_004",
+      "order": 20,
+      "type": "callout",
+      "variant": "tip",
+      "content": "Neural networks are versatile tools applicable across numerous industries. Their ability to learn complex patterns from data makes them invaluable."
+    },
+    {
+      "id": "open_exercise_001",
+      "order": 21,
+      "type": "open_exercise",
+      "title": "Neural Network Playground",
+      "instructions": "Experiment with building your own simple neural network. Adjust the number of layers, neurons per layer, and activation functions to see how they affect the network's performance on a simple classification task.",
+      "inputs": [
+        {
+          "label": "Number of Layers",
+          "type": "number",
+          "default": "2"
+        },
+        {
+          "label": "Neurons per Layer",
+          "type": "number",
+          "default": "4"
+        },
+        {
+          "label": "Activation Function",
+          "type": "select",
+          "options": [
+            "ReLU",
+            "Sigmoid",
+            "Tanh"
+          ]
+        },
+        {
+          "label": "Learning Rate",
+          "type": "number",
+          "default": "0.1"
+        }
+      ]
+    },
+    {
+      "id": "mindmap_001",
+      "order": 22,
+      "type": "mindmap",
+      "centralNode": "Neural Network",
+      "branches": [
+        "Weights",
+        "Layers",
+        "Activation Functions",
+        "Training",
+        "Learning from Examples",
+        "Predictions"
+      ]
+    },
+    {
+      "id": "flow_diagram_001",
+      "order": 23,
+      "type": "flow_diagram",
+      "steps": [
+        "Input Data",
+        "Weighted Sum",
+        "Activation Function",
+        "Output",
+        "Compare to Expected",
+        "Adjust Weights"
+      ],
+      "mode": "steps"
+    },
+    {
+      "id": "interactive_vis_003",
+      "order": 24,
+      "type": "interactive_vis",
+      "title": "Neural Network Training Loop",
+      "description": "See the basic code structure of a training loop:",
+      "codeSnippet": "for (let i = 0; i < epochs; i++) {\n  // Forward pass: compute predictions\n  let predictions = model.predict(input);\n\n  // Compute loss\n  let loss = lossFunction(predictions, target);\n\n  // Backpropagation: compute gradients\n  let gradients = computeGradients(loss, model);\n\n  // Update weights\n  model.updateWeights(gradients, learningRate);\n}",
+      "language": "javascript"
+    },
+    {
+      "id": "callout_005",
+      "order": 25,
+      "type": "callout",
+      "variant": "warning",
+      "content": "Training neural networks can be computationally expensive, requiring significant processing power and time."
+    },
+    {
+      "id": "recap_001",
+      "order": 26,
+      "type": "recap",
+      "content": "If you remember only three things, remember these:\n\n*   Neural networks learn by adjusting weights on connections between neurons.\n*   Layers organize neurons into processing stages.\n*   Activation functions introduce non-linearity, enabling complex pattern recognition."
+    },
+    {
+      "id": "quiz_001",
+      "order": 27,
+      "type": "quiz",
+      "title": "Knowledge Check",
+      "questions": [
+        {
+          "questionNumber": 1,
+          "totalQuestions": 3,
+          "questionType": "multiple_choice",
+          "questionText": "What is the primary function of weights in a neural network?",
+          "options": [
+            {
+              "letter": "A",
+              "text": "To determine the number of layers",
+              "isCorrect": false
+            },
+            {
+              "letter": "B",
+              "text": "To control the strength of connections between neurons",
+              "isCorrect": true
+            },
+            {
+              "letter": "C",
+              "text": "To introduce non-linearity",
+              "isCorrect": false
+            }
+          ],
+          "correctFeedback": "Correct! Weights determine the strength of the signal passed between neurons.",
+          "incorrectFeedback": "Not quite. Weights are the parameters that control the flow of information.",
+          "xpReward": 40
+        },
+        {
+          "questionNumber": 2,
+          "totalQuestions": 3,
+          "questionType": "multiple_choice",
+          "questionText": "What is the role of activation functions in a neural network?",
+          "options": [
+            {
+              "letter": "A",
+              "text": "To introduce non-linearity",
+              "isCorrect": true
+            },
+            {
+              "letter": "B",
+              "text": "To receive the initial data",
+              "isCorrect": false
+            },
+            {
+              "letter": "C",
+              "text": "To produce the final prediction",
+              "isCorrect": false
+            }
+          ],
+          "correctFeedback": "Correct! Activation functions introduce non-linearity, allowing the network to learn complex patterns.",
+          "incorrectFeedback": "Not quite. Activation functions are crucial for learning complex patterns.",
+          "xpReward": 40
+        },
+        {
+          "questionNumber": 3,
+          "totalQuestions": 3,
+          "questionType": "multiple_choice",
+          "questionText": "What happens to the weights during the 'training' process?",
+          "options": [
+            {
+              "letter": "A",
+              "text": "They remain constant",
+              "isCorrect": false
+            },
+            {
+              "letter": "B",
+              "text": "They are randomly assigned",
+              "isCorrect": false
+            },
+            {
+              "letter": "C",
+              "text": "They are adjusted to minimize prediction errors",
+              "isCorrect": true
+            }
+          ],
+          "correctFeedback": "Correct! The weights are adjusted iteratively to improve the network's accuracy.",
+          "incorrectFeedback": "Not quite. The training process involves adjusting the weights.",
+          "xpReward": 40
+        }
+      ]
+    },
+    {
+      "id": "key_terms_001",
+      "order": 28,
+      "type": "key_terms",
+      "terms": [
+        {
+          "term": "Neural Network",
+          "definition": "A machine learning model inspired by the structure of the brain."
+        },
+        {
+          "term": "Weight",
+          "definition": "A parameter that determines the strength of a connection between neurons."
+        },
+        {
+          "term": "Layer",
+          "definition": "A group of interconnected neurons that process information together."
+        },
+        {
+          "term": "Activation Function",
+          "definition": "A function that introduces non-linearity into the network."
+        },
+        {
+          "term": "Training",
+          "definition": "The process of adjusting the weights to improve the network's accuracy."
+        },
+        {
+          "term": "Overfitting",
+          "definition": "When the model learns the training data too well, performing poorly on new data."
+        }
+      ]
+    },
+    {
+      "id": "completion_001",
+      "order": 29,
+      "type": "completion",
+      "skills": [
+        "Explained how neural networks learn from examples",
+        "Identified the role of weights in neural networks",
+        "Described the purpose of activation functions"
+      ],
+      "cta": "Next Lesson →"
+    }
+  ],
+  "metadata": {
+    "blockCount": 29,
+    "estimatedDuration": 15
+  }
+}

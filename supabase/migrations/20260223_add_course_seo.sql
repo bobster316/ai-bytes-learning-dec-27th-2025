@@ -1,0 +1,12 @@
+-- 20260223_add_course_seo.sql
+ALTER TABLE courses
+ADD COLUMN IF NOT EXISTS seo_title TEXT;
+
+ALTER TABLE courses
+ADD COLUMN IF NOT EXISTS seo_description TEXT;
+
+ALTER TABLE courses
+ADD COLUMN IF NOT EXISTS seo_keywords TEXT;
+
+ALTER TABLE courses
+ADD COLUMN IF NOT EXISTS seo_slug TEXT;

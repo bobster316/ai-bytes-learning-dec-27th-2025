@@ -1,0 +1,2 @@
+UPDATE courses SET image_url = 'https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/temp/ai-fundamentals-hd.png' WHERE id = '672';
+UPDATE courses SET image_url = 'https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/temp/prompt-engineering-hd.png' WHERE id = '670';
