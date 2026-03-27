@@ -39,7 +39,7 @@ export function ImageTextRow({
                     whileInView={{ scale: 1, opacity: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                    className="w-full md:w-[48%] rounded-2xl overflow-hidden border border-white/5 shrink-0 relative"
+                    className="w-full md:w-[48%] rounded-2xl overflow-hidden shadow-sm shrink-0 relative"
                     style={{
                         minHeight: "340px",
                         background: "#141422",
