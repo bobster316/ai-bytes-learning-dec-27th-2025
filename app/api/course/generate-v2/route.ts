@@ -406,7 +406,9 @@ export async function POST(req: NextRequest) {
                                     let result: ImageGenerationResult = await geminiImageService.generateImage(p.prompt, seed);
 
                                     // content_policy_violation: retry once with a safe fallback prompt
-                                    if (!result.url && result.errorCode === 'content_policy_violation') {
+                                    // GeminiImageService always returns errorCode:'empty_result' from its catch — normalise first
+                                    const rawNorm = !result.url ? normaliseProviderError(result.errorMessage || 'unknown') : null;
+                                    if (!result.url && rawNorm?.errorCode === 'content_policy_violation') {
                                         const fallbackPrompt = `3D isometric render of ${lessonPlan.lessonTitle} — technical interface, deep navy and cyan colour palette, Octane render quality, no text, no people`;
                                         console.warn(`[API-V2] ⚠️ Image blocked (slot: ${(p as any).slotLabel}) — retrying with fallback prompt`);
                                         result = await geminiImageService.generateImage(fallbackPrompt, seed + 1000);
@@ -529,11 +531,12 @@ export async function POST(req: NextRequest) {
                         // Save lesson
                         if (!DRY_RUN) {
                             console.time(`[API-V2] Database Save - ${lessonPlan.lessonTitle}`);
-                            // Ensure the renderer receives the blocks with explicit order
-                            const blocksWithOrder = (compiledLesson.blocks || []).map((b: any, idx: number) => ({
-                                ...b,
-                                order: b.order ?? idx
-                            }));
+                            // Normalise block type: generator outputs { type: "text", block_type: "lesson_header" }
+                            // The renderer switches on block.type, so promote block_type → type before saving.
+                            const blocksWithOrder = (compiledLesson.blocks || []).map((b: any, idx: number) => {
+                                const resolvedType = b.block_type || b.blockType || b.type;
+                                return { ...b, type: resolvedType, order: b.order ?? idx };
+                            });
 
                             const cleanBlocks = sanitizeBlocks(blocksWithOrder);
                             const fullHtml = generateLessonHTML({ ...compiledLesson, blocks: cleanBlocks, lessonTitle: lessonPlan.lessonTitle } as any);
@@ -685,7 +688,7 @@ export async function POST(req: NextRequest) {
                 slotLabel: isMediaError ? error.slotLabel : undefined,
             });
         } finally {
-            await writer.close();
+            try { await writer.close(); } catch { /* already closed by client disconnect */ }
         }
     })();
 
