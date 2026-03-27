@@ -295,6 +295,28 @@ function validateAndRepairBlock(block: Record<string, unknown>): Record<string, 
         }
     }
 
+    // REPAIR: paragraphs[] with a single giant string → split on sentence boundaries
+    if (type === 'text' && Array.isArray(repaired.paragraphs) && repaired.paragraphs.length === 1) {
+        const raw = repaired.paragraphs[0] as string;
+        if (typeof raw === 'string' && raw.length > 300) {
+            const sentences = raw.match(/[^.!?]+[.!?]+[\s]*/g) || [raw];
+            const chunks: string[] = [];
+            let current = '';
+            for (const s of sentences) {
+                current += s;
+                if (current.trim().split(/[.!?]/).filter(Boolean).length >= 2) {
+                    chunks.push(current.trim());
+                    current = '';
+                }
+            }
+            if (current.trim()) chunks.push(current.trim());
+            if (chunks.length > 1) {
+                console.warn(`[ContentSanitizer] ℹ️ text block "${block.id}" — split 1 giant paragraph into ${chunks.length} paragraphs`);
+                repaired.paragraphs = chunks;
+            }
+        }
+    }
+
     // Special structural checks
     if (type === 'prediction') {
         const opts = repaired.options;
@@ -327,27 +349,55 @@ function validateAndRepairBlock(block: Record<string, unknown>): Record<string, 
         }
     }
     if (type === 'recap') {
-        // Alias resolution
-        let pts = (repaired as any).points || (repaired as any).items || (repaired as any).takeaways || (repaired as any).points;
+        // Alias resolution for legacy points[]
+        let pts = (repaired as any).points || (repaired as any).takeaways || [];
         if (!Array.isArray(pts)) pts = [];
-        
-        // Normalize points (handle objects)
-        const normalizedPts = pts.map((it: any) => 
+        const normalizedPts = pts.map((it: any) =>
             typeof it === 'string' ? it : it?.text || it?.point || it?.takeaway || String(it)
         );
 
-        if (normalizedPts.length === 0) {
-            console.warn(`[ContentSanitizer] ⚠️ recap block "${block.id}" — missing points, repairing`);
-            repaired.points = ['Key insight 1', 'Key insight 2', 'Key insight 3'];
-        } else {
+        // New items[] format — normalise objects vs strings
+        let itms = (repaired as any).items || [];
+        if (!Array.isArray(itms)) itms = [];
+        const normalizedItems = itms.map((it: any) => {
+            if (typeof it === 'string') return null; // Cannot fabricate title+body from a string
+            if (it && typeof it === 'object' && it.title && it.body) return it;
+            // Try alias resolution
+            const title = it?.title || it?.heading || it?.label || '';
+            const body  = it?.body  || it?.text   || it?.content || '';
+            return title ? { title, body } : null;
+        }).filter(Boolean);
+
+        if (normalizedItems.length > 0) {
+            repaired.items = normalizedItems;
+            if (normalizedItems.length < 4) {
+                console.warn(`[ContentSanitizer] ⚠️ recap block "${block.id}" — items has ${normalizedItems.length} entries (expected 4), saving as-is`);
+            }
+        } else if (normalizedPts.length > 0) {
             repaired.points = normalizedPts;
+        } else {
+            console.warn(`[ContentSanitizer] ⚠️ recap block "${block.id}" — missing both points and items, using fallback`);
+            repaired.points = ['Key insight 1', 'Key insight 2', 'Key insight 3', 'Key insight 4'];
         }
+    }
+    // ── WARN: missing semantic content — do NOT fabricate ────────────────────
+    if (type === 'video_snippet' && !repaired.description) {
+        console.warn(`[ContentSanitizer] ⚠️ video_snippet block "${block.id}" — missing "description" field. Component will hide the panel.`);
+    }
+    if (type === 'full_image' && !repaired.explanation) {
+        console.warn(`[ContentSanitizer] ⚠️ full_image block "${block.id}" — missing "explanation" field. Component falls back to full-width, no split layout.`);
+    }
+    if (type === 'flow_diagram' && !repaired.explanation) {
+        console.warn(`[ContentSanitizer] ⚠️ flow_diagram block "${block.id}" — missing "explanation" field. Component will render diagram without interpretive text.`);
     }
     if (type === 'key_terms') {
         if (Array.isArray(repaired.terms)) {
-            repaired.terms = repaired.terms.map((t: any) => 
+            repaired.terms = repaired.terms.map((t: any) =>
                 typeof t === 'string' ? { term: t, definition: 'Key concept.' } : t
             );
+            if (repaired.terms.length < 12) {
+                console.warn(`[ContentSanitizer] ⚠️ key_terms block "${block.id}" — only ${repaired.terms.length} terms (expected ≥12). Saving as-is; do NOT pad with invented terms.`);
+            }
         }
     }
     if (type === 'instructor_insight') {
