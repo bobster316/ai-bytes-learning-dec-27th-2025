@@ -17,6 +17,17 @@ import type { CourseGenerationRequest } from '@/lib/types/course-generator';
 import { CourseStateManager } from '@/lib/ai/course-state';
 import { videoService } from '@/lib/ai/video-service';
 import { generateCourseDNA, deriveDNAFingerprint } from "@/lib/ai/generate-course-dna";
+import { MediaGenerationError, normaliseProviderError } from '@/lib/ai/media-errors';
+import type { ImageGenerationResult } from '@/lib/ai/media-errors';
+
+const GENERATION_BUDGET_MS = 240_000; // 240 s — leaves 60 s buffer before the 300 s Vercel limit
+
+function extractStoragePath(publicUrl: string): string | null {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!supabaseUrl) return null;
+    const prefix = `${supabaseUrl}/storage/v1/object/public/course-images/`;
+    return publicUrl.startsWith(prefix) ? publicUrl.slice(prefix.length) : null;
+}
 
 export const runtime = 'nodejs';
 export const maxDuration = 300; // 5 minutes
@@ -121,6 +132,8 @@ export async function POST(req: NextRequest) {
     (async () => {
         let generationId: string | null = null;
         let courseId: string | null = null;
+        const uploadedStoragePaths: string[] = [];
+        const generationStart = Date.now();
         const requestedHost = (input as any).videoSettings?.courseHost || 'sarah';
         const isGemma = requestedHost === 'gemma';
 
@@ -241,8 +254,7 @@ export async function POST(req: NextRequest) {
                     }
 
                     // V2 Single Lesson Expansion
-                    try {
-                        console.time(`[API-V2] Lesson Base Content - ${lessonPlan.lessonTitle}`);
+                    console.time(`[API-V2] Lesson Base Content - ${lessonPlan.lessonTitle}`);
                         let compiledLesson = await orchestrator.processLesson(lessonPlan, topic, manifest, globalLessonIndex, courseState, courseDNA.content);
                         
                         // 2. ENRICH Media Prompts (Block-by-Block Enrichment for 1000w Detail)
@@ -317,45 +329,32 @@ export async function POST(req: NextRequest) {
                         };
 
                         // Image generation logic (New nested blocks schema)
-                        let rawPrompts: Array<{ ref: any, prompt: string }> = [];
+                        let rawPrompts: Array<{ ref: any; prompt: string; isHero?: boolean; slotLabel?: string; blockType?: string }> = [];
                         const lt = lessonPlan.lessonTitle;
                         const ct = courseName;
 
                         if (!DRY_RUN && compiledLesson.blocks) {
                             compiledLesson.blocks.forEach((block: any) => {
                                 const type = block.type || block.blockType;
-                                // Lesson Header — hero image
                                 if (type === 'lesson_header' && block.heroPrompt) {
-                                    rawPrompts.push({ ref: block, prompt: sanitizeVisualPrompt(block.heroPrompt, lt, ct), isHero: true } as any);
-                                }
-                                // Full Image Block
-                                else if (type === 'full_image' && block.imagePrompt) {
-                                    rawPrompts.push({ ref: block, prompt: sanitizeVisualPrompt(block.imagePrompt, lt, ct) });
-                                }
-                                // Image Text Row
-                                else if (type === 'image_text_row' && block.imagePrompt) {
-                                    rawPrompts.push({ ref: block, prompt: sanitizeVisualPrompt(block.imagePrompt, lt, ct) });
-                                }
-                                // Concept Illustration
-                                else if (type === 'concept_illustration' && block.imagePrompt) {
-                                    rawPrompts.push({ ref: block, prompt: sanitizeVisualPrompt(block.imagePrompt, lt, ct) });
-                                }
-                                // Type Cards
-                                else if (type === 'type_cards' && block.cards) {
-                                    block.cards.forEach((card: any) => {
-                                        if (card.imagePrompt) rawPrompts.push({ ref: card, prompt: sanitizeVisualPrompt(card.imagePrompt, lt, ct) });
+                                    rawPrompts.push({ ref: block, prompt: sanitizeVisualPrompt(block.heroPrompt, lt, ct), isHero: true, slotLabel: 'hero_image', blockType: 'lesson_header' } as any);
+                                } else if (type === 'full_image' && block.imagePrompt) {
+                                    rawPrompts.push({ ref: block, prompt: sanitizeVisualPrompt(block.imagePrompt, lt, ct), slotLabel: 'full_image', blockType: 'full_image' });
+                                } else if (type === 'image_text_row' && block.imagePrompt) {
+                                    rawPrompts.push({ ref: block, prompt: sanitizeVisualPrompt(block.imagePrompt, lt, ct), slotLabel: 'image_text_row', blockType: 'image_text_row' });
+                                } else if (type === 'concept_illustration' && block.imagePrompt) {
+                                    rawPrompts.push({ ref: block, prompt: sanitizeVisualPrompt(block.imagePrompt, lt, ct), slotLabel: 'concept_illustration', blockType: 'concept_illustration' });
+                                } else if (type === 'type_cards' && block.cards) {
+                                    block.cards.forEach((card: any, cardIdx: number) => {
+                                        if (card.imagePrompt) rawPrompts.push({ ref: card, prompt: sanitizeVisualPrompt(card.imagePrompt, lt, ct), slotLabel: `type_card_${cardIdx + 1}`, blockType: 'type_cards' });
                                     });
-                                }
-                                // Industry Tabs
-                                else if (type === 'industry_tabs' && block.tabs) {
-                                    block.tabs.forEach((tab: any) => {
-                                        if (tab.imagePrompt) rawPrompts.push({ ref: tab, prompt: sanitizeVisualPrompt(tab.imagePrompt, lt, ct) });
+                                } else if (type === 'industry_tabs' && block.tabs) {
+                                    block.tabs.forEach((tab: any, tabIdx: number) => {
+                                        if (tab.imagePrompt) rawPrompts.push({ ref: tab, prompt: sanitizeVisualPrompt(tab.imagePrompt, lt, ct), slotLabel: `industry_tab_${tabIdx + 1}`, blockType: 'industry_tabs' });
                                     });
-                                }
-                                // Quiz Context
-                                else if (type === 'quiz' && block.questions) {
-                                    block.questions.forEach((q: any) => {
-                                        if (q.imageContext?.imagePrompt) rawPrompts.push({ ref: q.imageContext, prompt: sanitizeVisualPrompt(q.imageContext.imagePrompt, lt, ct) });
+                                } else if (type === 'quiz' && block.questions) {
+                                    block.questions.forEach((q: any, qIdx: number) => {
+                                        if (q.imageContext?.imagePrompt) rawPrompts.push({ ref: q.imageContext, prompt: sanitizeVisualPrompt(q.imageContext.imagePrompt, lt, ct), slotLabel: `quiz_image_${qIdx + 1}`, blockType: 'quiz' });
                                     });
                                 }
                             });
@@ -366,41 +365,54 @@ export async function POST(req: NextRequest) {
                         let allFetchedImages: any[] = [];
 
                         if (!DRY_RUN && rawPrompts.length > 0) {
-                            try {
-                                const baseProgress = 20 + Math.floor((lessonsProcessed / Math.max(1, totalLessons)) * 55);
-                                await sendEvent({ stage: 'generating', progress: baseProgress, message: `🖼️ Generating ${rawPrompts.length} bespoke AI images for "${lessonPlan.lessonTitle}"...` });
-                                console.time(`[API-V2] Image Fetching (${rawPrompts.length} total) - ${lessonPlan.lessonTitle}`);
+                            const baseProgress = 20 + Math.floor((lessonsProcessed / Math.max(1, totalLessons)) * 55);
+                            await sendEvent({ stage: 'generating', progress: baseProgress, message: `🖼️ Generating ${rawPrompts.length} images for "${lessonPlan.lessonTitle}"...` });
+                            console.time(`[API-V2] Image Fetching (${rawPrompts.length} total) - ${lessonPlan.lessonTitle}`);
 
-                                // Run all images through Nano Banana concurrently
-                                const generatedImages = await Promise.all(rawPrompts.map(async (p, idx) => {
-                                    const img = await geminiImageService.generateImage(p.prompt, globalLessonIndex * 10 + idx);
-                                    return img ? img : { url: '', alt: p.prompt, caption: '' }; // Fallback to empty if Gemini fails to avoid crash
-                                }));
-
-                                console.timeEnd(`[API-V2] Image Fetching (${rawPrompts.length} total) - ${lessonPlan.lessonTitle}`);
-
-                                // Map URLs back into block objects
-                                generatedImages.forEach((img, idx) => {
-                                    if (rawPrompts[idx] && img.url) {
-                                        rawPrompts[idx].ref.imageUrl = img.url;
-                                        // For lesson_header heroPrompt, also set heroImageUrl for the component
-                                        if ((rawPrompts[idx] as any).isHero) {
-                                            rawPrompts[idx].ref.heroImageUrl = img.url;
-                                        }
+                            const generatedImages = await Promise.all(
+                                rawPrompts.map(async (p, idx) => {
+                                    const result: ImageGenerationResult = await geminiImageService.generateImage(p.prompt, globalLessonIndex * 10 + idx);
+                                    if (!result.url) {
+                                        const { errorCode, errorMessage, retryable } = normaliseProviderError(result.errorMessage || 'unknown');
+                                        throw new MediaGenerationError(
+                                            'gemini-image',
+                                            errorCode,
+                                            errorMessage,
+                                            'image_generation',
+                                            retryable,
+                                            lessonPlan.lessonTitle,
+                                            (p as any).blockType || 'unknown',
+                                            (p as any).slotLabel || `image_slot_${idx + 1}`,
+                                        );
                                     }
-                                });
+                                    return result;
+                                })
+                            );
 
-                                allFetchedImages = [...generatedImages];
-                                
-                                // Save used image URLs to prevent inter-lesson repetition
-                                allFetchedImages.forEach(img => {
-                                    if (img && img.url && !courseState.used_image_urls.includes(img.url)) {
+                            console.timeEnd(`[API-V2] Image Fetching (${rawPrompts.length} total) - ${lessonPlan.lessonTitle}`);
+
+                            // Map URLs back into block objects
+                            generatedImages.forEach((img, idx) => {
+                                if (rawPrompts[idx] && img.url) {
+                                    rawPrompts[idx].ref.imageUrl = img.url;
+                                    if ((rawPrompts[idx] as any).isHero) {
+                                        rawPrompts[idx].ref.heroImageUrl = img.url;
+                                    }
+                                }
+                            });
+
+                            allFetchedImages = [...generatedImages];
+
+                            allFetchedImages.forEach(img => {
+                                if (img?.url) {
+                                    if (!courseState.used_image_urls.includes(img.url)) {
                                         courseState.used_image_urls.push(img.url);
                                     }
-                                });
-                                CourseStateManager.saveState(courseState);
-                            }
-                            catch (e) { console.error("[API-V2] Image gen failed:", e); }
+                                    const storagePath = extractStoragePath(img.url);
+                                    if (storagePath) uploadedStoragePaths.push(storagePath);
+                                }
+                            });
+                            CourseStateManager.saveState(courseState);
                         }
 
                         // ═══════════════════════════════════════════════════
@@ -423,14 +435,82 @@ export async function POST(req: NextRequest) {
                         const videoBlocks = (!DRY_RUN && compiledLesson.blocks)
                             ? (compiledLesson.blocks as any[]).filter((b: any) => (b.type === 'video_snippet' || b.blockType === 'video_snippet') && !b.videoUrl)
                             : [];
-                        
-                        if (videoBlocks.length > 0) {
+
+                        if (!DRY_RUN && videoBlocks.length > 0) {
                             const baseProgress = 20 + Math.floor((lessonsProcessed / Math.max(1, totalLessons)) * 55);
-                            await sendEvent({ stage: 'generating', progress: baseProgress + 1, message: `🎬 Architecting ${videoBlocks.length} technical video(s)...` });
+                            await sendEvent({ stage: 'generating', progress: baseProgress + 1, message: `🎬 Generating ${videoBlocks.length} video(s) for "${lessonPlan.lessonTitle}"...` });
+
+                            for (const v of videoBlocks) {
+                                // Budget guard — fail before hitting the serverless execution limit
+                                const elapsed = Date.now() - generationStart;
+                                if (elapsed > GENERATION_BUDGET_MS) {
+                                    throw new MediaGenerationError(
+                                        'veo',
+                                        'budget_exceeded',
+                                        `Execution budget exceeded (${Math.round(elapsed / 1000)}s elapsed, ${GENERATION_BUDGET_MS / 1000}s limit) — reduce lessons per course or increase maxDuration`,
+                                        'video_generation',
+                                        false,
+                                        lessonPlan.lessonTitle,
+                                        'video_snippet',
+                                    );
+                                }
+
+                                const rawVideoPrompt = v.videoPrompt || `Show the literal technology of ${lessonPlan.lessonTitle} in action.`;
+                                const videoCaption = v.caption || v.title || 'Visual insight';
+
+                                console.log(`[API-V2] 🎬 Generating video: "${videoCaption}" for lesson "${lessonPlan.lessonTitle}"`);
+                                const veoResult = await veoVideoService.generateVideo(rawVideoPrompt, videoCaption);
+
+                                let finalUrl: string | null = null;
+                                let videoSource: string = 'unknown';
+
+                                if (veoResult.url) {
+                                    finalUrl = veoResult.url;
+                                    videoSource = 'veo';
+                                } else {
+                                    // Veo failed — try Pexels waterfall
+                                    console.warn(`[API-V2] ⚠️ Veo failed (${veoResult.errorCode}: ${veoResult.errorMessage}) — falling back to Pexels`);
+                                    await sendEvent({ stage: 'generating', progress: baseProgress + 1, message: `⚠️ Veo unavailable — trying Pexels for "${videoCaption}"` });
+
+                                    const safeQuery = extractSafePexelsQuery(v, lessonPlan.lessonTitle);
+                                    const pexelsRes = await videoService.fetchVideoWaterfall(safeQuery, (compiledLesson as any).analogy_domain || 'Technology', courseState);
+
+                                    if (pexelsRes?.url) {
+                                        finalUrl = pexelsRes.url;
+                                        videoSource = `pexels-tier${pexelsRes.tier}`;
+                                    } else {
+                                        // Both Veo and Pexels failed — throw to abort course generation
+                                        const { errorCode, errorMessage, retryable } = normaliseProviderError(veoResult.errorMessage || 'unknown');
+                                        throw new MediaGenerationError(
+                                            'veo',
+                                            errorCode,
+                                            `Veo failed and Pexels waterfall exhausted. Veo reason: ${veoResult.errorMessage || 'unknown'}`,
+                                            'fallback',
+                                            retryable,
+                                            lessonPlan.lessonTitle,
+                                            'video_snippet',
+                                            v.title || v.id || 'video_block',
+                                        );
+                                    }
+                                }
+
+                                // Patch the block in-memory with the resolved URL
+                                v.videoUrl = finalUrl;
+                                console.log(`[API-V2] ✅ Video resolved via ${videoSource}: ${finalUrl}`);
+
+                                // Track for rollback (Veo uploads to Supabase Storage)
+                                if (videoSource.startsWith('veo') && finalUrl) {
+                                    const storagePath = extractStoragePath(finalUrl);
+                                    if (storagePath) uploadedStoragePaths.push(storagePath);
+                                }
+
+                                if (!courseState.used_video_urls) courseState.used_video_urls = [];
+                                (courseState.used_video_urls as any[]).push({ query: rawVideoPrompt.substring(0, 100), url: finalUrl, source: videoSource });
+                                CourseStateManager.saveState(courseState);
+                            }
                         }
+
                         CourseStateManager.saveState(courseState);
-
-
 
                         // Save lesson
                         if (!DRY_RUN) {
@@ -474,78 +554,10 @@ export async function POST(req: NextRequest) {
                             await dbV2.updateNodeState(supabase, courseId, manifestNodeId, 'lesson', 'published');
                             console.timeEnd(`[API-V2] Database Save - ${lessonPlan.lessonTitle}`);
 
-                            // ═══════════════════════════════════════════════════
-                            // START ROCK-SOLID ASYNC VIDEO GENERATION (Post-Save)
-                            // ═══════════════════════════════════════════════════
-                            if (videoBlocks.length > 0) {
-                                const videoTask = async () => {
-                                    console.log(`[V3-Async] 🚀 Background task started for Lesson ID: ${lData.id} ("${lessonPlan.lessonTitle}")`);
-                                    for (const v of videoBlocks) {
-                                        try {
-                                            const rawVideoPrompt = v.videoPrompt || `Show the LITERAL technology of ${lessonPlan.lessonTitle}.`;
-                                            const videoCaption = v.caption || v.title || v.id || 'Visual insight';
-
-                                            console.log(`[V3-Async] 🎬 Processing video: "${videoCaption}"`);
-                                            const veoResult = await veoVideoService.generateVideo(rawVideoPrompt, videoCaption);
-                                            
-                                            let finalUrl = null;
-                                            let source = 'unknown';
-
-                                            if (veoResult && veoResult.url) {
-                                                finalUrl = veoResult.url;
-                                                source = 'veo-3.1';
-                                            } else {
-                                                // Fallback to Pexels
-                                                console.warn(`[V3-Async] ⚠️ Veo failed — falling back to Pexels`);
-                                                const safeQuery = extractSafePexelsQuery(v, lessonPlan.lessonTitle);
-                                                const pexelsRes = await videoService.fetchVideoWaterfall(safeQuery, (compiledLesson as any).analogy_domain || 'Technology', courseState);
-                                                if (pexelsRes && pexelsRes.url) {
-                                                    finalUrl = pexelsRes.url;
-                                                    source = `pexels-tier${pexelsRes.tier}`;
-                                                }
-                                            }
-
-                                            if (finalUrl) {
-                                                console.log(`[V3-Async] ✅ Success! URL: ${finalUrl}`);
-                                                // Update Lesson in DB immediately
-                                                const { data: currentLesson } = await supabase.from('course_lessons').select('content_blocks').eq('id', lData.id).single();
-                                                if (currentLesson && currentLesson.content_blocks) {
-                                                    const updatedBlocks = currentLesson.content_blocks.map((b: any) => {
-                                                        if (b.id === v.id || (b.title === v.title && b.type === 'video_snippet')) {
-                                                            return { ...b, videoUrl: finalUrl };
-                                                        }
-                                                        return b;
-                                                    });
-                                                    await supabase.from('course_lessons').update({ content_blocks: updatedBlocks }).eq('id', lData.id);
-                                                    console.log(`[V3-Async] 💾 DB Updated for Lesson ${lData.id}, Block ${v.id}`);
-                                                }
-
-                                                if (!courseState.used_video_urls) courseState.used_video_urls = [];
-                                                courseState.used_video_urls.push({ query: rawVideoPrompt.substring(0, 100), url: finalUrl, source } as any);
-                                                CourseStateManager.saveState(courseState);
-                                            }
-                                        } catch (e) {
-                                            console.error('[V3-Async] Individual video error:', e);
-                                        }
-                                    }
-                                    console.log(`[V3-Async] 🏁 Background task complete for Lesson ${lData.id}`);
-                                };
-                                // Start background task
-                                videoTask().catch(e => console.error('[V3-Async] Task crash:', e));
-                            }
-
                             // Note: No per-lesson avatar videos — only 1 avatar video per course (the course intro).
                             // Lesson avatar videos are excessive (ElevenLabs + HeyGen credits per lesson) and
                             // violate the design rule: avatar appears on the course overview page only.
                         }
-                    } catch (lessonGenErr: any) {
-                        console.error(`[API-V2] Lesson Expansion Failed for ${lessonPlan.lessonTitle}`, lessonGenErr);
-                        if (!DRY_RUN) {
-                            await dbV2.updateNodeState(supabase, courseId, manifestNodeId, 'lesson', 'failed', lessonGenErr.message);
-                        }
-                        // For V2, we continue generating the rest of the manifest, marking this one as failed.
-                        // We do not crash the whole process.
-                    }
 
                     lessonsProcessed++;
                     globalLessonIndex++;
