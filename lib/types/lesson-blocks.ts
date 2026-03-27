@@ -74,6 +74,8 @@ export interface FullImageBlock extends BaseBlock {
     imageAlt: string;
     caption: string;
     captionHighlight?: string;      // Rendered in accent colour
+    explanation?: string;           // 2-3 sentences interpreting what the visual reveals
+    layout?: "split" | "hero";      // "split" when explanation present; "hero" for full-bleed
 }
 
 export interface ImageTextRowBlock extends BaseBlock {
@@ -189,6 +191,14 @@ export interface AppliedCaseBlock extends BaseBlock {
     resolution: string;
     imagePrompt?: string; // Optional visual context
     imageUrl?: string;
+    tabs?: Array<{              // New: exactly 3 tabs
+        id: string;
+        label: string;
+        scenario: string;
+        challenge: string;
+        resolution: string;
+        imageUrl?: string;
+    }>;
 }
 
 export interface RecapBlock extends BaseBlock {
@@ -196,6 +206,10 @@ export interface RecapBlock extends BaseBlock {
     style?: "card" | "minimal" | "striped"; // default: "card"
     title: string;          // Usually "If you remember only three things..."
     points: string[];       // Exactly 3 bullet points
+    items?: Array<{             // New: exactly 4 cards
+        title: string;          // 4-6 words
+        body: string;           // 2 sentences
+    }>;
 }
 
 export interface ExpandableBlock extends BaseBlock {
@@ -211,6 +225,7 @@ export interface VideoSnippetBlock extends BaseBlock {
     videoUrl?: string;         // Filled after Veo generation (uploaded to Supabase Storage)
     caption: string;           // Short description
     duration?: number;         // 8 (seconds) — default 8s
+    description?: string;      // 2 sentences: what viewer will see + why it matters
 }
 
 export interface AudioRecapProminentBlock extends BaseBlock {
@@ -247,6 +262,7 @@ export interface MindmapBlock extends BaseBlock {
 export interface FlowDiagramBlock extends BaseBlock {
     type: "flow_diagram";
     title?: string;
+    explanation?: string;       // 2-3 sentences interpreting what the diagram reveals
     // Simple linear flow
     steps?: Array<{
         label: string;
