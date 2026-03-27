@@ -109,7 +109,7 @@ function BentoCard({ card, idx, accent, items }: { card: Card; idx: number; acce
                 </span>
             )}
             {imageUrl && (
-                <div className="relative w-full h-32 mb-4 overflow-hidden rounded-lg border border-white/10 group-hover:border-white/20 transition-colors">
+                <div className="relative w-full aspect-video mb-4 overflow-hidden rounded-lg">
                     <img
                         src={imageUrl}
                         alt={card.title}
@@ -182,7 +182,7 @@ function GridLayout({ items, heading, accent }: { items: Card[]; heading?: strin
                             }}
                         >
                             {imageUrl && (
-                                <div className="mb-3 overflow-hidden rounded-lg aspect-auto h-24 sm:h-28 border border-white/5">
+                                <div className="mb-3 overflow-hidden rounded-lg aspect-video">
                                     <img 
                                         src={imageUrl} 
                                         alt={card.title} 
@@ -237,7 +237,7 @@ function HorizontalLayout({ items, heading, accent }: { items: Card[]; heading?:
                             }}
                         >
                             {imageUrl && (
-                                <div className="hidden sm:block shrink-0 w-24 h-24 overflow-hidden rounded-md border border-white/5">
+                                <div className="hidden sm:block shrink-0 w-28 h-20 overflow-hidden rounded-md">
                                     <img 
                                         src={imageUrl} 
                                         alt={card.title} 
