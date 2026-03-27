@@ -402,7 +402,16 @@ export async function POST(req: NextRequest) {
 
                             const generatedImages = await Promise.all(
                                 rawPrompts.map(async (p, idx) => {
-                                    const result: ImageGenerationResult = await geminiImageService.generateImage(p.prompt, globalLessonIndex * 10 + idx);
+                                    const seed = globalLessonIndex * 10 + idx;
+                                    let result: ImageGenerationResult = await geminiImageService.generateImage(p.prompt, seed);
+
+                                    // content_policy_violation: retry once with a safe fallback prompt
+                                    if (!result.url && result.errorCode === 'content_policy_violation') {
+                                        const fallbackPrompt = `3D isometric render of ${lessonPlan.lessonTitle} — technical interface, deep navy and cyan colour palette, Octane render quality, no text, no people`;
+                                        console.warn(`[API-V2] ⚠️ Image blocked (slot: ${(p as any).slotLabel}) — retrying with fallback prompt`);
+                                        result = await geminiImageService.generateImage(fallbackPrompt, seed + 1000);
+                                    }
+
                                     if (!result.url) {
                                         const { errorCode, errorMessage, retryable } = normaliseProviderError(result.errorMessage || 'unknown');
                                         throw new MediaGenerationError(
