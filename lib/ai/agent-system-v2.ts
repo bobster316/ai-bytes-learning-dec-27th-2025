@@ -316,7 +316,7 @@ function getBlockSchemaDoc(blockRef: string): string {
         'open_exercise':         'open_exercise — practice activity. instruction, weakPrompt, scaffoldLabels, modelAnswer.',
         'interactive_vis':       'interactive_vis — data visualisation. title, intro, description, codeSnippet, vizType: chart|flowchart|architecture.',
         'text:bridge':           'text (bridge/transition) — 1–3 paragraphs only. heading, paragraphs[].',
-        'video_snippet':          'video_snippet — AI-generated cinematic video clip. REQUIRED: type: "video_snippet", id, title, caption, videoPrompt: MINIMUM 1000 WORDS (SCENE/MOTION/LIGHTING/PEDAGOGICAL LINK/RESTRICTIONS), video_search_query, duration: "8s".',
+        'video_snippet':          'video_snippet — AI-generated cinematic video clip. REQUIRED: type: "video_snippet", id, title, caption, videoPrompt: EXACTLY 5 SENTENCES using the motion-arc structure — S1: name the exact lesson concept being demonstrated (must include the lesson title), S2: primary visible objects / UI / interfaces / data flows in frame, S3: motion arc — what state the scene STARTS in, what CHANGES during 8 seconds, what the final state IS, S4: camera movement and environment / lighting, S5: exclusions (no metaphors, no human faces) and fidelity target (photorealistic / cinematic). video_search_query: 3-5 words safe for Pexels stock search. duration: "8s".',
         'go_deeper':             'go_deeper — advanced accordion. triggerText, content (2–3 paragraphs).',
     };
     return schemas[blockRef] || schemas[type] || `${type} block — include all required fields.`;
@@ -419,7 +419,8 @@ LESSON BLUEPRINT — TOTAL BLOCKS: ${unifiedBlueprint.split('\n').length}
 ${unifiedBlueprint}
 
 VISUAL ACCURACY — ABSOLUTE LAW:
->>> ONLY imagePrompt and videoPrompt fields MUST BE MINIMUM 1000 WORDS of technical blueprint.
+>>> IMAGE PROMPTS (imagePrompt fields) MUST BE MINIMUM 1000 WORDS of technical blueprint following the 6-part formula below.
+>>> VIDEO PROMPTS (videoPrompt fields) MUST BE EXACTLY 5 SENTENCES using the motion-arc structure: S1 names the lesson concept and lesson title, S2 describes visible objects/interfaces, S3 describes the motion arc (start state → transformation → end state), S4 describes camera movement and environment, S5 states exclusions and fidelity target.
 >>> All other text (content, captions, titles) must be CONCISE (under 100 words per field) to stay within token limits.
 >>> YOU MUST GENERATE TWO (2) VIDEO SNIPPETS: One at [BLOCK-4] and one at [BLOCK-X] as labeled in the blueprint.
 >>> NEVER use analogies or metaphors (no kitchens, gardens, pottery, or simple "city" metaphors).
@@ -468,7 +469,7 @@ REQUIRED OUTPUT JSON STRUCTURE:
                 const validation = CourseValidator.validateUniqueness({ ...result, lesson_number: lessonNumber, analogy_domain: result.analogy_domain || domainStr, structure_pattern: structureName, scenes: result.blocks }, courseState);
                 if (validation.passed) return result;
                 messages.push({ role: 'model', parts: [{ text: JSON.stringify(result) }] });
-                messages.push({ role: 'user', parts: [{ text: `Rejection: ${validation.failures.join(', ')}. FIX ALL. REMEMBER: Prompts MUST be 1000+ words.` }] });
+                messages.push({ role: 'user', parts: [{ text: `Rejection: ${validation.failures.join(', ')}. FIX ALL. REMEMBER: Image prompts MUST be 1000+ words. Video prompts MUST follow the 5-sentence motion-arc structure (S1 names lesson concept + title, S2 visible objects, S3 start→change→end, S4 camera, S5 exclusions).` }] });
             } catch (e) {
                 console.error("Retry error", e);
             }
@@ -494,9 +495,37 @@ export class EvaluatorAgent extends BaseAgentV2 {
 // 6. Visual Enrichment Agent (MANDATORY 1000W BLANKET ACCURACY)
 export class VisualEnrichmentAgent extends BaseAgentV2 {
     async enrichBlock(block: any, lessonTitle: string, domainStr: string): Promise<string> {
-        const type = block.type === 'video_snippet' ? 'VIDEO SNIPPET' : 'IMAGE BLOCK';
+        const isVideo = block.type === 'video_snippet';
+
+        if (isVideo) {
+            const prompt = `SYSTEM: You are a Video Director for AI Bytes Learning.
+GOAL: Rewrite the provided video prompt into EXACTLY 5 SENTENCES using the motion-arc structure.
+
+CONTEXT:
+LESSON: "${lessonTitle}"
+DOMAIN: "${domainStr}"
+BLOCK TITLE: "${block.title || block.caption || 'Technical Detail'}"
+
+MOTION-ARC STRUCTURE (strictly 5 sentences, no more, no less):
+S1: State the exact concept from the lesson "${lessonTitle}" that this video demonstrates. Name "${lessonTitle}" explicitly in this sentence.
+S2: Describe the primary visible objects, interfaces, hardware, data flows, or physical setup visible in frame at the start.
+S3: Describe the motion arc — what state the scene STARTS in, what visibly TRANSFORMS or MOVES during the 8-second clip, and what the final state IS at the end.
+S4: Describe the camera behaviour (movement type, framing, lens, environment, and lighting mood).
+S5: State exclusions (no metaphors, no human faces, no abstract domain substitutions, no kitchen/garden/nature scenes) and the fidelity target (photorealistic, cinematic, temporally stable).
+
+RULES:
+- Must reference "${lessonTitle}" by name in S1.
+- S3 must describe a real temporal transformation — not just what is visible, but what actively CHANGES over the 8 seconds.
+- No analogies. No metaphors. No domain substitutions.
+- Return ONLY the 5 sentences as plain text. No labels (do not write "S1:", "S2:" etc.), no intros, no outros.`;
+
+            const result = await this.makeRequest(prompt, false);
+            return result || block.videoPrompt || '';
+        }
+
+        // Image prompt enrichment — 1000-word mandate unchanged
         const prompt = `SYSTEM: You are a Lead Visual Architect for AI Bytes Learning.
-GOAL: Expand the provided ${type} trigger into a MINIMUM 1000-WORD technical blueprint.
+GOAL: Expand the provided IMAGE BLOCK trigger into a MINIMUM 1000-WORD technical blueprint.
 
 CONTEXT:
 LESSON: "${lessonTitle}"
@@ -511,13 +540,12 @@ VISUAL ACCURACY — ABSOLUTE LAW:
     - PHYSICS: Refractive indices, subsurface scattering, material properties (brushed metal, silicon).
     - LITE & OPTICS: Specific lighting (rim, three-point, lens flare), 35mm focal length.
     - DATA VISUALISATION: Literal tensors, weight matrices, code streams, signal noise.
-    - MOTION (For Video): Frame-by-frame camera movement (pan/tilt/zoom), playback speed, temporal shifts.
     - PEDAGOGICAL ALIGNMENT: Direct literal mapping to the lesson objective.
 
 RETURN ONLY THE TEXT OF THE ENRICHED PROMPT. NO INTROS. NO OUTROS.`;
 
-        const result = await this.makeRequest(prompt, false); // isJson: false
-        return result || block.imagePrompt || block.videoPrompt || '';
+        const result = await this.makeRequest(prompt, false);
+        return result || block.imagePrompt || '';
     }
 }
 
