@@ -303,30 +303,30 @@ function getBlockSchemaDoc(blockRef: string): string {
         'type_cards:horizontal': 'type_cards horizontal — COMPARISON of 2 things. layout: "horizontal". 2–3 cards only.',
         'type_cards:bento':      'type_cards bento — freeform supplemental cards. layout: "bento". 3–4 cards, each with badge, title, description, imagePrompt (MINIMUM 1000 WORDS).',
         'instructor_insight':    'instructor_insight — EXACTLY 3 insight cards. Each: emoji, bold title, body (1–2 sentences).',
-        'flow_diagram:steps':    'flow_diagram steps — linear process (3–6 steps). title, steps[]{label, description, colour}.',
-        'flow_diagram:contrast': 'flow_diagram contrast — before/after. title, contrast{ labelA, labelB, stepsA[], stepsB[], middleNode, outcomeA, outcomeB }.',
+        'flow_diagram:steps':    'flow_diagram steps — linear process (3–6 steps). title, steps[]{label, description, colour}, explanation (2–3 sentences interpreting what the flow reveals — the conclusion the learner should draw).',
+        'flow_diagram:contrast': 'flow_diagram contrast — before/after. title, contrast{ labelA, labelB, stepsA[], stepsB[], middleNode, outcomeA, outcomeB }, explanation (2–3 sentences interpreting what the contrast reveals).',
         'mindmap':               'mindmap — central node + 4–6 branch concepts.',
         'concept_illustration':  'concept_illustration — visual metaphor. concept, description, imagePrompt (MINIMUM 1000 WORDS), style: network|layers|cycle|hierarchy.',
         'image_text_row':        'image_text_row — image left, text right. imagePrompt (MINIMUM 1000 WORDS), label, title, text (2–3 sentences), reverse: false.',
         'image_text_row:reverse':'image_text_row reversed — text left, image right. reverse: true. imagePrompt (MINIMUM 1000 WORDS), label, title, text.',
         'prediction':            'prediction — knowledge check. question, options (EXACTLY 3), correctIndex, reveal.',
-        'applied_case':          'applied_case — real-world scenario. scenario, challenge, resolution.',
+        'applied_case':          'applied_case — 3 real-world scenarios as tabs. REQUIRED fields: tabs (array of EXACTLY 3 objects each with: id (string), label (string, 2-4 words), scenario (string, 2-3 sentences), challenge (string, 2-3 sentences), resolution (string, 2-3 sentences), imageUrl (omit — filled by pipeline)).',
         'industry_tabs':         'industry_tabs — 4–5 industry use-case tabs. heading, tabs[]{ id, label, imagePrompt (MINIMUM 1000 WORDS), imageCaption, scenarioTitle, scenarioBody }.',
         'callout:warning':       'callout warning — variant: "warning", title, text.',
         'callout:tip':           'callout tip — variant: "tip", title, text.',
         'open_exercise':         'open_exercise — practice activity. instruction, weakPrompt, scaffoldLabels, modelAnswer.',
         'interactive_vis':       'interactive_vis — data visualisation. title, intro, description, codeSnippet, vizType: chart|flowchart|architecture.',
         'text:bridge':           'text (bridge/transition) — 1–3 paragraphs only. heading, paragraphs[].',
-        'video_snippet':          'video_snippet — AI-generated cinematic video clip. REQUIRED: type: "video_snippet", id, title, caption, videoPrompt: EXACTLY 5 SENTENCES using the motion-arc structure — S1: name the exact lesson concept being demonstrated (must include the lesson title), S2: primary visible objects / UI / interfaces / data flows in frame, S3: motion arc — what state the scene STARTS in, what CHANGES during 8 seconds, what the final state IS, S4: camera movement and environment / lighting, S5: exclusions (no metaphors, no human faces) and fidelity target (photorealistic / cinematic). video_search_query: 3-5 words safe for Pexels stock search. duration: "8s".',
+        'video_snippet':          'video_snippet — AI-generated cinematic clip. REQUIRED fields: type, id, title, caption, videoPrompt (EXACTLY 5 SENTENCES motion-arc structure — S1: lesson concept + title, S2: visible objects/interfaces, S3: start→change→end motion arc, S4: camera + environment, S5: exclusions + fidelity target), description (EXACTLY 2 SENTENCES: S1 what the viewer will see, S2 why it matters for this lesson), video_search_query (3-5 words), duration: "8s".',
         'go_deeper':             'go_deeper — advanced accordion. triggerText, content (2–3 paragraphs).',
         'lesson_header':         'lesson_header — hero section. REQUIRED fields: title (string), tag (2–3 word category label), duration (e.g. "15 min"), difficulty (Beginner|Intermediate|Advanced), heroType: "interactive", heroPrompt (200-word image description), description (1–2 sentence lesson overview), objectives (array of 4 short strings each starting with a verb).',
         'objective':             'objective — single learning objective card. REQUIRED fields: label (short label e.g. "Learning Objective"), text (1 sentence starting with "By the end of this lesson you will be able to…").',
         'punch_quote':           'punch_quote — full-width bold statement. REQUIRED fields: quote (one punchy declarative sentence, 10–20 words, no quotation marks), accent (pulse|iris|amber|nova).',
-        'recap':                 'recap — end-of-lesson summary. REQUIRED fields: style (card|bold_number|timeline), title (string), points (array of 3 strings summarising the main takeaways).',
-        'key_terms':             'key_terms — glossary accordion. REQUIRED fields: terms (array of objects each with: term (string), definition (1 sentence)).',
+        'recap':                 'recap — end-of-lesson summary. REQUIRED fields: title (string), items (array of EXACTLY 4 objects each with: title (4–6 words, bold takeaway), body (EXACTLY 2 sentences expanding on why this takeaway matters)).',
+        'key_terms':             'key_terms — glossary. REQUIRED fields: terms (array of MINIMUM 12 objects each with: term (string), definition (EXACTLY 2 sentences — first sentence defines the term precisely, second sentence explains where it appears or why it matters)).',
         'completion':            'completion — lesson complete card. REQUIRED fields: skillsEarned (array of 3 short strings describing what was learned).',
         'quiz':                  'quiz — knowledge check. REQUIRED fields: title, questions (array of 3–5 objects each with: question (string), options (array of 3 strings), correctIndex (0|1|2), correctFeedback (string), incorrectFeedback (string)).',
-        'full_image':            'full_image — wide visual. REQUIRED fields: imagePrompt (MINIMUM 1000 WORDS ultra-detailed image description), caption (1–2 sentence description).',
+        'full_image':            'full_image — wide visual. REQUIRED fields: imagePrompt (MINIMUM 1000 WORDS ultra-detailed), caption (1–2 sentences), explanation (2–3 sentences INTERPRETING what the visual reveals — not describing what is visible), layout ("split" when explanation present, "hero" for standalone atmosphere images).',
     };
     return schemas[blockRef] || schemas[type] || `${type} block — include all required fields.`;
 }
@@ -414,6 +414,33 @@ export class LessonExpanderAgent extends BaseAgentV2 {
         const totalTarget = ironCoreCount + finalBlocksWithVideos.length + (isBeginner ? 2 : isAdvanced ? 4 : 3);
         const temperature = Math.min(0.7 + (lessonNumber - 1) * 0.04, 1.0);
 
+        const LESSON_QUALITY_RULES = `LESSON CONTENT QUALITY RULES — ABSOLUTE LAW:
+
+STRUCTURE:
+  • objective blocks:      exactly 2 sentences — S1: what the learner will understand, S2: why it matters
+  • video_snippet blocks:  REQUIRED "description" field — exactly 2 sentences: S1 what the viewer will see, S2 why it matters for this lesson
+  • recap blocks:          exactly 4 items; each item MUST have "title" (4–6 words) AND "body" (2 sentences). NO plain string points — always use items[] format
+  • applied_case blocks:   exactly 3 scenarios in "tabs" array; each tab: id, label, scenario, challenge, resolution
+  • key_terms blocks:      minimum 12 terms; each term MUST have "definition" (2 sentences)
+
+TEXT QUALITY:
+  • text blocks: 3–5 paragraphs per block; max 3 sentences per paragraph
+  • sentence length: short and direct — one idea per sentence
+  • avoid long compound sentences joined by multiple "which", "that", "however" chains
+  • no paragraph should look like a dense wall of text — if it does, break it
+  • reduce verbosity by 15% — say more with less
+
+IMAGE EXPLANATIONS (semantic quality — ABSOLUTE):
+  • full_image blocks:    REQUIRED "explanation" field — 2–3 sentences
+  • flow_diagram blocks:  REQUIRED "explanation" field — 2–3 sentences
+  • type_cards cards:     REQUIRED "description" field — 3–4 sentences explaining the card concept and why it matters
+  • ALL explanations MUST interpret what the visual reveals — NOT describe what is visible
+    BAD:  "This image shows a transformer architecture diagram."
+    GOOD: "The layout reveals how the attention mechanism links tokens regardless of their position in the sequence, which is why transformers outperform recurrent networks on long-context tasks."
+
+LAYOUT HINTS:
+  • full_image blocks: set layout: "split" when explanation is present; layout: "hero" for standalone atmosphere images only`.trim();
+
         const prompt = `SYSTEM: You are an elite UK instructional designer. Lesson ${lessonNumber} of this course.
 LESSON: "${lesson.lessonTitle}"
 OBJECTIVE: ${lesson.microObjective}
@@ -442,6 +469,8 @@ VISUAL ACCURACY — ABSOLUTE LAW:
     5. MOTION (Video-only): Frame-by-frame camera movement (pan/tilt/zoom), temporal shifts.
     6. PEDAGOGICAL ALIGNMENT: Direct literal mapping to the lesson objective ID.
 >>> BE LITERAL. BE ACCURATE. BE TECHNICAL.
+
+${LESSON_QUALITY_RULES}
 
 ${BANNED_WORDS_INSTRUCTION}
 
