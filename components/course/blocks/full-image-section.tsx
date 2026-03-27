@@ -5,7 +5,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function FullImageSection({ imageUrl, image_url, url, imageAlt, alt_text, caption, captionHighlight, callouts = [] }: any) {
+export function FullImageSection({ imageUrl, image_url, url, imageAlt, alt_text, caption, captionHighlight, callouts = [], explanation, layout }: any) {
     const finalUrl = imageUrl || image_url || url;
     const finalAlt = imageAlt || alt_text;
     const [isLoaded, setIsLoaded] = React.useState(false);
@@ -27,12 +27,57 @@ export function FullImageSection({ imageUrl, image_url, url, imageAlt, alt_text,
         if (videoRef.current?.readyState && videoRef.current.readyState >= 3) setIsLoaded(true);
     }, [finalUrl]);
 
+    const showSplit = !!explanation && layout !== "hero";
+
+    if (showSplit) {
+        return (
+            <>
+                <style>{`@keyframes shimmer { 0% { background-position:200% 0 } 100% { background-position:-200% 0 } }`}</style>
+                <div className="my-12 flex flex-col md:flex-row gap-6 items-start">
+                    {/* Image — 55% */}
+                    <section
+                        ref={containerRef}
+                        className="relative overflow-hidden bg-[#05050A] rounded-xl shadow-2xl w-full md:w-[55%] aspect-video shrink-0"
+                    >
+                        <motion.div style={{ scale, y: yShift, opacity }} className="absolute inset-0 w-full h-full">
+                            {finalUrl ? (
+                                finalUrl.match(/\.(mp4|webm)$/i) ? (
+                                    <video ref={videoRef} src={finalUrl} className="w-full h-full object-contain" autoPlay loop muted playsInline onLoadedData={() => setIsLoaded(true)} />
+                                ) : (
+                                    <motion.img ref={imgRef} initial={{ filter: "blur(20px)", opacity: 0 }} animate={isLoaded ? { filter: "blur(0px)", opacity: 1 } : {}} transition={{ duration: 0.8 }} src={finalUrl} alt={finalAlt || "Lesson illustration"} className="w-full h-full object-contain" onLoad={() => setIsLoaded(true)} />
+                                )
+                            ) : (
+                                <div className="flex items-center justify-center h-full bg-[#141422]">
+                                    <ImageIcon className="w-8 h-8 text-[#00FFB3] opacity-40 animate-pulse" />
+                                </div>
+                            )}
+                        </motion.div>
+                        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/40" />
+                        {(caption || captionHighlight) && (
+                            <div className="absolute bottom-4 left-0 right-0 px-5 text-center">
+                                <p className="font-body text-xs text-white/60 leading-relaxed">
+                                    {caption}{captionHighlight && <span className="text-[#00FFB3] font-bold"> — {captionHighlight}</span>}
+                                </p>
+                            </div>
+                        )}
+                    </section>
+
+                    {/* Explanation — 45% */}
+                    <div className="flex-1 flex flex-col justify-center py-4">
+                        <div className="w-8 h-px mb-6" style={{ background: "linear-gradient(90deg, #00FFB3, transparent)" }} />
+                        <p className="font-body text-[1.05rem] text-[#C8C8E0] leading-[1.85]">{explanation}</p>
+                    </div>
+                </div>
+            </>
+        );
+    }
+
     return (
         <>
             <style>{`@keyframes shimmer { 0% { background-position:200% 0 } 100% { background-position:-200% 0 } }`}</style>
             <section
                 ref={containerRef}
-                className="relative overflow-hidden aspect-video bg-[#05050A] rounded-[2.5rem] my-12 shadow-2xl"
+                className="relative overflow-hidden aspect-video bg-[#05050A] rounded-xl my-12 shadow-2xl"
             >
                 <motion.div
                     style={{ scale, y: yShift, opacity }}
