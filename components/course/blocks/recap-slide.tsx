@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { Zap, Image as ImageIcon, ArrowRight } from "lucide-react";
 import { RecapBlock } from "@/lib/types/lesson-blocks";
 import { useCourseDNA } from "../course-dna-provider";
-import { archetypeOffset } from "@/lib/ai/generate-course-dna";
 
 const RECAP_STYLES = ["card", "minimal", "striped"] as const;
 
@@ -174,14 +173,81 @@ function BentoStyle({ title, points, accent }: { title: string; points: string[]
     );
 }
 
+// ── Style: BOX (4 coloured cards — title + body per card) ─────────────────
+function BoxStyle({ title, items, accent }: { title: string; items: Array<{ title: string; body: string }>; accent: string }) {
+    const ACCENT_CYCLE = [accent, "#4b98ad", "#FFB347", "#FF6B6B"];
+
+    return (
+        <motion.div
+            className="mb-20 mt-10"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        >
+            <div className="text-center mb-10">
+                <div className="inline-block px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-5">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.3em]" style={{ color: accent }}>Key Takeaways</span>
+                </div>
+                <h2 className="font-display font-black text-white text-2xl md:text-3xl tracking-tight leading-tight max-w-2xl mx-auto">
+                    {title || "What you should take from this lesson"}
+                </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl mx-auto">
+                {items.map((item, idx) => {
+                    const cardAccent = ACCENT_CYCLE[idx % ACCENT_CYCLE.length];
+                    return (
+                        <motion.div
+                            key={idx}
+                            initial={{ opacity: 0, y: 16 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: idx * 0.1, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                            className="relative p-6 rounded-2xl border overflow-hidden"
+                            style={{
+                                background: `linear-gradient(135deg, ${cardAccent}0c 0%, rgba(255,255,255,0.02) 100%)`,
+                                borderColor: `${cardAccent}25`,
+                            }}
+                        >
+                            <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, ${cardAccent}60, transparent)` }} />
+                            <div className="flex items-center gap-3 mb-3">
+                                <span
+                                    className="w-7 h-7 rounded-full flex items-center justify-center font-mono font-bold text-[11px] shrink-0"
+                                    style={{ background: `${cardAccent}18`, color: cardAccent }}
+                                >
+                                    {idx + 1}
+                                </span>
+                                <h3 className="font-display font-bold text-white leading-snug" style={{ fontSize: "0.95rem" }}>
+                                    {item.title}
+                                </h3>
+                            </div>
+                            <p className="font-body text-[0.9rem] text-[#A0A0BC] leading-relaxed pl-10">
+                                {item.body}
+                            </p>
+                        </motion.div>
+                    );
+                })}
+            </div>
+
+            <div className="h-px w-full max-w-4xl mx-auto mt-16"
+                style={{ background: `linear-gradient(90deg, transparent, ${accent}20, transparent)` }} />
+        </motion.div>
+    );
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 export function RecapSlide(props: RecapBlock) {
-    const { primary_colour, palette_id } = useCourseDNA();
-    const recapStyle = RECAP_STYLES[archetypeOffset(palette_id, 3)];
+    const { primary_colour } = useCourseDNA();
     const points = props.points || (props as any).items || [];
-    const title  = props.title || "If you remember only three things...";
+    const items  = props.items || [];
+    const title  = props.title || "What you should take from this lesson";
 
-    // Hard-force Bento style to meet the user's high-fidelity requirement for "Key Takeaways"
-    // This ignores any 'minimal' or 'card' style set in the database to ensure visual excellence.
+    // If items[] present (new format), use BoxStyle — 4 cards each with title + body
+    if (items.length > 0) {
+        return <BoxStyle title={title} items={items} accent={primary_colour} />;
+    }
+
+    // Fallback: points[] present — use BentoStyle
     return <BentoStyle title={title} points={points} accent={primary_colour} />;
 }
