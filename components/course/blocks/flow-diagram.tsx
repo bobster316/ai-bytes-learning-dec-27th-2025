@@ -72,7 +72,7 @@ function StepNode({ step, index }: { step: { label: string; description?: string
     );
 }
 
-export function FlowDiagram({ title, steps, contrast, imageUrl }: FlowDiagramBlock & { imageUrl?: string }) {
+export function FlowDiagram({ title, steps, contrast, imageUrl, explanation }: FlowDiagramBlock & { imageUrl?: string }) {
     return (
         <div>
             {title && (
@@ -140,6 +140,15 @@ export function FlowDiagram({ title, steps, contrast, imageUrl }: FlowDiagramBlo
                             <span className="font-sans text-[14px] text-[#00FFB3] leading-snug">{contrast.outcomeB}</span>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* Explanation — shown when present */}
+            {explanation && (
+                <div className="mt-8 px-5 py-4 rounded-xl bg-white/[0.04] border border-white/[0.07] backdrop-blur-sm">
+                    <p className="font-body text-[0.95rem] text-[#B0B0C8] leading-relaxed">
+                        {explanation}
+                    </p>
                 </div>
             )}
         </div>
