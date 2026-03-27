@@ -18,7 +18,7 @@ import { CourseStateManager } from '@/lib/ai/course-state';
 import { videoService } from '@/lib/ai/video-service';
 import { generateCourseDNA, deriveDNAFingerprint } from "@/lib/ai/generate-course-dna";
 import { MediaGenerationError, normaliseProviderError } from '@/lib/ai/media-errors';
-import type { ImageGenerationResult } from '@/lib/ai/media-errors';
+import type { ImageGenerationResult, VideoGenerationResult } from '@/lib/ai/media-errors';
 
 const GENERATION_BUDGET_MS = 240_000; // 240 s — leaves 60 s buffer before the 300 s Vercel limit
 
@@ -459,7 +459,7 @@ export async function POST(req: NextRequest) {
                                 const videoCaption = v.caption || v.title || 'Visual insight';
 
                                 console.log(`[API-V2] 🎬 Generating video: "${videoCaption}" for lesson "${lessonPlan.lessonTitle}"`);
-                                const veoResult = await veoVideoService.generateVideo(rawVideoPrompt, videoCaption);
+                                const veoResult: VideoGenerationResult = await veoVideoService.generateVideo(rawVideoPrompt, videoCaption);
 
                                 let finalUrl: string | null = null;
                                 let videoSource: string = 'unknown';
