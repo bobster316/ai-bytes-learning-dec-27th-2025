@@ -28,9 +28,10 @@ Establish a permanent quality baseline for all AI Bytes lessons. Every lesson ge
 **Problem:** No explanation of what the viewer is about to see or why it matters.
 
 **Fix:**
-- Render a `description` field (2 sentences max) below the video player
-- Style: compact inset panel, `bg-white/5 backdrop-blur-sm`, italic text, `text-sm`, proper line-height
-- Must be legible and substantive — NOT a faint decorative tag
+- `description` is a **required field at generation time** (see Section 2.1)
+- Render it below the video player as a compact inset panel: `bg-white/5 backdrop-blur-sm`, italic, `text-sm`, comfortable line-height
+- Must read as a proper supporting note — NOT decorative dust or a faint tag; it carries real meaning
+- Font size and contrast must be legible at a glance, not whispered
 - If `description` is empty/missing, panel is hidden entirely (no blank space)
 
 ---
@@ -55,6 +56,7 @@ Establish a permanent quality baseline for all AI Bytes lessons. Every lesson ge
 - **If** `explanation` field is present AND `layout` is not explicitly `"hero"` → render as split layout: image 55% left, explanation text 45% right
 - **Otherwise** → full-width image with `explanation` text in a card beneath (or no text if absent)
 - This preserves hero-style full-bleed usage where appropriate
+- The explanation must say **why the visual matters** — what the learner should take away from it — not merely caption what is visible
 
 ---
 
@@ -64,6 +66,7 @@ Establish a permanent quality baseline for all AI Bytes lessons. Every lesson ge
 
 **Fix:**
 - Show `explanation` field in a soft inset card beneath the diagram
+- The explanation must interpret what the diagram reveals — **not just describe what is visible**. It should tell the learner what to conclude from it.
 - If empty, hide the card cleanly
 
 ---
@@ -141,9 +144,10 @@ STRUCTURE:
 
 TEXT QUALITY:
   • text blocks: 3–5 paragraphs per block; max 3 sentences per paragraph
-  • prefer concise sentences — no long compound sentences joined by multiple clauses
-  • no paragraph should feel dense, essay-like, or academic
-  • reduce verbosity; say more with less
+  • sentence length: keep sentences short and direct — one idea per sentence
+  • no long compound sentences joined by multiple clauses (avoid "which", "that", "however" chains)
+  • no paragraph should feel dense, essay-like, or academic — if it looks like a wall, it needs breaking
+  • reduce verbosity by 15%; say more with less
 
 IMAGE EXPLANATIONS (semantic quality rule):
   • full_image blocks:    REQUIRED field "explanation" — 2–3 sentences
@@ -160,16 +164,21 @@ LAYOUT HINTS (include these fields to guide rendering):
 
 ### 2.2 Save-time enforcement (content-sanitizer.ts)
 
-**Repair (deterministic — safe to auto-fix):**
-- Missing `accentColour`, `icon`, `layout` defaults → fill from schema defaults
-- Wrong field aliases (e.g. `heading` instead of `title`) → remap
-- `paragraphs` array with one giant paragraph → split on `. ` into shorter entries
-- key_terms array shorter than 12 → flag as warning (do NOT invent fake terms)
+Two strictly separate categories — **never mix them**:
 
-**Fail / warn, do NOT invent:**
-- Missing `description` on video_snippet → log warning, leave empty (component hides it gracefully)
-- Missing `explanation` on full_image or flow_diagram → log warning, component falls back to full-width
-- recap items fewer than 4 or missing `body` → log warning, save as-is (better sparse than fabricated)
+**REPAIR — deterministic, safe to auto-fix (no semantic content invented):**
+- Missing `accentColour`, `icon`, `layout` defaults → fill from schema defaults
+- Wrong field aliases (e.g. `heading` instead of `title`) → remap to correct field
+- `paragraphs` array containing one giant string → split mechanically on `. ` sentence boundaries
+- Missing numeric/enum fields (e.g. `duration`, `difficulty`) → fill from block-type defaults
+
+**WARN — missing semantic content: log + pass through, do NOT fabricate:**
+- Missing `description` on video_snippet → `console.warn`, save block without it (component hides the panel gracefully)
+- Missing `explanation` on full_image or flow_diagram → `console.warn`, component falls back to full-width with no text
+- recap with fewer than 4 items, or items missing `body` → `console.warn`, save as-is (sparse is better than fabricated)
+- key_terms array shorter than 12 → `console.warn`, save as-is (do NOT pad with invented terms)
+
+The rule: **repair structure, never invent meaning.**
 
 ---
 
