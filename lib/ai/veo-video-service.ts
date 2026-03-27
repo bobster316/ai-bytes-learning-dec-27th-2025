@@ -21,7 +21,7 @@ const MODEL_ID    = process.env.VEO_MODEL_ID || "veo-3.1-generate-001";
 const VERTEX_BASE = `https://${LOCATION}-aiplatform.googleapis.com/v1/projects/${PROJECT_ID}/locations/${LOCATION}/publishers/google/models`;
 
 const POLL_INTERVAL_MS = 12_000;
-const POLL_MAX_ATTEMPTS = 35; // ~7 min ceiling
+const POLL_MAX_ATTEMPTS = 20; // ~4 min ceiling — route waits max 2 min extra after images
 
 class VeoVideoService {
 
