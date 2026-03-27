@@ -19,7 +19,7 @@ import { generateCourseDNA, deriveDNAFingerprint } from "@/lib/ai/generate-cours
 import { MediaGenerationError, normaliseProviderError } from '@/lib/ai/media-errors';
 import type { ImageGenerationResult, VideoGenerationResult } from '@/lib/ai/media-errors';
 
-const VIDEO_EXTRA_WAIT_MS = 120_000; // 2 min extra wait after images complete before failing video
+const VIDEO_EXTRA_WAIT_MS = 180_000; // 3 min extra wait after images complete (Veo gets ~5 min total)
 const ROUTE_BUDGET_MS     = 270_000; // 270 s safety net — throws clean error before Vercel 300 s hard kill
 
 function extractStoragePath(publicUrl: string): string | null {
@@ -494,7 +494,10 @@ export async function POST(req: NextRequest) {
                                 }
 
                                 if (!veoResult.url) {
-                                    const { errorCode, errorMessage, retryable } = normaliseProviderError(veoResult.errorMessage || 'unknown');
+                                    // Use errorCode directly from veoResult (avoids re-mapping our own timeout code)
+                                    const { errorCode, errorMessage, retryable } = veoResult.errorCode
+                                        ? { errorCode: veoResult.errorCode as any, errorMessage: veoResult.errorMessage || 'unknown', retryable: false }
+                                        : normaliseProviderError(veoResult.errorMessage || 'unknown');
                                     throw new MediaGenerationError(
                                         'veo',
                                         errorCode,
