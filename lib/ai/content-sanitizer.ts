@@ -299,6 +299,11 @@ function validateAndRepairBlock(block: Record<string, unknown>): Record<string, 
     if (type === 'text' && Array.isArray(repaired.paragraphs) && repaired.paragraphs.length === 1) {
         const raw = repaired.paragraphs[0] as string;
         if (typeof raw === 'string' && raw.length > 300) {
+            // Skip splitting if text contains abbreviations that would confuse sentence boundary detection
+            const hasAbbreviations = /\b(e\.g\.|i\.e\.|vs\.|Fig\.|Dr\.|Mr\.|Mrs\.|Prof\.|approx\.|etc\.)/i.test(raw);
+            if (hasAbbreviations) {
+                // Leave as single paragraph — safer than incorrect splits
+            } else {
             const sentences = raw.match(/[^.!?]+[.!?]+[\s]*/g) || [raw];
             const chunks: string[] = [];
             let current = '';
@@ -313,6 +318,7 @@ function validateAndRepairBlock(block: Record<string, unknown>): Record<string, 
             if (chunks.length > 1) {
                 console.warn(`[ContentSanitizer] ℹ️ text block "${block.id}" — split 1 giant paragraph into ${chunks.length} paragraphs`);
                 repaired.paragraphs = chunks;
+            }
             }
         }
     }
@@ -389,6 +395,16 @@ function validateAndRepairBlock(block: Record<string, unknown>): Record<string, 
     }
     if (type === 'flow_diagram' && !repaired.explanation) {
         console.warn(`[ContentSanitizer] ⚠️ flow_diagram block "${block.id}" — missing "explanation" field. Component will render diagram without interpretive text.`);
+    }
+    if (type === 'applied_case') {
+        const t = (repaired as any).tabs;
+        if (Array.isArray(t) && t.length > 0) {
+            if (t.length !== 3) {
+                console.warn(`[ContentSanitizer] ⚠️ applied_case block "${block.id}" — tabs has ${t.length} entries (expected 3), saving as-is`);
+            }
+        } else if (!repaired.scenario) {
+            console.warn(`[ContentSanitizer] ⚠️ applied_case block "${block.id}" — missing both tabs and legacy scenario field`);
+        }
     }
     if (type === 'key_terms') {
         if (Array.isArray(repaired.terms)) {

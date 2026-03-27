@@ -214,7 +214,7 @@ export function VideoSnippet(props: VideoSnippetBlock) {
                 {/* Description panel — hidden when empty */}
                 {props.description && (
                     <div className="mt-3 px-5 py-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/[0.06]">
-                        <p className="font-serif italic text-sm text-[#B0B0C8] leading-relaxed">
+                        <p className="font-body italic text-sm text-[#B0B0C8] leading-relaxed">
                             {props.description}
                         </p>
                     </div>

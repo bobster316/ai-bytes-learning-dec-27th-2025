@@ -294,6 +294,34 @@ function getBlueprintForLesson(
     return { chosenBlocks, heroType, recapStyle, quizFirst, videoIndices, heroPattern };
 }
 
+// ─── Lesson quality rules injected into every generation prompt ─────────────
+const LESSON_QUALITY_RULES = `LESSON CONTENT QUALITY RULES — ABSOLUTE LAW:
+
+STRUCTURE:
+  • objective blocks:      exactly 2 sentences — S1: what the learner will understand, S2: why it matters
+  • video_snippet blocks:  REQUIRED "description" field — exactly 2 sentences: S1 what the viewer will see, S2 why it matters for this lesson
+  • recap blocks:          exactly 4 items; each item MUST have "title" (4–6 words) AND "body" (2 sentences). NO plain string points — always use items[] format
+  • applied_case blocks:   exactly 3 scenarios in "tabs" array; each tab: id, label, scenario, challenge, resolution
+  • key_terms blocks:      minimum 12 terms; each term MUST have "definition" (2 sentences)
+
+TEXT QUALITY:
+  • text blocks: 3–5 paragraphs per block; max 3 sentences per paragraph
+  • sentence length: short and direct — one idea per sentence
+  • avoid long compound sentences joined by multiple "which", "that", "however" chains
+  • no paragraph should look like a dense wall of text — if it does, break it
+  • reduce verbosity by 15% — say more with less
+
+IMAGE EXPLANATIONS (semantic quality — ABSOLUTE):
+  • full_image blocks:    REQUIRED "explanation" field — 2–3 sentences
+  • flow_diagram blocks:  REQUIRED "explanation" field — 2–3 sentences
+  • type_cards cards:     REQUIRED "description" field — 3–4 sentences explaining the card concept and why it matters
+  • ALL explanations MUST interpret what the visual reveals — NOT describe what is visible
+    BAD:  "This image shows a transformer architecture diagram."
+    GOOD: "The layout reveals how the attention mechanism links tokens regardless of their position in the sequence, which is why transformers outperform recurrent networks on long-context tasks."
+
+LAYOUT HINTS:
+  • full_image blocks: set layout: "split" when explanation is present; layout: "hero" for standalone atmosphere images only`.trim();
+
 // ─── Block schema documentation per block type ──────────────────────────────
 function getBlockSchemaDoc(blockRef: string): string {
     const [type, variant] = blockRef.split(':');
@@ -413,33 +441,6 @@ export class LessonExpanderAgent extends BaseAgentV2 {
         const ironCoreCount = 10;
         const totalTarget = ironCoreCount + finalBlocksWithVideos.length + (isBeginner ? 2 : isAdvanced ? 4 : 3);
         const temperature = Math.min(0.7 + (lessonNumber - 1) * 0.04, 1.0);
-
-        const LESSON_QUALITY_RULES = `LESSON CONTENT QUALITY RULES — ABSOLUTE LAW:
-
-STRUCTURE:
-  • objective blocks:      exactly 2 sentences — S1: what the learner will understand, S2: why it matters
-  • video_snippet blocks:  REQUIRED "description" field — exactly 2 sentences: S1 what the viewer will see, S2 why it matters for this lesson
-  • recap blocks:          exactly 4 items; each item MUST have "title" (4–6 words) AND "body" (2 sentences). NO plain string points — always use items[] format
-  • applied_case blocks:   exactly 3 scenarios in "tabs" array; each tab: id, label, scenario, challenge, resolution
-  • key_terms blocks:      minimum 12 terms; each term MUST have "definition" (2 sentences)
-
-TEXT QUALITY:
-  • text blocks: 3–5 paragraphs per block; max 3 sentences per paragraph
-  • sentence length: short and direct — one idea per sentence
-  • avoid long compound sentences joined by multiple "which", "that", "however" chains
-  • no paragraph should look like a dense wall of text — if it does, break it
-  • reduce verbosity by 15% — say more with less
-
-IMAGE EXPLANATIONS (semantic quality — ABSOLUTE):
-  • full_image blocks:    REQUIRED "explanation" field — 2–3 sentences
-  • flow_diagram blocks:  REQUIRED "explanation" field — 2–3 sentences
-  • type_cards cards:     REQUIRED "description" field — 3–4 sentences explaining the card concept and why it matters
-  • ALL explanations MUST interpret what the visual reveals — NOT describe what is visible
-    BAD:  "This image shows a transformer architecture diagram."
-    GOOD: "The layout reveals how the attention mechanism links tokens regardless of their position in the sequence, which is why transformers outperform recurrent networks on long-context tasks."
-
-LAYOUT HINTS:
-  • full_image blocks: set layout: "split" when explanation is present; layout: "hero" for standalone atmosphere images only`.trim();
 
         const prompt = `SYSTEM: You are an elite UK instructional designer. Lesson ${lessonNumber} of this course.
 LESSON: "${lesson.lessonTitle}"
