@@ -601,12 +601,62 @@ export async function POST(req: NextRequest) {
             await sendEvent({ stage: 'completed', progress: 100, message: 'V2 Generation Complete!', courseId: courseId });
 
         } catch (error: any) {
-            console.error('[API-V2] ERROR:', error);
+            const isMediaError = error instanceof MediaGenerationError;
+
+            // Full internal log — always log the raw error
+            console.error('[API-V2] ❌ Generation failed:', error.stack || error.message || error);
             try {
-                fs.appendFileSync(path.join(process.cwd(), 'v2-error.log'), new Date().toISOString() + ' ' + (error.stack || error.message) + '\n');
-            } catch (e) { }
-            if (generationId && !DRY_RUN) await dbV2.markGenerationComplete(supabase, generationId, false, error.message);
-            await sendEvent({ stage: 'error', message: error.message || 'Internal Server Error' });
+                fs.appendFileSync(
+                    path.join(process.cwd(), 'v2-error.log'),
+                    `${new Date().toISOString()} ${error.stack || error.message}\n`
+                );
+            } catch (_) { /* log write failure is non-fatal */ }
+
+            // --- ROLLBACK: DB ---
+            if (courseId && !DRY_RUN) {
+                console.log(`[API-V2] Rolling back course ${courseId}...`);
+                const { error: deleteErr } = await supabase
+                    .from('courses')
+                    .delete()
+                    .eq('id', courseId);
+                if (deleteErr) {
+                    console.error('[API-V2] Rollback: DB delete failed (secondary error):', deleteErr.message);
+                } else {
+                    console.log(`[API-V2] Rollback: course ${courseId} and all descendants deleted.`);
+                }
+            }
+
+            // --- ROLLBACK: Storage (best-effort) ---
+            if (uploadedStoragePaths.length > 0 && !DRY_RUN) {
+                console.log(`[API-V2] Rollback: cleaning up ${uploadedStoragePaths.length} uploaded storage file(s)...`);
+                const { error: storageErr } = await supabase.storage
+                    .from('course-images')
+                    .remove(uploadedStoragePaths);
+                if (storageErr) {
+                    console.error('[API-V2] Rollback: Storage cleanup failed (secondary error):', storageErr.message);
+                } else {
+                    console.log('[API-V2] Rollback: storage cleanup complete.');
+                }
+            }
+
+            // Mark generation progress record as failed
+            if (generationId && !DRY_RUN) {
+                await dbV2.markGenerationComplete(supabase, generationId, false, error.message);
+            }
+
+            // Stream normalised error to client — do NOT stream raw provider errors
+            await sendEvent({
+                stage: 'error',
+                api: isMediaError ? error.api : 'generation',
+                errorCode: isMediaError ? error.errorCode : 'internal_error',
+                message: isMediaError
+                    ? error.message
+                    : 'Course generation failed — internal error. Check server logs.',
+                retryable: isMediaError ? error.retryable : false,
+                lessonTitle: isMediaError ? error.lessonTitle : undefined,
+                blockType: isMediaError ? error.blockType : undefined,
+                slotLabel: isMediaError ? error.slotLabel : undefined,
+            });
         } finally {
             await writer.close();
         }
