@@ -1,10 +1,13 @@
 /**
  * Gemini Image Service
- * Uses Google's Gemini 2.5 Flash Image model (Nano Banana) for AI image generation.
- * This service provides superior text rendering accuracy for educational content.
+ * Uses Google's Gemini 3.1 Flash Image Preview model (Nano Banana) for AI image generation.
+ * This service provides superior text rendering accuracy and advanced capabilities for educational content.
  */
 
 import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { createClient } from "@supabase/supabase-js";
+import type { ImageGenerationResult } from './media-errors';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
@@ -16,32 +19,41 @@ export interface GeminiImage {
 
 class GeminiImageService {
     private client: GoogleGenAI | null = null;
+    private textClient: GoogleGenerativeAI | null = null;
     // Using the correct Nano Banana image generation model
-    private model = "gemini-2.5-flash-image";
+    private model = "gemini-3.1-flash-image-preview";
+    private supabase: any = null;
 
     constructor() {
         if (GEMINI_API_KEY) {
             this.client = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-            console.log('[GeminiImageService] Initialized with API key');
+            this.textClient = new GoogleGenerativeAI(GEMINI_API_KEY);
+            console.log('[GeminiImageService] Initialized with both Image and Text clients');
         } else {
             console.warn('[GeminiImageService] No GEMINI_API_KEY found, service disabled');
+        }
+
+        // Initialize Supabase for storage uploads
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+        if (supabaseUrl && supabaseKey) {
+            this.supabase = createClient(supabaseUrl, supabaseKey);
+        } else {
+            console.warn('[GeminiImageService] Supabase not configured, image uploads will fail');
         }
     }
 
     /**
-     * Generate an image using Gemini 2.5 Flash Image model.
-     * Returns a base64 data URI or null if generation fails.
-     */
-    /**
-     * Generate an image using Gemini 2.5 Flash Image model.
+     * Generate an image using Gemini 3.1 Flash Image model.
      * Returns a base64 data URI or null if generation fails.
      * @param prompt The image generation prompt
      * @param index Optional index of the image in the lesson sequence (0-5)
      */
-    async generateImage(prompt: string, index: number = 0): Promise<GeminiImage | null> {
+    async generateImage(prompt: string, index: number = 0): Promise<ImageGenerationResult> {
         if (!this.client) {
             console.warn('[GeminiImageService] Client not initialized, skipping');
-            return null;
+            return { url: null, alt: null, caption: null, errorCode: 'auth_failed', errorMessage: 'Gemini client not initialised — GEMINI_API_KEY missing' };
         }
 
         try {
@@ -50,10 +62,16 @@ class GeminiImageService {
             // Enhance prompt for educational content
             const enhancedPrompt = this.buildEducationalPrompt(prompt);
 
-            // User-defined temperature variation for uniqueness
-            // [0.8, 0.9, 0.85, 0.95, 0.9, 0.85]
-            const temps = [0.8, 0.9, 0.85, 0.95, 0.9, 0.85];
-            const selectedTemp = temps[index % temps.length];
+            // Detect style to adjust temperature
+            const style = this.detectImageStyle(prompt);
+
+            // Lower temperature for photorealism (coherence), higher for art (creativity)
+            let selectedTemp = 0.85;
+            if (style === 'photorealistic') {
+                selectedTemp = 0.65; // Lower temp for sharper, more realistic details
+            } else if (style === 'digital-art') {
+                selectedTemp = 0.9;
+            }
 
             // Random seed logic to ensure strict deduplication
             // We use the current time + index to ensure each run is unique
@@ -65,7 +83,7 @@ class GeminiImageService {
                 config: {
                     temperature: selectedTemp,
                     randomSeed: randomSeed
-                }
+                } as any
             });
 
             // Extract image from response
@@ -73,99 +91,144 @@ class GeminiImageService {
                 const parts = response.candidates[0].content?.parts || [];
 
                 for (const part of parts) {
-                    if (part.inlineData) {
+                    if (part.inlineData && part.inlineData.data) {
                         const mimeType = part.inlineData.mimeType || 'image/png';
                         const base64Data = part.inlineData.data;
-                        const dataUri = `data:${mimeType};base64,${base64Data}`;
 
-                        console.log('[GeminiImageService] ✅ Successfully generated image');
+                        console.log('[GeminiImageService] ✅ Successfully generated image, uploading to storage...');
 
                         // Generate a clean, short caption from the prompt
                         const cleanCaption = this.generateCleanCaption(prompt);
 
-                        return {
-                            url: dataUri,
-                            alt: cleanCaption,
-                            caption: cleanCaption
-                        };
+                        // Upload to Supabase Storage
+                        const publicUrl = await this.uploadToStorage(base64Data, mimeType, prompt);
+
+                        if (publicUrl) {
+                            return { url: publicUrl, alt: cleanCaption, caption: cleanCaption, errorCode: null, errorMessage: null };
+                        }
+                        return { url: null, alt: null, caption: null, errorCode: 'upload_failed', errorMessage: 'Image generated but Supabase Storage upload failed' };
                     }
                 }
             }
 
             console.warn('[GeminiImageService] No image data in response');
-            return null;
+            return { url: null, alt: null, caption: null, errorCode: 'empty_result', errorMessage: 'Gemini returned no image data — possible content filter or model error' };
 
         } catch (error: any) {
-            console.error(`[GeminiImageService] ❌ Generation failed:`, error.message || error);
+            const raw = error?.message || String(error);
+            console.error(`[GeminiImageService] ❌ Generation failed:`, raw);
+            return { url: null, alt: null, caption: null, errorCode: 'empty_result', errorMessage: raw };
+        }
+    }
+
+    async generateText(prompt: string, temperature: number = 0.7): Promise<string | null> {
+        const client = this.textClient;
+        if (!client) return null;
+        try {
+            const model = client.getGenerativeModel({ model: "gemini-2.0-flash" });
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            return response.text();
+        } catch (error) {
+            console.error('[GeminiImageService] Text generation failed:', error);
+            return null;
+        }
+    }
+
+
+    /**
+     * Uploads the base64 image data to Supabase Storage and returns the public URL.
+     */
+    private async uploadToStorage(base64Data: string, mimeType: string, prompt: string): Promise<string | null> {
+        if (!this.supabase) return null;
+
+        try {
+            const buffer = Buffer.from(base64Data, 'base64');
+            const ext = mimeType.split('/')[1] || 'png';
+            const timestamp = Date.now();
+            const randomId = Math.random().toString(36).substring(7);
+            const slug = prompt.substring(0, 20).replace(/[^a-z0-9]/yi, '-').toLowerCase();
+            const filename = `gemini-${timestamp}-${randomId}-${slug}.${ext}`;
+            const filePath = `generated/${filename}`;
+
+            const { error: uploadError } = await this.supabase.storage
+                .from('course-images')
+                .upload(filePath, buffer, {
+                    contentType: mimeType,
+                    upsert: false
+                });
+
+            if (uploadError) {
+                console.error('[GeminiImageService] Upload failed:', uploadError);
+                return null;
+            }
+
+            const { data } = this.supabase.storage
+                .from('course-images')
+                .getPublicUrl(filePath);
+
+            return data.publicUrl;
+
+        } catch (e) {
+            console.error('[GeminiImageService] Error in uploadToStorage:', e);
             return null;
         }
     }
 
     /**
-     * Detect if the prompt is requesting photorealistic or illustration style.
+     * Detect specific visual style from the prompt.
      */
-    private detectImageStyle(prompt: string): 'photorealistic' | 'illustration' {
-        const lowerPrompt = prompt.toLowerCase();
-        // Check for explicit PHOTOREALISTIC prefix or photo-related keywords
-        if (lowerPrompt.startsWith('photorealistic:') ||
-            lowerPrompt.startsWith('photography mode only:') ||
-            lowerPrompt.includes('photograph') ||
-            lowerPrompt.includes('real-world') ||
-            lowerPrompt.includes('hd photo') ||
-            lowerPrompt.includes('real life') ||
-            lowerPrompt.includes('shot with') ||
-            lowerPrompt.includes('camera') ||
-            lowerPrompt.includes('lens') ||
-            lowerPrompt.includes('8k hd')) {
-            return 'photorealistic';
-        }
-        return 'illustration';
+    private detectImageStyle(prompt: string): 'photorealistic' | '3d-model' | 'futuristic-ui' | 'diagram' | 'digital-art' | 'infographic' {
+        const lower = prompt.toLowerCase();
+        if (lower.startsWith('photorealistic') || lower.includes('documentary photo') || lower.includes('raw photograph') || lower.includes('real-world photo')) return 'photorealistic';
+        if (lower.includes('3d isometric') || lower.includes('3d render') || lower.includes('clay render') || lower.includes('isometric view')) return '3d-model';
+        if (lower.includes('futuristic ui') || lower.includes('hud') || lower.includes('dashboard') || lower.includes('data visualization') || lower.includes('data visualiz')) return 'futuristic-ui';
+        if (lower.includes('diagram') || lower.includes('schematic') || lower.includes('blueprint') || lower.includes('flowchart') || lower.includes('architecture diagram')) return 'diagram';
+        if (lower.includes('infographic') || lower.includes('illustration') || lower.includes('chart') || lower.includes('graph')) return 'infographic';
+        return 'digital-art';
     }
 
     /**
-     * Build an enhanced prompt based on the detected image style.
+     * Extract the core visual subject from any prompt — strips style instructions and extracts the key concept.
+     */
+    private extractCoreSubject(prompt: string): string {
+        return prompt
+            .replace(/^(PHOTOREALISTIC|3D ISOMETRIC|FUTURISTIC UI|DIAGRAM|ILLUSTRATION|INFOGRAPHIC|Generate a|A photorealistic|A 3D|A high-end|A cinematic)[\s:]+/i, '')
+            .replace(/\.\s*(SPECS|STYLE|COLORS|ELEMENTS|CONTEXT|NEGATIVE PROMPT|AVOID|BACKGROUND|COMPOSITION)[\s\S]*/i, '')
+            .replace(/(No text|no logos|no faces|no cartoons|8K|4K|ray-traced|global illumination|studio lighting|f\/[0-9.]+|ISO [0-9]+)[^.]*\.?/gi, '')
+            .replace(/\s+/g, ' ')
+            .substring(0, 200)
+            .trim();
+    }
+
+    /**
+     * Build a highly detailed, publication-quality image prompt.
+     * The goal is that every image feels like it was shot by a world-class photographer
+     * or rendered by an award-winning 3D artist — bespoke, contextually precise, never generic.
      */
     private buildEducationalPrompt(basePrompt: string): string {
-        const style = this.detectImageStyle(basePrompt);
+        const subject = this.extractCoreSubject(basePrompt);
 
-        // Remove style prefix if present
-        let cleanPrompt = basePrompt
-            .replace(/^PHOTOREALISTIC:\s*/i, '')
-            .replace(/^PHOTOGRAPHY MODE ONLY:\s*/i, '')
-            .replace(/^ILLUSTRATION:\s*/i, '');
+        // Core Directive: Enterprise Technical context
+        const context = `An authentic, high-stakes industrial enterprise environment, zero human figures, no classroom or office tropes.`;
+        
+        // Aesthetic: High-fidelity raw photography
+        const aesthetic = `TECHNICAL STYLE: Raw handheld industrial photography, 35mm lens, cool ambient data center lighting, razor-sharp technical focus on hardware/software interfaces.`;
+        
+        // Mandatory Constraints (Assertions of Absence)
+        const constraints = `MANDATORY CONSTRAINTS: POSITIVE ASSERTIONS OF ABSENCE - An empty, clean, professional technology interface. No teacher, no student, no smiling faces. 15% whitespace safety margin for UI overlay.`;
+        
+        // Negative Injection
+        const negative = `EXCLUDE: teacher, student, classroom, blackboard, generic office, person closing laptop, handshakes, cartoon, 3D characters, clip-art, low-resolution, stock photo look.`;
 
-        if (style === 'photorealistic') {
-            console.log('[GeminiImageService] 📷 Using PHOTOREALISTIC style');
-            return `Generate a RAW, DOCUMENTARY-STYLE PHOTOGRAPH.
-            
-PROMPT: ${cleanPrompt}
-
-PHOTOGRAPHY SPECIFICATIONS:
-- CAMERA: Phase One XF IQ4 150MP, 80mm f/2.8 lens.
-- STYLE: Corporate Editorial / Tech Documentary.
-- LIGHTING: Natural environmental lighting mixed with subtle rim lighting. NO dramatic, oversaturated "gamer" or "cyberpunk" lighting unless specified.
-- TEXTURE: Highly detailed skin texture, fabric weaves, and material imperfections.
-- AVOID: "CGI", "3D Render", "Plastic", "Smooth", "Cartoon", "Illustration", "Digital Art", "Unreal Engine".
-- COMPOSITION: Professional framing, rule of thirds, depth of field to separate subject.
-- COLOR: Natural, balanced color grading (Fujifilm GFX simulation). 
-
-CRITICAL: The image must look like a real photo taken by a human photographer, not a digital artwork.`;
-        } else {
-            console.log('[GeminiImageService] 🎨 Using ILLUSTRATION style');
-            return `Create a premium, corporate Memphis-style flat illustration for a B2B tech platform:
-
-PROMPT: ${cleanPrompt}
-
-DESIGN REQUIREMENTS:
-- STYLE: Flat, minimal, vector-art style.
-- COLORS: Slate-900 acting as ink, with primary accents of #06b6d4 (Cyan) and #8b5cf6 (Violet). 
-- NO SHADING: Use solid colors. No gradients or drop shadows.
-- SHAPES: Geometric, clean lines. No "hand-drawn" sketchiness.
-- COMPOSITION: Abstract representation of the concept.
-- NO TEXT: Do not include text.
-- ASPECT RATIO: 16:9.`;
-        }
+        return `CORE SUBJECT: ${subject}.
+${context}
+${aesthetic}
+${constraints}
+${negative}
+STYLE: Photorealistic, high-contrast, professional, 8k resolution, cinematic technical lighting.`;
     }
+
 
     /**
      * Check if the service is available and ready.
@@ -213,6 +276,39 @@ DESIGN REQUIREMENTS:
         }
 
         return caption || 'Visual Concept';
+    }
+
+    /**
+     * Uploads a raw buffer to Supabase and returns the public URL.
+     */
+    async generateImageFromBuffer(buffer: Buffer, mimeType: string, slugSeed: string): Promise<string | null> {
+        if (!this.supabase) return null;
+        try {
+            const ext = mimeType.split('/')[1] || 'png';
+            const timestamp = Date.now();
+            const filePath = `generated/thumb-${timestamp}-${slugSeed.substring(0, 20)}.${ext}`;
+
+            const { error: uploadError } = await this.supabase.storage
+                .from('course-images')
+                .upload(filePath, buffer, {
+                    contentType: mimeType,
+                    upsert: false
+                });
+
+            if (uploadError) {
+                console.error('[GeminiImageService] Buffer upload failed:', uploadError);
+                return null;
+            }
+
+            const { data } = this.supabase.storage
+                .from('course-images')
+                .getPublicUrl(filePath);
+
+            return data.publicUrl;
+        } catch (e) {
+            console.error('[GeminiImageService] Error in generateImageFromBuffer:', e);
+            return null;
+        }
     }
 }
 
