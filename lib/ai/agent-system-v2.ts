@@ -121,7 +121,8 @@ abstract class BaseAgentV2 {
                     if (attempt < MAX_RETRIES) continue;
                     throw new Error(`${this.constructor.name}: Request timed out.`);
                 }
-                if (e.message.includes("valid JSON") || e.message.includes("API Key")) throw e;
+                if (e.message.includes("API Key")) throw e; // auth failure — never retry
+                // "valid JSON" / empty responses are transient — fall through to retry
                 if (attempt < MAX_RETRIES) {
                     await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
                     continue;
