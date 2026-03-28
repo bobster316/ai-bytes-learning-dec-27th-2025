@@ -571,7 +571,11 @@ export async function POST(req: NextRequest) {
             }
 
             // 4. AI Avatar Integration - Course Intro Video
-            if (!DRY_RUN && (manifest as any).introVideoScript) {
+            // Gated by ENABLE_HEYGEN_AVATAR=true. Set to false (or omit) to skip during
+            // troubleshooting or when HeyGen credits are exhausted. Re-enable by setting
+            // ENABLE_HEYGEN_AVATAR=true in .env.local — no other code change needed.
+            const heygenEnabled = process.env.ENABLE_HEYGEN_AVATAR === 'true';
+            if (!DRY_RUN && heygenEnabled && (manifest as any).introVideoScript) {
                 await sendEvent({ stage: 'videos', progress: 95, message: '🎬 Queuing cinematic AI intro video...' });
                 try {
                     const videoRequests = [{
@@ -597,6 +601,8 @@ export async function POST(req: NextRequest) {
                 } catch (vErr) {
                     console.error("[API-V2] Video generation trigger failed:", vErr);
                 }
+            } else if (!DRY_RUN && !heygenEnabled) {
+                console.log('[API-V2] HeyGen avatar generation skipped (temporarily disabled — set ENABLE_HEYGEN_AVATAR=true to re-enable)');
             }
 
             await sendEvent({ stage: 'completed', progress: 100, message: 'V2 Generation Complete!', courseId: courseId });
