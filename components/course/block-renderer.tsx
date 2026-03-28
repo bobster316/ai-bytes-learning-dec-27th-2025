@@ -134,7 +134,7 @@ export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewU
             } else if (resolvedType === 'image_text_row reversed') {
                 extra.reverse = true;
                 resolvedType = 'image_text_row';
-            } else if (resolvedType === 'INTRO' || resolvedType === 'OUTRO') {
+            } else if (resolvedType === 'INTRO' || resolvedType === 'OUTRO' || resolvedType === 'explanatory' || resolvedType === 'visual_insight') {
                 resolvedType = 'video_snippet';
             }
 

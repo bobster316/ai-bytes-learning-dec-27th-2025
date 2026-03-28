@@ -69,6 +69,7 @@ abstract class BaseAgentV2 {
                         contents,
                         generationConfig: {
                             temperature: 0.7,
+                            maxOutputTokens: 65536,
                             responseMimeType: isJson ? "application/json" : "text/plain",
                         }
                     }),
@@ -297,6 +298,11 @@ function getBlueprintForLesson(
 // ─── Lesson quality rules injected into every generation prompt ─────────────
 const LESSON_QUALITY_RULES = `LESSON CONTENT QUALITY RULES — ABSOLUTE LAW:
 
+BLOCK TYPES — ABSOLUTE LAW:
+  • ONLY use these exact type values: lesson_header, objective, text, full_image, image_text_row, type_cards, callout, industry_tabs, quiz, completion, key_terms, applied_case, recap, go_deeper, interactive_vis, video_snippet, punch_quote, prediction, mindmap, flow_diagram, concept_illustration, open_exercise, instructor_insight
+  • NEVER invent custom types like "INTRO", "OUTRO", "explanatory", "foundation", "visual_insight" etc.
+  • Use exactly one recap block. Never generate two recap blocks.
+
 STRUCTURE:
   • objective blocks:      exactly 2 sentences — S1: what the learner will understand, S2: why it matters
   • video_snippet blocks:  REQUIRED "description" field — exactly 2 sentences: S1 what the viewer will see, S2 why it matters for this lesson
@@ -326,20 +332,20 @@ LAYOUT HINTS:
 function getBlockSchemaDoc(blockRef: string): string {
     const [type, variant] = blockRef.split(':');
     const schemas: Record<string, string> = {
-        'type_cards:grid':       'type_cards grid — 3–4 cards for factual orientation. layout: "grid". Each card: badge, badgeColour (pulse|iris|amber), title, description (3–4 sentences explaining the concept and why it matters), imagePrompt (MINIMUM 1000 WORDS of ultra-detailed description).',
+        'type_cards:grid':       'type_cards grid — 3–4 cards for factual orientation. layout: "grid". Each card: badge, badgeColour (pulse|iris|amber), title, description (3–4 sentences explaining the concept and why it matters), imagePrompt (1–2 sentences: subject, setting, mood — will be enriched later).',
         'type_cards:numbered':   'type_cards numbered — 3–4 cards breaking topic into parts. layout: "numbered". Each card: badge, badgeColour, title, description (3–4 sentences explaining the concept and why it matters).',
         'type_cards:horizontal': 'type_cards horizontal — COMPARISON of 2 things. layout: "horizontal". 2–3 cards only. Each card: title, description (3–4 sentences explaining the concept and why it matters).',
-        'type_cards:bento':      'type_cards bento — freeform supplemental cards. layout: "bento". 3–4 cards, each with badge, title, description (3–4 sentences explaining the concept and why it matters), imagePrompt (MINIMUM 1000 WORDS).',
+        'type_cards:bento':      'type_cards bento — freeform supplemental cards. layout: "bento". 3–4 cards, each with badge, title, description (3–4 sentences explaining the concept and why it matters), imagePrompt (1–2 sentences: subject, setting, mood).',
         'instructor_insight':    'instructor_insight — EXACTLY 3 insight cards. Each: emoji, bold title, body (1–2 sentences).',
         'flow_diagram:steps':    'flow_diagram steps — linear process (3–6 steps). title, steps[]{label, description, colour}, explanation (2–3 sentences interpreting what the flow reveals — the conclusion the learner should draw).',
         'flow_diagram:contrast': 'flow_diagram contrast — before/after. title, contrast{ labelA, labelB, stepsA[], stepsB[], middleNode, outcomeA, outcomeB }, explanation (2–3 sentences interpreting what the contrast reveals).',
         'mindmap':               'mindmap — central node + 4–6 branch concepts.',
-        'concept_illustration':  'concept_illustration — visual metaphor. concept, description, imagePrompt (MINIMUM 1000 WORDS), style: network|layers|cycle|hierarchy.',
-        'image_text_row':        'image_text_row — image left, text right. imagePrompt (MINIMUM 1000 WORDS), label, title, text (2–3 sentences), reverse: false.',
-        'image_text_row:reverse':'image_text_row reversed — text left, image right. reverse: true. imagePrompt (MINIMUM 1000 WORDS), label, title, text.',
+        'concept_illustration':  'concept_illustration — visual metaphor. concept, description, imagePrompt (1–2 sentences: subject, style, mood), style: network|layers|cycle|hierarchy.',
+        'image_text_row':        'image_text_row — image left, text right. imagePrompt (1–2 sentences: subject, setting, mood), label, title, text (2–3 sentences), reverse: false.',
+        'image_text_row:reverse':'image_text_row reversed — text left, image right. reverse: true. imagePrompt (1–2 sentences: subject, setting, mood), label, title, text.',
         'prediction':            'prediction — knowledge check. question, options (EXACTLY 3), correctIndex, reveal.',
         'applied_case':          'applied_case — 3 real-world scenarios as tabs. REQUIRED fields: tabs (array of EXACTLY 3 objects each with: id (string), label (string, 2-4 words), scenario (string, 2-3 sentences), challenge (string, 2-3 sentences), resolution (string, 2-3 sentences), imageUrl (omit — filled by pipeline)).',
-        'industry_tabs':         'industry_tabs — 4–5 industry use-case tabs. heading, tabs[]{ id, label, imagePrompt (MINIMUM 1000 WORDS), imageCaption, scenarioTitle, scenarioBody }.',
+        'industry_tabs':         'industry_tabs — 4–5 industry use-case tabs. heading, tabs[]{ id, label, imagePrompt (1–2 sentences: subject, setting, mood), imageCaption, scenarioTitle, scenarioBody }.',
         'callout:warning':       'callout warning — variant: "warning", title, text.',
         'callout:tip':           'callout tip — variant: "tip", title, text.',
         'open_exercise':         'open_exercise — practice activity. instruction, weakPrompt, scaffoldLabels, modelAnswer.',
@@ -347,7 +353,7 @@ function getBlockSchemaDoc(blockRef: string): string {
         'text:bridge':           'text (bridge/transition) — 1–3 paragraphs only. heading, paragraphs[].',
         'video_snippet':          'video_snippet — AI-generated cinematic clip. REQUIRED fields: type, id, title, caption, videoPrompt (EXACTLY 5 SENTENCES motion-arc structure — S1: lesson concept + title, S2: visible objects/interfaces, S3: start→change→end motion arc, S4: camera + environment, S5: exclusions + fidelity target), description (EXACTLY 2 SENTENCES: S1 what the viewer will see, S2 why it matters for this lesson), video_search_query (3-5 words), duration: "8s".',
         'go_deeper':             'go_deeper — advanced accordion. triggerText, content (2–3 paragraphs).',
-        'lesson_header':         'lesson_header — hero section. REQUIRED fields: title (string), tag (2–3 word category label), duration (e.g. "15 min"), difficulty (Beginner|Intermediate|Advanced), heroType: "interactive", heroPrompt (200-word image description), description (1–2 sentence lesson overview), objectives (array of 4 short strings each starting with a verb).',
+        'lesson_header':         'lesson_header — hero section. REQUIRED fields: title (string), tag (2–3 word category label), duration (e.g. "15 min"), difficulty (Beginner|Intermediate|Advanced), heroType: "interactive", heroPrompt (1–2 sentences: visual subject and mood for the hero background), description (1–2 sentence lesson overview), objectives (array of 4 short strings each starting with a verb).',
         'objective':             'objective — single learning objective card. REQUIRED fields: label (short label e.g. "Learning Objective"), text (1 sentence starting with "By the end of this lesson you will be able to…").',
         'punch_quote':           'punch_quote — full-width bold statement. REQUIRED fields: quote (one punchy declarative sentence, 10–20 words, no quotation marks), accent (pulse|iris|amber|nova).',
         'recap':                 'recap — end-of-lesson summary. REQUIRED fields: title (string), items (array of EXACTLY 4 objects each with: title (4–6 words, bold takeaway), body (EXACTLY 2 sentences expanding on why this takeaway matters)).',
@@ -493,7 +499,7 @@ REQUIRED OUTPUT JSON STRUCTURE:
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents,
-                    generationConfig: { temperature, responseMimeType: "application/json" }
+                    generationConfig: { temperature, maxOutputTokens: 65536, responseMimeType: "application/json" }
                 })
             });
             const data = await response.json();
