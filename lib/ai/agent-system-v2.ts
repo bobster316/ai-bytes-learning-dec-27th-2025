@@ -326,10 +326,10 @@ LAYOUT HINTS:
 function getBlockSchemaDoc(blockRef: string): string {
     const [type, variant] = blockRef.split(':');
     const schemas: Record<string, string> = {
-        'type_cards:grid':       'type_cards grid — 3–4 cards for factual orientation. layout: "grid". Each card: badge, badgeColour (pulse|iris|amber), title, description (1–2 sentences), imagePrompt (MINIMUM 1000 WORDS of ultra-detailed description).',
-        'type_cards:numbered':   'type_cards numbered — 3–4 cards breaking topic into parts. layout: "numbered". Each card: badge, badgeColour, title, description.',
-        'type_cards:horizontal': 'type_cards horizontal — COMPARISON of 2 things. layout: "horizontal". 2–3 cards only.',
-        'type_cards:bento':      'type_cards bento — freeform supplemental cards. layout: "bento". 3–4 cards, each with badge, title, description, imagePrompt (MINIMUM 1000 WORDS).',
+        'type_cards:grid':       'type_cards grid — 3–4 cards for factual orientation. layout: "grid". Each card: badge, badgeColour (pulse|iris|amber), title, description (3–4 sentences explaining the concept and why it matters), imagePrompt (MINIMUM 1000 WORDS of ultra-detailed description).',
+        'type_cards:numbered':   'type_cards numbered — 3–4 cards breaking topic into parts. layout: "numbered". Each card: badge, badgeColour, title, description (3–4 sentences explaining the concept and why it matters).',
+        'type_cards:horizontal': 'type_cards horizontal — COMPARISON of 2 things. layout: "horizontal". 2–3 cards only. Each card: title, description (3–4 sentences explaining the concept and why it matters).',
+        'type_cards:bento':      'type_cards bento — freeform supplemental cards. layout: "bento". 3–4 cards, each with badge, title, description (3–4 sentences explaining the concept and why it matters), imagePrompt (MINIMUM 1000 WORDS).',
         'instructor_insight':    'instructor_insight — EXACTLY 3 insight cards. Each: emoji, bold title, body (1–2 sentences).',
         'flow_diagram:steps':    'flow_diagram steps — linear process (3–6 steps). title, steps[]{label, description, colour}, explanation (2–3 sentences interpreting what the flow reveals — the conclusion the learner should draw).',
         'flow_diagram:contrast': 'flow_diagram contrast — before/after. title, contrast{ labelA, labelB, stepsA[], stepsB[], middleNode, outcomeA, outcomeB }, explanation (2–3 sentences interpreting what the contrast reveals).',
