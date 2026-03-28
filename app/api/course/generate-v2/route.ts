@@ -415,17 +415,9 @@ export async function POST(req: NextRequest) {
                                     }
 
                                     if (!result.url) {
-                                        const { errorCode, errorMessage, retryable } = normaliseProviderError(result.errorMessage || 'unknown');
-                                        throw new MediaGenerationError(
-                                            'gemini-image',
-                                            errorCode,
-                                            errorMessage,
-                                            'image_generation',
-                                            retryable,
-                                            lessonPlan.lessonTitle,
-                                            (p as any).blockType || 'unknown',
-                                            (p as any).slotLabel || `image_slot_${idx + 1}`,
-                                        );
+                                        const { errorCode } = normaliseProviderError(result.errorMessage || 'unknown');
+                                        console.warn(`[API-V2] ⚠️ Image slot "${(p as any).slotLabel}" failed permanently (${errorCode}) — skipping slot, continuing generation`);
+                                        return result; // url: null — block renders without image, course is preserved
                                     }
                                     return result;
                                 })

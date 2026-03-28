@@ -504,6 +504,10 @@ REQUIRED OUTPUT JSON STRUCTURE:
             });
             const data = await response.json();
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!text) {
+                const reason = data.candidates?.[0]?.finishReason || data.promptFeedback?.blockReason || 'empty_response';
+                throw new Error(`Gemini returned no content (reason: ${reason}, status: ${response.status})`);
+            }
             return JSON.parse(text);
         };
 
