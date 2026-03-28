@@ -202,8 +202,9 @@ export async function POST(req: NextRequest) {
                 }
             }
 
-            // TODO: pass courseDNA.content to OrchestratorV2.processLesson once route is migrated to v2
-            // DNA render is already persisted and applied by the frontend immediately.
+            // Note: this v1 route is no longer the primary generation path.
+            // New courses are generated via /api/course/generate-v2 (OrchestratorV2).
+            // This route is retained for backwards-compatible dry-run testing only.
 
             // 2. Initialize Orchestrator
             const orchestrator = new AgentOrchestrator();

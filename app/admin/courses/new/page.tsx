@@ -73,8 +73,7 @@ export default function NewCoursePage() {
         setCurrentStage("Initialising...");
 
         try {
-            const useV2 = process.env.NEXT_PUBLIC_USE_V2_GENERATOR === 'true';
-            const endpoint = useV2 ? '/api/course/generate-v2' : '/api/course/generate';
+            const endpoint = '/api/course/generate-v2';
 
             const res = await fetch(endpoint, {
                 method: "POST",
