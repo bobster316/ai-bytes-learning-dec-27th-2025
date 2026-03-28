@@ -276,10 +276,14 @@ export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewU
                         };
                     } else if (resolvedType === 'key_terms') {
                         const b = block as any;
-                        // If terms is missing but we have a paragraphs list, skip — can't recover
+                        // Gemini may use terms, key_terms, or keyTerms — normalise to terms
+                        const resolvedTerms = Array.isArray(b.terms) ? b.terms
+                            : Array.isArray(b.key_terms) ? b.key_terms
+                            : Array.isArray(b.keyTerms) ? b.keyTerms
+                            : [];
                         renderBlock = {
                             ...b,
-                            terms: Array.isArray(b.terms) ? b.terms : [],
+                            terms: resolvedTerms,
                         };
                     } else if (resolvedType === 'completion') {
                         const b = block as any;

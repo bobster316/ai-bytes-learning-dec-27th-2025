@@ -407,6 +407,16 @@ function validateAndRepairBlock(block: Record<string, unknown>): Record<string, 
         }
     }
     if (type === 'key_terms') {
+        // Normalise field name variants (terms / key_terms / keyTerms) → terms
+        if (!Array.isArray(repaired.terms)) {
+            if (Array.isArray(repaired.key_terms)) {
+                repaired.terms = repaired.key_terms;
+                delete repaired.key_terms;
+            } else if (Array.isArray(repaired.keyTerms)) {
+                repaired.terms = repaired.keyTerms;
+                delete repaired.keyTerms;
+            }
+        }
         if (Array.isArray(repaired.terms)) {
             repaired.terms = repaired.terms.map((t: any) =>
                 typeof t === 'string' ? { term: t, definition: 'Key concept.' } : t
