@@ -116,13 +116,30 @@ export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewU
     // ── TypeCards layout offset — derived from palette archetype ─────────
     const typeCardsOffset = archetypeOffset(courseDNA.palette_id, 4);
 
-    // Normalise block types early — generator stores real type in block_type (snake) or blockType (camel)
-    // This must happen before memos that filter/find by type.
+    // Normalise block types early — generator stores real type in block_type (snake) or blockType (camel).
+    // Also fixes compound type names that Gemini sometimes emits (e.g. "type_cards grid",
+    // "image_text_row reversed", "INTRO") — these are silently skipped by BLOCK_COMPONENTS
+    // without this normalisation. Provides a render-time safety net for existing DB records.
     const normalizedBlocks = React.useMemo(() =>
         (blocks || []).map(b => {
             const bAny = b as any;
-            const resolvedType: string = bAny.block_type || bAny.blockType || bAny.type || '';
-            return resolvedType === bAny.type ? b : { ...b, type: resolvedType } as ContentBlock;
+            let resolvedType: string = bAny.block_type || bAny.blockType || bAny.type || '';
+            const extra: Record<string, unknown> = {};
+
+            // Compound type normalisation
+            const typeCardsMatch = resolvedType.match(/^type_cards\s+(grid|numbered|horizontal|bento)$/);
+            if (typeCardsMatch) {
+                extra.layout = bAny.layout || typeCardsMatch[1];
+                resolvedType = 'type_cards';
+            } else if (resolvedType === 'image_text_row reversed') {
+                extra.reverse = true;
+                resolvedType = 'image_text_row';
+            } else if (resolvedType === 'INTRO' || resolvedType === 'OUTRO') {
+                resolvedType = 'video_snippet';
+            }
+
+            const needsUpdate = resolvedType !== bAny.type || Object.keys(extra).length > 0;
+            return needsUpdate ? { ...b, ...extra, type: resolvedType } as ContentBlock : b;
         }),
         [blocks]
     );

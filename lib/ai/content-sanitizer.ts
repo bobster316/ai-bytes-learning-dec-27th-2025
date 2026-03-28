@@ -210,6 +210,8 @@ function validateAndRepairBlock(block: Record<string, unknown>): Record<string, 
     const TYPE_MAP: Record<string, string> = {
         'HERO VIDEO':        'video_snippet',
         'SECONDARY VIDEO':   'video_snippet',
+        'INTRO':             'video_snippet',
+        'OUTRO':             'video_snippet',
         'FLEX-1':           'image_text_row',
         'FLEX-2':           'type_cards',
         'FLEX-3':           'instructor_insight',
@@ -225,10 +227,23 @@ function validateAndRepairBlock(block: Record<string, unknown>): Record<string, 
         type = TYPE_MAP[type];
     }
 
-    const repaired: Record<string, any> = { 
+    // ─── Compound type name normalisation (type mutation only) ───────────────
+    // Gemini sometimes writes the schema-doc reference as the type field,
+    // e.g. "type_cards grid" or "image_text_row reversed".
+    // Mutate `type` here so `repaired` is initialised with the correct type;
+    // the matching layout/reverse fields are set on `repaired` below.
+    const typeCardsLayoutSuffix = type.match(/^type_cards\s+(grid|numbered|horizontal|bento)$/)?.[1];
+    if (typeCardsLayoutSuffix) type = 'type_cards';
+    else if (type === 'image_text_row reversed') type = 'image_text_row';
+
+    const repaired: Record<string, any> = {
         ...block,
         type: type // Normalize to 'type'
     };
+
+    // Apply compound type extra fields now that repaired exists
+    if (typeCardsLayoutSuffix && !repaired.layout) repaired.layout = typeCardsLayoutSuffix;
+    if ((block as any).type === 'image_text_row reversed') repaired.reverse = true;
 
     // ─── Nested Content Extraction ───────────────────────────────────────────
     // Some schemas wrap the actual block data in a 'content' field.
@@ -295,15 +310,24 @@ function validateAndRepairBlock(block: Record<string, unknown>): Record<string, 
         }
     }
 
-    // REPAIR: paragraphs[] with a single giant string → split on sentence boundaries
-    if (type === 'text' && Array.isArray(repaired.paragraphs) && repaired.paragraphs.length === 1) {
-        const raw = repaired.paragraphs[0] as string;
-        if (typeof raw === 'string' && raw.length > 300) {
-            // Skip splitting if text contains abbreviations that would confuse sentence boundary detection
+    // REPAIR: any paragraph in a text block that exceeds 350 chars → split on sentence boundaries.
+    // Handles both single-paragraph blocks (original case) and multi-paragraph blocks where
+    // individual paragraphs are too dense (e.g. 800-1000 char walls of text from Gemini).
+    if (type === 'text' && Array.isArray(repaired.paragraphs) && repaired.paragraphs.length > 0) {
+        const MAX_PARA_CHARS = 350;
+        const newParas: string[] = [];
+        let didSplit = false;
+        for (const raw of repaired.paragraphs as string[]) {
+            if (typeof raw !== 'string' || raw.length <= MAX_PARA_CHARS) {
+                newParas.push(raw);
+                continue;
+            }
+            // Skip splitting if abbreviations would confuse sentence boundary detection
             const hasAbbreviations = /\b(e\.g\.|i\.e\.|vs\.|Fig\.|Dr\.|Mr\.|Mrs\.|Prof\.|approx\.|etc\.)/i.test(raw);
             if (hasAbbreviations) {
-                // Leave as single paragraph — safer than incorrect splits
-            } else {
+                newParas.push(raw);
+                continue;
+            }
             const sentences = raw.match(/[^.!?]+[.!?]+[\s]*/g) || [raw];
             const chunks: string[] = [];
             let current = '';
@@ -316,10 +340,15 @@ function validateAndRepairBlock(block: Record<string, unknown>): Record<string, 
             }
             if (current.trim()) chunks.push(current.trim());
             if (chunks.length > 1) {
-                console.warn(`[ContentSanitizer] ℹ️ text block "${block.id}" — split 1 giant paragraph into ${chunks.length} paragraphs`);
-                repaired.paragraphs = chunks;
+                newParas.push(...chunks);
+                didSplit = true;
+            } else {
+                newParas.push(raw);
             }
-            }
+        }
+        if (didSplit) {
+            console.warn(`[ContentSanitizer] ℹ️ text block "${block.id}" — split oversized paragraphs: ${repaired.paragraphs.length} → ${newParas.length}`);
+            repaired.paragraphs = newParas;
         }
     }
 
