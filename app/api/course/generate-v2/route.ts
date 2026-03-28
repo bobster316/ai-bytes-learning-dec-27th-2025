@@ -452,20 +452,53 @@ export async function POST(req: NextRequest) {
                         }
 
                         // ═══════════════════════════════════════════════════
-                        // VIDEO — fire-and-forget
-                        // Veo jobs were already started early. We do NOT block generation on
-                        // them. Lessons save immediately with video_url: null. Use the admin
-                        // "Block Vid" button to attach resolved videos per-lesson afterwards.
+                        // VIDEO — fire-and-forget with DB write-back
+                        // Veo jobs run in background. Lesson saves immediately with
+                        // video_url: null. When Veo resolves, the background handler
+                        // patches the matching video_snippet block in DB directly.
                         // ═══════════════════════════════════════════════════
+                        // Shared ref: populated after DB insert so background handler
+                        // knows which lesson row to patch.
+                        const lessonIdRef: { id: string | null } = { id: null };
+
                         if (!DRY_RUN && veoJobs.length > 0) {
                             console.log(`[API-V2] 🚀 ${veoJobs.length} Veo job(s) running in background — saving lesson now`);
                             veoJobs.forEach(job => {
                                 job.promise
-                                    .then(result => {
-                                        if (result.url) {
-                                            console.log(`[API-V2] 🎬 Veo completed (background): ${result.url}`);
-                                        } else {
+                                    .then(async result => {
+                                        if (!result.url) {
                                             console.warn(`[API-V2] Veo failed (background): ${result.errorMessage || 'unknown'}`);
+                                            return;
+                                        }
+                                        console.log(`[API-V2] 🎬 Veo completed (background): ${result.url}`);
+                                        if (!lessonIdRef.id) return; // DRY_RUN or save failed
+
+                                        // Fetch the saved blocks and patch the matching video_snippet
+                                        const { data: saved } = await supabase
+                                            .from('course_lessons')
+                                            .select('content_blocks')
+                                            .eq('id', lessonIdRef.id)
+                                            .single();
+                                        if (!saved?.content_blocks) return;
+
+                                        let patched = false;
+                                        const updatedBlocks = (saved.content_blocks as any[]).map((b: any) => {
+                                            if (!patched && b.type === 'video_snippet' && !b.videoUrl &&
+                                                (b.caption === job.videoCaption || b.title === job.videoCaption)) {
+                                                patched = true;
+                                                return { ...b, videoUrl: result.url };
+                                            }
+                                            return b;
+                                        });
+
+                                        if (patched) {
+                                            await supabase
+                                                .from('course_lessons')
+                                                .update({ content_blocks: updatedBlocks })
+                                                .eq('id', lessonIdRef.id);
+                                            console.log(`[API-V2] ✅ Veo URL written to lesson ${lessonIdRef.id} (caption: "${job.videoCaption}")`);
+                                        } else {
+                                            console.warn(`[API-V2] Veo URL could not be matched to a block — use Block Vid to attach manually (caption: "${job.videoCaption}")`);
                                         }
                                     })
                                     .catch(err => {
@@ -503,6 +536,9 @@ export async function POST(req: NextRequest) {
                                 micro_objective: lessonPlan.microObjective
                             }).select().single();
                             if (lErr) throw lErr;
+
+                            // Give background Veo handlers the lesson ID so they can write URLs back
+                            lessonIdRef.id = lData.id;
 
                             if (allFetchedImages.length > 0) {
                                 await supabase.from('lesson_images').insert(allFetchedImages.map((img: any, idx: number) => ({
