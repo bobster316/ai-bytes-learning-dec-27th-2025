@@ -178,7 +178,9 @@ const BLOCK_REQUIRED_FIELDS: Record<string, Record<string, unknown>> = {
         accentColour:   'pulse',
     },
     completion: {
+        summary:      'You have built a foundational understanding of this concept and can now apply it in context.',
         skillsEarned: ['Core concept understood', 'Real-world applications identified', 'Ready for the next lesson'],
+        nextStep:     'Apply what you have learned by exploring the next lesson in this module.',
     },
     applied_case: {
         scenario: 'A company needs to implement a new AI strategy...',

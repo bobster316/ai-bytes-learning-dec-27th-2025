@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 
-export function CompletionCard({ title, subtitle, skillsEarned, skills, nextLessonAction, nextTopicAction }: any) {
+export function CompletionCard({ title, subtitle, summary, skillsEarned, skills, nextStep, nextLessonAction, nextTopicAction }: any) {
     let finalSkills = skillsEarned || [];
     if (finalSkills.length === 0 && Array.isArray(skills)) {
         finalSkills = skills.map((s: any) => typeof s === "string" ? { label: s, colour: "pulse" } : { label: s.label || s.skill || s.text || String(s), colour: s.colour || "pulse" });
@@ -36,6 +36,13 @@ export function CompletionCard({ title, subtitle, skillsEarned, skills, nextLess
                     style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.25rem)", letterSpacing: "-0.03em" }}>
                     {title || "You've finished this lesson."}
                 </h2>
+
+                {/* Summary — what the learner now understands */}
+                {summary && (
+                    <p className="font-body text-white/55 text-[0.9rem] leading-relaxed mb-8 max-w-sm mx-auto">
+                        {summary}
+                    </p>
+                )}
 
                 {/* Thin divider */}
                 <div className="h-px w-16 mx-auto mb-8"
@@ -76,9 +83,16 @@ export function CompletionCard({ title, subtitle, skillsEarned, skills, nextLess
                             <ArrowRight className="w-4 h-4" />
                         </motion.button>
                     ) : (
-                        <div className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl border border-white/15 font-mono text-[0.65rem] uppercase tracking-[0.15em] text-white/50">
-                            Continue to the next lesson
-                            <ArrowRight className="w-3 h-3" />
+                        <div className="space-y-3">
+                            {nextStep && (
+                                <p className="font-body text-white/40 text-[0.8rem] italic max-w-xs mx-auto">
+                                    {nextStep}
+                                </p>
+                            )}
+                            <div className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl border border-white/15 font-mono text-[0.65rem] uppercase tracking-[0.15em] text-white/50">
+                                Continue to the next lesson
+                                <ArrowRight className="w-3 h-3" />
+                            </div>
                         </div>
                     )}
                 </div>

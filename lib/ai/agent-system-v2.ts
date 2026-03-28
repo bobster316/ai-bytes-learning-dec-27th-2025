@@ -303,12 +303,21 @@ BLOCK TYPES — ABSOLUTE LAW:
   • NEVER invent custom types like "INTRO", "OUTRO", "explanatory", "foundation", "visual_insight" etc.
   • Use exactly one recap block. Never generate two recap blocks.
 
+CONTENT BALANCE — GOLDEN RULE:
+  Every section = one idea → explained → visualised → reinforced.
+  • NEVER place a visual block (image_text_row, full_image, type_cards) with fewer than 3 explanatory sentences alongside it
+  • NEVER produce a heading or label block with no substantive content below it
+  • NEVER let 4+ consecutive text paragraphs appear without a visual break — insert a callout, image, or card block
+  • Each block must justify its space: if you cannot write 3 substantive sentences about it, merge it with a neighbouring block
+
 STRUCTURE:
-  • objective blocks:      exactly 2 sentences — S1: what the learner will understand, S2: why it matters
+  • objective blocks:      exactly 3 sentences — S1: what the learner will understand (start with "By the end of this lesson…"), S2: why this capability matters in real-world practice, S3: what mental model or skill this builds
+  • image_text_row blocks: text field — minimum 4 substantive sentences structured as: (1) what this visual shows and why it was chosen, (2) the key mechanism or insight it reveals, (3) what the learner should infer from it, (4) a concrete practical implication
   • video_snippet blocks:  REQUIRED "description" field — exactly 2 sentences: S1 what the viewer will see, S2 why it matters for this lesson
-  • recap blocks:          exactly 4 items; each item MUST have "title" (4–6 words) AND "body" (2 sentences). NO plain string points — always use items[] format
+  • recap blocks:          exactly 4 items; each item MUST have "title" (4–6 words) AND "body" (2 substantive sentences explaining WHY this takeaway matters and WHAT it enables — never a restatement of the title). NO plain string points — always use items[] format
   • applied_case blocks:   exactly 3 scenarios in "tabs" array; each tab: id, label, scenario, challenge, resolution
-  • key_terms blocks:      minimum 12 terms; each term MUST have "definition" (2 sentences)
+  • key_terms blocks:      minimum 12 terms; each term MUST have "definition" (2 sentences). If the topic has fewer than 12 natural terms, add related terms from the broader field
+  • completion blocks:     summary (1–2 sentences synthesising the core lesson insight in the learner's own growth terms), skillsEarned (3 items, 8–12 words each, start with a verb), nextStep (1 forward-pointing sentence naming what the learner can explore or apply next)
 
 TEXT QUALITY:
   • text blocks: 3–5 paragraphs per block; max 3 sentences per paragraph
@@ -341,8 +350,8 @@ function getBlockSchemaDoc(blockRef: string): string {
         'flow_diagram:contrast': 'flow_diagram contrast — before/after. title, contrast{ labelA, labelB, stepsA[], stepsB[], middleNode, outcomeA, outcomeB }, explanation (2–3 sentences interpreting what the contrast reveals).',
         'mindmap':               'mindmap — central node + 4–6 branch concepts.',
         'concept_illustration':  'concept_illustration — visual metaphor. concept, description, imagePrompt (1–2 sentences: subject, style, mood), style: network|layers|cycle|hierarchy.',
-        'image_text_row':        'image_text_row — image left, text right. imagePrompt (1–2 sentences: subject, setting, mood), label, title, text (2–3 sentences), reverse: false.',
-        'image_text_row:reverse':'image_text_row reversed — text left, image right. reverse: true. imagePrompt (1–2 sentences: subject, setting, mood), label, title, text.',
+        'image_text_row':        'image_text_row — image left, text right. imagePrompt (1–2 sentences: subject, setting, mood), label, title, text (minimum 4 substantive sentences: (1) what this visual shows and why it was chosen, (2) the key mechanism or insight it reveals, (3) what the learner should infer, (4) a concrete practical implication), reverse: false.',
+        'image_text_row:reverse':'image_text_row reversed — text left, image right. reverse: true. imagePrompt (1–2 sentences: subject, setting, mood), label, title, text (minimum 4 substantive sentences as above).',
         'prediction':            'prediction — knowledge check. question, options (EXACTLY 3), correctIndex, reveal.',
         'applied_case':          'applied_case — 3 real-world scenarios as tabs. REQUIRED fields: tabs (array of EXACTLY 3 objects each with: id (string), label (string, 2-4 words), scenario (string, 2-3 sentences), challenge (string, 2-3 sentences), resolution (string, 2-3 sentences), imageUrl (omit — filled by pipeline)).',
         'industry_tabs':         'industry_tabs — 4–5 industry use-case tabs. heading, tabs[]{ id, label, imagePrompt (1–2 sentences: subject, setting, mood), imageCaption, scenarioTitle, scenarioBody }.',
@@ -354,11 +363,11 @@ function getBlockSchemaDoc(blockRef: string): string {
         'video_snippet':          'video_snippet — AI-generated cinematic clip. REQUIRED fields: type, id, title, caption, videoPrompt (EXACTLY 5 SENTENCES motion-arc structure — S1: lesson concept + title, S2: visible objects/interfaces, S3: start→change→end motion arc, S4: camera + environment, S5: exclusions + fidelity target), description (EXACTLY 2 SENTENCES: S1 what the viewer will see, S2 why it matters for this lesson), video_search_query (3-5 words), duration: "8s".',
         'go_deeper':             'go_deeper — advanced accordion. triggerText, content (2–3 paragraphs).',
         'lesson_header':         'lesson_header — hero section. REQUIRED fields: title (string), tag (2–3 word category label), duration (e.g. "15 min"), difficulty (Beginner|Intermediate|Advanced), heroType: "interactive", heroPrompt (1–2 sentences: visual subject and mood for the hero background), description (1–2 sentence lesson overview), objectives (array of 4 short strings each starting with a verb).',
-        'objective':             'objective — single learning objective card. REQUIRED fields: label (short label e.g. "Learning Objective"), text (1 sentence starting with "By the end of this lesson you will be able to…").',
+        'objective':             'objective — single learning objective card. REQUIRED fields: label (short label e.g. "Learning Objective"), text (EXACTLY 3 sentences — S1: starts with "By the end of this lesson you will be able to…", S2: why this capability matters in real-world practice, S3: what mental model or skill this builds).',
         'punch_quote':           'punch_quote — full-width bold statement. REQUIRED fields: quote (one punchy declarative sentence, 10–20 words, no quotation marks), accent (pulse|iris|amber|nova).',
         'recap':                 'recap — end-of-lesson summary. REQUIRED fields: title (string), items (array of EXACTLY 4 objects each with: title (4–6 words, bold takeaway), body (EXACTLY 2 sentences expanding on why this takeaway matters)).',
         'key_terms':             'key_terms — glossary. REQUIRED fields: terms (array of MINIMUM 12 objects each with: term (string), definition (EXACTLY 2 sentences — first sentence defines the term precisely, second sentence explains where it appears or why it matters)).',
-        'completion':            'completion — lesson complete card. REQUIRED fields: skillsEarned (array of 3 short strings describing what was learned).',
+        'completion':            'completion — lesson complete card. REQUIRED fields: summary (1–2 sentences synthesising the core lesson insight in the learner\'s own growth terms — what they can now see or do that they could not before), skillsEarned (array of 3 strings, 8–12 words each, start with an action verb), nextStep (1 forward-pointing sentence naming what the learner can explore or apply next).',
         'quiz':                  'quiz — knowledge check. REQUIRED fields: title, questions (array of 3–5 objects each with: question (string), options (array of 3 strings), correctIndex (0|1|2), correctFeedback (string), incorrectFeedback (string)).',
         'full_image':            'full_image — wide visual. REQUIRED fields: imagePrompt (MINIMUM 1000 WORDS ultra-detailed), caption (1–2 sentences), explanation (2–3 sentences INTERPRETING what the visual reveals — not describing what is visible), layout ("split" when explanation present, "hero" for standalone atmosphere images).',
     };
