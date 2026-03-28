@@ -271,10 +271,10 @@ export async function POST(req: NextRequest) {
                     // V2 Single Lesson Expansion
                     console.time(`[API-V2] Lesson Base Content - ${lessonPlan.lessonTitle}`);
                         let compiledLesson = await orchestrator.processLesson(lessonPlan, topic, manifest, globalLessonIndex, courseState, courseDNA.content);
-                        
-                        // 2. ENRICH Media Prompts (Block-by-Block Enrichment for 1000w Detail)
-                        await sendEvent({ stage: 'generating', progress: 20 + Math.floor((lessonsProcessed / Math.max(1, totalLessons)) * 45), message: `🎨 Architecting high-fidelity visual blueprints (1000w mandate)...` });
-                        compiledLesson = await orchestrator.enrichLessonMedia(compiledLesson, (compiledLesson as any).analogy_domain || 'Technology');
+                        // VisualEnrichmentAgent removed: it spent 60–70s per lesson generating 1000-word
+                        // image prompts that V3-Sanitizer then overwrote entirely with its MANDATORY mandate.
+                        // Image prompts are now the 1–2 sentence descriptions from initial generation,
+                        // then sanitised/replaced by V3-Sanitizer if domain-contaminated.
                         console.timeEnd(`[API-V2] Lesson Base Content - ${lessonPlan.lessonTitle}`);
 
                         // Update Phase 2 Statistics
@@ -302,7 +302,10 @@ export async function POST(req: NextRequest) {
                         const DOMAIN_KEYWORDS: Record<string, string[]> = {
                             'Culinary': ['chef', 'kitchen', 'cooking', 'recipe', 'ingredient', 'seasoning', 'plating', 'sourdough', 'baking', 'sous chef', 'michelin', 'sushi', 'restaurant', 'culinary', 'oven', 'stove', 'frying pan', 'whisk'],
                             'Nature': ['ecosystem', 'migration', 'erosion', 'forest', 'river', 'ocean', 'wildlife', 'coral reef', 'rainforest', 'savanna', 'sunflower', 'field of flowers', 'beehive', 'pollination', 'waterfall'],
-                            'Architecture': ['blueprint', 'scaffolding', 'cathedral', 'facade', 'architect', 'building construction', 'renovation', 'brick laying', 'masonry'],
+                            // NOTE: 'architect', 'blueprint', 'scaffolding' removed — they substring-match
+                            // legitimate AI terms ('transformer architecture', 'model blueprint',
+                            // 'scaffolding code') and caused false-positive prompt rewrites.
+                            'Architecture': ['cathedral', 'building construction', 'renovation', 'brick laying', 'masonry'],
                             'Music': ['musician', 'orchestra', 'crescendo', 'jazz', 'guitar', 'piano', 'symphony', 'conductor', 'audio engineer', 'sound engineer', 'recording studio', 'mixing console', 'audio effects', 'music producer', 'mixing tracks', 'soundboard', 'turntable', 'vinyl record', 'drum kit', 'bass guitar', 'saxophone', 'trumpet'],
                             'Sports': ['athlete', 'relay race', 'marathon', 'playbook', 'coaching', 'stadium', 'basketball court', 'football field', 'boxing ring', 'swimming pool', 'track field'],
                             'Gardening': ['pruning', 'greenhouse', 'grafting', 'compost', 'irrigation', 'garden', 'planting seeds', 'flower bed', 'watering can', 'trowel', 'potting soil'],
