@@ -19,8 +19,7 @@ import { generateCourseDNA, deriveDNAFingerprint } from "@/lib/ai/generate-cours
 import { MediaGenerationError, normaliseProviderError } from '@/lib/ai/media-errors';
 import type { ImageGenerationResult, VideoGenerationResult } from '@/lib/ai/media-errors';
 
-const VIDEO_EXTRA_WAIT_MS = 180_000; // 3 min extra wait after images complete (Veo gets ~5 min total)
-const ROUTE_BUDGET_MS     = 270_000; // 270 s safety net — throws clean error before Vercel 300 s hard kill
+const ROUTE_BUDGET_MS = 270_000; // 270 s safety net — throws clean error before Vercel 300 s hard kill
 
 function extractStoragePath(publicUrl: string): string | null {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -453,72 +452,26 @@ export async function POST(req: NextRequest) {
                         }
 
                         // ═══════════════════════════════════════════════════
-                        // VIDEO RESOLUTION — await both Veo jobs in parallel, 2 min extra deadline
-                        // No Pexels fallback: Veo failure = generation failure (atomic contract)
+                        // VIDEO — fire-and-forget
+                        // Veo jobs were already started early. We do NOT block generation on
+                        // them. Lessons save immediately with video_url: null. Use the admin
+                        // "Block Vid" button to attach resolved videos per-lesson afterwards.
                         // ═══════════════════════════════════════════════════
                         if (!DRY_RUN && veoJobs.length > 0) {
-                            const baseProgress = 20 + Math.floor((lessonsProcessed / Math.max(1, totalLessons)) * 55);
-                            await sendEvent({ stage: 'generating', progress: baseProgress + 1, message: `🎬 Resolving ${veoJobs.length} video(s) for "${lessonPlan.lessonTitle}"...` });
-
-                            // Route budget safety net — fail cleanly before Vercel hard-kills the request
-                            const routeElapsed = Date.now() - routeStart;
-                            if (routeElapsed > ROUTE_BUDGET_MS) {
-                                throw new MediaGenerationError(
-                                    'veo',
-                                    'budget_exceeded',
-                                    `Route budget exceeded (${Math.round(routeElapsed / 1000)}s elapsed, ${ROUTE_BUDGET_MS / 1000}s limit)`,
-                                    'video_generation',
-                                    false,
-                                    lessonPlan.lessonTitle,
-                                    'video_snippet',
-                                );
-                            }
-
-                            // Shared deadline: up to 2 min from now (both videos race against same clock)
-                            const videoDeadline = Date.now() + VIDEO_EXTRA_WAIT_MS;
-
-                            await Promise.all(veoJobs.map(async (job) => {
-                                const remaining = videoDeadline - Date.now();
-                                const timeoutPromise = new Promise<VideoGenerationResult>((_, reject) =>
-                                    setTimeout(() => reject(new Error('video_extra_wait_expired')), Math.max(0, remaining))
-                                );
-
-                                let veoResult: VideoGenerationResult;
-                                try {
-                                    veoResult = await Promise.race([job.promise, timeoutPromise]);
-                                } catch {
-                                    veoResult = { url: null, source: null, errorCode: 'timeout', errorMessage: 'Veo did not complete within the 2-minute extra wait window' };
-                                }
-
-                                if (!veoResult.url) {
-                                    // Use errorCode directly from veoResult (avoids re-mapping our own timeout code)
-                                    const { errorCode, errorMessage, retryable } = veoResult.errorCode
-                                        ? { errorCode: veoResult.errorCode as any, errorMessage: veoResult.errorMessage || 'unknown', retryable: false }
-                                        : normaliseProviderError(veoResult.errorMessage || 'unknown');
-                                    throw new MediaGenerationError(
-                                        'veo',
-                                        errorCode,
-                                        errorMessage,
-                                        'video_generation',
-                                        retryable,
-                                        lessonPlan.lessonTitle,
-                                        'video_snippet',
-                                        job.v.title || job.v.id || 'video_block',
-                                    );
-                                }
-
-                                // Patch the block in-memory with the resolved URL
-                                job.v.videoUrl = veoResult.url;
-                                console.log(`[API-V2] ✅ Video resolved via veo: ${veoResult.url}`);
-
-                                // Track for rollback (Veo uploads to Supabase Storage)
-                                const storagePath = extractStoragePath(veoResult.url);
-                                if (storagePath) uploadedStoragePaths.push(storagePath);
-
-                                if (!courseState.used_video_urls) courseState.used_video_urls = [];
-                                (courseState.used_video_urls as any[]).push({ query: job.rawVideoPrompt.substring(0, 100), url: veoResult.url, source: 'veo' });
-                                CourseStateManager.saveState(courseState);
-                            }));
+                            console.log(`[API-V2] 🚀 ${veoJobs.length} Veo job(s) running in background — saving lesson now`);
+                            veoJobs.forEach(job => {
+                                job.promise
+                                    .then(result => {
+                                        if (result.url) {
+                                            console.log(`[API-V2] 🎬 Veo completed (background): ${result.url}`);
+                                        } else {
+                                            console.warn(`[API-V2] Veo failed (background): ${result.errorMessage || 'unknown'}`);
+                                        }
+                                    })
+                                    .catch(err => {
+                                        console.warn(`[API-V2] Veo error (background): ${err?.message || err}`);
+                                    });
+                            });
                         }
 
                         CourseStateManager.saveState(courseState);
