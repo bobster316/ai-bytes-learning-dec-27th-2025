@@ -6,6 +6,7 @@
 export const BLOCK_INTENSITY: Readonly<Record<string, number>> = {
     // ── Calm (0.0 – 0.2) ──────────────────────────────────────────
     lesson_header:       0.1,
+    hero_video:          0.1,
     objective:           0.1,
     text:                0.2,
 
@@ -16,7 +17,7 @@ export const BLOCK_INTENSITY: Readonly<Record<string, number>> = {
     instructor_insight:  0.4,
     industry_tabs:       0.45,
     full_image:          0.3,
-    concept_illustration:0.35,
+    concept_illustration: 0.35,
     mindmap:             0.45,
     video_snippet:       0.4,
     interactive_vis:     0.45,
@@ -29,6 +30,9 @@ export const BLOCK_INTENSITY: Readonly<Record<string, number>> = {
     scroll_story:        0.45,
 
     // ── Tension (0.6 – 0.85) ──────────────────────────────────────
+    // NOTE: Tension and Insight blocks share the 0.6–0.75 range.
+    // Beat-level intensity in arc-definitions.ts governs beat categorisation;
+    // block intensity here governs individual dramatic budget cost.
     prediction:          0.65,
     myth_buster:         0.7,
     contrast_duel:       0.75,
