@@ -57,7 +57,7 @@ export async function generateMetadata(
     const supabase = await createClient(true);
     const { data: lesson } = await supabase
         .from('course_lessons')
-        .select('id, title, content_markdown, content_html, content_blocks, topic:course_topics(id, title, course_id)')
+        .select('id, title, content_markdown, content_html, content_blocks, lesson_personality, micro_variation_seed, topic:course_topics(id, title, course_id)')
         .eq('id', params.lessonId)
         .single();
 
@@ -321,6 +321,9 @@ export default async function LessonPage(props: { params: Promise<{ courseId: st
                             pipelineType={(courseOutline as any)?.course_type || 'conceptual'}
                             isFreePreview={accessCheck.plan === 'free'}
                             lessonTitle={lesson.title}
+                            lessonIndex={lesson.order_index ?? 0}
+                            lessonPersonality={(lesson as any).lesson_personality ?? 'calm'}
+                            microVariationSeed={(lesson as any).micro_variation_seed ?? 0}
                             footerNode={
                                 <div className="mt-16">
                                     {hasBlocks ? (
@@ -341,7 +344,7 @@ export default async function LessonPage(props: { params: Promise<{ courseId: st
                         <div className="mb-6">
                             <Link
                                 href={`/courses/${resolvedCourseId}#curriculum`}
-                                className="inline-flex items-center text-xs font-black uppercase tracking-[0.3em] text-[#4b98ad] hover:text-[#b8afff] transition-colors"
+                                className="inline-flex items-center text-xs font-black uppercase tracking-[0.3em] text-[#00FFB3] hover:text-[#b8afff] transition-colors"
                             >
                                 <ArrowLeft className="w-4 h-4 mr-2" />
                                 Return to Hub

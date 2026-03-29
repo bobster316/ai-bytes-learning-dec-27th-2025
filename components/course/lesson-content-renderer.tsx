@@ -6,8 +6,9 @@ import { motion } from "framer-motion";
 import { LessonBlockRenderer } from "./block-renderer";
 import { VoiceAvatar } from "@/components/voice/voice-avatar";
 import { CourseBackground } from "./course-background";
+import type { LessonPersonality } from '@/lib/ai/conductor/types';
 
-export function LessonContentRenderer({ content, images, audioUrl, videoUrl, videoOverviewUrl, pipelineType, isFreePreview = false, footerNode, lessonMetadata, lessonTitle }: { content: any, images: any[], audioUrl?: string, videoUrl?: string, videoOverviewUrl?: string, pipelineType?: string, isFreePreview?: boolean, footerNode?: React.ReactNode, lessonMetadata?: { duration?: number, difficulty?: string, instructor?: 'sarah' | 'gemma' }, lessonTitle?: string }) {
+export function LessonContentRenderer({ content, images, audioUrl, videoUrl, videoOverviewUrl, pipelineType, isFreePreview = false, footerNode, lessonMetadata, lessonTitle, lessonIndex, lessonPersonality = 'calm', microVariationSeed = 0 }: { content: any, images: any[], audioUrl?: string, videoUrl?: string, videoOverviewUrl?: string, pipelineType?: string, isFreePreview?: boolean, footerNode?: React.ReactNode, lessonMetadata?: { duration?: number, difficulty?: string, instructor?: 'sarah' | 'gemma' }, lessonTitle?: string, lessonIndex?: number, lessonPersonality?: LessonPersonality, microVariationSeed?: number }) {
     // Determine if we have V2 Structured Blocks or V1 Markdown
     const hasV2Blocks = content?.blocks && Array.isArray(content.blocks) && content.blocks.length > 0;
 
@@ -57,7 +58,7 @@ export function LessonContentRenderer({ content, images, audioUrl, videoUrl, vid
     const [isComfortMode, setIsComfortMode] = useState(false);
 
     return (
-        <div className={`w-full pb-12 font-body transition-colors duration-500 ease-in-out relative overflow-hidden ${isComfortMode ? 'bg-[#0f0f1a] comfort-mode' : 'bg-[#080810]'}`}>
+        <div className={`w-full pb-12 font-body transition-colors duration-500 ease-in-out relative overflow-hidden ${isComfortMode ? 'bg-[#0f0f1a] comfort-mode' : 'bg-transparent'}`}>
 
             {/* ── Background treatment — driven by CourseDNA ── */}
             <CourseBackground />
@@ -94,14 +95,17 @@ export function LessonContentRenderer({ content, images, audioUrl, videoUrl, vid
             {/* V2 BLOCKS RENDERER OR V1 MARKDOWN FALLBACK — sits above mesh gradient */}
             {hasV2Blocks ? (
                 <div className="relative" style={{ zIndex: 1 }}>
-                <LessonBlockRenderer 
-                    blocks={content.blocks} 
-                    audioUrl={audioUrl} 
-                    videoUrl={videoUrl} 
-                    videoOverviewUrl={videoOverviewUrl} 
-                    images={images} 
+                <LessonBlockRenderer
+                    blocks={content.blocks}
+                    audioUrl={audioUrl}
+                    videoUrl={videoUrl}
+                    videoOverviewUrl={videoOverviewUrl}
+                    images={images}
                     lessonMetadata={lessonMetadata}
                     lessonTitle={lessonTitle}
+                    lessonIndex={lessonIndex}
+                    lessonPersonality={lessonPersonality}
+                    microVariationSeed={microVariationSeed}
                 />
                 </div>
             ) : (

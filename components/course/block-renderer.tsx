@@ -33,6 +33,7 @@ import { ConceptIllustration } from "./blocks/concept-illustration";
 import { OpenExercise } from "./blocks/open-exercise";
 import { InstructorInsight } from "./blocks/instructor-insight";
 import { useCourseDNA } from "@/components/course/course-dna-provider";
+import type { LessonPersonality } from '@/lib/ai/conductor/types';
 import { archetypeOffset } from "@/lib/ai/generate-course-dna";
 import { SectionDivider } from "./SectionDivider";
 
@@ -93,6 +94,9 @@ const SURFACE_DARK_BY_DENSITY: Record<string, Set<string>> = {
     spacious: new Set(['instructor_insight', 'type_cards', 'industry_tabs', 'prediction', 'applied_case', 'interactive_vis', 'quiz', 'video_snippet']),
 };
 
+// Four-colour accent cycle — rotates per lesson so each lesson in a course has a distinct accent
+const LESSON_ACCENT_CYCLE = ["#00FFB3", "#9B8FFF", "#FFB347", "#FF6B6B"] as const;
+
 interface LessonBlockRendererProps {
     blocks: ContentBlock[];
     audioUrl?: string;
@@ -101,9 +105,12 @@ interface LessonBlockRendererProps {
     images?: any[];
     lessonMetadata?: { duration?: number; difficulty?: string; instructor?: string };
     lessonTitle?: string;
+    lessonIndex?: number;
+    lessonPersonality?: LessonPersonality;
+    microVariationSeed?: number;
 }
 
-export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewUrl, images, lessonMetadata, lessonTitle }: LessonBlockRendererProps) {
+export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewUrl, images, lessonMetadata, lessonTitle, lessonIndex, lessonPersonality, microVariationSeed }: LessonBlockRendererProps) {
     const [isAudioVisible, setIsAudioVisible] = useState(false);
     const courseDNA = useCourseDNA();
     let visualBlockCounter = 0;
@@ -112,6 +119,16 @@ export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewU
 
     // Derive surface-dark set from density (uses module-scope SURFACE_DARK_BY_DENSITY)
     const SURFACE_DARK = SURFACE_DARK_BY_DENSITY[courseDNA.layout_density] ?? SURFACE_DARK_BY_DENSITY.balanced;
+
+    // ── Per-lesson accent — rotates through 4 brand colours so each lesson looks distinct ──
+    // Uses lessonIndex (order_index from DB) to pick from the accent cycle.
+    // Offset by archetypeOffset so two courses with the same lesson count still differ.
+    const lessonAccentPhase = ((lessonIndex ?? 0) + archetypeOffset(courseDNA.palette_id, 4)) % 4;
+    const lessonAccentColour = LESSON_ACCENT_CYCLE[lessonAccentPhase];
+
+    // Surface section colours — use DNA surface tinted with lesson accent rather than flat #0f0f1a
+    const surfaceBg     = courseDNA.surface_colour; // e.g. #0b0a14 for iris palette
+    const surfaceBorder = `${lessonAccentColour}18`;  // very subtle accent tint on the border
 
     // ── TypeCards layout offset — derived from palette archetype ─────────
     const typeCardsOffset = archetypeOffset(courseDNA.palette_id, 4);
@@ -186,7 +203,14 @@ export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewU
     }
 
     return (
-        <div className="w-full min-h-screen bg-[#0a0a0f]">
+        <div
+            className="w-full min-h-screen"
+            data-personality={lessonPersonality ?? 'calm'}
+            style={{
+                "--lesson-accent": lessonAccentColour,
+                "--micro-seed": microVariationSeed ?? 0,
+            } as React.CSSProperties}
+        >
             <LessonProgressBar />
             <LessonProgressRail />
 
@@ -201,6 +225,7 @@ export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewU
                     lessonMetadata={lessonMetadata}
                     isAudioVisible={isAudioVisible}
                     setIsAudioVisible={setIsAudioVisible}
+                    lessonIndex={lessonIndex ?? 0}
                 />
             )}
 
@@ -229,6 +254,17 @@ export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewU
                     }
                     if (resolvedType === 'audio_recap_prominent') {
                         extraProps = { audioUrl, onPlay: () => setIsAudioVisible(true) };
+                    }
+                    if (resolvedType === 'flow_diagram' || resolvedType === 'objective' || resolvedType === 'recap'
+                        || resolvedType === 'punch_quote' || resolvedType === 'completion' || resolvedType === 'instructor_insight'
+                        || resolvedType === 'callout' || resolvedType === 'applied_case' || resolvedType === 'key_terms'
+                        || resolvedType === 'inline_quiz' || resolvedType === 'lesson_header') {
+                        extraProps = {
+                            ...extraProps,
+                            lessonIndex: lessonIndex ?? 0,
+                            lessonPersonality: lessonPersonality ?? 'calm',
+                            microVariationSeed: microVariationSeed ?? 0,
+                        };
                     }
 
                     // ── Zigzag image_text_row ────────────────────────────
@@ -338,12 +374,18 @@ export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewU
 
                     // ── Section appearance ───────────────────────────────
                     const hasSurface  = SURFACE_DARK.has(block.type);
-                    const innerWidth  = WIDE_INNER.has(block.type) ? 'max-w-[1140px]' : 'max-w-[840px]';
+
+                    // layout_density drives both max-width and vertical rhythm
+                    const density = courseDNA.layout_density;
+                    const wideMaxW   = density === 'tight' ? 'max-w-[1280px]' : density === 'spacious' ? 'max-w-[960px]'  : 'max-w-[1140px]';
+                    const narrowMaxW = density === 'tight' ? 'max-w-[960px]'  : density === 'spacious' ? 'max-w-[720px]'  : 'max-w-[840px]';
+                    const innerWidth  = WIDE_INNER.has(block.type) ? wideMaxW : narrowMaxW;
+
                     const paddingCls  = COMPACT_PADDING.has(block.type)
-                        ? 'py-6 md:py-8'
+                        ? (density === 'tight' ? 'py-3 md:py-4' : density === 'spacious' ? 'py-8 md:py-12' : 'py-6 md:py-8')
                         : NARROW_PADDING.has(block.type)
-                        ? 'py-8 md:py-10'
-                        : 'py-10 md:py-14';
+                        ? (density === 'tight' ? 'py-5 md:py-6' : density === 'spacious' ? 'py-12 md:py-16' : 'py-8 md:py-10')
+                        : (density === 'tight' ? 'py-6 md:py-8' : density === 'spacious' ? 'py-14 md:py-20' : 'py-10 md:py-14');
 
                     // Show a section divider between body blocks, but not adjacent to
                     // structural openers/closers (objective, punch_quote, recap, quiz, etc.)
@@ -355,17 +397,18 @@ export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewU
                         !SKIP_DIVIDER_TYPES.has(prevBlock.type);
                     const dividerNumber = showDivider ? ++sectionDividerCounter : undefined;
 
+                    const blockKey = (block as any).id || `idx-${idx}`;
                     return (
-                        <React.Fragment key={`${block.id}-${idx}`}>
-                            {showDivider && <SectionDivider sectionNumber={dividerNumber} />}
+                        <React.Fragment key={`${blockKey}-${idx}`}>
+                            {showDivider && <SectionDivider sectionNumber={dividerNumber} dividerColour={lessonAccentColour} />}
                             <section
-                                id={`block-${block.id}`}
+                                id={`block-${blockKey}`}
                                 data-block-type={block.type}
                                 style={{
                                     width: '100%',
-                                    background: hasSurface ? '#0f0f1a' : 'transparent',
-                                    borderTop:    hasSurface ? '1px solid rgba(255,255,255,0.06)' : 'none',
-                                    borderBottom: hasSurface ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                                    background: hasSurface ? surfaceBg : 'transparent',
+                                    borderTop:    hasSurface ? `1px solid ${surfaceBorder}` : 'none',
+                                    borderBottom: hasSurface ? `1px solid ${surfaceBorder}` : 'none',
                                 }}
                             >
                                 <ScrollReveal delay={0}>
