@@ -18,6 +18,8 @@ import { CourseStateManager } from '@/lib/ai/course-state';
 import { generateCourseDNA, deriveDNAFingerprint } from "@/lib/ai/generate-course-dna";
 import { MediaGenerationError, normaliseProviderError } from '@/lib/ai/media-errors';
 import type { ImageGenerationResult, VideoGenerationResult } from '@/lib/ai/media-errors';
+import { conduct, computeModuleMood, updateConductorMemory } from '@/lib/ai/conductor';
+import type { ConductorContext, ConductorMemory } from '@/lib/ai/conductor';
 
 const ROUTE_BUDGET_MS = 270_000; // 270 s safety net — throws clean error before Vercel 300 s hard kill
 
@@ -223,6 +225,12 @@ export async function POST(req: NextRequest) {
             let lessonsProcessed = 0;
             let globalLessonIndex = 1;
 
+            const conductorMemory: ConductorMemory = {
+                previousLessonEndIntensity: 0,
+                firedSignatureMoments: [],
+                recentBlockTypeHistory: [],
+            };
+
             for (let i = 0; i < manifest.topics.length; i++) {
                 const topic = manifest.topics[i];
                 let topicId = `mock-topic-${i}`;
@@ -245,6 +253,18 @@ export async function POST(req: NextRequest) {
                 for (let j = 0; j < topic.lessons.length; j++) {
                     const lessonPlan = topic.lessons[j];
                     const manifestNodeId = (lessonPlan as any).id || `les_${i}_${j}`;
+
+                    const moduleMood = computeModuleMood(i, manifest.topics.length);
+                    const conductorCtx: ConductorContext = {
+                        lessonIndex: j,
+                        totalLessonsInModule: topic.lessons.length,
+                        moduleIndex: i,
+                        totalModulesInCourse: manifest.topics.length,
+                        moduleMood,
+                        courseArchetype: courseDNA.content.archetype_id ?? 'clinical',
+                        memory: { ...conductorMemory },
+                    };
+                    const conductorOutput = conduct(conductorCtx);
 
                     await sendEvent({ stage: 'generating', progress: 20 + Math.floor((lessonsProcessed / Math.max(1, totalLessons)) * 60), message: `Expanding Lesson: ${lessonPlan.lessonTitle}...` });
 
@@ -269,7 +289,7 @@ export async function POST(req: NextRequest) {
 
                     // V2 Single Lesson Expansion
                     console.time(`[API-V2] Lesson Base Content - ${lessonPlan.lessonTitle}`);
-                        let compiledLesson = await orchestrator.processLesson(lessonPlan, topic, manifest, globalLessonIndex, courseState, courseDNA.content);
+                        let compiledLesson = await orchestrator.processLesson(lessonPlan, topic, manifest, globalLessonIndex, courseState, courseDNA.content, conductorOutput.conductorNotes);
                         // VisualEnrichmentAgent removed: it spent 60–70s per lesson generating 1000-word
                         // image prompts that V3-Sanitizer then overwrote entirely with its MANDATORY mandate.
                         // Image prompts are now the 1–2 sentence descriptions from initial generation,
@@ -312,36 +332,45 @@ export async function POST(req: NextRequest) {
                             'Craftsmanship': ['potter', 'pottery', 'glassblowing', 'weaving', 'loom', 'mosaic', 'calligraphy', 'calligrapher', 'clay', 'kiln', 'craftsman', 'woodworking', 'ceramic', 'blacksmith', 'forge', 'anvil', 'spinning wheel', 'leather tooling']
                         };
 
+                        let sanitizerRewrites = 0;
+                        let sanitizerTotal = 0;
                         const sanitizeVisualPrompt = (prompt: string, lessonTitle: string, courseTitle: string): string => {
+                            sanitizerTotal++;
                             const lower = prompt.toLowerCase();
-                            const MANDATE = "MANDATORY: Use MINIMUM 1000 WORDS of technical description. NO metaphors. NO analogies. Follow the 6-part technical formula (GEOMETRY, PHYSICS, LITE, DATA, MOTION, ALIGNMENT).";
-                            
-                            // Check 1: Domain keyword contamination
+                            // Light-touch correction suffix — added when the prompt needs anchoring but is not garbage
+                            const anchor = ` Ensure the subject is the LITERAL technology or real-world application of "${lessonTitle}" — no analogies, no metaphors. Photorealistic or 3D isometric render, deep navy and cyan palette.`;
+                            // Full replacement — only used when the prompt is truly unusable (pure analogy domain, no topic reference at all)
+                            const replacement = `Photorealistic 3D isometric render of the core technology behind "${lessonTitle}" in the context of ${courseTitle}. Show actual interfaces, hardware, data visualisations, dashboards, or system diagrams. Deep navy and cyan palette, Octane render quality. NO metaphors, NO analogies, NO decorative symbolism — show the literal subject.`;
+
+                            // Check 1: Domain keyword contamination — full replacement (the prompt is off-rails)
                             for (const [domain, keywords] of Object.entries(DOMAIN_KEYWORDS)) {
                                 const contaminated = keywords.some(kw => lower.includes(kw));
                                 if (contaminated) {
                                     console.warn(`[V3-Sanitizer] ⚠️ Domain leak "${domain}" detected. Rewriting for: "${lessonTitle}"`);
-                                    return `${MANDATE} Subject: The LITERAL technology, interface, or real-world application of ${lessonTitle}. Describe the subject in EXTREME technical detail. Show actual screens, hardware, data visualizations, dashboards, or code. Composition: 3D isometric render, deep navy and cyan palette, Octane quality. Focus on: ${lessonTitle} in the context of ${courseTitle}.`;
+                                    sanitizerRewrites++;
+                                    return replacement;
                                 }
                             }
-                            
-                            // Check 2: Metaphor language detection
-                            const METAPHOR_MARKERS = ['representing', 'symboliz', 'like a ', 'as if ', 'metaphor', 'mirrors ', 'echoes ', 'reminiscent', 'analogous', 'stands for', 'each representing'];
+
+                            // Check 2: Metaphor language — light-touch anchor suffix (prompt may still be usable)
+                            const METAPHOR_MARKERS = ['like a ', 'as if ', 'metaphor', 'stands for', 'symboliz', 'represents a ', 'is a metaphor'];
                             const hasMetaphor = METAPHOR_MARKERS.some(m => lower.includes(m));
                             if (hasMetaphor) {
-                                console.warn(`[V3-Sanitizer] ⚠️ Metaphor language detected in prompt. Rewriting for: "${lessonTitle}"`);
-                                return `${MANDATE} Subject: The LITERAL technology, interface, or real-world application of ${lessonTitle}. Describe the subject in EXTREME technical detail. Show actual screens, hardware, data visualizations, dashboards, or code. Composition: 3D isometric render, deep navy and cyan palette, Octane quality. Focus on: ${lessonTitle} in the context of ${courseTitle}.`;
+                                console.warn(`[V3-Sanitizer] ⚠️ Metaphor language detected in prompt — appending anchor for: "${lessonTitle}"`);
+                                sanitizerRewrites++;
+                                return prompt + anchor;
                             }
-                            
-                            // Check 3: Off-topic detection
+
+                            // Check 3: Off-topic detection — only fire when NO topic words match at all
                             const STOP_WORDS = new Set(['a','an','the','of','in','to','for','and','or','is','are','how','what','why','when','with','its','from','by','on','at','this','that']);
-                            const topicWords = lessonTitle.toLowerCase().replace(/[^a-z0-9 ]/g, '').split(' ').filter(w => w.length > 2 && !STOP_WORDS.has(w));
-                            const promptHasTopicRef = topicWords.some(tw => lower.includes(tw));
-                            if (!promptHasTopicRef && topicWords.length > 0) {
-                                console.warn(`[V3-Sanitizer] ⚠️ Off-topic prompt detected (no reference to "${lessonTitle}"). Rewriting.`);
-                                return `${MANDATE} Subject: The LITERAL technology, interface, or real-world application of ${lessonTitle}. Describe the subject in EXTREME technical detail. Show actual screens, hardware, data visualizations, dashboards, or code. Composition: 3D isometric render, deep navy and cyan palette, Octane quality. Focus on: ${lessonTitle} in the context of ${courseTitle}.`;
+                            const topicWords = lessonTitle.toLowerCase().replace(/[^a-z0-9 ]/g, '').split(' ').filter(w => w.length > 3 && !STOP_WORDS.has(w));
+                            const matchCount = topicWords.filter(tw => lower.includes(tw)).length;
+                            if (matchCount === 0 && topicWords.length >= 2) {
+                                console.warn(`[V3-Sanitizer] ⚠️ Off-topic prompt (no topic words matched) — appending anchor for: "${lessonTitle}"`);
+                                sanitizerRewrites++;
+                                return prompt + anchor;
                             }
-                            
+
                             return prompt;
                         };
 
@@ -353,12 +382,19 @@ export async function POST(req: NextRequest) {
                             ? (compiledLesson.blocks as any[]).filter((b: any) => (b.type === 'video_snippet' || b.blockType === 'video_snippet') && !b.videoUrl)
                             : [];
 
-                        type VeoJob = { v: any; rawVideoPrompt: string; videoCaption: string; promise: Promise<VideoGenerationResult> };
+                        // Stamp each video block with a stable _veoId before job creation.
+                        // Caption-matching is fragile (sanitizer / normalisation can mutate text).
+                        // _veoId survives through blocksWithOrder and sanitizeBlocks as an unknown field.
+                        videoBlocks.forEach((v: any) => {
+                            if (!v._veoId) v._veoId = `veo_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+                        });
+
+                        type VeoJob = { v: any; rawVideoPrompt: string; videoCaption: string; veoId: string; promise: Promise<VideoGenerationResult> };
                         const veoJobs: VeoJob[] = videoBlocks.map((v: any) => {
                             const rawVideoPrompt = v.videoPrompt || `Show the literal technology of ${lessonPlan.lessonTitle} in action.`;
                             const videoCaption = v.caption || v.title || 'Visual insight';
                             console.log(`[API-V2] 🚀 Starting Veo early for: "${videoCaption}"`);
-                            return { v, rawVideoPrompt, videoCaption, promise: veoVideoService.generateVideo(rawVideoPrompt, videoCaption) };
+                            return { v, rawVideoPrompt, videoCaption, veoId: v._veoId, promise: veoVideoService.generateVideo(rawVideoPrompt, videoCaption) };
                         });
 
                         // Image generation logic (New nested blocks schema)
@@ -405,7 +441,14 @@ export async function POST(req: NextRequest) {
                             const generatedImages = await Promise.all(
                                 rawPrompts.map(async (p, idx) => {
                                     const seed = globalLessonIndex * 10 + idx;
-                                    let result: ImageGenerationResult = await geminiImageService.generateImage(p.prompt, seed);
+                                    const emptyResult: ImageGenerationResult = { url: null, alt: null, caption: null, errorCode: 'generation_skipped', errorMessage: 'generation_skipped' };
+                                    let result: ImageGenerationResult;
+                                    try {
+                                        result = await geminiImageService.generateImage(p.prompt, seed);
+                                    } catch (e: any) {
+                                        console.warn(`[API-V2] ⚠️ Image slot "${(p as any).slotLabel}" threw unexpectedly: ${e?.message || e} — skipping slot`);
+                                        return emptyResult;
+                                    }
 
                                     // content_policy_violation: retry once with a safe fallback prompt
                                     // GeminiImageService always returns errorCode:'empty_result' from its catch — normalise first
@@ -413,7 +456,12 @@ export async function POST(req: NextRequest) {
                                     if (!result.url && rawNorm?.errorCode === 'content_policy_violation') {
                                         const fallbackPrompt = `3D isometric render of ${lessonPlan.lessonTitle} — technical interface, deep navy and cyan colour palette, Octane render quality, no text, no people`;
                                         console.warn(`[API-V2] ⚠️ Image blocked (slot: ${(p as any).slotLabel}) — retrying with fallback prompt`);
-                                        result = await geminiImageService.generateImage(fallbackPrompt, seed + 1000);
+                                        try {
+                                            result = await geminiImageService.generateImage(fallbackPrompt, seed + 1000);
+                                        } catch (e: any) {
+                                            console.warn(`[API-V2] ⚠️ Fallback image for slot "${(p as any).slotLabel}" also threw: ${e?.message || e} — skipping slot`);
+                                            return emptyResult;
+                                        }
                                     }
 
                                     if (!result.url) {
@@ -426,6 +474,14 @@ export async function POST(req: NextRequest) {
                             );
 
                             console.timeEnd(`[API-V2] Image Fetching (${rawPrompts.length} total) - ${lessonPlan.lessonTitle}`);
+                            if (sanitizerTotal > 0) {
+                                const rewriteRate = sanitizerRewrites / sanitizerTotal;
+                                if (rewriteRate > 0.3) {
+                                    console.warn(`[V3-Sanitizer] 🚨 High rewrite rate: ${sanitizerRewrites}/${sanitizerTotal} prompts rewritten (${Math.round(rewriteRate * 100)}%) — generator is producing off-topic or metaphor-heavy image prompts. Check LESSON_VOICE_GUIDE adherence.`);
+                                } else {
+                                    console.log(`[V3-Sanitizer] ✅ Rewrite rate: ${sanitizerRewrites}/${sanitizerTotal} (${Math.round(rewriteRate * 100)}%)`);
+                                }
+                            }
 
                             // Map URLs back into block objects
                             generatedImages.forEach((img, idx) => {
@@ -483,8 +539,11 @@ export async function POST(req: NextRequest) {
 
                                         let patched = false;
                                         const updatedBlocks = (saved.content_blocks as any[]).map((b: any) => {
-                                            if (!patched && b.type === 'video_snippet' && !b.videoUrl &&
-                                                (b.caption === job.videoCaption || b.title === job.videoCaption)) {
+                                            if (patched || b.type !== 'video_snippet' || b.videoUrl) return b;
+                                            // Match by stable _veoId first; fall back to caption text
+                                            const matchById = job.veoId && b._veoId === job.veoId;
+                                            const matchByCaption = !job.veoId && (b.caption === job.videoCaption || b.title === job.videoCaption);
+                                            if (matchById || matchByCaption) {
                                                 patched = true;
                                                 return { ...b, videoUrl: result.url };
                                             }
@@ -496,9 +555,9 @@ export async function POST(req: NextRequest) {
                                                 .from('course_lessons')
                                                 .update({ content_blocks: updatedBlocks })
                                                 .eq('id', lessonIdRef.id);
-                                            console.log(`[API-V2] ✅ Veo URL written to lesson ${lessonIdRef.id} (caption: "${job.videoCaption}")`);
+                                            console.log(`[API-V2] ✅ Veo URL written to lesson ${lessonIdRef.id} (id: "${job.veoId}")`);
                                         } else {
-                                            console.warn(`[API-V2] Veo URL could not be matched to a block — use Block Vid to attach manually (caption: "${job.videoCaption}")`);
+                                            console.warn(`[API-V2] Veo URL could not be matched to a block — use Block Vid to attach manually (id: "${job.veoId}", caption: "${job.videoCaption}")`);
                                         }
                                     })
                                     .catch(err => {
@@ -533,12 +592,23 @@ export async function POST(req: NextRequest) {
                                 thumbnail_url: allFetchedImages.length > 0 ? allFetchedImages[0].url : null,
                                 order_index: j,
                                 estimated_minutes: lessonPlan.estimatedDuration || 15,
-                                micro_objective: lessonPlan.microObjective
+                                micro_objective: lessonPlan.microObjective,
+                                arc_type: conductorOutput.arcType,
+                                lesson_personality: conductorOutput.lessonPersonality,
+                                micro_variation_seed: conductorOutput.microVariationSeed,
+                                conductor_memory: conductorCtx.memory,
                             }).select().single();
                             if (lErr) throw lErr;
 
                             // Give background Veo handlers the lesson ID so they can write URLs back
                             lessonIdRef.id = lData.id;
+
+                            const actualBlockTypes = cleanBlocks.map((b: any) => b.type as string);
+                            const signatureMomentFired = conductorOutput.signatureMoment?.type != null
+                                && actualBlockTypes.includes(conductorOutput.signatureMoment.type)
+                                ? conductorOutput.signatureMoment.type
+                                : null;
+                            updateConductorMemory(conductorMemory, actualBlockTypes, signatureMomentFired);
 
                             if (allFetchedImages.length > 0) {
                                 await supabase.from('lesson_images').insert(allFetchedImages.map((img: any, idx: number) => ({

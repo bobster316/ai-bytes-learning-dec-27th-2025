@@ -1,5 +1,5 @@
 // lib/ai/conductor/index.ts
-import type { ConductorContext, ConductorOutput, ConductorMemory, ArcType, Beat, SignatureMomentType } from './types';
+import type { ConductorContext, ConductorOutput, ConductorMemory, ModuleMood, ArcType, Beat, SignatureMomentType } from './types';
 import { ARC_DEFINITIONS } from './arc-definitions';
 import { selectArcType } from './arc-selector';
 import { selectSignatureMoment } from './signature-moments';
@@ -106,6 +106,14 @@ export function conduct(ctx: ConductorContext): ConductorOutput {
     const conductorNotes = buildConductorNotes(arcType, beatSequence, partial, ctx);
 
     return { ...partial, conductorNotes };
+}
+
+export function computeModuleMood(moduleIndex: number, totalModules: number): ModuleMood {
+    const pos = totalModules <= 1 ? 0.5 : moduleIndex / (totalModules - 1);
+    if (pos <= 0.25) return 'opening';
+    if (pos <= 0.55) return 'building';
+    if (pos <= 0.8)  return 'climax';
+    return 'resolution';
 }
 
 /**

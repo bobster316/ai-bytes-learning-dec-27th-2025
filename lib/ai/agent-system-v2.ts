@@ -223,38 +223,66 @@ OUTPUT JSON FORMAT:
 // blocks, driven by its narrative structure and topic type. This ensures no two
 // lessons share the same visual skeleton.
 
-const BLOCK_POOLS: Record<string, { blocks: string[], description: string }> = {
+// Each pool has a mode and a mandated purpose sequence.
+// mode    → the lesson's teaching personality (injected into prompt)
+// sequence → the cognitive arc the block order must follow (enforced in SECTION_PURPOSE_RULES)
+// diagram  → which visual reasoning archetype this lesson uses (rotated across lessons)
+const BLOCK_POOLS: Record<string, { blocks: string[], description: string, mode: string, sequence: string, diagram: string }> = {
     'The Hook': {
+        mode: 'Visual-first',
+        sequence: 'Introduce → Visualise → Explain → Visualise → Apply → Reinforce',
+        diagram: 'cause-effect chain',
         description: 'Opens with surprise → builds evidence → returns to the hook with new insight',
-        blocks: ['type_cards:grid', 'prediction', 'image_text_row', 'text:bridge', 'full_image', 'flow_diagram:contrast', 'applied_case', 'image_text_row:reverse']
+        blocks: ['type_cards:grid', 'prediction', 'image_text_row', 'text:bridge', 'full_image', 'flow_diagram:contrast', 'instructor_insight', 'callout:tip']
     },
     'The Journey': {
+        mode: 'Scenario-first',
+        sequence: 'Introduce → Apply → Explain → Visualise → Explain → Reinforce',
+        diagram: 'process flow',
         description: 'Opens with a problem → unfolds as a story → arrives at the destination',
-        blocks: ['image_text_row', 'text:bridge', 'full_image', 'flow_diagram:steps', 'applied_case', 'image_text_row:reverse', 'type_cards:numbered', 'go_deeper']
+        blocks: ['image_text_row', 'text:bridge', 'full_image', 'flow_diagram:steps', 'applied_case', 'type_cards:numbered', 'go_deeper', 'callout:tip']
     },
     'The Contrast': {
+        mode: 'Comparison-heavy',
+        sequence: 'Introduce → Explain → Compare → Visualise → Apply → Reinforce',
+        diagram: 'before/after contrast',
         description: 'Shows the wrong way → introduces the corrective lens → clear before/after',
-        blocks: ['image_text_row', 'flow_diagram:contrast', 'callout:warning', 'full_image', 'type_cards:horizontal', 'prediction', 'applied_case', 'image_text_row:reverse']
+        blocks: ['flow_diagram:contrast', 'callout:warning', 'full_image', 'type_cards:horizontal', 'prediction', 'applied_case', 'image_text_row', 'instructor_insight']
     },
     'The Build': {
+        mode: 'System-deep-dive',
+        sequence: 'Introduce → Explain → Visualise → Explain → Visualise → Reinforce',
+        diagram: 'system architecture',
         description: 'Simplest element first → layer by layer → reveals the complete system',
-        blocks: ['image_text_row', 'type_cards:numbered', 'full_image', 'flow_diagram:steps', 'concept_illustration', 'interactive_vis', 'text:bridge', 'applied_case']
+        blocks: ['image_text_row', 'type_cards:numbered', 'full_image', 'flow_diagram:steps', 'open_exercise', 'interactive_vis', 'text:bridge', 'applied_case']
     },
     'The Zoom': {
+        mode: 'Visual-first',
+        sequence: 'Introduce → Visualise → Visualise → Explain → Visualise → Reinforce',
+        diagram: 'data flow',
         description: 'Wide-angle view → zooms into one critical detail → zooms back out enriched',
-        blocks: ['full_image', 'mindmap', 'concept_illustration', 'image_text_row', 'go_deeper', 'industry_tabs', 'image_text_row:reverse']
+        blocks: ['full_image', 'mindmap', 'flow_diagram:steps', 'image_text_row', 'go_deeper', 'industry_tabs', 'type_cards:bento', 'callout:tip']
     },
     'The Dialogue': {
+        mode: 'Scenario-first',
+        sequence: 'Introduce → Apply → Explain → Compare → Apply → Reinforce',
+        diagram: 'decision tree',
         description: 'Poses a question → answers through conversation → closes with a one-liner',
-        blocks: ['prediction', 'image_text_row', 'type_cards:grid', 'full_image', 'text:bridge', 'applied_case', 'image_text_row:reverse']
+        blocks: ['prediction', 'image_text_row', 'type_cards:grid', 'full_image', 'text:bridge', 'instructor_insight', 'go_deeper', 'callout:tip']
     },
     'The Reveal': {
+        mode: 'System-deep-dive',
+        sequence: 'Introduce → Explain → Visualise → Explain → Visualise → Reinforce',
+        diagram: 'transformation',
         description: 'Familiar & mundane → gradually reveals hidden complexity → I-never-knew-that moment',
-        blocks: ['image_text_row', 'type_cards:bento', 'full_image', 'callout:warning', 'applied_case', 'concept_illustration', 'image_text_row:reverse']
+        blocks: ['image_text_row', 'type_cards:bento', 'full_image', 'callout:warning', 'flow_diagram:contrast', 'go_deeper', 'mindmap', 'instructor_insight']
     },
     'The Challenge': {
+        mode: 'Comparison-heavy',
+        sequence: 'Introduce → Compare → Explain → Apply → Compare → Reinforce',
+        diagram: 'trade-off matrix',
         description: 'Presents a decision point → explores trade-offs → closes with a usable principle',
-        blocks: ['image_text_row', 'prediction', 'full_image', 'flow_diagram:contrast', 'applied_case', 'industry_tabs', 'image_text_row:reverse']
+        blocks: ['prediction', 'flow_diagram:contrast', 'full_image', 'applied_case', 'industry_tabs', 'image_text_row', 'type_cards:horizontal', 'callout:warning']
     },
 };
 
@@ -263,7 +291,7 @@ function getBlueprintForLesson(
     lessonNumber: number,
     difficulty: string,
     courseState: CourseState | null
-): { chosenBlocks: string[]; heroType: 'video_snippet' | 'full_image'; recapStyle: string; quizFirst: boolean; videoIndices: number[]; heroPattern: string[] } {
+): { chosenBlocks: string[]; heroType: 'video_snippet' | 'full_image'; recapStyle: string; quizFirst: boolean; videoIndices: number[]; heroPattern: string[]; lessonMode: string; purposeSequence: string; diagramArchetype: string } {
     const pool = BLOCK_POOLS[structureName] || BLOCK_POOLS['The Hook'];
     const structureData = STRUCTURE_PATTERNS.find(s => s.name === structureName) || STRUCTURE_PATTERNS[0];
     const videoIndices = structureData.videoScene || [1, 14];
@@ -271,7 +299,8 @@ function getBlueprintForLesson(
     const seed = lessonNumber + structureName.length;
     const offset = seed % pool.blocks.length;
     const rotated = [...pool.blocks.slice(offset), ...pool.blocks.slice(0, offset)];
-    const pickCount = difficulty === 'Beginner' ? 7 : difficulty === 'Advanced' ? 9 : 8;
+    // Reduced from 7/8/9 — keeps total lesson blocks under the gemini-2.0-flash output token ceiling
+    const pickCount = difficulty === 'Beginner' ? 5 : difficulty === 'Advanced' ? 7 : 6;
 
     const filtered = difficulty === 'Beginner'
         ? rotated.filter(b => b !== 'go_deeper' && b !== 'interactive_vis')
@@ -292,8 +321,66 @@ function getBlueprintForLesson(
     ];
     const heroPattern = patterns[seed % patterns.length];
 
-    return { chosenBlocks, heroType, recapStyle, quizFirst, videoIndices, heroPattern };
+    return { chosenBlocks, heroType, recapStyle, quizFirst, videoIndices, heroPattern, lessonMode: pool.mode, purposeSequence: pool.sequence, diagramArchetype: pool.diagram };
 }
+
+// ─── Section purpose map — each block type has a natural pedagogical role ────
+// Used in the prompt to enforce that every block declares exactly one purpose.
+const SECTION_PURPOSE_RULES = `SECTION PURPOSE TAGGING — EVERY BLOCK MUST DECLARE ITS ROLE:
+
+Every block in the lesson must include a "purpose" field with EXACTLY ONE of:
+  "Introduce" | "Explain" | "Visualise" | "Compare" | "Apply" | "Reinforce"
+
+LESSON MODE INSTRUCTION:
+  This lesson's MODE is given in the LESSON MODE field above. Follow the teaching personality it defines:
+  • Visual-first     → Lead with images and diagrams. Let visuals carry the argument; text supports.
+  • Scenario-first   → Open with a real-world situation. Ground every concept in a decision or outcome.
+  • System-deep-dive → Expose the architecture. Show how components connect. Prioritise mechanism over application.
+  • Comparison-heavy → Anchor understanding in contrast. Every key idea has a foil. The difference IS the lesson.
+
+PURPOSE SEQUENCE — MANDATORY:
+  The PURPOSE SEQUENCE field above defines this lesson's exact cognitive arc.
+  Follow it. The sequence of "purpose" values in your blocks array MUST match this arc.
+
+CLUSTER CAP — HARD RULE:
+  Never place more than 2 blocks with the same "purpose" value within any 4-block window.
+  After 2 consecutive "Explain" blocks: the next block MUST be "Visualise", "Compare", or "Apply".
+  Violating this rule creates explanation fatigue — it is a content failure.
+
+DIAGRAM ARCHETYPE — MANDATORY:
+  The DIAGRAM ARCHETYPE field above defines the visual reasoning pattern for ALL flow_diagram and
+  comparison blocks in this lesson. Implement it literally:
+  • "cause-effect chain"    → show how A causes B causes C; the chain is the lesson's argument
+  • "process flow"          → sequential steps from input to output; each step is distinct and named
+  • "before/after contrast" → two states of the same system; the gap between them is what the lesson explains
+  • "system architecture"   → components, connections, and roles; the diagram shows how the whole works
+  • "data flow"             → how information moves, transforms, and is consumed across the system
+  • "decision tree"         → conditional branches; the learner sees how different inputs lead to different outcomes
+  • "transformation"        → a single entity changes state; before/during/after is the structure
+  • "trade-off matrix"      → two axes, four quadrants; each position represents a different balance of constraints
+  Do NOT use "reactive vs predictive" or "rule-based vs learned" as the default fallback — choose the archetype.
+
+NATURAL PURPOSE BY BLOCK TYPE:
+  lesson_header, objective, punch_quote          → Introduce
+  text, callout, go_deeper, instructor_insight   → Explain
+  full_image, concept_illustration, mindmap      → Visualise
+  image_text_row                                 → Visualise (image-led) or Explain (text-led)
+  flow_diagram:steps, interactive_vis            → Visualise
+  flow_diagram:contrast, type_cards:horizontal   → Compare
+  type_cards:grid, type_cards:numbered           → Explain
+  type_cards:bento                               → Visualise
+  prediction                                     → Reinforce
+  applied_case, industry_tabs, open_exercise     → Apply
+  video_snippet                                  → Introduce (first) / Apply (second)
+  recap, quiz, key_terms, completion             → Reinforce
+
+PURPOSE MUST BE EMBODIED — NOT JUST LABELLED:
+  Introduce  → PASS: "X doesn't work the way most people assume. The reason it works at all is surprising."
+  Explain    → PASS: Unpacks the mechanism — how it works, why it behaves that way, what breaks if removed.
+  Visualise  → PASS: Uses the image to reveal a relationship the text alone couldn't convey.
+  Compare    → PASS: "The shift from A to B is not just a technical change — it changes what becomes possible."
+  Apply      → PASS: A named situation, a specific constraint, a real decision, a clear consequence.
+  Reinforce  → PASS: A question that requires using the concept, or a distillation that makes it unforgettable.`.trim();
 
 // ─── Lesson quality rules injected into every generation prompt ─────────────
 const LESSON_QUALITY_RULES = `LESSON CONTENT QUALITY RULES — ABSOLUTE LAW:
@@ -317,10 +404,34 @@ STRUCTURE:
   • recap blocks:          exactly 4 items; each item MUST have "title" (4–6 words) AND "body" (2 substantive sentences explaining WHY this takeaway matters and WHAT it enables — never a restatement of the title). NO plain string points — always use items[] format
   • applied_case blocks:   exactly 3 scenarios in "tabs" array; each tab: id, label, scenario, challenge, resolution
   • key_terms blocks:      minimum 12 terms; each term MUST have "definition" (2 sentences). If the topic has fewer than 12 natural terms, add related terms from the broader field
-  • completion blocks:     summary (1–2 sentences synthesising the core lesson insight in the learner's own growth terms), skillsEarned (3 items, 8–12 words each, start with a verb), nextStep (1 forward-pointing sentence naming what the learner can explore or apply next)
+  • completion blocks:     ALL of these fields are REQUIRED:
+      - title:        A statement of intellectual arrival — NOT a UI label. Avoid: "Lesson Complete", "You've finished", "Well done". Write instead a short phrase that names what the learner has understood: "From Reaction to Prediction", "Seeing the Pattern", "The Architecture Becomes Clear". Make it feel earned.
+      - summary:      1–2 sentences. NOT a recap of what was covered. Describe what the learner NOW UNDERSTANDS DIFFERENTLY — capability-framing, forward-looking. The learner should recognise a shift in how they see the topic.
+      - skillsEarned: Exactly 3 items. Each is a PERSPECTIVE SHIFT, not a topic label. Each must start with "You can now…" and complete the thought with a concrete capability — something the learner genuinely could not do before this lesson. NEVER write generic labels like "Understanding AI applications" or "Core concept understood".
+      - closingLine:  ONE short, precise sentence that lands the core idea of the lesson. This is the sentence the learner remembers. It should feel like the lesson's conclusion distilled into a single thought. Example: "This is where intelligent systems stop reacting — and start anticipating."
+      - nextStep:     1 sentence. Must name the specific concept or capability the NEXT lesson builds — not a vague "continue learning". Make it feel like an invitation, not a signpost.
+      BANNED in completion blocks: "Congratulations", "You've completed", "Well done", "In this lesson we covered", "You have learned", "You are now equipped to", "We explored". These are generic closers. The tone must be: calm, precise, confident — a quiet acknowledgement that a shift has happened.
+
+COMPLETION REFERENCE TONE (do not copy literally — match the register):
+  title: "From Reaction to Prediction" | summary: capability shift, not recap | skillsEarned: "You can now explain…" | closingLine: "This is where intelligent systems stop reacting — and start anticipating." | nextStep: names the specific next concept.
+
+DENSITY CAPS — HARD LIMITS (exceeding these is a content failure):
+  • type_cards descriptions:  MAX 60 words per card — 2 sentences only. These are insight cards, not paragraphs.
+  • text block paragraphs:    MAX 2 sentences per paragraph; MAX 3 paragraphs per block
+  • image_text_row text:      EXACTLY 4 sentences — no expansion permitted beyond these 4
+  • key_terms definitions:    MAX 25 words per definition — first sentence defines, second sentence contextualises
+  • recap body:               EXACTLY 2 sentences — insight + implication. No expansion.
+  • applied_case fields:      scenario/challenge/resolution: 2 sentences each — no padding
+  • instructor_insight body:  1–2 sentences only — each card is a single thought, not a paragraph
+
+VISUAL MECHANISM DIVERSITY — NO CONSECUTIVE REPEATS:
+  • flow_diagram:contrast blocks MUST contrast two concepts that are DIRECTLY from this lesson's title and objective — not generic AI/ML abstractions.
+  • BANNED as default contrast: "Reactive vs Predictive", "Reactive vs Proactive". These are overused. If the lesson IS specifically about reactive vs predictive systems, you may use it — but only if it is the exact topic of THIS lesson.
+  • The contrast labelA and labelB MUST be terms the learner has just been taught in THIS lesson. Never use contrast blocks to introduce a concept not covered in the lesson.
+  • NEVER use the same contrast mechanism as the previous lesson. Derive the contrast from: rule-based vs learned, centralised vs distributed, manual vs automated, single-pass vs iterative, deterministic vs probabilistic, siloed vs integrated, human-in-loop vs autonomous, batch vs real-time, threshold-based vs continuous — whichever best matches THIS lesson's specific content.
+  • mindmap and flow_diagram:steps must also vary: do NOT reuse the same structural metaphor (e.g., "layered pyramid") in consecutive lessons.
 
 TEXT QUALITY:
-  • text blocks: 3–5 paragraphs per block; max 3 sentences per paragraph
   • sentence length: short and direct — one idea per sentence
   • avoid long compound sentences joined by multiple "which", "that", "however" chains
   • no paragraph should look like a dense wall of text — if it does, break it
@@ -337,23 +448,82 @@ IMAGE EXPLANATIONS (semantic quality — ABSOLUTE):
 LAYOUT HINTS:
   • full_image blocks: set layout: "split" when explanation is present; layout: "hero" for standalone atmosphere images only`.trim();
 
+const LESSON_VOICE_GUIDE = `LESSON VOICE AND STYLE — THIS IS HOW AI BYTES LESSONS SOUND:
+
+AI Bytes lessons feel like a world-class AI educator teaching with calm authority, elegance, and precision.
+The tone is premium, modern, intelligent, and human.
+It never sounds like a textbook, corporate training copy, or a generic blog post.
+
+VOICE PRINCIPLES:
+  • Speak directly to the learner as "you" — not "the user", "learners", or "one"
+  • Lead with the insight or surprising idea first, then explain it — never define before making the reader want to know
+  • Vary sentence rhythm deliberately: use short, punchy lines to land key ideas; follow long setup sentences with short payoffs
+  • Earn attention through clarity and substance — never fake enthusiasm. No "Amazing!", "Exciting!", "Let's dive in!", or overhype
+  • Prefer the specific over the general: concrete mechanisms and real numbers beat vague statements
+  • Explain not just WHAT something is, but HOW it works, WHY it matters, and WHAT it enables
+  • When writing about visuals or diagrams, interpret what they reveal — do not describe what is visible
+  • Keep paragraphs short and intentional — every sentence should justify its presence
+  • Use analogy rarely and only when it genuinely accelerates understanding — never as decoration
+  • End sections and the lesson with a sense of closure, capability, and forward motion
+  • Replace any sentence that describes what something IS with a sentence that reveals what it DOES, breaks, or enables
+    BAD: "DCGANs are a type of generative network used to create images."
+    GOOD: "DCGANs don't understand images. They compete over them — one network generates, the other judges, until the generator wins."
+
+THE THREE LAWS OF VOICE (apply these to every sentence before writing it):
+  1. UNIVERSALITY TEST: If this sentence could appear in ANY course on ANY topic, it must be rewritten. Generic language is a failure. Every sentence must be specific to THIS concept, THIS mechanism, THIS lesson.
+     BAD: "AI is transforming industries around the world."
+     BAD: "This technology has many important applications."
+     GOOD: "Railway operators using predictive maintenance cut unplanned downtime by 30–40% — not by reacting faster, but by not needing to react at all."
+  2. CLARITY LAW: If a sentence sounds clever but is harder to understand, simplify it. Precision beats sophistication. The goal is a clear idea landing cleanly — not an impressive sentence that obscures it.
+     BAD: "Intelligence emerges not from cognition itself but from structured probabilistic inference across distributed representations."
+     BAD: "AI redefines the boundaries of computational reasoning through layered abstraction."
+     GOOD: "AI learns by adjusting itself based on data. The more data it sees, the better it adjusts."
+     The test: can a smart person understand this sentence on first read? If not, rewrite it.
+  3. OPENING RULE: Every block, every section, every paragraph must begin with a THOUGHT, not a label or definition. The first sentence is the hook — it must make the learner want the second sentence.
+     BAD: "Transformers are a type of neural network architecture."
+     BAD: "In this section, we will cover the key components."
+     GOOD: "The attention mechanism changed everything — not because it was new, but because it was the first design that could hold the whole sentence in mind at once."
+
+ANTI-PATTERNS — NEVER DO THESE:
+  • "In this lesson, we will explore..." — start with the idea, not the agenda
+  • "It is important to note that..." — just say the important thing
+  • "As we can see from the diagram..." — interpret the diagram, don't narrate it
+  • "AI is not just..." — weak contrasting opener; state the positive truth directly
+  • "This is important because..." — if it's important, lead with the important thing
+  • "In modern systems..." / "Today, AI is widely used..." — universal filler; replace with a specific claim
+  • Three long sentences in a row — break the rhythm
+  • Vague conclusions ("This has many applications") — name the specific application
+  • Hollow encouragement ("Great job!", "Well done!") — the content itself is the reward
+
+REFERENCE FEEL:
+  • Apple keynote — clarity, rhythm, one idea lands completely before the next begins
+  • Masterclass — specific craft knowledge, respect for the learner's intelligence
+  • MIT lecture — rigour, the real mechanism, not the simplified version
+
+ANCHOR SENTENCES — write at this level:
+  "Models do not learn all at once. They improve through small, disciplined corrections."
+  "This is where the system stops guessing and starts adjusting."
+  "The visual matters because it reveals the mechanism, not just the result."
+  "You now understand not just what this component does, but why modern AI depends on it."
+  "AI doesn't begin with intelligence. It begins with patterns."`.trim();
+
 // ─── Block schema documentation per block type ──────────────────────────────
 function getBlockSchemaDoc(blockRef: string): string {
     const [type, variant] = blockRef.split(':');
     const schemas: Record<string, string> = {
-        'type_cards:grid':       'type_cards grid — 3–4 cards for factual orientation. layout: "grid". Each card: badge, badgeColour (pulse|iris|amber), title, description (3–4 sentences explaining the concept and why it matters), imagePrompt (1–2 sentences: subject, setting, mood — will be enriched later).',
-        'type_cards:numbered':   'type_cards numbered — 3–4 cards breaking topic into parts. layout: "numbered". Each card: badge, badgeColour, title, description (3–4 sentences explaining the concept and why it matters).',
-        'type_cards:horizontal': 'type_cards horizontal — COMPARISON of 2 things. layout: "horizontal". 2–3 cards only. Each card: title, description (3–4 sentences explaining the concept and why it matters).',
-        'type_cards:bento':      'type_cards bento — freeform supplemental cards. layout: "bento". 3–4 cards, each with badge, title, description (3–4 sentences explaining the concept and why it matters), imagePrompt (1–2 sentences: subject, setting, mood).',
-        'instructor_insight':    'instructor_insight — EXACTLY 3 insight cards. Each: emoji, bold title, body (1–2 sentences).',
+        'type_cards:grid':       'type_cards grid — 3–4 cards for factual orientation. layout: "grid". Each card: badge, badgeColour (pulse|iris|amber), title, description (2 sentences MAX (~60 words): first sentence states what this is, second sentence states why it matters — no padding), imagePrompt (1–2 sentences: subject, setting, mood — will be enriched later).',
+        'type_cards:numbered':   'type_cards numbered — 3–4 cards breaking topic into parts. layout: "numbered". Each card: badge, badgeColour, title, description (2 sentences MAX (~60 words): first sentence states what this is, second sentence states why it matters — no padding).',
+        'type_cards:horizontal': 'type_cards horizontal — COMPARISON of 2 things. layout: "horizontal". 2–3 cards only. Each card: title, description (2 sentences MAX (~60 words): first sentence states what this is, second sentence states why it matters — no padding).',
+        'type_cards:bento':      'type_cards bento — freeform supplemental cards. layout: "bento". 3–4 cards, each with badge, title, description (2 sentences MAX (~60 words): first sentence states what this is, second sentence states why it matters — no padding), imagePrompt (1–2 sentences: subject, setting, mood).',
+        'instructor_insight':    'instructor_insight — EXACTLY 3 insight cards. REQUIRED fields: id (string), insights (array of EXACTLY 3 objects, each with: emoji (single emoji), title (bold 3–5 word phrase), body (1–2 sentences — a single specific insight, not a definition)). DO NOT use fields named "heading", "videoUrl", "cards", or "items" — the array field is called "insights".',
         'flow_diagram:steps':    'flow_diagram steps — linear process (3–6 steps). title, steps[]{label, description, colour}, explanation (2–3 sentences interpreting what the flow reveals — the conclusion the learner should draw).',
         'flow_diagram:contrast': 'flow_diagram contrast — before/after. title, contrast{ labelA, labelB, stepsA[], stepsB[], middleNode, outcomeA, outcomeB }, explanation (2–3 sentences interpreting what the contrast reveals).',
         'mindmap':               'mindmap — central node + 4–6 branch concepts.',
         'concept_illustration':  'concept_illustration — visual metaphor. concept, description, imagePrompt (1–2 sentences: subject, style, mood), style: network|layers|cycle|hierarchy.',
         'image_text_row':        'image_text_row — image left, text right. imagePrompt (1–2 sentences: subject, setting, mood), label, title, text (minimum 4 substantive sentences: (1) what this visual shows and why it was chosen, (2) the key mechanism or insight it reveals, (3) what the learner should infer, (4) a concrete practical implication), reverse: false.',
         'image_text_row:reverse':'image_text_row reversed — text left, image right. reverse: true. imagePrompt (1–2 sentences: subject, setting, mood), label, title, text (minimum 4 substantive sentences as above).',
-        'prediction':            'prediction — knowledge check. question, options (EXACTLY 3), correctIndex, reveal.',
-        'applied_case':          'applied_case — 3 real-world scenarios as tabs. REQUIRED fields: tabs (array of EXACTLY 3 objects each with: id (string), label (string, 2-4 words), scenario (string, 2-3 sentences), challenge (string, 2-3 sentences), resolution (string, 2-3 sentences), imageUrl (omit — filled by pipeline)).',
+        'prediction':            'prediction — knowledge check. REQUIRED fields: id (string), question (string), options (array of EXACTLY 3 plain strings — no objects), correctIndex (0, 1, or 2 — integer), reveal (string, 1–2 sentences explaining why the correct answer is right), accentColour ("pulse"|"iris"|"amber"|"nova"). ALL 5 fields are mandatory.',
+        'applied_case':          'applied_case — 3 real-world scenarios as tabs. REQUIRED fields: id (string), tabs (array of EXACTLY 3 objects). Each tab MUST include ALL of: id (string), label (string, 2–4 words), scenario (string, 2 sentences: real organisation + specific situation), challenge (string, 2 sentences: the specific constraint or problem they faced), resolution (string, 2 sentences: how applying this lesson\'s concept solved it). NEVER omit scenario, challenge, or resolution — they are all mandatory.',
         'industry_tabs':         'industry_tabs — 4–5 industry use-case tabs. heading, tabs[]{ id, label, imagePrompt (1–2 sentences: subject, setting, mood), imageCaption, scenarioTitle, scenarioBody }.',
         'callout:warning':       'callout warning — variant: "warning", title, text.',
         'callout:tip':           'callout tip — variant: "tip", title, text.',
@@ -365,10 +535,10 @@ function getBlockSchemaDoc(blockRef: string): string {
         'lesson_header':         'lesson_header — hero section. REQUIRED fields: title (string), tag (2–3 word category label), duration (e.g. "15 min"), difficulty (Beginner|Intermediate|Advanced), heroType: "interactive", heroPrompt (1–2 sentences: visual subject and mood for the hero background), description (1–2 sentence lesson overview), objectives (array of 4 short strings each starting with a verb).',
         'objective':             'objective — single learning objective card. REQUIRED fields: label (short label e.g. "Learning Objective"), text (EXACTLY 3 sentences — S1: starts with "By the end of this lesson you will be able to…", S2: why this capability matters in real-world practice, S3: what mental model or skill this builds).',
         'punch_quote':           'punch_quote — full-width bold statement. REQUIRED fields: quote (one punchy declarative sentence, 10–20 words, no quotation marks), accent (pulse|iris|amber|nova).',
-        'recap':                 'recap — end-of-lesson summary. REQUIRED fields: title (string), items (array of EXACTLY 4 objects each with: title (4–6 words, bold takeaway), body (EXACTLY 2 sentences expanding on why this takeaway matters)).',
+        'recap':                 'recap — end-of-lesson summary. REQUIRED fields: id (string), title (string, e.g. "If you remember only three things…"), items (array of EXACTLY 4 objects). Each item MUST include: title (4–6 words, a bold takeaway phrase), body (EXACTLY 2 sentences — S1: why this matters, S2: what it enables). The array field is called "items" — NEVER use "points", "bullets", or "cards".',
         'key_terms':             'key_terms — glossary. REQUIRED fields: terms (array of MINIMUM 12 objects each with: term (string), definition (EXACTLY 2 sentences — first sentence defines the term precisely, second sentence explains where it appears or why it matters)).',
         'completion':            'completion — lesson complete card. REQUIRED fields: summary (1–2 sentences synthesising the core lesson insight in the learner\'s own growth terms — what they can now see or do that they could not before), skillsEarned (array of 3 strings, 8–12 words each, start with an action verb), nextStep (1 forward-pointing sentence naming what the learner can explore or apply next).',
-        'quiz':                  'quiz — knowledge check. REQUIRED fields: title, questions (array of 3–5 objects each with: question (string), options (array of 3 strings), correctIndex (0|1|2), correctFeedback (string), incorrectFeedback (string)).',
+        'quiz':                  'quiz — knowledge check. REQUIRED fields: id (string), title (string, e.g. "Test Your Understanding"), questions (array of EXACTLY 3 objects). Each question MUST include ALL of: question (string), options (array of EXACTLY 3 strings), correctIndex (0, 1, or 2 — integer), correctFeedback (string, 1 sentence confirming why), incorrectFeedback (string, 1 sentence explaining what was missed). The "title" field is mandatory — never omit it.',
         'full_image':            'full_image — wide visual. REQUIRED fields: imagePrompt (MINIMUM 1000 WORDS ultra-detailed), caption (1–2 sentences), explanation (2–3 sentences INTERPRETING what the visual reveals — not describing what is visible), layout ("split" when explanation present, "hero" for standalone atmosphere images).',
     };
     return schemas[blockRef] || schemas[type] || `${type} block — include all required fields.`;
@@ -376,7 +546,7 @@ function getBlockSchemaDoc(blockRef: string): string {
 
 // ─── 2. Lesson Expander Agent (Pool-Based Diversity Generator V3) ─────────────
 export class LessonExpanderAgent extends BaseAgentV2 {
-    async expandLesson(lesson: any, moduleContext: any, courseContext: any, retrievedChunks: any[] = [], lessonNumber: number = 1, courseState: CourseState | null = null, dnaContent: CourseDNA["content"] | null = null): Promise<ConceptExplanation> {
+    async expandLesson(lesson: any, moduleContext: any, courseContext: any, retrievedChunks: any[] = [], lessonNumber: number = 1, courseState: CourseState | null = null, dnaContent: CourseDNA["content"] | null = null, rhythmDirective: string = ''): Promise<ConceptExplanation> {
         const contextStr = retrievedChunks.length > 0
             ? retrievedChunks.map(c => `[Source: ${c.source_id}]\n${c.content}`).join('\n\n')
             : "No retrieved context available.";
@@ -423,7 +593,7 @@ export class LessonExpanderAgent extends BaseAgentV2 {
         }
 
         const blueprint = getBlueprintForLesson(structureName, lessonNumber, difficulty, courseState);
-        const { chosenBlocks: initialBlocks, heroType, recapStyle, quizFirst, videoIndices, heroPattern } = blueprint;
+        const { chosenBlocks: initialBlocks, heroType, recapStyle, quizFirst, videoIndices, heroPattern, lessonMode, purposeSequence, diagramArchetype } = blueprint;
 
         let finalBlocksWithVideos = [...initialBlocks];
         if (videoIndices.length > 1) {
@@ -444,7 +614,7 @@ export class LessonExpanderAgent extends BaseAgentV2 {
         });
 
         const ironAfter = [
-            `[BLOCK-${middleBlocks.length + 5}] text — FOUNDATION: ${getBlockSchemaDoc('text')} Write 2–3 paragraphs (150–250 words each) that consolidate the lesson's core ideas and prepare the learner for the next topic.`,
+            `[BLOCK-${middleBlocks.length + 5}] text — FOUNDATION: ${getBlockSchemaDoc('text')} Write 2–3 paragraphs (2 sentences each) that consolidate the lesson's core ideas and prepare the learner for the next topic.`,
             `[BLOCK-${middleBlocks.length + 6}] recap — style: "${recapStyle}"`,
             `[BLOCK-${middleBlocks.length + 7}] quiz — EXACTLY 3 questions`,
             `[BLOCK-${middleBlocks.length + 8}] key_terms`,
@@ -457,7 +627,8 @@ export class LessonExpanderAgent extends BaseAgentV2 {
         const totalTarget = ironCoreCount + finalBlocksWithVideos.length + (isBeginner ? 2 : isAdvanced ? 4 : 3);
         const temperature = Math.min(0.7 + (lessonNumber - 1) * 0.04, 1.0);
 
-        const prompt = `SYSTEM: You are an elite UK instructional designer. Lesson ${lessonNumber} of this course.
+        const rhythmPrefix = rhythmDirective ? `${rhythmDirective}\n\n---\n\n` : '';
+        const prompt = rhythmPrefix + `SYSTEM: You are an elite UK instructional designer. Lesson ${lessonNumber} of this course.
 LESSON: "${lesson.lessonTitle}"
 OBJECTIVE: ${lesson.microObjective}
 DIFFICULTY: ${difficulty}
@@ -465,6 +636,9 @@ COURSE PERSONALITY: ${dnaContent?.writing_style ?? 'Clear, expert, no filler wor
 EXAMPLE STYLE: ${dnaContent?.example_bias ?? 'real_world_first'}
 QUESTION TONE: ${dnaContent?.question_tone ?? 'socratic'}
 NARRATIVE: "${structureName}"
+LESSON MODE: ${lessonMode}
+PURPOSE SEQUENCE: ${purposeSequence}
+DIAGRAM ARCHETYPE: ${diagramArchetype} — all flow_diagram and comparison blocks in this lesson must use this reasoning pattern
 TONE: ${toneName} (${toneChars})
 
 LESSON BLUEPRINT — TOTAL BLOCKS: ${unifiedBlueprint.split('\n').length}
@@ -473,7 +647,7 @@ ${unifiedBlueprint}
 VISUAL ACCURACY — ABSOLUTE LAW:
 >>> IMAGE PROMPTS (imagePrompt fields) MUST BE MINIMUM 1000 WORDS of technical blueprint following the 6-part formula below.
 >>> VIDEO PROMPTS (videoPrompt fields) MUST BE EXACTLY 5 SENTENCES using the motion-arc structure: S1 names the lesson concept and lesson title, S2 describes visible objects/interfaces, S3 describes the motion arc (start state → transformation → end state), S4 describes camera movement and environment, S5 states exclusions and fidelity target.
->>> TEXT BLOCK PARAGRAPHS (paragraphs[] fields) must be 150–250 words each — substantive, educational prose. DO NOT truncate these.
+>>> TEXT BLOCK PARAGRAPHS (paragraphs[] fields): 2 sentences per paragraph, MAX 3 paragraphs per text block. Substantive and precise — no padding. Each paragraph = one clear idea.
 >>> Captions, titles, labels, and single-line fields must be CONCISE (under 50 words) to stay within token limits.
 >>> YOU MUST GENERATE TWO (2) VIDEO SNIPPETS: One at [BLOCK-4] and one at [BLOCK-X] as labeled in the blueprint.
 >>> NEVER use analogies or metaphors (no kitchens, gardens, pottery, or simple "city" metaphors).
@@ -485,6 +659,10 @@ VISUAL ACCURACY — ABSOLUTE LAW:
     5. MOTION (Video-only): Frame-by-frame camera movement (pan/tilt/zoom), temporal shifts.
     6. PEDAGOGICAL ALIGNMENT: Direct literal mapping to the lesson objective ID.
 >>> BE LITERAL. BE ACCURATE. BE TECHNICAL.
+
+${LESSON_VOICE_GUIDE}
+
+${SECTION_PURPOSE_RULES}
 
 ${LESSON_QUALITY_RULES}
 
@@ -500,7 +678,7 @@ REQUIRED OUTPUT JSON STRUCTURE:
 }`;
 
         let messages: any[] = [{ role: 'user', parts: [{ text: prompt }] }];
-        const makeRequestWithTemp = async (msgs: any[]) => {
+        const makeRequestWithTemp = async (msgs: any[], concise = false) => {
             const contents = msgs;
             if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is missing");
             const response = await fetch(`${GEMINI_URL}?key=${process.env.GEMINI_API_KEY}`, {
@@ -512,10 +690,14 @@ REQUIRED OUTPUT JSON STRUCTURE:
                 })
             });
             const data = await response.json();
+            const finishReason = data.candidates?.[0]?.finishReason;
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
             if (!text) {
-                const reason = data.candidates?.[0]?.finishReason || data.promptFeedback?.blockReason || 'empty_response';
+                const reason = finishReason || data.promptFeedback?.blockReason || 'empty_response';
                 throw new Error(`Gemini returned no content (reason: ${reason}, status: ${response.status})`);
+            }
+            if (finishReason === 'MAX_TOKENS') {
+                throw Object.assign(new Error(`Output truncated (MAX_TOKENS) — lesson JSON exceeded model output limit`), { code: 'MAX_TOKENS' });
             }
             return JSON.parse(text);
         };
@@ -529,8 +711,41 @@ REQUIRED OUTPUT JSON STRUCTURE:
                 if (validation.passed) return result;
                 messages.push({ role: 'model', parts: [{ text: JSON.stringify(result) }] });
                 messages.push({ role: 'user', parts: [{ text: `Rejection: ${validation.failures.join(', ')}. FIX ALL. REMEMBER: Image prompts MUST be 1000+ words. Video prompts MUST follow the 5-sentence motion-arc structure (S1 names lesson concept + title, S2 visible objects, S3 start→change→end, S4 camera, S5 exclusions).` }] });
-            } catch (e) {
-                console.error("Retry error", e);
+            } catch (e: any) {
+                if (e?.code === 'MAX_TOKENS') {
+                    console.warn(`[LessonExpander] ⚠️ Output truncated on attempt ${attempts + 1} — rebuilding minimal prompt`);
+                    // The original prompt is too long for the model. Build a FRESH, stripped-down
+                    // prompt — no voice guide, no purpose rules, just schema + lesson + tight block list.
+                    const minimalBlocks = ['lesson_header', 'objective', 'video_snippet', 'text', 'type_cards:grid', 'video_snippet', 'recap', 'quiz', 'key_terms', 'completion'];
+                    const minimalPrompt = `You are an instructional designer. Generate a complete lesson JSON for:
+LESSON: "${lesson.lessonTitle}"
+OBJECTIVE: ${lesson.microObjective}
+
+Use EXACTLY these blocks in order: ${minimalBlocks.join(', ')}.
+
+HARD LIMITS:
+- type_cards: 3 cards, each description MAX 50 words
+- text paragraphs: MAX 2 sentences each, MAX 2 paragraphs
+- recap: EXACTLY 4 items with title + body (2 sentences)
+- quiz: EXACTLY 3 questions
+- key_terms: EXACTLY 8 terms
+- completion: title, summary (1 sentence), skillsEarned (3 items), closingLine (1 sentence), nextStep (1 sentence)
+- image prompts: MAX 3 sentences
+
+OUTPUT: valid complete JSON only. No truncation.`;
+                    const minimalMessages = [{ role: 'user', parts: [{ text: minimalPrompt }] }];
+                    try {
+                        const result = await makeRequestWithTemp(minimalMessages);
+                        console.log(`[LessonExpander] ✅ Minimal fallback succeeded for "${lesson.lessonTitle}"`);
+                        if (!courseState) return result;
+                        return result;
+                    } catch (retryErr: any) {
+                        console.error(`[LessonExpander] ❌ Minimal fallback also failed:`, retryErr.message);
+                        throw new Error(`Lesson "${lesson.lessonTitle}" could not be generated within the model output limit after two attempts`);
+                    }
+                } else {
+                    console.error("Retry error", e);
+                }
             }
             attempts++;
         }
@@ -616,8 +831,8 @@ export class OrchestratorV2 {
 
     async generateManifest(input: CourseGenerationInput): Promise<CourseStructure> { return await this.planner.generateManifest(input); }
     
-    async processLesson(lessonPlan: any, moduleContext: any, courseContext: any, lessonNumber: number = 1, courseState: CourseState | null = null, dnaContent: CourseDNA["content"] | null = null): Promise<ConceptExplanation> {
-        return await this.expander.expandLesson(lessonPlan, moduleContext, courseContext, [], lessonNumber, courseState, dnaContent);
+    async processLesson(lessonPlan: any, moduleContext: any, courseContext: any, lessonNumber: number = 1, courseState: CourseState | null = null, dnaContent: CourseDNA["content"] | null = null, rhythmDirective: string = ''): Promise<ConceptExplanation> {
+        return await this.expander.expandLesson(lessonPlan, moduleContext, courseContext, [], lessonNumber, courseState, dnaContent, rhythmDirective);
     }
 
     async enrichLessonMedia(lesson: ConceptExplanation, domainStr: string): Promise<ConceptExplanation> {
