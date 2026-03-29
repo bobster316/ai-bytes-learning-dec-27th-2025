@@ -38,7 +38,7 @@ export const ARC_DEFINITIONS: Readonly<Record<ArcType, readonly Beat[]>> = {
         },
         {
             name: 'building',
-            allowedBlockTypes: ['type_cards', 'flow_diagram', 'image_text_row', 'instructor_insight', 'industry_tabs', 'concept_illustration', 'mindmap', 'perspective_toggle', 'world_stage', 'code_cinema', 'reality_anchor'],
+            allowedBlockTypes: ['type_cards', 'flow_diagram', 'image_text_row', 'instructor_insight', 'industry_tabs', 'concept_illustration', 'mindmap', 'perspective_toggle', 'world_stage', 'code_cinema', 'reality_anchor', 'callout'],
             intensity: 0.4,
         },
         {
@@ -62,6 +62,11 @@ export const ARC_DEFINITIONS: Readonly<Record<ArcType, readonly Beat[]>> = {
      * TENSION_FIRST — 4 beats
      * For: advanced lessons, climax-module lessons, provocateur/bold archetype courses.
      * Opens with challenge. Earns calm through resolution.
+     *
+     * NOTE: lesson_header and objective are structurally required by the renderer
+     * and must always be emitted by the generator unconditionally, regardless of
+     * this arc's beat list which starts at tension. The generator prompt (Task 10)
+     * must document this constraint explicitly.
      */
     tension_first: [
         {
@@ -90,6 +95,11 @@ export const ARC_DEFINITIONS: Readonly<Record<ArcType, readonly Beat[]>> = {
      * EXPLORATORY — 4 beats (no hard tension)
      * For: discovery lessons, early-module lessons, resolution-module lessons.
      * Deep understanding without confrontation.
+     *
+     * NOTE: Two 'building' beats are intentional. Downstream code MUST use beatIndex
+     * (array position) when referencing specific beats — never beat.name alone.
+     * Beat index 1 = structural overview blocks.
+     * Beat index 2 = reflective/interactive blocks.
      */
     exploratory: [
         {
@@ -99,7 +109,7 @@ export const ARC_DEFINITIONS: Readonly<Record<ArcType, readonly Beat[]>> = {
         },
         {
             name: 'building',
-            allowedBlockTypes: ['type_cards', 'flow_diagram', 'image_text_row', 'industry_tabs', 'concept_illustration', 'scroll_story'],
+            allowedBlockTypes: ['type_cards', 'flow_diagram', 'image_text_row', 'industry_tabs', 'concept_illustration', 'scroll_story', 'callout'],
             intensity: 0.4,
         },
         {
@@ -111,6 +121,11 @@ export const ARC_DEFINITIONS: Readonly<Record<ArcType, readonly Beat[]>> = {
             name: 'insight',
             allowedBlockTypes: ['neural_map', 'applied_case', 'depth_charge', 'go_deeper', 'punch_quote', 'animated_stat'],
             intensity: 0.6,
+        },
+        {
+            name: 'reward',
+            allowedBlockTypes: ['recap', 'quiz', 'key_terms', 'completion', 'go_deeper'],
+            intensity: 0.3,
         },
     ],
 };
