@@ -226,6 +226,8 @@ export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewU
                     isAudioVisible={isAudioVisible}
                     setIsAudioVisible={setIsAudioVisible}
                     lessonIndex={lessonIndex ?? 0}
+                    lessonPersonality={lessonPersonality ?? 'calm'}
+                    microVariationSeed={microVariationSeed ?? 0}
                 />
             )}
 
@@ -258,7 +260,7 @@ export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewU
                     if (resolvedType === 'flow_diagram' || resolvedType === 'objective' || resolvedType === 'recap'
                         || resolvedType === 'punch_quote' || resolvedType === 'completion' || resolvedType === 'instructor_insight'
                         || resolvedType === 'callout' || resolvedType === 'applied_case' || resolvedType === 'key_terms'
-                        || resolvedType === 'inline_quiz' || resolvedType === 'lesson_header') {
+                        || resolvedType === 'inline_quiz') {
                         extraProps = {
                             ...extraProps,
                             lessonIndex: lessonIndex ?? 0,
