@@ -47,7 +47,7 @@ export function validateBlockSequence(
         if (ATTENTION_HIJACKERS.has(blockTypes[i]) && ATTENTION_HIJACKERS.has(blockTypes[i + 1])) {
             violations.push({
                 rule: 'consecutive_hijackers',
-                detail: `Consecutive attention hijackers: ${blockTypes[i]}, ${blockTypes[i + 1]}`,
+                detail: `Consecutive attention hijackers at positions ${i} (${blockTypes[i]}) and ${i + 1} (${blockTypes[i + 1]})`,
             });
         }
     }
@@ -58,10 +58,10 @@ export function validateBlockSequence(
         .filter(i => i !== -1);
     for (let i = 0; i < hijackerPositions.length - 1; i++) {
         const gap = hijackerPositions[i + 1] - hijackerPositions[i];
-        if (gap < 3) { // less than 2 blocks between them
+        if (gap < 3) { // fewer than 2 intervening blocks between hijackers
             violations.push({
                 rule: 'hijacker_spacing',
-                detail: `Attention hijackers at positions ${hijackerPositions[i]} and ${hijackerPositions[i + 1]} are only ${gap - 1} blocks apart (minimum 2 required)`,
+                detail: `Attention hijackers at positions ${hijackerPositions[i]} and ${hijackerPositions[i + 1]} have only ${gap - 1} intervening block(s) (minimum 2 required)`,
             });
         }
     }
