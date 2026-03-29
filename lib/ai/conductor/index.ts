@@ -8,7 +8,7 @@ import { computeDramaticBudget } from './anti-chaos';
 import { blockIntensity } from './block-weights';
 
 export { validateBlockSequence } from './anti-chaos';
-export type { ConductorContext, ConductorOutput, ConductorMemory } from './types';
+export type { ConductorContext, ConductorOutput, ConductorMemory, ModuleMood } from './types';
 
 const LESSON_ACCENT_CYCLE = [
     '#00FFB3', '#9B8FFF', '#FFB347', '#FF6B6B',

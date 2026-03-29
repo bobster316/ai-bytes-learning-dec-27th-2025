@@ -262,7 +262,11 @@ export async function POST(req: NextRequest) {
                         totalModulesInCourse: manifest.topics.length,
                         moduleMood,
                         courseArchetype: courseDNA.content.archetype_id ?? 'clinical',
-                        memory: { ...conductorMemory },
+                        memory: {
+                            previousLessonEndIntensity: conductorMemory.previousLessonEndIntensity,
+                            firedSignatureMoments: [...conductorMemory.firedSignatureMoments],
+                            recentBlockTypeHistory: conductorMemory.recentBlockTypeHistory.map(arr => [...arr]),
+                        },
                     };
                     const conductorOutput = conduct(conductorCtx);
 
