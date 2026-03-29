@@ -1,10 +1,11 @@
 // lib/ai/conductor/index.ts
-import type { ConductorContext, ConductorOutput, ArcType, Beat } from './types';
+import type { ConductorContext, ConductorOutput, ConductorMemory, ArcType, Beat, SignatureMomentType } from './types';
 import { ARC_DEFINITIONS } from './arc-definitions';
 import { selectArcType } from './arc-selector';
 import { selectSignatureMoment } from './signature-moments';
 import { selectPersonality } from './personality';
 import { computeDramaticBudget } from './anti-chaos';
+import { blockIntensity } from './block-weights';
 
 export { validateBlockSequence } from './anti-chaos';
 export type { ConductorContext, ConductorOutput, ConductorMemory } from './types';
@@ -116,11 +117,10 @@ export function conduct(ctx: ConductorContext): ConductorOutput {
  * @param firedSignatureMomentType  The signature moment type that fired, if any
  */
 export function updateConductorMemory(
-    memory: import('./types').ConductorMemory,
+    memory: ConductorMemory,
     generatedBlockTypes: string[],
-    firedSignatureMomentType: import('./types').SignatureMomentType | null
+    firedSignatureMomentType: SignatureMomentType | null
 ): void {
-    const { blockIntensity } = require('./block-weights');
 
     // Update end-of-lesson intensity
     const lastBlockType = generatedBlockTypes[generatedBlockTypes.length - 1] ?? '';
