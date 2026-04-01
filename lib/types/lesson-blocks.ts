@@ -24,7 +24,11 @@ export type ContentBlock =
     | FlowDiagramBlock
     | ConceptIllustrationBlock
     | OpenExerciseBlock
-    | InstructorInsightBlock;
+    | InstructorInsightBlock
+    | HookBlock
+    | TeachingLineBlock
+    | MentalCheckpointBlock
+    | CoreExplanationBlock;
 
 interface BaseBlock {
     id: string;        // e.g., "blk_001"
@@ -247,6 +251,7 @@ export interface PredictionBlock extends BaseBlock {
     correctIndex: 0 | 1 | 2;
     reveal: string;              // Full explanation shown after answering
     accentColour?: "pulse" | "iris" | "amber";
+    analytics_tag?: 'prediction';
 }
 
 export interface MindmapBlock extends BaseBlock {
@@ -306,4 +311,35 @@ export interface InstructorInsightBlock extends BaseBlock {
         title: string;            // Bold heading for the insight card
         body: string;             // 1-2 sentence explanation
     }>;
+}
+
+export interface HookBlock extends BaseBlock {
+    type: 'hook';
+    content: string;        // opening question, scenario, statistic, or contradiction
+    hook_style: 'question' | 'scenario' | 'statistic' | 'contradiction';
+    visual_prompt?: string;
+    analytics_tag: 'hook';
+}
+
+export interface TeachingLineBlock extends BaseBlock {
+    type: 'teaching_line';
+    line: string;           // exactly 1 sentence, max 25 words, no trailing colon
+    support: string;        // 1-2 sentences expanding the line
+    analytics_tag: 'teaching_line';
+}
+
+export interface MentalCheckpointBlock extends BaseBlock {
+    type: 'mental_checkpoint';
+    prompt: string;
+    checkpoint_style: 'reflection' | 'predict' | 'confidence_pick';
+    response_mode: 'reflective' | 'diagnostic' | 'confidence';
+    options?: string[];     // required when checkpoint_style === 'confidence_pick'
+    analytics_tag: 'mental_checkpoint';
+}
+
+export interface CoreExplanationBlock extends BaseBlock {
+    type: 'core_explanation';
+    heading?: string;
+    paragraphs: string[];   // each paragraph 2-3 sentences max
+    analytics_tag: 'core_explanation';
 }
