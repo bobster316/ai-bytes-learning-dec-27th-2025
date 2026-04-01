@@ -32,6 +32,9 @@ import { FlowDiagram } from "./blocks/flow-diagram";
 import { ConceptIllustration } from "./blocks/concept-illustration";
 import { OpenExercise } from "./blocks/open-exercise";
 import { InstructorInsight } from "./blocks/instructor-insight";
+import { Hook } from "./blocks/hook";
+import { TeachingLine } from "./blocks/teaching-line";
+import { MentalCheckpoint } from "./blocks/mental-checkpoint";
 import { useCourseDNA } from "@/components/course/course-dna-provider";
 import type { LessonPersonality } from '@/lib/ai/conductor/types';
 import { archetypeOffset } from "@/lib/ai/generate-course-dna";
@@ -62,6 +65,10 @@ const BLOCK_COMPONENTS: Record<string, React.FC<any>> = {
     concept_illustration:   ConceptIllustration,
     open_exercise:          OpenExercise,
     instructor_insight:     InstructorInsight,
+    hook:                   Hook,
+    teaching_line:          TeachingLine,
+    mental_checkpoint:      MentalCheckpoint,
+    core_explanation:       TextSection,
 };
 
 // Tiered padding — UI/UX Pro Max: section-spacing-hierarchy (16/24/32/48 rhythm)
@@ -77,6 +84,7 @@ const WIDE_INNER = new Set([
     'concept_illustration', 'recap', 'quiz', 'audio_recap_prominent',
     'callout', 'open_exercise', 'key_terms', 'completion',
     'go_deeper', 'punch_quote', 'prediction',
+    'hook', 'teaching_line', 'mental_checkpoint', 'core_explanation',
 ]);
 
 // Blocks that should never have a section divider placed before or after them.
@@ -108,9 +116,10 @@ interface LessonBlockRendererProps {
     lessonIndex?: number;
     lessonPersonality?: LessonPersonality;
     microVariationSeed?: number;
+    nextLessonHref?: string;
 }
 
-export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewUrl, images, lessonMetadata, lessonTitle, lessonIndex, lessonPersonality, microVariationSeed }: LessonBlockRendererProps) {
+export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewUrl, images, lessonMetadata, lessonTitle, lessonIndex, lessonPersonality, microVariationSeed, nextLessonHref }: LessonBlockRendererProps) {
     const [isAudioVisible, setIsAudioVisible] = useState(false);
     const courseDNA = useCourseDNA();
     let visualBlockCounter = 0;
@@ -348,6 +357,7 @@ export function LessonBlockRenderer({ blocks, audioUrl, videoUrl, videoOverviewU
                             skillsEarned: Array.isArray(b.skillsEarned) && b.skillsEarned.length > 0
                                 ? b.skillsEarned
                                 : Array.isArray(paras) ? paras : [],
+                            nextLessonHref,
                         };
                     }
 
