@@ -150,8 +150,6 @@ const BLOCK_REQUIRED_FIELDS: Record<string, Record<string, unknown>> = {
         duration:    8,
     },
     instructor_insight: {
-        heading:  'Instructor Insight',
-        videoUrl: null,
         insights: [
             { emoji: '🧠', title: 'Key insight', body: 'This concept is more intuitive than it first appears.' },
             { emoji: '⚡', title: 'Common mistake', body: 'Most beginners confuse this with a related but distinct idea.' },
@@ -160,8 +158,7 @@ const BLOCK_REQUIRED_FIELDS: Record<string, Record<string, unknown>> = {
     },
     recap: {
         style:  'card',
-        title:  'If you remember only three things...',
-        points: ['The core concept and what it means', 'How it differs from related ideas', 'Where you will encounter it next'],
+        title:  'If you remember only three things…',
     },
     prediction: {
         question:     'What do you think happens next?',
@@ -178,14 +175,24 @@ const BLOCK_REQUIRED_FIELDS: Record<string, Record<string, unknown>> = {
         accentColour:   'pulse',
     },
     completion: {
-        summary:      'You have built a foundational understanding of this concept and can now apply it in context.',
-        skillsEarned: ['Core concept understood', 'Real-world applications identified', 'Ready for the next lesson'],
-        nextStep:     'Apply what you have learned by exploring the next lesson in this module.',
+        title:        'The Pattern Is Now Visible.',
+        summary:      'You now have the conceptual foundation to understand how this technology operates — not as a black box, but as a system with clear logic and real-world consequences.',
+        skillsEarned: [
+            'You can now explain the core mechanism behind this concept',
+            'You can identify where this technology creates measurable impact',
+            'You can connect this idea to the broader systems it operates within',
+        ],
+        closingLine:  'Understanding is not the end — it is where application begins.',
+        nextStep:     'The next lesson goes deeper — exploring how these principles operate under real constraints.',
     },
     applied_case: {
-        scenario: 'A company needs to implement a new AI strategy...',
-        challenge: 'The existing infrastructure is legacy and fragmented.',
-        resolution: 'By applying the principles learned in this lesson, they successfully transitioned to a unified AI-first architecture.',
+        // applied_case uses a tabs[] structure — each tab has scenario/challenge/resolution.
+        // Top-level scenario/challenge/resolution are legacy fallback only (normaliseTabs in component handles it).
+        tabs: [
+            { id: 'case_1', label: 'Enterprise', scenario: 'An enterprise team needed to deploy this technology at scale across multiple business units.', challenge: 'Legacy infrastructure made integration complex and integration timelines were unpredictable.', resolution: 'A modular implementation approach aligned with the core principles of this lesson reduced deployment time by 60%.' },
+            { id: 'case_2', label: 'Startup', scenario: 'A startup sought to apply this concept to differentiate their core product offering.', challenge: 'Limited data and compute budget made a naive approach impractical from day one.', resolution: 'A focused application of the key technique from this lesson enabled results comparable to larger competitors.' },
+            { id: 'case_3', label: 'Research', scenario: 'A research team explored the academic implications of this approach in a controlled setting.', challenge: 'Existing benchmarks did not capture the nuance observed in their experimental results.', resolution: 'Reframing evaluation criteria using this lesson\'s framework led to published findings that advanced the field.' },
+        ],
     },
     quiz: {
         title:     'Knowledge Check',
@@ -196,7 +203,27 @@ const BLOCK_REQUIRED_FIELDS: Record<string, Record<string, unknown>> = {
             correctFeedback: 'Correct! You have a firm grasp of the concept.',
             incorrectFeedback: 'Not quite. Let\'s look at the key points again.'
         }]
-    }
+    },
+    hook: {
+        content:       '',
+        hook_style:    'question',
+        analytics_tag: 'hook',
+    },
+    teaching_line: {
+        line:          '',
+        support:       '',
+        analytics_tag: 'teaching_line',
+    },
+    mental_checkpoint: {
+        prompt:           '',
+        checkpoint_style: 'reflection',
+        response_mode:    'reflective',
+        analytics_tag:    'mental_checkpoint',
+    },
+    core_explanation: {
+        paragraphs:    [],
+        analytics_tag: 'core_explanation',
+    },
 };
 
 /**
@@ -224,7 +251,15 @@ function validateAndRepairBlock(block: Record<string, unknown>): Record<string, 
         'FLEX-6':           'full_image',
         'FLEX-7':           'type_cards', // Process/Step cards
         'FLEX-8':           'applied_case',
-        'full_image_section': 'full_image'
+        'full_image_section': 'full_image',
+        'hook_block':         'hook',
+        'teaching line':      'teaching_line',
+        'teachingline':       'teaching_line',
+        'mental_check':       'mental_checkpoint',
+        'mental checkpoint':  'mental_checkpoint',
+        'core explanation':   'core_explanation',
+        'coreexplanation':    'core_explanation',
+        'core_exp':           'core_explanation',
     };
 
     if (TYPE_MAP[type]) {
@@ -269,7 +304,7 @@ function validateAndRepairBlock(block: Record<string, unknown>): Record<string, 
             if (field === 'paragraphs') {
                 value = repaired.body || repaired.content || repaired.text;
             } else if (field === 'title') {
-                value = (repaired as any).lesson_title || (repaired as any).header || (repaired as any).block_title || (repaired as any).heading;
+                value = (repaired as any).lesson_title || (repaired as any).header || (repaired as any).block_title || (repaired as any).heading || (repaired as any).name || (repaired as any).label;
             } else if (field === 'description') {
                 const paras = (repaired as any).paragraphs;
                 value = (repaired as any).microObjective || (repaired as any).subtitle || (repaired as any).text_content
@@ -435,8 +470,18 @@ function validateAndRepairBlock(block: Record<string, unknown>): Record<string, 
             if (t.length !== 3) {
                 console.warn(`[ContentSanitizer] ⚠️ applied_case block "${block.id}" — tabs has ${t.length} entries (expected 3), saving as-is`);
             }
-        } else if (!repaired.scenario) {
-            console.warn(`[ContentSanitizer] ⚠️ applied_case block "${block.id}" — missing both tabs and legacy scenario field`);
+            // Ensure each tab has scenario/challenge/resolution — patch missing with empty strings
+            (repaired as any).tabs = t.map((tab: any, i: number) => {
+                const patched = { ...tab };
+                if (!patched.scenario)   { patched.scenario   = `Case ${i + 1} scenario not provided.`; }
+                if (!patched.challenge)  { patched.challenge  = `Challenge for case ${i + 1} not provided.`; }
+                if (!patched.resolution) { patched.resolution = `Resolution for case ${i + 1} not provided.`; }
+                return patched;
+            });
+        } else if (repaired.scenario) {
+            // Legacy flat structure — leave as-is, normaliseTabs() in component handles it
+        } else {
+            console.warn(`[ContentSanitizer] ⚠️ applied_case block "${block.id}" — missing tabs array, using fallback`);
         }
     }
     if (type === 'key_terms') {
