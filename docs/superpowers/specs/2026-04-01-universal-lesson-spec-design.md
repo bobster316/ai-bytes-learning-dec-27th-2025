@@ -15,15 +15,46 @@ This implementation adds a 6-layer stack that enforces the spec from type defini
 
 ---
 
+## Core Principle
+
+> **Pedagogical components are mandatory. Render order is constraint-bounded and arc-aware.**
+
+Required blocks must exist in every lesson. Their sequence follows dependency rules, not a rigid position index — arc types may adjust ordering within those rules, but never remove a requirement or bypass a dependency.
+
+---
+
 ## Architecture — 6 Layers
 
 ```
 LAYER 1  TYPE          lib/types/lesson-blocks.ts
+         Responsibility: Defines the 4 new pedagogical block interfaces + DB migration columns.
+         Consumed by: all other layers.
+
 LAYER 2  COMPONENT     components/course/blocks/
+         Responsibility: React components that render hook, teaching_line, mental_checkpoint
+                         (and optionally prediction). Each carries data-analytics-tag.
+         Consumed by: block-renderer.tsx switch.
+
 LAYER 3  VALIDATOR     lib/ai/content-sanitizer.ts
+         Responsibility: validateLessonPedagogy() checks required presence + dependency rules.
+                         repairLessonSequence() attempts low-risk fixes.
+         Called by: generate-v2/route.ts (post-generation gate) and inject-spec-blocks.ts (backfill gate).
+         Reads: arc override rules from Layer 4 via ARC_DEFINITIONS.
+
 LAYER 4  CONDUCTOR     lib/ai/conductor/arc-definitions.ts
+         Responsibility: Holds approved sequenceOverride[] for tension_first and exploratory arcs.
+                         Translates arc intent into plain-English SEQUENCE ADJUSTMENT notes.
+         Consumed by: Layer 3 (override map) and Layer 5 (conductorNotes injected into prompt).
+
 LAYER 5  GENERATOR     lib/ai/agent-system-v2.ts (LessonExpanderAgent)
+         Responsibility: Produces structured block JSON. Receives Conductor notes + spec prompt.
+                         Does not know about arc types — Conductor translates for it.
+         Output fed to: Layer 3 for validation before DB insert.
+
 LAYER 6  BACKFILL      scripts/inject-spec-blocks.ts
+         Responsibility: One-time legacy upgrade. Runs smart extraction then placeholder fallback.
+                         Calls Layer 3 validator before any DB write. Sets spec_migrated = true on success.
+         Targets: lessons where schema_version IS NULL OR < '2.0'.
 ```
 
 Approach: **Hybrid** — the spec's 9-step order is the canonical default. The Conductor can adjust sequencing for approved arc types (`tension_first`, `exploratory`) while all dependency rules remain in force.
