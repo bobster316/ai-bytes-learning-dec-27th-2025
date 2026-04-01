@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { OrchestratorV2 } from '@/lib/ai/agent-system-v2';
-import { sanitizeBlocks } from '@/lib/ai/content-sanitizer';
+import { sanitizeBlocks, sanitizeText, validateLessonPedagogy, repairLessonSequence } from '@/lib/ai/content-sanitizer';
+
+const PEDAGOGY_GATE = (process.env.LESSON_PEDAGOGY_GATE ?? 'off') as 'off' | 'enforce';
 import fs from 'fs';
 import path from 'path';
 import { imageService } from '@/lib/ai/image-service';
@@ -21,7 +23,7 @@ import type { ImageGenerationResult, VideoGenerationResult } from '@/lib/ai/medi
 import { conduct, computeModuleMood, updateConductorMemory } from '@/lib/ai/conductor';
 import type { ConductorContext, ConductorMemory } from '@/lib/ai/conductor';
 
-const ROUTE_BUDGET_MS = 270_000; // 270 s safety net — throws clean error before Vercel 300 s hard kill
+const ROUTE_BUDGET_MS = 900_000; // 900 s (15 min) — local dev has no Vercel hard kill; increase if needed for large courses
 
 function extractStoragePath(publicUrl: string): string | null {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -365,12 +367,16 @@ export async function POST(req: NextRequest) {
                                 return prompt + anchor;
                             }
 
-                            // Check 3: Off-topic detection — only fire when NO topic words match at all
-                            const STOP_WORDS = new Set(['a','an','the','of','in','to','for','and','or','is','are','how','what','why','when','with','its','from','by','on','at','this','that']);
-                            const topicWords = lessonTitle.toLowerCase().replace(/[^a-z0-9 ]/g, '').split(' ').filter(w => w.length > 3 && !STOP_WORDS.has(w));
-                            const matchCount = topicWords.filter(tw => lower.includes(tw)).length;
-                            if (matchCount === 0 && topicWords.length >= 2) {
-                                console.warn(`[V3-Sanitizer] ⚠️ Off-topic prompt (no topic words matched) — appending anchor for: "${lessonTitle}"`);
+                            // Check 3: Off-topic detection — only fire when the prompt contains
+                            // NO AI/tech vocabulary at all (truly about another subject entirely).
+                            // We do NOT require lesson-title words — image prompts describe visual
+                            // scenes that legitimately use different vocabulary (e.g. "a data scientist
+                            // reviewing outputs" is valid for "Chain-of-Thought Prompting" even though
+                            // it doesn't say "chain" or "thought").
+                            const AI_TECH_WORDS = ['data','model','network','system','algorithm','learn','train','neural','code','software','engineer','scientist','computer','interface','diagram','architecture','server','process','input','output','result','analysis','visual','technical','digital','chart','graph','dashboard','prompt','llm','language','pipeline'];
+                            const hasTechContext = AI_TECH_WORDS.some(w => lower.includes(w));
+                            if (!hasTechContext) {
+                                console.warn(`[V3-Sanitizer] ⚠️ Off-topic prompt (no AI/tech context) — appending anchor for: "${lessonTitle}"`);
                                 sanitizerRewrites++;
                                 return prompt + anchor;
                             }
@@ -583,11 +589,53 @@ export async function POST(req: NextRequest) {
                             });
 
                             const cleanBlocks = sanitizeBlocks(blocksWithOrder);
-                            const fullHtml = generateLessonHTML({ ...compiledLesson, blocks: cleanBlocks, lessonTitle: lessonPlan.lessonTitle } as any);
+                            const cleanLessonTitle = sanitizeText(lessonPlan.lessonTitle);
+
+                            // ── Pedagogical validation gate ───────────────────────────────────────────
+                            let validatedBlocks = cleanBlocks;
+                            let specCompliant = false;
+                            let hasSpecPlaceholders = false;
+
+                            const arcType = (conductorOutput as any)?.arcType ?? 'standard';
+                            let validation = validateLessonPedagogy(validatedBlocks, arcType);
+
+                            if (!validation.valid && PEDAGOGY_GATE !== 'off') {
+                                const repair = repairLessonSequence(validatedBlocks, arcType);
+                                if (repair.riskLevel === 'low') {
+                                    console.log(`[PedagogyGate] Auto-repaired lesson "${cleanLessonTitle}" — ${repair.changes.length} change(s):`, repair.changes.map((c: any) => c.reason).join('; '));
+                                    validatedBlocks = repair.blocks;
+                                    hasSpecPlaceholders = repair.blocks.some((b: any) => b.is_placeholder);
+                                    validation = validateLessonPedagogy(validatedBlocks, arcType);
+                                } else {
+                                    console.warn(`[PedagogyGate] High-risk repair needed for "${cleanLessonTitle}" — flagging for review`);
+                                }
+                            }
+
+                            if (validation.valid) {
+                                specCompliant = true;
+                            } else {
+                                if (PEDAGOGY_GATE === 'enforce') {
+                                    console.error(`[PedagogyGate] Lesson "${cleanLessonTitle}" failed validation:`, validation.errors);
+                                } else {
+                                    console.warn(`[PedagogyGate] (soft) Lesson "${cleanLessonTitle}" has validation issues:`, validation.errors);
+                                }
+                            }
+
+                            if (validation.warnings.length > 0) {
+                                console.log(`[PedagogyGate] Warnings for "${cleanLessonTitle}":`, validation.warnings.map((w: any) => w.message).join('; '));
+                            }
+                            // ── End pedagogical validation ────────────────────────────────────────────
+
+                            const fullHtml = generateLessonHTML({ ...compiledLesson, blocks: validatedBlocks, lessonTitle: cleanLessonTitle } as any);
                             const { data: lData, error: lErr } = await supabase.from('course_lessons').insert({
                                 topic_id: topicId,
-                                title: lessonPlan.lessonTitle,
-                                content_blocks: cleanBlocks,
+                                title: cleanLessonTitle,
+                                content_blocks: validatedBlocks,
+                                schema_version: '2.0',
+                                pedagogical_spec_version: '1.0',
+                                spec_compliant: specCompliant,
+                                spec_migrated: false,
+                                has_spec_placeholders: hasSpecPlaceholders,
                                 content_markdown: JSON.stringify({
                                     ...compiledLesson,
                                     instructor: requestedHost
@@ -694,6 +742,18 @@ export async function POST(req: NextRequest) {
 
             if (isClientDisconnect) {
                 console.warn(`[API-V2] Client disconnected mid-generation — preserving saved lessons. Course: ${courseId}`);
+                return;
+            }
+
+            // Route budget exceeded — preserve completed lessons, do NOT rollback.
+            // Lessons already saved to DB are valid. Generation stopped early due to time limit.
+            const isBudgetExceeded =
+                isMediaError &&
+                (error as MediaGenerationError).errorCode === 'budget_exceeded';
+
+            if (isBudgetExceeded) {
+                console.warn(`[API-V2] Route budget exceeded — preserving saved lessons. Course: ${courseId}`);
+                await sendEvent({ stage: 'completed', progress: 100, message: 'Generation stopped early (time limit). Completed lessons saved.', courseId: courseId ?? undefined });
                 return;
             }
 
