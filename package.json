@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "migrate": "node scripts/apply-migration.js"
+    "migrate": "node scripts/apply-migration.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
@@ -46,6 +48,7 @@
     "google-auth-library": "^10.5.0",
     "gray-matter": "^4.0.3",
     "jsdom": "^27.1.0",
+    "jsonrepair": "^3.13.3",
     "lucide-react": "^0.553.0",
     "mermaid": "^11.12.2",
     "next": "16.0.1",
@@ -74,11 +77,13 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.1.2",
     "autoprefixer": "^10",
     "eslint": "^9",
     "eslint-config-next": "16.0.1",
     "postcss": "^8",
     "tailwindcss": "^3.4.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.2"
   }
 }
