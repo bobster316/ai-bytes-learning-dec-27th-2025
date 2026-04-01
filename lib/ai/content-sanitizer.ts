@@ -550,3 +550,266 @@ REPLACEMENTS TO USE INSTEAD:
 - "journey / landscape / ecosystem" → use the specific real word instead
 - "furthermore / moreover" → "also", "and", "in addition"
 `.trim();
+
+// ─── Pedagogical Validator ───────────────────────────────────────────────────
+
+type ArcType = 'micro' | 'standard' | 'tension_first' | 'exploratory';
+type PedagogicalPhase = 'discovery' | 'instruction' | 'consolidation' | 'closure' | 'structural';
+
+const PHASE_MAP: Readonly<Record<string, PedagogicalPhase>> = {
+    hook: 'discovery',
+    prediction: 'discovery',
+    core_explanation: 'instruction',
+    text: 'instruction',
+    flow_diagram: 'instruction',
+    concept_illustration: 'instruction',
+    type_cards: 'instruction',
+    mental_checkpoint: 'consolidation',
+    applied_case: 'consolidation',
+    industry_tabs: 'consolidation',
+    teaching_line: 'consolidation',
+    image_text_row: 'consolidation',
+    quiz: 'closure',
+    inline_quiz: 'closure',
+    recap: 'closure',
+    key_terms: 'closure',
+    completion: 'closure',
+    lesson_header: 'structural',
+    objective: 'structural',
+    hero_video: 'structural',
+    section_divider: 'structural',
+    audio_recap_prominent: 'structural',
+};
+
+const PHASE_ORDER: PedagogicalPhase[] = ['discovery', 'instruction', 'consolidation', 'closure'];
+
+function getPhase(blockType: string): PedagogicalPhase {
+    return PHASE_MAP[blockType] ?? 'consolidation';
+}
+
+function phaseDistance(from: PedagogicalPhase, to: PedagogicalPhase): number {
+    if (from === 'structural' || to === 'structural') return 0;
+    const fromIdx = PHASE_ORDER.indexOf(from);
+    const toIdx   = PHASE_ORDER.indexOf(to);
+    return Math.abs(toIdx - fromIdx);
+}
+
+type ConstraintId =
+    | 'hook_exists'
+    | 'core_explanation_exists'
+    | 'teaching_line_exists'
+    | 'mental_checkpoint_exists'
+    | 'hook_position_limit'
+    | 'prediction_order'
+    | 'core_before_checkpoint'
+    | 'core_before_interaction'
+    | 'mental_checkpoint_options';
+
+interface ValidationError   { constraint: ConstraintId; message: string; }
+interface ValidationWarning { constraint: string; message: string; }
+
+export interface ValidationResult {
+    valid: boolean;
+    errors: ValidationError[];
+    warnings: ValidationWarning[];
+}
+
+function hookPositionLimit(arcType: ArcType): number {
+    if (arcType === 'exploratory')   return 4;
+    if (arcType === 'tension_first') return 3;
+    return 2;
+}
+
+export function validateLessonPedagogy(
+    blocks: any[],
+    arcType: ArcType
+): ValidationResult {
+    const errors: ValidationError[] = [];
+    const warnings: ValidationWarning[] = [];
+
+    const types = new Set(blocks.map(b => b.type as string));
+
+    if (!types.has('hook'))
+        errors.push({ constraint: 'hook_exists', message: 'lesson is missing a hook block' });
+    if (!types.has('core_explanation') && !types.has('text'))
+        errors.push({ constraint: 'core_explanation_exists', message: 'lesson is missing a core_explanation block' });
+    if (!types.has('teaching_line'))
+        errors.push({ constraint: 'teaching_line_exists', message: 'lesson is missing a teaching_line block' });
+    if (!types.has('mental_checkpoint'))
+        errors.push({ constraint: 'mental_checkpoint_exists', message: 'lesson is missing a mental_checkpoint block' });
+
+    const hookIdx = blocks.findIndex(b => b.type === 'hook');
+    const maxHookPos = hookPositionLimit(arcType);
+    if (hookIdx !== -1 && hookIdx > maxHookPos) {
+        errors.push({
+            constraint: 'hook_position_limit',
+            message: `hook is at position ${hookIdx + 1} (1-indexed) but ${arcType} arc allows max position ${maxHookPos}`,
+        });
+    }
+
+    const predIdx = blocks.findIndex(b => b.type === 'prediction');
+    const coreIdx = blocks.findIndex(b => b.type === 'core_explanation' || b.type === 'text');
+    if (predIdx !== -1 && coreIdx !== -1 && predIdx > coreIdx) {
+        errors.push({ constraint: 'prediction_order', message: 'prediction block must appear before the first core_explanation block' });
+    }
+
+    const checkIdx = blocks.findIndex(b => b.type === 'mental_checkpoint');
+    if (coreIdx !== -1 && checkIdx !== -1 && coreIdx > checkIdx) {
+        errors.push({ constraint: 'core_before_checkpoint', message: 'core_explanation must appear before mental_checkpoint' });
+    }
+
+    const quizIdx = blocks.findIndex(b => b.type === 'quiz' || b.type === 'inline_quiz');
+    if (coreIdx !== -1 && quizIdx !== -1 && coreIdx > quizIdx) {
+        errors.push({ constraint: 'core_before_interaction', message: 'core_explanation must appear before the quiz block' });
+    }
+
+    const checkpoint = blocks.find(b => b.type === 'mental_checkpoint');
+    if (checkpoint?.checkpoint_style === 'confidence_pick' && !checkpoint.options?.length) {
+        errors.push({ constraint: 'mental_checkpoint_options', message: 'mental_checkpoint with checkpoint_style "confidence_pick" requires options array' });
+    }
+
+    const teachingLine = blocks.find(b => b.type === 'teaching_line');
+    if (teachingLine?.line) {
+        const wordCount = teachingLine.line.trim().split(/\s+/).length;
+        if (wordCount > 23)
+            warnings.push({ constraint: 'teaching_line_length', message: `teaching_line.line is ${wordCount} words (max 25)` });
+        if (teachingLine.line.endsWith(':'))
+            warnings.push({ constraint: 'teaching_line_colon', message: 'teaching_line.line must not end with a colon' });
+        if (/^(introduction|overview|summary|key (points|takeaways)|in this lesson)/i.test(teachingLine.line))
+            warnings.push({ constraint: 'teaching_line_generic', message: 'teaching_line.line reads as a generic heading — use a specific insight instead' });
+    }
+
+    if (checkpoint && checkpoint.checkpoint_style !== 'confidence_pick' && checkpoint.options?.length) {
+        warnings.push({ constraint: 'mental_checkpoint_options_unexpected', message: 'options array present but checkpoint_style is not confidence_pick' });
+    }
+
+    return { valid: errors.length === 0, errors, warnings };
+}
+
+// ─── Lesson Sequence Repair ──────────────────────────────────────────────────
+
+interface RepairChange {
+    action: 'move' | 'inject_placeholder';
+    blockType: string;
+    fromIndex?: number;
+    toIndex: number;
+    reason: string;
+}
+
+export interface RepairResult {
+    repaired: boolean;
+    changes: RepairChange[];
+    riskLevel: 'low' | 'high';
+    blocks: any[];
+}
+
+const SUMMARY_TYPES = new Set(['recap', 'key_terms', 'completion', 'teaching_line']);
+
+function makePlaceholder(type: 'hook' | 'teaching_line' | 'mental_checkpoint', order: number): any {
+    const base = {
+        id: `placeholder_${type}_${Date.now()}`,
+        order,
+        is_placeholder: true,
+        repair_injected: true,
+        placeholder_reason: `missing_${type}` as const,
+    };
+    if (type === 'hook') return { ...base, type: 'hook', content: '', hook_style: 'question', analytics_tag: 'hook' };
+    if (type === 'teaching_line') return { ...base, type: 'teaching_line', line: '', support: '', analytics_tag: 'teaching_line' };
+    return { ...base, type: 'mental_checkpoint', prompt: '', checkpoint_style: 'reflection', response_mode: 'reflective', analytics_tag: 'mental_checkpoint' };
+}
+
+export function repairLessonSequence(
+    blocks: any[],
+    arcType: ArcType
+): RepairResult {
+    let result = [...blocks];
+    const changes: RepairChange[] = [];
+    let riskLevel: 'low' | 'high' = 'low';
+
+    const hasCore = result.some(b => b.type === 'core_explanation' || b.type === 'text');
+    if (!hasCore) {
+        return { repaired: false, changes: [], riskLevel: 'high', blocks };
+    }
+
+    SUMMARY_TYPES.forEach(summType => {
+        const idx = result.findIndex(b => b.type === summType);
+        if (idx === -1) return;
+        const isNearEnd = idx >= result.length - 2;
+        if (!isNearEnd) {
+            const [block] = result.splice(idx, 1);
+            result.push(block);
+            changes.push({ action: 'move', blockType: summType, fromIndex: idx, toIndex: result.length - 1, reason: `${summType} not in last 2 positions` });
+        }
+    });
+
+    const predIdx = result.findIndex(b => b.type === 'prediction');
+    const coreIdx2 = result.findIndex(b => b.type === 'core_explanation' || b.type === 'text');
+    if (predIdx !== -1 && coreIdx2 !== -1 && predIdx > coreIdx2) {
+        const [pred] = result.splice(predIdx, 1);
+        result.splice(coreIdx2, 0, pred);
+        changes.push({ action: 'move', blockType: 'prediction', fromIndex: predIdx, toIndex: coreIdx2, reason: 'prediction must precede core_explanation' });
+    }
+
+    if (changes.filter(c => c.action === 'move').length > 3) {
+        riskLevel = 'high';
+    }
+
+    // Also mark high-risk if core structural blocks are in an inverted phase order
+    // in the ORIGINAL input — this indicates a severely disordered lesson that
+    // move-based repair cannot safely recover.
+    const origPhaseSeq = blocks
+        .map(b => getPhase(b.type))
+        .filter(p => p !== 'structural');
+    let phaseInversions = 0;
+    for (let i = 0; i < origPhaseSeq.length; i++) {
+        for (let j = i + 1; j < origPhaseSeq.length; j++) {
+            const pi = PHASE_ORDER.indexOf(origPhaseSeq[i]);
+            const pj = PHASE_ORDER.indexOf(origPhaseSeq[j]);
+            if (pi > pj) phaseInversions++;
+        }
+    }
+    if (phaseInversions > 3) {
+        riskLevel = 'high';
+    }
+
+    for (const change of changes) {
+        if (change.action === 'move' && change.fromIndex !== undefined) {
+            const fromPhase = getPhase(change.blockType);
+            const toBlock = result[change.toIndex];
+            const toPhase = toBlock ? getPhase(toBlock.type) : 'closure';
+            if (phaseDistance(fromPhase, toPhase) > 1) {
+                riskLevel = 'high';
+            }
+        }
+    }
+
+    if (riskLevel === 'high') {
+        return { repaired: false, changes, riskLevel, blocks };
+    }
+
+    if (!result.some(b => b.type === 'hook')) {
+        const placeholder = makePlaceholder('hook', 0);
+        result.unshift(placeholder);
+        changes.push({ action: 'inject_placeholder', blockType: 'hook', toIndex: 0, reason: 'hook block missing' });
+    }
+
+    if (!result.some(b => b.type === 'teaching_line')) {
+        const lastCoreIdx = result.reduce((best, b, i) => (b.type === 'core_explanation' || b.type === 'text') ? i : best, -1);
+        const insertAt = lastCoreIdx !== -1 ? lastCoreIdx + 1 : Math.max(0, result.length - 2);
+        const placeholder = makePlaceholder('teaching_line', insertAt);
+        result.splice(insertAt, 0, placeholder);
+        changes.push({ action: 'inject_placeholder', blockType: 'teaching_line', toIndex: insertAt, reason: 'teaching_line block missing' });
+    }
+
+    if (!result.some(b => b.type === 'mental_checkpoint')) {
+        const firstCoreIdx = result.findIndex(b => b.type === 'core_explanation' || b.type === 'text');
+        const insertAt = firstCoreIdx !== -1 ? firstCoreIdx + 1 : Math.max(0, result.length - 3);
+        const placeholder = makePlaceholder('mental_checkpoint', insertAt);
+        result.splice(insertAt, 0, placeholder);
+        changes.push({ action: 'inject_placeholder', blockType: 'mental_checkpoint', toIndex: insertAt, reason: 'mental_checkpoint block missing' });
+    }
+
+    result = result.map((b, i) => ({ ...b, order: i }));
+
+    return { repaired: changes.length > 0, changes, riskLevel, blocks: result };
+}
