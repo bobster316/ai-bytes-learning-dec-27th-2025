@@ -29,12 +29,6 @@ function computeAccentIndex(ctx: ConductorContext): number {
     return (base + moduleOffset) % LESSON_ACCENT_CYCLE.length;
 }
 
-const ARC_DESCRIPTIONS: Readonly<Record<ArcType, string>> = {
-    micro: 'Brief and focused. Open gently, reach one insight, reward and close.',
-    standard: 'Full journey. Build foundations, introduce friction, achieve insight, then reward.',
-    tension_first: 'Challenge-led. Open with a provocative question or conflict, then resolve it.',
-    exploratory: 'Discovery-led. Invite curiosity without hard friction. Let understanding emerge.',
-};
 
 /** Builds the human-readable directive string injected into the LessonExpanderAgent prompt. */
 function buildConductorNotes(
@@ -47,9 +41,11 @@ function buildConductorNotes(
     const recentTypes = ctx.memory.recentBlockTypeHistory.flat();
     const avoidList = [...new Set(recentTypes)].slice(0, 8);
 
+    const arcDef = ARC_DEFINITIONS[arcType];
+
     const lines: string[] = [
         `LESSON RHYTHM DIRECTIVE (follow exactly):`,
-        `Arc type: ${arcType} — ${ARC_DESCRIPTIONS[arcType]}`,
+        `Arc type: ${arcType} — ${arcDef.description}`,
         `Emotional sequence: ${beatNames}`,
         `Lesson personality: ${output.lessonPersonality} — let this tone colour your word choices and visual cues`,
         `Dramatic budget: max ${output.dramaticBudget} blocks with intensity ≥ 0.7 (tension/insight-level blocks)`,
@@ -76,6 +72,28 @@ function buildConductorNotes(
         lines.push(`The previous lesson ended at intensity ${prevIntensity.toFixed(2)}. Open this lesson ${feel}.`);
     }
 
+    // Inject SEQUENCE ADJUSTMENT for arcs with overrides
+    if (arcDef.sequenceOverride && arcDef.sequenceOverride.length > 0) {
+        lines.push('');
+        lines.push('SEQUENCE ADJUSTMENT (approved override for this arc type):');
+        for (const override of arcDef.sequenceOverride) {
+            if (override.constraint === 'contrast_before_hook' && override.newParams.allowed) {
+                lines.push('  - A contrast block MAY appear before the hook in this lesson.');
+                lines.push('    Rule: contrast → hook (by position 3) → prediction → core_explanation.');
+                lines.push('    The hook must still appear — do not omit it.');
+            }
+            if (override.constraint === 'hook_position_limit') {
+                lines.push(`  - The hook may appear up to position ${override.newParams.maxPosition} (1-indexed).`);
+                lines.push('    Prediction must still appear before the first core_explanation.');
+            }
+            if (override.constraint === 'process_position_strict' && !override.newParams.strict) {
+                lines.push('  - Process/flow_diagram blocks do not need to be adjacent to core_explanation.');
+                lines.push('    They must still appear before the closure phase.');
+            }
+        }
+        lines.push('  All other pedagogical rules (required blocks, dependencies) remain in force.');
+    }
+
     return lines.join('\n');
 }
 
@@ -86,7 +104,7 @@ function buildConductorNotes(
  */
 export function conduct(ctx: ConductorContext): ConductorOutput {
     const arcType = selectArcType(ctx);
-    const beatSequence = [...ARC_DEFINITIONS[arcType]];
+    const beatSequence = [...ARC_DEFINITIONS[arcType].beats];
     const dramaticBudget = computeDramaticBudget(ctx.moduleMood, arcType);
     const lessonPersonality = selectPersonality(ctx);
     const signatureMoment = selectSignatureMoment(ctx, arcType);

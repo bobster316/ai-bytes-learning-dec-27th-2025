@@ -60,3 +60,16 @@ export interface ConductorOutput {
     /** Human-readable rhythm directive injected into LessonExpanderAgent system prompt */
     conductorNotes: string;
 }
+
+// ── Spec v1.0: pedagogical sequence overrides ──────────────────────────────
+
+export type ArcConstraintOverride =
+    | { constraint: 'hook_position_limit';     newParams: { maxPosition: number } }
+    | { constraint: 'contrast_before_hook';    newParams: { allowed: boolean } }
+    | { constraint: 'process_position_strict'; newParams: { strict: boolean } };
+
+export interface ArcDefinition {
+    beats: readonly Beat[];
+    description: string;
+    sequenceOverride?: ArcConstraintOverride[];
+}
