@@ -12,8 +12,98 @@ import { CATEGORY_LABELS_FOR_PROMPT } from '../constants/categories';
 import { CourseState, CourseStateManager, ALL_DOMAINS, STRUCTURE_PATTERNS } from './course-state';
 import { BANNED_WORDS_INSTRUCTION } from './content-sanitizer';
 import { CourseValidator } from './validator';
+import { jsonrepair } from 'jsonrepair';
 
 const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+
+// ─── Universal Lesson Generation Spec v1.0 ──────────────────────────────────
+// Injected into every LessonExpanderAgent call after the conductor notes.
+const UNIVERSAL_LESSON_SPEC = `
+═══════════════════════════════════════════════════════════
+PEDAGOGICAL STRUCTURE — UNIVERSAL LESSON SPEC v1.0
+═══════════════════════════════════════════════════════════
+
+Every lesson MUST include the following pedagogical components
+in the default sequence below.
+
+If a valid SEQUENCE ADJUSTMENT is provided by the Conductor
+above, follow that adjusted sequence while preserving all
+dependency rules. Only reorder the components named in the
+adjustment. Do not change required block presence or field rules.
+
+─────────────────────────────────────────────────────────
+STEP 1 — HOOK  (block type: "hook")
+  Role:    Create curiosity before any teaching begins.
+  Where:   Position 1 or 2 in the lesson (after lesson_header/objective).
+  Purpose: The learner must feel a gap between what they know and what
+           they are about to learn. Use a question, statistic,
+           contradiction, or scenario.
+           DO NOT open with a definition (e.g. "X is a…")
+           DO NOT explain anything yet.
+  Fields:  { "type": "hook", "content": "...", "hook_style": "question"|"scenario"|"statistic"|"contradiction", "analytics_tag": "hook" }
+
+STEP 2 — PREDICTION  (block type: "prediction")
+  Role:    Activate prior knowledge and create a stake.
+  Where:   After the hook, before any core_explanation.
+  Purpose: Ask the learner to guess before the explanation arrives.
+           The prediction does not need to be correct.
+  Fields:  { "type": "prediction", "question": "What do you predict?", "options": ["A","B","C"], "correctIndex": 0, "reveal": "The answer is..." }
+
+STEP 3 — CORE EXPLANATION  (block type: "core_explanation")
+  Role:    Deliver the concept in plain language.
+  Where:   After hook and prediction.
+  Purpose: One concept. No jargon without definition. Max 3 sentences per paragraph.
+  Anti-patterns:
+           - Do not repeat the hook in different words
+           - Do not drift into generic motivational copy
+  Fields:  { "type": "core_explanation", "heading": "...", "paragraphs": ["..."], "analytics_tag": "core_explanation" }
+
+STEP 4 — HOW IT WORKS  (block type: "process" or "flow_diagram")
+  Role:    Show the mechanism, not just the idea.
+  Where:   After core_explanation, before closure.
+  Purpose: A causal mental model. Use flow_diagram for sequential steps.
+
+STEP 5 — REAL-WORLD ANCHOR  (block type: "applied_case" or "industry_tabs")
+  Role:    Ground the concept in a recognisable context.
+  Where:   After process, in the consolidation phase.
+  Purpose: A real or clearly realistic context. Avoid vague hypotheticals.
+
+STEP 6 — CONTRAST  (block type: appropriate explanatory block)
+  Role:    Sharpen understanding by showing what the concept is NOT.
+  Where:   After the real-world anchor. tension_first arc may place this first.
+  Purpose: A before/after, old-way/new-way, or misconception/correction pair.
+
+STEP 7 — MENTAL CHECKPOINT  (block type: "mental_checkpoint")
+  Role:    Mid-lesson comprehension pause (NOT a graded quiz).
+  Where:   After core_explanation and process — before quiz and summary.
+  Purpose: A moment for the learner to self-assess.
+  Fields:  { "type": "mental_checkpoint", "prompt": "...", "checkpoint_style": "reflection"|"predict"|"confidence_pick", "response_mode": "reflective"|"diagnostic"|"confidence", "options": ["Got it","Mostly","Lost me"], "analytics_tag": "mental_checkpoint" }
+           Note: options required only when checkpoint_style is "confidence_pick".
+
+STEP 8 — INTERACTION  (block type: "quiz" with EXACTLY 3 questions)
+  Role:    Graded knowledge check.
+  Where:   After mental_checkpoint, before summary blocks.
+  Purpose: Tests recall or application — must connect to core_explanation content.
+
+STEP 9 — SUMMARY SEQUENCE
+  teaching_line (REQUIRED):
+    { "type": "teaching_line", "line": "...", "support": "...", "analytics_tag": "teaching_line" }
+    The single most important sentence. Exactly 1 sentence. Max 25 words.
+    No trailing colon. Not phrased as a heading or label.
+
+  recap (STRONGLY EXPECTED):
+    3-4 bullet recap of what was covered.
+
+  key_terms (INCLUDE ONLY if technical vocabulary was introduced):
+    Do not force this block into lessons with no terminology.
+─────────────────────────────────────────────────────────
+
+Do not leave any required pedagogical fields empty.
+Generate complete, learner-facing content for every required block.
+Before finalising, verify all required components are present exactly once.
+═══════════════════════════════════════════════════════════
+
+`;
 
 function sanitizeJson(text: string): string {
     let json = text;
@@ -389,6 +479,9 @@ BLOCK TYPES — ABSOLUTE LAW:
   • ONLY use these exact type values: lesson_header, objective, text, full_image, image_text_row, type_cards, callout, industry_tabs, quiz, completion, key_terms, applied_case, recap, go_deeper, interactive_vis, video_snippet, punch_quote, prediction, mindmap, flow_diagram, concept_illustration, open_exercise, instructor_insight
   • NEVER invent custom types like "INTRO", "OUTRO", "explanatory", "foundation", "visual_insight" etc.
   • Use exactly one recap block. Never generate two recap blocks.
+  • recap block MUST include: id (string), title (string e.g. "If you remember only three things…"), items (array of EXACTLY 4 objects, each with title + body). NEVER omit title. NEVER use "points" — the field is "items".
+  • quiz block MUST include: id (string), title (string e.g. "Test Your Understanding"), questions (array of EXACTLY 3 objects). The "title" field is MANDATORY — Gemini consistently omits it. DO NOT omit title.
+  • instructor_insight block MUST include: id (string), insights (array of EXACTLY 3 objects, each with emoji, title, body). DO NOT add "heading" or "videoUrl" — those fields are not used.
 
 CONTENT BALANCE — GOLDEN RULE:
   Every section = one idea → explained → visualised → reinforced.
@@ -400,9 +493,15 @@ CONTENT BALANCE — GOLDEN RULE:
 STRUCTURE:
   • objective blocks:      exactly 3 sentences — S1: what the learner will understand (start with "By the end of this lesson…"), S2: why this capability matters in real-world practice, S3: what mental model or skill this builds
   • image_text_row blocks: text field — minimum 4 substantive sentences structured as: (1) what this visual shows and why it was chosen, (2) the key mechanism or insight it reveals, (3) what the learner should infer from it, (4) a concrete practical implication
+  • text blocks:           ALWAYS include "heading" field (3–6 word phrase naming the concept). NEVER omit heading. Example: { "type": "text", "heading": "How Attention Weights Work", "paragraphs": [...] }
   • video_snippet blocks:  REQUIRED "description" field — exactly 2 sentences: S1 what the viewer will see, S2 why it matters for this lesson
-  • recap blocks:          exactly 4 items; each item MUST have "title" (4–6 words) AND "body" (2 substantive sentences explaining WHY this takeaway matters and WHAT it enables — never a restatement of the title). NO plain string points — always use items[] format
-  • applied_case blocks:   exactly 3 scenarios in "tabs" array; each tab: id, label, scenario, challenge, resolution
+  • recap blocks:          REQUIRED fields: id (string), title (string), style ("card" — always use this exact value), items (array of EXACTLY 4 objects, each with title + body). Example: { "type": "recap", "id": "recap_x", "title": "If you remember only three things…", "style": "card", "items": [...] }. NEVER omit style.
+  • applied_case blocks:   REQUIRED "tabs" array — EXACTLY 3 tabs. Each tab MUST contain ALL of these keys: id, label, scenario, challenge, resolution. NEVER omit any key from any tab. Example structure:
+      "tabs": [
+        { "id": "tab_1", "label": "Healthcare", "scenario": "2 sentences describing the real-world situation.", "challenge": "2 sentences describing the specific obstacle.", "resolution": "2 sentences describing how the lesson concept solved it." },
+        { "id": "tab_2", "label": "Finance", "scenario": "...", "challenge": "...", "resolution": "..." },
+        { "id": "tab_3", "label": "Manufacturing", "scenario": "...", "challenge": "...", "resolution": "..." }
+      ]
   • key_terms blocks:      minimum 12 terms; each term MUST have "definition" (2 sentences). If the topic has fewer than 12 natural terms, add related terms from the broader field
   • completion blocks:     ALL of these fields are REQUIRED:
       - title:        A statement of intellectual arrival — NOT a UI label. Avoid: "Lesson Complete", "You've finished", "Well done". Write instead a short phrase that names what the learner has understood: "From Reaction to Prediction", "Seeing the Pattern", "The Architecture Becomes Clear". Make it feel earned.
@@ -628,7 +727,7 @@ export class LessonExpanderAgent extends BaseAgentV2 {
         const temperature = Math.min(0.7 + (lessonNumber - 1) * 0.04, 1.0);
 
         const rhythmPrefix = rhythmDirective ? `${rhythmDirective}\n\n---\n\n` : '';
-        const prompt = rhythmPrefix + `SYSTEM: You are an elite UK instructional designer. Lesson ${lessonNumber} of this course.
+        const prompt = rhythmPrefix + UNIVERSAL_LESSON_SPEC + `SYSTEM: You are an elite UK instructional designer. Lesson ${lessonNumber} of this course.
 LESSON: "${lesson.lessonTitle}"
 OBJECTIVE: ${lesson.microObjective}
 DIFFICULTY: ${difficulty}
@@ -658,6 +757,7 @@ VISUAL ACCURACY — ABSOLUTE LAW:
     4. DATA VISUALISATION: Literal tensors, weight matrices, code streams, signal noise.
     5. MOTION (Video-only): Frame-by-frame camera movement (pan/tilt/zoom), temporal shifts.
     6. PEDAGOGICAL ALIGNMENT: Direct literal mapping to the lesson objective ID.
+>>> ABSTRACT TOPICS (ethics, policy, bias, fairness, regulation, alignment, safety, governance): Image prompts MUST reference concrete physical objects and real-world scenes — not symbols or metaphors. SHOW: a data scientist reviewing bias metrics on a laptop screen, a regulatory document with highlighted clauses, a court room or compliance office, engineers reviewing a fairness dashboard with actual chart elements visible, a facial recognition error on a physical interface, side-by-side dataset distributions as visible bar charts. DO NOT show: scales of justice, glowing brains, abstract "balance" metaphors, hands holding orbs, or any symbolic representation that doesn't appear in real life.
 >>> BE LITERAL. BE ACCURATE. BE TECHNICAL.
 
 ${LESSON_VOICE_GUIDE}
@@ -699,25 +799,30 @@ REQUIRED OUTPUT JSON STRUCTURE:
             if (finishReason === 'MAX_TOKENS') {
                 throw Object.assign(new Error(`Output truncated (MAX_TOKENS) — lesson JSON exceeded model output limit`), { code: 'MAX_TOKENS' });
             }
-            return JSON.parse(text);
+            // Strip bare control characters that Gemini occasionally embeds unescaped inside
+            // JSON strings, causing SyntaxError on parse. Covers:
+            //   0x00–0x09, 0x0B, 0x0C, 0x0E–0x1F — non-printable control chars incl. tab (0x09)
+            //   0x0A (\n), 0x0D (\r) — literal newlines inside string values (illegal in JSON)
+            const sanitized = text
+                .replace(/[\x00-\x09\x0B\x0C\x0E-\x1F]/g, ' ')
+                .replace(/\n/g, ' ')
+                .replace(/\r/g, ' ');
+            try {
+                return JSON.parse(sanitized);
+            } catch (_firstErr) {
+                // Second chance: structural repair (missing commas, trailing commas, unquoted keys, etc.)
+                try {
+                    return JSON.parse(jsonrepair(sanitized));
+                } catch (parseErr: any) {
+                    parseErr.rawText = sanitized; // attach so retry loop can feed it back to Gemini
+                    throw parseErr;
+                }
+            }
         };
 
-        let attempts = 0;
-        while (attempts < 3) {
-            try {
-                const result = await makeRequestWithTemp(messages);
-                if (!courseState) return result;
-                const validation = CourseValidator.validateUniqueness({ ...result, lesson_number: lessonNumber, analogy_domain: result.analogy_domain || domainStr, structure_pattern: structureName, scenes: result.blocks }, courseState);
-                if (validation.passed) return result;
-                messages.push({ role: 'model', parts: [{ text: JSON.stringify(result) }] });
-                messages.push({ role: 'user', parts: [{ text: `Rejection: ${validation.failures.join(', ')}. FIX ALL. REMEMBER: Image prompts MUST be 1000+ words. Video prompts MUST follow the 5-sentence motion-arc structure (S1 names lesson concept + title, S2 visible objects, S3 start→change→end, S4 camera, S5 exclusions).` }] });
-            } catch (e: any) {
-                if (e?.code === 'MAX_TOKENS') {
-                    console.warn(`[LessonExpander] ⚠️ Output truncated on attempt ${attempts + 1} — rebuilding minimal prompt`);
-                    // The original prompt is too long for the model. Build a FRESH, stripped-down
-                    // prompt — no voice guide, no purpose rules, just schema + lesson + tight block list.
-                    const minimalBlocks = ['lesson_header', 'objective', 'video_snippet', 'text', 'type_cards:grid', 'video_snippet', 'recap', 'quiz', 'key_terms', 'completion'];
-                    const minimalPrompt = `You are an instructional designer. Generate a complete lesson JSON for:
+        // Minimal fallback prompt — defined here so it's accessible in all catch paths
+        const minimalBlocks = ['lesson_header', 'objective', 'video_snippet', 'text', 'type_cards:grid', 'video_snippet', 'recap', 'quiz', 'key_terms', 'completion'];
+        const minimalPrompt = `You are an instructional designer. Generate a complete lesson JSON for:
 LESSON: "${lesson.lessonTitle}"
 OBJECTIVE: ${lesson.microObjective}
 
@@ -733,15 +838,39 @@ HARD LIMITS:
 - image prompts: MAX 3 sentences
 
 OUTPUT: valid complete JSON only. No truncation.`;
-                    const minimalMessages = [{ role: 'user', parts: [{ text: minimalPrompt }] }];
-                    try {
-                        const result = await makeRequestWithTemp(minimalMessages);
-                        console.log(`[LessonExpander] ✅ Minimal fallback succeeded for "${lesson.lessonTitle}"`);
-                        if (!courseState) return result;
-                        return result;
-                    } catch (retryErr: any) {
-                        console.error(`[LessonExpander] ❌ Minimal fallback also failed:`, retryErr.message);
-                        throw new Error(`Lesson "${lesson.lessonTitle}" could not be generated within the model output limit after two attempts`);
+
+        const runMinimalFallback = async (reason: string): Promise<any> => {
+            console.warn(`[LessonExpander] ⚠️ ${reason} — rebuilding minimal prompt`);
+            try {
+                const result = await makeRequestWithTemp([{ role: 'user', parts: [{ text: minimalPrompt }] }]);
+                console.log(`[LessonExpander] ✅ Minimal fallback succeeded for "${lesson.lessonTitle}"`);
+                return result;
+            } catch (retryErr: any) {
+                console.error(`[LessonExpander] ❌ Minimal fallback also failed:`, retryErr.message);
+                throw new Error(`Lesson "${lesson.lessonTitle}" could not be generated within the model output limit after all fallbacks`);
+            }
+        };
+
+        let attempts = 0;
+        let lastValidResult: any = null;
+        while (attempts < 3) {
+            try {
+                const result = await makeRequestWithTemp(messages);
+                if (!courseState) return result;
+                const validation = CourseValidator.validateUniqueness({ ...result, lesson_number: lessonNumber, analogy_domain: result.analogy_domain || domainStr, structure_pattern: structureName, scenes: result.blocks }, courseState);
+                if (validation.passed) return result;
+                // Keep last result in case all retries fail — better than nothing
+                lastValidResult = result;
+                messages.push({ role: 'model', parts: [{ text: JSON.stringify(result) }] });
+                messages.push({ role: 'user', parts: [{ text: `Rejection: ${validation.failures.join(', ')}. FIX ALL. REMEMBER: Image prompts MUST be 1000+ words. Video prompts MUST follow the 5-sentence motion-arc structure (S1 names lesson concept + title, S2 visible objects, S3 start→change→end, S4 camera, S5 exclusions).` }] });
+            } catch (e: any) {
+                if (e?.code === 'MAX_TOKENS') {
+                    return await runMinimalFallback(`Output truncated on attempt ${attempts + 1}`);
+                } else if (e instanceof SyntaxError) {
+                    console.error("Retry error", e);
+                    if (e.rawText) {
+                        messages.push({ role: 'model', parts: [{ text: e.rawText }] });
+                        messages.push({ role: 'user', parts: [{ text: `Your previous response contained a JSON syntax error: "${e.message}". This is usually caused by unescaped special characters or truncated strings. Regenerate the complete lesson JSON with valid, well-formed JSON — ensure all string values have properly escaped characters.` }] });
                     }
                 } else {
                     console.error("Retry error", e);
@@ -749,7 +878,16 @@ OUTPUT: valid complete JSON only. No truncation.`;
             }
             attempts++;
         }
-        return await makeRequestWithTemp(messages);
+
+        // All uniqueness retries exhausted — accumulated messages are too large for a safe 4th attempt.
+        // Use the last generated result if available (uniqueness issues are minor vs. a full rollback),
+        // otherwise fall back to the minimal prompt.
+        if (lastValidResult) {
+            console.warn(`[LessonExpander] ⚠️ All uniqueness retries failed for "${lesson.lessonTitle}" — using last generated result`);
+            return lastValidResult;
+        }
+        // No successful generation at all — try minimal prompt as last resort
+        return await runMinimalFallback('All retries failed, no usable result');
     }
 }
 
