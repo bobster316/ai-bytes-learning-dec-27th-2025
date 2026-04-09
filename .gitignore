@@ -43,3 +43,5 @@ next-env.d.ts
 # archive
 .archive/
 media-registry.json
+
+.tmp.driveupload/
