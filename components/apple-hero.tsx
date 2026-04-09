@@ -104,7 +104,7 @@ export function AppleHero() {
                                 "ChatGPT", "Claude", "Gemini", "Copilot", "Grok", "Perplexity",
                                 "OpenAI", "Anthropic", "Mistral", "Llama", "Deepseek", "Cohere",
                                 // Image AI
-                                "DALL-E", "Midjourney", "Flux", "Sora", "Runway", "VEO", "Pika",
+                                "DALL-E", "Midjourney", "Flux", "Sora", "Runway", "Kling", "Pika",
                                 // Voice & Audio
                                 "Whisper", "ElevenLabs", "Suno", "Udio",
                                 // Frameworks

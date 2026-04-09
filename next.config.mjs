@@ -2,6 +2,7 @@
 // Force Rebuild Trigger 2
 const nextConfig = {
   reactStrictMode: false,
+  serverExternalPackages: ['@marp-team/marp-cli', 'serve-index', 'batch'],
   images: {
     remotePatterns: [
       {

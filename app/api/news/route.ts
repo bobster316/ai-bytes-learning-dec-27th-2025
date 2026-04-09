@@ -27,7 +27,6 @@ const AI_RSS_FEEDS = [
   // Additional sources for more coverage
   { url: 'https://www.wired.com/feed/tag/ai/latest/rss', name: 'Wired AI' },
   { url: 'https://feeds.arstechnica.com/arstechnica/technology-lab', name: 'Ars Technica' },
-  { url: 'https://www.zdnet.com/topic/artificial-intelligence/rss.xml', name: 'ZDNet AI' },
   { url: 'https://www.technologyreview.com/feed/', name: 'MIT Tech Review' },
   { url: 'https://ai.googleblog.com/feeds/posts/default', name: 'Google AI Blog' },
   { url: 'https://openai.com/blog/rss/', name: 'OpenAI Blog' },
@@ -227,58 +226,72 @@ export async function GET() {
 
     console.log(`After deduplication: ${unique.length} unique articles`);
 
-    // Trusted image CDN domains - only allow images from these sources
+    // Trusted image CDN domains — images from these are proxied; others are cleared
     const TRUSTED_IMAGE_DOMAINS = [
+      // Vox / The Verge
       'platform.theverge.com',
       'cdn.vox-cdn.com',
       'duet-cdn.vox-cdn.com',
+      // WordPress CDNs (many AI blogs)
       'i0.wp.com',
       'i1.wp.com',
       'i2.wp.com',
+      // TechCrunch / Verizon Media
       'techcrunch.com',
+      's.yimg.com',
+      // VentureBeat
       'venturebeat.com',
+      // Contentful CDN (used by VentureBeat and many publishers)
+      'images.ctfassets.net',
+      // Stock / embed
       'images.unsplash.com',
       'miro.medium.com',
-      'cdn.openai.com',
-      's.yimg.com',
+      // Wired / Condé Nast
       'media.wired.com',
+      'assets.wired.com',
+      // NYT
       'static01.nyt.com',
-      // Additional domains for new sources
+      // Ars Technica
       'cdn.arstechnica.net',
       'cdn.ars.technica.com',
+      // ZDNet
       'www.zdnet.com',
       'zdnet.com',
+      // MIT Tech Review
       'www.technologyreview.com',
       'wp.technologyreview.com',
+      // Google / OpenAI
       'blogger.googleusercontent.com',
       'storage.googleapis.com',
       'lh3.googleusercontent.com',
       'openai.com',
       'images.openai.com',
+      'cdn.openai.com',
+      // Generic image CDNs
+      'imageio.forbes.com',
+      'specials-images.forbesimg.com',
     ];
 
-    // Check if image URL is from a trusted domain
     const isValidImageUrl = (url: string | null): boolean => {
       if (!url) return false;
       try {
-        const imageUrl = new URL(url);
+        const parsed = new URL(url);
         return TRUSTED_IMAGE_DOMAINS.some(domain =>
-          imageUrl.hostname === domain || imageUrl.hostname.endsWith(`.${domain}`)
+          parsed.hostname === domain || parsed.hostname.endsWith(`.${domain}`)
         );
       } catch {
         return false;
       }
     };
 
-    // Filter for articles with valid images from trusted sources only
+    // Only show articles that have a valid image from a trusted CDN.
     const finalArticles = unique
       .filter(article =>
         article.title &&
         article.description &&
-        article.urlToImage &&
-        isValidImageUrl(article.urlToImage) // Only articles with images from trusted CDNs
+        isValidImageUrl(article.urlToImage)
       )
-      .slice(0, 30); // Return top 30 articles for Load More functionality
+      .slice(0, 30);
 
     console.log(`Found ${finalArticles.length} articles`);
 

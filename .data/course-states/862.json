@@ -1,0 +1,40 @@
+{
+  "course_id": 862,
+  "course_topic": "Generative AI: From Prompts to Production",
+  "domain_history": [
+    "Craftsmanship"
+  ],
+  "structure_history": [
+    "The Hook"
+  ],
+  "tone_history": [
+    "Warm Mentor"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [],
+  "used_image_urls": [
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774855547960-nugcbg-a%20futuristic%20citysca.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774855550506-msy2xy-a%20detailed%20diagram%20o.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774855554471-rvsej-a%20visualisation%20of%20a.jpeg"
+  ],
+  "used_video_urls": [],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 0,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 0,
+    "type_cards": 0,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 0,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

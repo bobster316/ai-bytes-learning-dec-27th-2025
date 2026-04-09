@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { OrchestratorV2 } from '@/lib/ai/agent-system-v2';
+import { generateSlides } from '@/lib/ai/generate-slides';
 import { sanitizeBlocks, sanitizeText, validateLessonPedagogy, repairLessonSequence } from '@/lib/ai/content-sanitizer';
 
 const PEDAGOGY_GATE = (process.env.LESSON_PEDAGOGY_GATE ?? 'off') as 'off' | 'enforce';
 import fs from 'fs';
 import path from 'path';
 import { imageService } from '@/lib/ai/image-service';
+import { falImageService } from '@/lib/ai/fal-image-service';
 import { geminiImageService } from '@/lib/ai/gemini-image-service';
-import { veoVideoService } from '@/lib/ai/veo-video-service';
+import { kieVideoService } from '@/lib/ai/kie-video-service';
 import { generateLessonHTML } from '@/lib/utils/lesson-renderer-v2';
 import { videoGenerationService } from '@/lib/services/video-generation';
 import {
@@ -136,6 +138,7 @@ export async function POST(req: NextRequest) {
         let generationId: string | null = null;
         let courseId: string | null = null;
         const uploadedStoragePaths: string[] = [];
+        let totalVideosStarted = 0; // Temp cap for testing
         const routeStart = Date.now();
         const requestedHost = (input as any).videoSettings?.courseHost || 'sarah';
         const isGemma = requestedHost === 'gemma';
@@ -202,23 +205,27 @@ export async function POST(req: NextRequest) {
             });
             console.timeEnd(`[API-V2] Manifest Generation - ${courseName}`);
 
+            if (!manifest || !manifest.courseMetadata || !manifest.topics || !Array.isArray(manifest.topics)) {
+                throw new Error(`Validation Failed: The AI generated a severely truncated or structurally invalid Course Manifest. Payload snippet: ${JSON.stringify(manifest || "undefined").substring(0, 800)}`);
+            }
+
             // 3. Persist Manifest to Database (Topics & Empty Lessons)
             await sendEvent({ stage: 'generating', progress: 20, message: 'Manifest locked. Processing Topics & Lessons sequentially...' });
 
             // Thumbnail Generation
-            const thumbnail = !DRY_RUN && manifest.courseMetadata.thumbnailPrompt
-                ? await imageService.fetchCourseThumbnail(courseName, courseDescription, manifest.courseMetadata.thumbnailPrompt)
+            const thumbnail = !DRY_RUN && manifest?.courseMetadata?.thumbnailPrompt
+                ? await imageService.fetchCourseThumbnail(courseName, courseDescription, manifest.courseMetadata.thumbnailPrompt, manifest.courseMetadata?.category, difficultyLevel)
                 : "dry-run.jpg";
 
             if (!DRY_RUN) {
-                const finalDescription = manifest.courseMetadata.description || courseDescription || `A comprehensive course on ${courseName}`;
+                const finalDescription = manifest.courseMetadata?.description || courseDescription || `A comprehensive course on ${courseName}`;
                 await supabase.from('courses').update({
                     thumbnail_url: thumbnail,
-                    title: manifest.refinedCourseTitle || courseName,
+                    title: courseName, // STRICT ENFORCEMENT: Never let AI override the user's exact title.
                     description: isGemma && !finalDescription.toLowerCase().includes('[gemma]')
                         ? finalDescription + ' [gemma]'
                         : finalDescription,
-                    category: manifest.courseMetadata.category || null,
+                    category: manifest.courseMetadata?.category || null,
                 }).eq('id', courseId);
                 await dbV2.updateNodeState(supabase, courseId, 'course_root', 'course', 'planned');
             }
@@ -231,6 +238,7 @@ export async function POST(req: NextRequest) {
                 previousLessonEndIntensity: 0,
                 firedSignatureMoments: [],
                 recentBlockTypeHistory: [],
+                recentOpeningTypes: [],
             };
 
             for (let i = 0; i < manifest.topics.length; i++) {
@@ -268,18 +276,22 @@ export async function POST(req: NextRequest) {
                             previousLessonEndIntensity: conductorMemory.previousLessonEndIntensity,
                             firedSignatureMoments: [...conductorMemory.firedSignatureMoments],
                             recentBlockTypeHistory: conductorMemory.recentBlockTypeHistory.map(arr => [...arr]),
+                            recentOpeningTypes: [...(conductorMemory.recentOpeningTypes ?? [])],
                         },
                     };
                     const conductorOutput = conduct(conductorCtx);
 
-                    await sendEvent({ stage: 'generating', progress: 20 + Math.floor((lessonsProcessed / Math.max(1, totalLessons)) * 60), message: `Expanding Lesson: ${lessonPlan.lessonTitle}...` });
+                    const progressPerLesson = 75 / Math.max(1, totalLessons);
+                    const currentLessonBaseProgress = 20 + Math.floor(lessonsProcessed * progressPerLesson);
+
+                    await sendEvent({ stage: 'generating', progress: currentLessonBaseProgress, message: `Expanding Lesson: ${lessonPlan.lessonTitle}...` });
 
                     // Route budget check — fail clean before Vercel hard-kills at 300 s
                     {
                         const elapsed = Date.now() - routeStart;
                         if (elapsed > ROUTE_BUDGET_MS) {
                             throw new MediaGenerationError(
-                                'veo',
+                                'kie',
                                 'budget_exceeded',
                                 `Route budget exceeded before lesson "${lessonPlan.lessonTitle}" (${Math.round(elapsed / 1000)}s elapsed, ${ROUTE_BUDGET_MS / 1000}s limit)`,
                                 'video_generation',
@@ -295,7 +307,7 @@ export async function POST(req: NextRequest) {
 
                     // V2 Single Lesson Expansion
                     console.time(`[API-V2] Lesson Base Content - ${lessonPlan.lessonTitle}`);
-                        let compiledLesson = await orchestrator.processLesson(lessonPlan, topic, manifest, globalLessonIndex, courseState, courseDNA.content, conductorOutput.conductorNotes);
+                        let compiledLesson = await orchestrator.processLesson(lessonPlan, topic, manifest, globalLessonIndex, courseState, courseDNA.content, conductorOutput.conductorNotes, conductorOutput.lessonPersonality ?? 'warm', conductorOutput.microVariationSeed ?? 0, conductorOutput.openingType ?? 'bold_claim');
                         // VisualEnrichmentAgent removed: it spent 60–70s per lesson generating 1000-word
                         // image prompts that V3-Sanitizer then overwrote entirely with its MANDATORY mandate.
                         // Image prompts are now the 1–2 sentence descriptions from initial generation,
@@ -385,26 +397,27 @@ export async function POST(req: NextRequest) {
                         };
 
                         // ═══════════════════════════════════════════════════
-                        // VIDEO GENERATION — start Veo early, run in parallel with images
+                        // VIDEO GENERATION — start Kie early, run in parallel with images
                         // ═══════════════════════════════════════════════════
-                        // Extract video blocks and kick off ALL Veo calls immediately (non-blocking)
-                        const videoBlocks = (!DRY_RUN && compiledLesson.blocks)
+                        // Extract video blocks and kick off ALL Kie calls immediately (non-blocking)
+                        const allVideoBlocks = (!DRY_RUN && compiledLesson.blocks)
                             ? (compiledLesson.blocks as any[]).filter((b: any) => (b.type === 'video_snippet' || b.blockType === 'video_snippet') && !b.videoUrl)
                             : [];
 
-                        // Stamp each video block with a stable _veoId before job creation.
-                        // Caption-matching is fragile (sanitizer / normalisation can mutate text).
-                        // _veoId survives through blocksWithOrder and sanitizeBlocks as an unknown field.
+                        const videoBlocks = allVideoBlocks;
+
+                        // Stamp each video block with a stable _kieId before job creation.
                         videoBlocks.forEach((v: any) => {
-                            if (!v._veoId) v._veoId = `veo_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+                            if (!v._kieId) v._kieId = `kie_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
                         });
 
-                        type VeoJob = { v: any; rawVideoPrompt: string; videoCaption: string; veoId: string; promise: Promise<VideoGenerationResult> };
-                        const veoJobs: VeoJob[] = videoBlocks.map((v: any) => {
+                        type KieJob = { v: any; rawVideoPrompt: string; videoCaption: string; kieId: string; promise: Promise<VideoGenerationResult> };
+                        const kieJobs: KieJob[] = videoBlocks.map((v: any) => {
                             const rawVideoPrompt = v.videoPrompt || `Show the literal technology of ${lessonPlan.lessonTitle} in action.`;
                             const videoCaption = v.caption || v.title || 'Visual insight';
-                            console.log(`[API-V2] 🚀 Starting Veo early for: "${videoCaption}"`);
-                            return { v, rawVideoPrompt, videoCaption, veoId: v._veoId, promise: veoVideoService.generateVideo(rawVideoPrompt, videoCaption) };
+                            console.log(`[API-V2] 🚀 Starting Kie early for: "${videoCaption}"`);
+                            // Pass prompt to Kie (Kie.ai generation takes only prompt)
+                            return { v, rawVideoPrompt, videoCaption, kieId: v._kieId, promise: kieVideoService.generateVideo(rawVideoPrompt) };
                         });
 
                         // Image generation logic (New nested blocks schema)
@@ -444,8 +457,8 @@ export async function POST(req: NextRequest) {
                         let allFetchedImages: any[] = [];
 
                         if (!DRY_RUN && rawPrompts.length > 0) {
-                            const baseProgress = 20 + Math.floor((lessonsProcessed / Math.max(1, totalLessons)) * 55);
-                            await sendEvent({ stage: 'generating', progress: baseProgress, message: `🖼️ Generating ${rawPrompts.length} images for "${lessonPlan.lessonTitle}"...` });
+                            const imageSubProgress = currentLessonBaseProgress + Math.floor(progressPerLesson * 0.5);
+                            await sendEvent({ stage: 'generating', progress: imageSubProgress, message: `🖼️ Generating ${rawPrompts.length} images for "${lessonPlan.lessonTitle}"...` });
                             console.time(`[API-V2] Image Fetching (${rawPrompts.length} total) - ${lessonPlan.lessonTitle}`);
 
                             const generatedImages = await Promise.all(
@@ -454,7 +467,14 @@ export async function POST(req: NextRequest) {
                                     const emptyResult: ImageGenerationResult = { url: null, alt: null, caption: null, errorCode: 'generation_skipped', errorMessage: 'generation_skipped' };
                                     let result: ImageGenerationResult;
                                     try {
-                                        result = await geminiImageService.generateImage(p.prompt, seed);
+                                        const falRes = await falImageService.generateImage(p.prompt, `lesson_${globalLessonIndex}_${(p as any).slotLabel || 'Concept'}_${seed}`);
+                                        result = {
+                                            url: falRes.url || null,
+                                            alt: (p as any).slotLabel,
+                                            caption: (p as any).slotLabel,
+                                            errorCode: falRes.errorCode as any,
+                                            errorMessage: falRes.errorMessage,
+                                        };
                                     } catch (e: any) {
                                         console.warn(`[API-V2] ⚠️ Image slot "${(p as any).slotLabel}" threw unexpectedly: ${e?.message || e} — skipping slot`);
                                         return emptyResult;
@@ -519,24 +539,24 @@ export async function POST(req: NextRequest) {
 
                         // ═══════════════════════════════════════════════════
                         // VIDEO — fire-and-forget with DB write-back
-                        // Veo jobs run in background. Lesson saves immediately with
-                        // video_url: null. When Veo resolves, the background handler
+                        // Kie Video jobs run in background. Lesson saves immediately with
+                        // videoUrl: null. When Kie Video resolves, the background handler
                         // patches the matching video_snippet block in DB directly.
                         // ═══════════════════════════════════════════════════
                         // Shared ref: populated after DB insert so background handler
                         // knows which lesson row to patch.
                         const lessonIdRef: { id: string | null } = { id: null };
 
-                        if (!DRY_RUN && veoJobs.length > 0) {
-                            console.log(`[API-V2] 🚀 ${veoJobs.length} Veo job(s) running in background — saving lesson now`);
-                            veoJobs.forEach(job => {
+                        if (!DRY_RUN && kieJobs.length > 0) {
+                            console.log(`[API-V2] 🚀 ${kieJobs.length} Kie Video job(s) running in background — saving lesson now`);
+                            kieJobs.forEach(job => {
                                 job.promise
                                     .then(async result => {
                                         if (!result.url) {
-                                            console.warn(`[API-V2] Veo failed (background): ${result.errorMessage || 'unknown'}`);
+                                            console.warn(`[API-V2] Kie Video failed (background): ${result.errorMessage || 'unknown'}`);
                                             return;
                                         }
-                                        console.log(`[API-V2] 🎬 Veo completed (background): ${result.url}`);
+                                        console.log(`[API-V2] 🎬 Kie Video completed (background): ${result.url}`);
                                         if (!lessonIdRef.id) return; // DRY_RUN or save failed
 
                                         // Fetch the saved blocks and patch the matching video_snippet
@@ -549,10 +569,10 @@ export async function POST(req: NextRequest) {
 
                                         let patched = false;
                                         const updatedBlocks = (saved.content_blocks as any[]).map((b: any) => {
-                                            if (patched || b.type !== 'video_snippet' || b.videoUrl) return b;
-                                            // Match by stable _veoId first; fall back to caption text
-                                            const matchById = job.veoId && b._veoId === job.veoId;
-                                            const matchByCaption = !job.veoId && (b.caption === job.videoCaption || b.title === job.videoCaption);
+                                            if (patched || (b.type !== 'video_snippet' && b.blockType !== 'video_snippet') || b.videoUrl) return b;
+                                            // Match by stable _kieId first; fall back to caption text
+                                            const matchById = job.kieId && b._kieId === job.kieId;
+                                            const matchByCaption = !job.kieId && (b.caption === job.videoCaption || b.title === job.videoCaption);
                                             if (matchById || matchByCaption) {
                                                 patched = true;
                                                 return { ...b, videoUrl: result.url };
@@ -565,13 +585,13 @@ export async function POST(req: NextRequest) {
                                                 .from('course_lessons')
                                                 .update({ content_blocks: updatedBlocks })
                                                 .eq('id', lessonIdRef.id);
-                                            console.log(`[API-V2] ✅ Veo URL written to lesson ${lessonIdRef.id} (id: "${job.veoId}")`);
+                                            console.log(`[API-V2] ✅ Kie Video URL written to lesson ${lessonIdRef.id} (id: "${job.kieId}")`);
                                         } else {
-                                            console.warn(`[API-V2] Veo URL could not be matched to a block — use Block Vid to attach manually (id: "${job.veoId}", caption: "${job.videoCaption}")`);
+                                            console.warn(`[API-V2] Kie Video URL could not be matched to a block — use Block Vid to attach manually (id: "${job.kieId}", caption: "${job.videoCaption}")`);
                                         }
                                     })
                                     .catch(err => {
-                                        console.warn(`[API-V2] Veo error (background): ${err?.message || err}`);
+                                        console.warn(`[API-V2] Kie Video error (background): ${err?.message || err}`);
                                     });
                             });
                         }
@@ -580,6 +600,9 @@ export async function POST(req: NextRequest) {
 
                         // Save lesson
                         if (!DRY_RUN) {
+                            const dbSaveProgress = currentLessonBaseProgress + Math.floor(progressPerLesson * 0.8);
+                            await sendEvent({ stage: 'generating', progress: dbSaveProgress, message: `💾 Compiling and saving "${lessonPlan.lessonTitle}"...` });
+                            
                             console.time(`[API-V2] Database Save - ${lessonPlan.lessonTitle}`);
                             // Normalise block type: generator outputs { type: "text", block_type: "lesson_header" }
                             // The renderer switches on block.type, so promote block_type → type before saving.
@@ -631,11 +654,11 @@ export async function POST(req: NextRequest) {
                                 topic_id: topicId,
                                 title: cleanLessonTitle,
                                 content_blocks: validatedBlocks,
-                                schema_version: '2.0',
-                                pedagogical_spec_version: '1.0',
-                                spec_compliant: specCompliant,
-                                spec_migrated: false,
-                                has_spec_placeholders: hasSpecPlaceholders,
+                                // schema_version: '2.0',
+                                // pedagogical_spec_version: '1.0',
+                                // spec_compliant: specCompliant,
+                                // spec_migrated: false,
+                                // has_spec_placeholders: hasSpecPlaceholders, // TEMPORARY DISABLE - column doesn't exist in DB schema yet
                                 content_markdown: JSON.stringify({
                                     ...compiledLesson,
                                     instructor: requestedHost
@@ -645,14 +668,14 @@ export async function POST(req: NextRequest) {
                                 order_index: j,
                                 estimated_minutes: lessonPlan.estimatedDuration || 15,
                                 micro_objective: lessonPlan.microObjective,
-                                arc_type: conductorOutput.arcType,
-                                lesson_personality: conductorOutput.lessonPersonality,
-                                micro_variation_seed: conductorOutput.microVariationSeed,
-                                conductor_memory: conductorCtx.memory,
+                                // arc_type: conductorOutput.arcType,
+                                // lesson_personality: conductorOutput.lessonPersonality,
+                                // micro_variation_seed: conductorOutput.microVariationSeed,
+                                // conductor_memory: conductorCtx.memory,
                             }).select().single();
                             if (lErr) throw lErr;
 
-                            // Give background Veo handlers the lesson ID so they can write URLs back
+                            // Give background Kie handlers the lesson ID so they can write URLs back
                             lessonIdRef.id = lData.id;
 
                             const actualBlockTypes = cleanBlocks.map((b: any) => b.type as string);
@@ -660,7 +683,7 @@ export async function POST(req: NextRequest) {
                                 && actualBlockTypes.includes(conductorOutput.signatureMoment.type)
                                 ? conductorOutput.signatureMoment.type
                                 : null;
-                            updateConductorMemory(conductorMemory, actualBlockTypes, signatureMomentFired);
+                            updateConductorMemory(conductorMemory, actualBlockTypes, signatureMomentFired, conductorOutput.openingType);
 
                             if (allFetchedImages.length > 0) {
                                 await supabase.from('lesson_images').insert(allFetchedImages.map((img: any, idx: number) => ({
@@ -726,6 +749,17 @@ export async function POST(req: NextRequest) {
             } else if (!DRY_RUN && !heygenEnabled) {
                 console.log('[API-V2] HeyGen avatar generation skipped (temporarily disabled — set ENABLE_HEYGEN_AVATAR=true to re-enable)');
             }
+
+            // Generate MARP slide deck — fire-and-forget (non-fatal if it fails)
+            generateSlides(courseId).then(slidesUrl => {
+                if (slidesUrl) {
+                    console.log(`[API-V2] MARP slides generated: ${slidesUrl}`);
+                } else {
+                    console.warn('[API-V2] MARP slide generation returned null — deck not saved');
+                }
+            }).catch(err => {
+                console.error('[API-V2] MARP slide generation threw:', err);
+            });
 
             await sendEvent({ stage: 'completed', progress: 100, message: 'V2 Generation Complete!', courseId: courseId });
 
@@ -805,7 +839,7 @@ export async function POST(req: NextRequest) {
                 errorCode: isMediaError ? error.errorCode : 'internal_error',
                 message: isMediaError
                     ? error.message
-                    : 'Course generation failed — internal error. Check server logs.',
+                    : `Validation Failed: ${error.stack || error.message}`,
                 retryable: isMediaError ? error.retryable : false,
                 lessonTitle: isMediaError ? error.lessonTitle : undefined,
                 blockType: isMediaError ? error.blockType : undefined,

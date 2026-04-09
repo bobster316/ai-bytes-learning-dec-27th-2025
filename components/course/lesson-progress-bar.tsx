@@ -24,7 +24,7 @@ export function LessonProgressBar({ className }: LessonProgressBarProps) {
     return (
         <div className={`fixed top-0 left-0 right-0 z-[100] h-[3px] bg-white/5 ${className ?? ""}`}>
             <motion.div
-                className="h-full bg-gradient-to-r from-[#00FFB3] to-[#4b98ad] origin-left shadow-[0_0_10px_rgba(0,255,179,0.5)]"
+                className="h-full bg-gradient-to-r from-[#00FFB3] to-[#9B8FFF] origin-left shadow-[0_0_10px_rgba(0,255,179,0.5)]"
                 style={{ scaleX }}
             >
                 {/* Glow tip */}

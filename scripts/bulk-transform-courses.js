@@ -4,8 +4,8 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../.env.local') });
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
 async function bulkTransform() {
     console.log('--- STARTING BULK TRANSFORMATION ---');
@@ -50,19 +50,24 @@ async function bulkTransform() {
         `;
 
         try {
-            const response = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
+            const response = await fetch(`${OPENROUTER_URL}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${OPENROUTER_API_KEY}`
+                },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: compressionPrompt }] }],
-                    generationConfig: { temperature: 0.7, responseMimeType: "application/json" }
+                    model: 'deepseek/deepseek-v3.2',
+                    messages: [{ role: "user", content: compressionPrompt }],
+                    temperature: 0.7,
+                    response_format: { type: "json_object" }
                 })
             });
 
             if (!response.ok) throw new Error(`API Error ${response.status}`);
 
             const rawResult = await response.json();
-            const transformedData = JSON.parse(rawResult.candidates[0].content.parts[0].text);
+            const transformedData = JSON.parse(rawResult.choices[0].message.content);
 
             await supabase
                 .from('course_lessons')

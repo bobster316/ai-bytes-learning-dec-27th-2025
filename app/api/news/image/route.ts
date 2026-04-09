@@ -2,33 +2,61 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // Whitelist of allowed news CDN domains
 const ALLOWED_DOMAINS = [
+  // Vox / The Verge
   'platform.theverge.com',
   'cdn.vox-cdn.com',
+  'duet-cdn.vox-cdn.com',
+  // WordPress CDNs
   'i0.wp.com',
   'i1.wp.com',
   'i2.wp.com',
+  'wp.com',
+  // Contentful CDN (VentureBeat + others)
   'images.ctfassets.net',
+  // AI News
   'www.artificialintelligence-news.com',
   'artificialintelligence-news.com',
-  'placehold.co',
+  // TechCrunch / Verizon
   'techcrunch.com',
+  's.yimg.com',
+  // VentureBeat
   'venturebeat.com',
-  'wp.com',
+  // Stock / embed
+  'images.unsplash.com',
+  'miro.medium.com',
+  'placehold.co',
+  // Unite AI
   'unite.ai',
   'www.unite.ai',
-  'miro.medium.com',
-  'cdn.openai.com',
-  'images.unsplash.com',
-  'duet-cdn.vox-cdn.com',
-  's.yimg.com',
+  // Wired / Condé Nast
   'media.wired.com',
+  'assets.wired.com',
+  // NYT
   'static01.nyt.com',
-  'img.youtube.com',
-  'technologyreview.com',
-  'www.technologyreview.com',
+  // Ars Technica
   'cdn.arstechnica.net',
   'arstechnica.com',
   'www.arstechnica.com',
+  // ZDNet
+  'zdnet.com',
+  'www.zdnet.com',
+  // MIT Tech Review
+  'technologyreview.com',
+  'www.technologyreview.com',
+  'wp.technologyreview.com',
+  // Google / OpenAI
+  'blogger.googleusercontent.com',
+  'storage.googleapis.com',
+  'lh3.googleusercontent.com',
+  'openai.com',
+  'images.openai.com',
+  'cdn.openai.com',
+  // YouTube thumbnails
+  'img.youtube.com',
+  'i.ytimg.com',
+  // Forbes
+  'imageio.forbes.com',
+  'specials-images.forbesimg.com',
 ];
 
 export async function GET(request: NextRequest) {

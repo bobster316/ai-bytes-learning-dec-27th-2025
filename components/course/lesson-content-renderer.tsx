@@ -5,10 +5,9 @@ import { Sparkles, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
 import { LessonBlockRenderer } from "./block-renderer";
 import { VoiceAvatar } from "@/components/voice/voice-avatar";
-import { CourseBackground } from "./course-background";
 import type { LessonPersonality } from '@/lib/ai/conductor/types';
 
-export function LessonContentRenderer({ content, images, audioUrl, videoUrl, videoOverviewUrl, pipelineType, isFreePreview = false, footerNode, lessonMetadata, lessonTitle, lessonIndex, lessonPersonality = 'calm', microVariationSeed = 0 }: { content: any, images: any[], audioUrl?: string, videoUrl?: string, videoOverviewUrl?: string, pipelineType?: string, isFreePreview?: boolean, footerNode?: React.ReactNode, lessonMetadata?: { duration?: number, difficulty?: string, instructor?: 'sarah' | 'gemma' }, lessonTitle?: string, lessonIndex?: number, lessonPersonality?: LessonPersonality, microVariationSeed?: number }) {
+export function LessonContentRenderer({ content, images, audioUrl, videoUrl, videoOverviewUrl, pipelineType, isFreePreview = false, footerNode, lessonMetadata, lessonTitle, lessonIndex, lessonPersonality = 'calm', microVariationSeed = 0, nextLessonHref }: { content: any, images: any[], audioUrl?: string, videoUrl?: string, videoOverviewUrl?: string, pipelineType?: string, isFreePreview?: boolean, footerNode?: React.ReactNode, lessonMetadata?: { duration?: number, difficulty?: string, instructor?: 'sarah' | 'gemma' }, lessonTitle?: string, lessonIndex?: number, lessonPersonality?: LessonPersonality, microVariationSeed?: number, nextLessonHref?: string }) {
     // Determine if we have V2 Structured Blocks or V1 Markdown
     const hasV2Blocks = content?.blocks && Array.isArray(content.blocks) && content.blocks.length > 0;
 
@@ -58,10 +57,7 @@ export function LessonContentRenderer({ content, images, audioUrl, videoUrl, vid
     const [isComfortMode, setIsComfortMode] = useState(false);
 
     return (
-        <div className={`w-full pb-12 font-body transition-colors duration-500 ease-in-out relative overflow-hidden ${isComfortMode ? 'bg-[#0f0f1a] comfort-mode' : 'bg-transparent'}`}>
-
-            {/* ── Background treatment — driven by CourseDNA ── */}
-            <CourseBackground />
+        <div className={`w-full pb-12 font-body transition-colors duration-500 ease-in-out relative overflow-hidden keep-dark ${isComfortMode ? 'bg-[#0f0f1a] comfort-mode' : 'bg-transparent'}`}>
 
             {/* Global contrast bumps for comfort mode */}
             {isComfortMode && (
@@ -106,6 +102,7 @@ export function LessonContentRenderer({ content, images, audioUrl, videoUrl, vid
                     lessonIndex={lessonIndex}
                     lessonPersonality={lessonPersonality}
                     microVariationSeed={microVariationSeed}
+                    nextLessonHref={nextLessonHref}
                 />
                 </div>
             ) : (

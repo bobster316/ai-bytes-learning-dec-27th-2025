@@ -91,7 +91,7 @@ export function FlashcardReview({ userId }: { userId: string }) {
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px]">
-                <BrainCircuit className="w-12 h-12 text-cyan-500 animate-pulse mb-4" />
+                <BrainCircuit className="w-12 h-12 text-[#00FFB3] animate-pulse mb-4" />
                 <p className="text-slate-500 font-mono text-xs uppercase tracking-widest">Accessing Knowledge Graph...</p>
             </div>
         );
@@ -104,7 +104,7 @@ export function FlashcardReview({ userId }: { userId: string }) {
                 animate={{ opacity: 1, scale: 1 }}
                 className="text-center py-20 px-8 bg-white/5 rounded-[3rem] border border-white/5"
             >
-                <div className="w-24 h-24 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-cyan-500/20">
+                <div className="w-24 h-24 bg-gradient-to-br from-[#00FFB3] to-[#00FFB3] rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-[#00FFB3]/20">
                     <Trophy className="w-12 h-12 text-white" />
                 </div>
                 <h2 className="text-4xl font-black text-white mb-4 tracking-tighter">Daily Review Complete!</h2>
@@ -112,7 +112,7 @@ export function FlashcardReview({ userId }: { userId: string }) {
                 <div className="flex gap-4 justify-center">
                     <div className="px-6 py-3 rounded-2xl bg-white/5 border border-white/5">
                         <div className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-1">Accuracy</div>
-                        <div className="text-2xl font-mono font-bold text-cyan-400">{((stats.correct / stats.total) * 100).toFixed(0)}%</div>
+                        <div className="text-2xl font-mono font-bold text-[#00FFB3]">{((stats.correct / stats.total) * 100).toFixed(0)}%</div>
                     </div>
                     <div className="px-6 py-3 rounded-2xl bg-white/5 border border-white/5">
                         <div className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-1">XP Earned</div>
@@ -140,7 +140,7 @@ export function FlashcardReview({ userId }: { userId: string }) {
             {/* Header Stats */}
             <div className="flex justify-between items-end mb-8 px-4">
                 <div>
-                    <div className="text-[10px] text-cyan-500 font-mono uppercase tracking-[0.3em] font-black mb-1">Spaced Repetition</div>
+                    <div className="text-[10px] text-[#00FFB3] font-mono uppercase tracking-[0.3em] font-black mb-1">Spaced Repetition</div>
                     <h3 className="text-2xl font-black text-white tracking-tight">Active Review</h3>
                 </div>
                 <div className="text-right">
@@ -149,7 +149,7 @@ export function FlashcardReview({ userId }: { userId: string }) {
                         <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${((currentIndex + 1) / cards.length) * 100}%` }}
-                            className="h-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]"
+                            className="h-full bg-[#00FFB3] shadow-[0_0_10px_rgba(0,255,179,0.5)]"
                         />
                     </div>
                 </div>
@@ -165,7 +165,7 @@ export function FlashcardReview({ userId }: { userId: string }) {
                 >
                     {/* Front */}
                     <div className={`absolute inset-0 backface-hidden bg-slate-900 border border-white/10 rounded-[2.5rem] p-12 flex flex-col justify-center items-center text-center shadow-2xl transition-all ${!isFlipped ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                        <BrainCircuit className="w-10 h-10 text-cyan-500/20 mb-8" />
+                        <BrainCircuit className="w-10 h-10 text-[#00FFB3]/20 mb-8" />
                         <h2 className="text-2xl md:text-3xl font-bold text-white leading-tight">
                             {currentCard.front}
                         </h2>
@@ -187,9 +187,9 @@ export function FlashcardReview({ userId }: { userId: string }) {
                     </div>
 
                     {/* Back */}
-                    <div className={`absolute inset-0 backface-hidden bg-slate-800 border border-cyan-500/20 rounded-[2.5rem] p-12 flex flex-col shadow-2xl transition-all rotate-y-180 ${isFlipped ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                    <div className={`absolute inset-0 backface-hidden bg-slate-800 border border-[#00FFB3]/20 rounded-[2.5rem] p-12 flex flex-col shadow-2xl transition-all rotate-y-180 ${isFlipped ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                         <div className="flex-1 overflow-y-auto scrollbar-hide">
-                            <div className="text-[10px] text-cyan-500 font-mono uppercase tracking-widest font-black mb-4">Correct Response</div>
+                            <div className="text-[10px] text-[#00FFB3] font-mono uppercase tracking-widest font-black mb-4">Correct Response</div>
                             <p className="text-xl text-slate-200 leading-relaxed font-light mb-8">
                                 {currentCard.back}
                             </p>

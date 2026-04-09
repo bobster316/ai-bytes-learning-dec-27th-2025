@@ -31,10 +31,10 @@ const config: Config = {
         obsidian: "var(--obsidian)",
       },
       fontFamily: {
-        sans: ["var(--font-outfit)"],
-        mono: ["var(--font-dm-mono)", "var(--font-jetbrains-mono)", "monospace"],
-        display: ["var(--font-jakarta)", "var(--font-syne)", "sans-serif"],
-        body: ["var(--font-jakarta)", "var(--font-outfit)", "sans-serif"],
+        sans: ["Arial", "sans-serif"],
+        mono: ["Consolas", "Courier New", "monospace"],
+        display: ["Arial Black", "Arial", "sans-serif"],
+        body: ["Arial", "sans-serif"],
       },
       keyframes: {
         "gradient-x": {

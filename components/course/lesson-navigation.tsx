@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, CheckCircle, GraduationCap } from "lucide-react";
+import { ArrowLeft, ArrowRight, Award, CheckCircle, GraduationCap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { updateLessonProgress } from "@/app/actions/progress";
@@ -229,15 +229,15 @@ export function LessonNavigation({ courseId, currentLessonId, courseOutline }: L
                         </Link>
                     ) : (
                         <Link
-                            href={`/courses/${courseId}`}
-                            className="group flex flex-col items-end p-4 rounded-xl border border-green-500/30 bg-green-500/10 hover:bg-green-500/20 hover:border-green-500/50 transition-all text-right"
+                            href={`/courses/${courseId}/complete`}
+                            className="group flex flex-col items-end p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 hover:border-amber-500/50 transition-all text-right"
                         >
-                            <span className="flex items-center text-[11px] text-green-600 dark:text-green-400 font-bold mb-1 font-sans">
-                                Complete Course
-                                <CheckCircle className="w-3 h-3 ml-1" />
+                            <span className="flex items-center text-[11px] text-amber-500 font-bold mb-1 font-sans">
+                                Get Your Certificate
+                                <Award className="w-3 h-3 ml-1" />
                             </span>
                             <span className="font-medium text-foreground">
-                                Return to Dashboard
+                                Course Complete
                             </span>
                         </Link>
                     )}

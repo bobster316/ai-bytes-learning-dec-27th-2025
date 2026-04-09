@@ -79,7 +79,7 @@ export default function TestAvatarPage() {
                         </div>
 
                         {status !== 'idle' && (
-                            <div className="p-4 bg-muted rounded-md text-sm">
+                            <div className="p-4 bg-white/[0.04] rounded-md text-sm">
                                 Status: <span className="font-mono font-bold">{status}</span>
                             </div>
                         )}

@@ -6,11 +6,11 @@ import { MindmapBlock } from "@/lib/types/lesson-blocks";
 
 const COLOUR_MAP: Record<string, string> = {
     pulse: "#00FFB3",
-    iris:  "#4b98ad",
+    iris:  "#9B8FFF",
     amber: "#FFB347",
     nova:  "#FF6B6B",
 };
-const COLOUR_CYCLE = ["#00FFB3", "#4b98ad", "#FFB347", "#FF6B6B", "#4b98ad", "#00FFB3"];
+const COLOUR_CYCLE = ["#00FFB3", "#9B8FFF", "#FFB347", "#FF6B6B", "#9B8FFF", "#00FFB3"];
 
 // Layout constants
 const CARD_W  = 188;
@@ -79,7 +79,7 @@ export function Mindmap({ centralNode, branches }: MindmapBlock) {
                 grad.setAttribute("id", `mmg-${i}`);
                 grad.setAttribute("gradientUnits", "userSpaceOnUse");
                 const s1 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
-                s1.setAttribute("offset", "0%");   s1.setAttribute("stop-color", "#4b98ad"); s1.setAttribute("stop-opacity", "0.45");
+                s1.setAttribute("offset", "0%");   s1.setAttribute("stop-color", "#9B8FFF"); s1.setAttribute("stop-opacity", "0.45");
                 const s2 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
                 s2.setAttribute("offset", "100%"); s2.setAttribute("stop-color", colour);    s2.setAttribute("stop-opacity", "0.75");
                 grad.appendChild(s1); grad.appendChild(s2); defs.appendChild(grad);
@@ -301,7 +301,7 @@ export function Mindmap({ centralNode, branches }: MindmapBlock) {
                 </div>
 
                 {/* ── Branch pill cards ────────────────────────────────── */}
-                {branches.map((branch, i) => {
+                {(branches || []).map((branch, i) => {
                     const colour = COLOUR_MAP[branch.colour] ?? COLOUR_CYCLE[i % COLOUR_CYCLE.length];
                     const { x, y } = positions[i];
                     const topPx    = containerH / 2 + y * ORBIT_R;

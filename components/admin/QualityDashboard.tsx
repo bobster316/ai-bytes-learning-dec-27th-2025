@@ -60,12 +60,12 @@ export function QualityDashboard() {
                 <header className="mb-12 flex justify-between items-end">
                     <div>
                         <div className="mb-6">
-                            <a href="/admin/courses" className="inline-flex items-center gap-2 text-slate-500 hover:text-cyan-600 transition-colors text-sm font-medium">
+                            <a href="/admin/courses" className="inline-flex items-center gap-2 text-slate-500 hover:text-[#00FFB3] transition-colors text-sm font-medium">
                                 <ArrowLeft size={16} />
                                 Back to Course Admin
                             </a>
                         </div>
-                        <div className="flex items-center gap-2 text-cyan-600 font-mono text-xs uppercase tracking-[0.3em] mb-3">
+                        <div className="flex items-center gap-2 text-[#00FFB3] font-mono text-xs uppercase tracking-[0.3em] mb-3">
                             <ShieldCheck size={14} />
                             <span>System Integrity • Content QA</span>
                         </div>
@@ -107,7 +107,7 @@ export function QualityDashboard() {
                     <StatCard
                         title="Mean Quality Score"
                         value={`${(stats.averageScore * 100).toFixed(1)}%`}
-                        icon={<BarChart3 className="text-cyan-500" />}
+                        icon={<BarChart3 className="text-[#00FFB3]" />}
                         color="cyan"
                     />
                 </div>
@@ -118,7 +118,7 @@ export function QualityDashboard() {
                     <div className="lg:col-span-2 bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                             <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                                <SearchCode size={18} className="text-cyan-600" />
+                                <SearchCode size={18} className="text-[#00FFB3]" />
                                 Audit Logs
                             </h3>
                             <div className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">
@@ -157,7 +157,7 @@ export function QualityDashboard() {
                                                 <StatusBadge score={report.overallScore} />
                                             </td>
                                             <td className="px-8 py-5 text-right">
-                                                <button className="p-2 rounded-xl bg-slate-100 group-hover:bg-cyan-100 group-hover:text-cyan-600 transition-all text-slate-400">
+                                                <button className="p-2 rounded-xl bg-slate-100 group-hover:bg-[#00FFB3]/10 group-hover:text-[#00FFB3] transition-all text-slate-400">
                                                     <ChevronRight size={16} />
                                                 </button>
                                             </td>

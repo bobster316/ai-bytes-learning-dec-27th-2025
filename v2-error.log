@@ -63,3 +63,121 @@
     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
     at async Promise.all (index 5)
     at async D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:6468:49
+2026-03-28T08:00:30.850Z MediaGenerationError: [veo] budget_exceeded — Route budget exceeded (335s elapsed, 270s limit) (lesson: "Applications of Generative AI", block: video_snippet)
+    at D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:6669:35
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2026-03-28T08:43:24.704Z MediaGenerationError: [veo] budget_exceeded — Route budget exceeded (369s elapsed, 270s limit) (lesson: "Applications and Ethics", block: video_snippet)
+    at D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:6674:35
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2026-03-28T09:54:08.124Z MediaGenerationError: [veo] timeout — Veo did not complete within the 2-minute extra wait window (lesson: "Understanding Generative AI", block: video_snippet, slot: Generative AI: The Creation Engine)
+    at D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:6698:39
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at listOnTimeout (node:internal/timers:569:9)
+    at process.processTimers (node:internal/timers:543:7)
+    at async Promise.all (index 0)
+    at async D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:6674:25
+2026-03-28T13:29:02.013Z SyntaxError: Unterminated string in JSON at position 45697 (line 1 column 45698)
+    at JSON.parse (<anonymous>)
+    at makeRequestWithTemp (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:2014:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async LessonExpanderAgent.expandLesson (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:2050:16)
+    at async OrchestratorV2.processLesson (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:2132:16)
+    at async D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:6381:42
+2026-03-28T14:28:31.527Z Error: Output truncated (MAX_TOKENS) — lesson JSON exceeded model output limit
+    at makeRequestWithTemp (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:2101:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async LessonExpanderAgent.expandLesson (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:2161:16)
+    at async OrchestratorV2.processLesson (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:2243:16)
+    at async D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:6492:42
+2026-03-29T11:44:39.395Z SyntaxError: Bad control character in string literal in JSON at position 16734 (line 1 column 16735)
+    at JSON.parse (<anonymous>)
+    at makeRequestWithTemp (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:2126:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async LessonExpanderAgent.expandLesson (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:2215:16)
+    at async OrchestratorV2.processLesson (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:2297:16)
+    at async D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:6546:42
+2026-03-29T11:46:44.644Z TypeError: text.split is not a function
+    at renderBody (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:3990:28)
+    at D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:4038:46
+    at Array.map (<anonymous>)
+    at generateLessonHTML (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:4033:31)
+    at D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:6997:207
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2026-03-29T11:56:30.616Z SyntaxError: Expected ',' or ']' after array element in JSON at position 18551 (line 1 column 18552)
+    at JSON.parse (<anonymous>)
+    at makeRequestWithTemp (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:2126:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async LessonExpanderAgent.expandLesson (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:2215:16)
+    at async OrchestratorV2.processLesson (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:2297:16)
+    at async D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:6546:42
+2026-03-30T05:23:32.226Z MediaGenerationError: [veo] budget_exceeded — Route budget exceeded before lesson "Model Selection and Evaluation" (322s elapsed, 270s limit) (lesson: "Model Selection and Evaluation")
+    at D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__c6a4aebd._.js:7360:35
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2026-03-30T06:19:40.935Z SyntaxError: Expected ',' or '}' after property value in JSON at position 19642 (line 1 column 19643)
+    at JSON.parse (<anonymous>)
+    at makeRequestWithTemp (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__c6a4aebd._.js:2126:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async LessonExpanderAgent.expandLesson (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__c6a4aebd._.js:2215:16)
+    at async OrchestratorV2.processLesson (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__c6a4aebd._.js:2297:16)
+    at async D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__c6a4aebd._.js:7368:42
+2026-03-30T07:11:43.581Z SyntaxError: Expected ':' after property name in JSON at position 13245 (line 1 column 13246)
+    at JSON.parse (<anonymous>)
+    at makeRequestWithTemp (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__c6a4aebd._.js:2122:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async LessonExpanderAgent.expandLesson (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__c6a4aebd._.js:2211:16)
+    at async OrchestratorV2.processLesson (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__c6a4aebd._.js:2293:16)
+    at async D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__c6a4aebd._.js:7364:42
+2026-03-30T07:27:28.403Z SyntaxError: Bad control character in string literal in JSON at position 16784 (line 1 column 16785)
+    at JSON.parse (<anonymous>)
+    at makeRequestWithTemp (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__c6a4aebd._.js:2126:29)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async LessonExpanderAgent.expandLesson (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__c6a4aebd._.js:2240:16)
+    at async OrchestratorV2.processLesson (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__c6a4aebd._.js:2322:16)
+    at async D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__c6a4aebd._.js:7393:42
+2026-03-30T08:43:43.642Z Error: Output truncated (MAX_TOKENS) — lesson JSON exceeded model output limit
+    at makeRequestWithTemp (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__c6a4aebd._.js:2165:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async LessonExpanderAgent.expandLesson (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__c6a4aebd._.js:2290:16)
+    at async OrchestratorV2.processLesson (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__c6a4aebd._.js:2372:16)
+    at async D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__c6a4aebd._.js:7443:42
+2026-03-30T17:47:05.266Z TypeError: Cannot read properties of undefined (reading 'thumbnailPrompt')
+    at D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__10678fc5._.js:7614:67
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2026-04-05T09:27:33.959Z Could not find the 'has_spec_placeholders' column of 'course_lessons' in the schema cache
+2026-04-05T16:18:28.303Z Could not find the 'pedagogical_spec_version' column of 'course_lessons' in the schema cache
+2026-04-05T16:23:30.571Z Could not find the 'schema_version' column of 'course_lessons' in the schema cache
+2026-04-05T17:04:33.496Z Error: Lesson "How AI Learns to Imagine" could not be generated within the model output limit after all fallbacks
+    at runMinimalFallback (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__9a8f0201._.js:2648:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async LessonExpanderAgent.expandLesson (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__9a8f0201._.js:2720:16)
+    at async OrchestratorV2.processLesson (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__9a8f0201._.js:2802:16)
+    at async D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__9a8f0201._.js:8345:42
+2026-04-05T17:14:54.447Z TypeError: Cannot read properties of undefined (reading 'courseMetadata')
+    at D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__9a8f0201._.js:8272:52
+2026-04-05T17:24:22.293Z TypeError: Cannot read properties of undefined (reading 'courseMetadata')
+    at D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__9a8f0201._.js:8272:52
+2026-04-05T17:49:17.745Z Error: Validation Failed: The AI generated a severely truncated or structurally invalid Course Manifest. Please attempt generation again.
+    at D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__9a8f0201._.js:8266:23
+2026-04-05T17:50:46.169Z Error: Validation Failed: The AI generated a severely truncated or structurally invalid Course Manifest. Please attempt generation again.
+    at D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__9a8f0201._.js:8269:23
+2026-04-05T17:52:09.847Z Error: Validation Failed: The AI generated a severely truncated or structurally invalid Course Manifest. Payload snippet: "undefined"
+    at D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__9a8f0201._.js:8266:23
+2026-04-05T17:54:48.473Z Error: Validation Failed: The AI generated a severely truncated or structurally invalid Course Manifest. Payload snippet: "undefined"
+    at D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__9a8f0201._.js:8266:23
+2026-04-05T17:58:03.311Z Error: ManifestPlannerAgent: Reached maximum retries without a successful response. This indicates persistent rate-limiting or service unavailability.
+    at ManifestPlannerAgent.makeRequest (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__9a8f0201._.js:1919:15)
+    at async ManifestPlannerAgent.generateManifest (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__9a8f0201._.js:1999:16)
+    at async OrchestratorV2.generateManifest (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__9a8f0201._.js:2801:16)
+    at async D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__9a8f0201._.js:8257:30
+2026-04-05T18:02:31.655Z Error: ManifestPlannerAgent: Reached maximum retries without a successful response. This indicates persistent rate-limiting or service unavailability.
+    at ManifestPlannerAgent.makeRequest (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__9a8f0201._.js:1920:15)
+    at async ManifestPlannerAgent.generateManifest (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__9a8f0201._.js:2000:16)
+    at async OrchestratorV2.generateManifest (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__9a8f0201._.js:2802:16)
+    at async D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__9a8f0201._.js:8258:30
+2026-04-06T11:14:41.378Z TypeError: text.split is not a function
+    at renderBody (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__115e124c._.js:4902:28)
+    at D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__115e124c._.js:4965:56
+    at Array.map (<anonymous>)
+    at generateLessonHTML (D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__115e124c._.js:4945:31)
+    at D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__115e124c._.js:8925:207
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)

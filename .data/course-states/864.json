@@ -1,0 +1,65 @@
+{
+  "course_id": 864,
+  "course_topic": "Advanced Prompt Engineering",
+  "domain_history": [
+    "Gardening",
+    "Nature",
+    "Travel",
+    "Craftsmanship"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey",
+    "The Contrast",
+    "The Build"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer",
+    "Confident Expert",
+    "Playful Storyteller"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "few shot learning demo",
+    "few shot text classification",
+    "chain of thought prompting",
+    "prompt engineering ensemble",
+    "prompt ensembling code",
+    "prompt refinement pipeline",
+    "LLM bias correction"
+  ],
+  "used_image_urls": [
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774859798375-1ivdia-a%20data%20scientist%20fin.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774859795683-i3u2sc-a%20diagram%20illustrati.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774859790339-ve75oe-a%20detailed%20visualisa.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774859900416-br62oh-a%20network%20of%20interco.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774859888491-w8cj1s-a%20detailed%20schematic.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774859900047-csh2od-a%20highly%20detailed,%20p.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774859996167-jtxg9p-a%20data%20scientist%20car.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774859999629-4eo2y-photorealistic%203d%20is.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774860099912-f6eoqe-a%20data%20scientist%20sit.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774860096015-14ymem-a%20data%20scientist%20wor.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774860102216-1y5dm9-3d%20isometric%20render%20.jpeg"
+  ],
+  "used_video_urls": [],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 4,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 2,
+    "type_cards": 3,
+    "interactive_vis": 1,
+    "mindmap": 0,
+    "image_text_row": 3,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

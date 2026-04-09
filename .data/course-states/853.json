@@ -1,0 +1,49 @@
+{
+  "course_id": 853,
+  "course_topic": "Machine Learning Fundamentals",
+  "domain_history": [
+    "Architecture",
+    "Gardening"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "neural network data flow",
+    "predictive maintenance wind turbines"
+  ],
+  "used_image_urls": [
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774785511800-qix29b-abstract%20representat.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774785528501-gtoq6-a%20split-screen%20compa.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774785519588-iv4t8q-a%20high-resolution%20re.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774785625907-7qtenp-imagine%20an%20ai%20system.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774785630069-94iqxl-a%20high-resolution%20di.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774785636870-uu9uaq-a%20detailed%20visualisa.jpeg"
+  ],
+  "used_video_urls": [],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 1,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 1,
+    "type_cards": 0,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 1,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

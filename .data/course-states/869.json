@@ -1,0 +1,66 @@
+{
+  "course_id": 869,
+  "course_topic": "Machine Learning for Beginners",
+  "domain_history": [
+    "Culinary",
+    "Nature",
+    "Architecture",
+    "Craftsmanship"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey",
+    "The Contrast",
+    "The Build"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer",
+    "Confident Expert",
+    "Playful Storyteller"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "machine learning definition",
+    "machine learning applications",
+    "ML paradigm visualisation",
+    "ML application examples",
+    "data transformation pipeline",
+    "data validation dashboard",
+    "network adjusting weights",
+    "dashboard metrics evolving"
+  ],
+  "used_image_urls": [
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774990518911-m85yk-a%20complex%20neural%20net.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774990518313-fut7v5-photorealistic%203d%20is.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774990516624-62bv3j-photorealistic%203d%20is.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774990607842-c768u-a%20glowing%20network%20of.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774990614427-d5v5qp-a%20data%20scientist%20sit.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774990610286-4emkp7-a%20detailed%20architect.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774990697540-xhbdpl-visualize%20a%20dataset%20.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774990687509-5zfk5f-a%20highly%20detailed%20an.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774990796889-gndao-a%20data%20scientist%20fin.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774990802487-8m6kuh-a%20data%20scientist%20exa.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774990797195-eo9cxr-an%20ultra-detailed%20sy.jpeg"
+  ],
+  "used_video_urls": [],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 4,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 2,
+    "type_cards": 3,
+    "interactive_vis": 1,
+    "mindmap": 0,
+    "image_text_row": 3,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

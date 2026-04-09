@@ -1,0 +1,174 @@
+﻿ M .claude/settings.local.json
+ M .next-dev.err.log
+ M .next-dev.out.log
+ M app/about/page.tsx
+ M app/account/subscription/page.tsx
+ M app/actions/progress.ts
+ M app/admin/courses/[id]/page.tsx
+ M app/admin/courses/edit/[id]/page.tsx
+ M app/admin/courses/new/page.tsx
+ M app/admin/courses/page.tsx
+ M app/admin/thumbnail-generator/page.tsx
+ M app/api/admin/courses/generate-audio/route.ts
+ M app/api/stripe/create-checkout/route.ts
+ M app/api/sync-videos/route.ts
+ M app/auth/signin/page.tsx
+ M app/auth/signup/page.tsx
+ M app/blog/[id]/page.tsx
+ M app/blog/page.tsx
+ M app/careers/page.tsx
+ M app/contact/page.tsx
+ M app/cookies/page.tsx
+ M app/courses/[courseId]/complete/page.tsx
+ M app/courses/[courseId]/lessons/[lessonId]/page.tsx
+ M app/courses/[courseId]/page.tsx
+ M app/dashboard/page.tsx
+ M app/globals.css
+ M app/layout.tsx
+ M app/my-courses/page.tsx
+ M app/news/[slug]/page.tsx
+ M app/news/page.tsx
+ M app/page.tsx
+ M app/paths/page.tsx
+ M app/phases/selection/page.tsx
+ M app/pricing/page.tsx
+ M app/privacy/page.tsx
+ M app/skill-tree/page.tsx
+ M app/terms/page.tsx
+ M components/admin/QualityDashboard.tsx
+ M components/course-catalog.tsx
+ M components/course/SectionDivider.tsx
+ M components/course/achievement-dashboard.tsx
+ M components/course/blocks/applied-case.tsx
+ M components/course/blocks/audio-recap-prominent.tsx
+ M components/course/blocks/callout-box.tsx
+ M components/course/blocks/completion-card.tsx
+ M components/course/blocks/concept-illustration.tsx
+ M components/course/blocks/floating-gamification.tsx
+ M components/course/blocks/flow-diagram.tsx
+ M components/course/blocks/go-deeper.tsx
+ M components/course/blocks/image-text-row.tsx
+ M components/course/blocks/industry-tabs.tsx
+ M components/course/blocks/inline-quiz.tsx
+ M components/course/blocks/instructor-insight.tsx
+ M components/course/blocks/key-terms.tsx
+ M components/course/blocks/lesson-header.tsx
+ M components/course/blocks/mindmap.tsx
+ M components/course/blocks/neural-background.tsx
+ M components/course/blocks/objective-card.tsx
+ M components/course/blocks/open-exercise.tsx
+ M components/course/blocks/prediction.tsx
+ M components/course/blocks/punch-quote.tsx
+ M components/course/blocks/recap-slide.tsx
+ M components/course/blocks/retrospective-summary.tsx
+ M components/course/blocks/text-section.tsx
+ M components/course/blocks/type-cards.tsx
+ M components/course/certificate-renderer.tsx
+ M components/course/course-dna-provider.tsx
+ M components/course/flashcard-review.tsx
+ M components/course/lesson-content-renderer.tsx
+ M components/course/lesson-progress-bar.tsx
+ M components/course/lesson-sidebar.tsx
+ M components/course/lesson-top-nav.tsx
+ M components/course/premium-curriculum.tsx
+ M components/course/simple-lesson-navigation.tsx
+ M components/course/topic-quiz-renderer.tsx
+ M components/courses/course-card.tsx
+ M components/feature-page-layout.tsx
+ M components/footer.tsx
+ M components/generation/neural-loom.tsx
+ M components/header.tsx
+ M components/logo.tsx
+ M components/momentum-metaphor.tsx
+ M components/subscription/upgrade-modal.tsx
+ M components/trending-news.tsx
+ M components/ui/button.tsx
+ M components/ui/green-screen-video.tsx
+ M components/ui/news-ticker.tsx
+ M components/voice/SterlingDiagnostic.tsx
+ M components/voice/SterlingVoice.tsx
+ M lib/ai/agent-system-v2.ts
+ M lib/ai/agent-system.ts
+ M lib/ai/content-accuracy-service.ts
+ M lib/ai/course-dna-catalogue.ts
+ M lib/ai/gemini-image-service.ts
+ M lib/ai/image-service.ts
+ M lib/ai/prompts/enhanced-planning-prompt.ts
+ M lib/ai/validator.ts
+ M lib/utils/lesson-renderer-v2.ts
+ M package-lock.json
+ M scripts/bulk-transform-courses.js
+ M scripts/deep-transform-pilot.js
+ M scripts/enhance-course-images.js
+ M scripts/enhance-course-images.ts
+ M scripts/restore-recent.js
+ M scripts/standardize-all-lessons.js
+ M scripts/test-generate-lesson.mjs
+ M tailwind.config.ts
+ M trim_text_blocks.ts
+ M v2-error.log
+?? .claude/skills/ui-ux-pro-max/scripts/__pycache__/core.cpython-311.pyc
+?? .claude/skills/ui-ux-pro-max/scripts/__pycache__/design_system.cpython-311.pyc
+?? .data/course-states/835.json
+?? .data/course-states/836.json
+?? .data/course-states/837.json
+?? .data/course-states/838.json
+?? .data/course-states/839.json
+?? .data/course-states/840.json
+?? .data/course-states/841.json
+?? .data/course-states/843.json
+?? .data/course-states/844.json
+?? .data/course-states/846.json
+?? .data/course-states/847.json
+?? .data/course-states/848.json
+?? .data/course-states/849.json
+?? .data/course-states/851.json
+?? .data/course-states/852.json
+?? .data/course-states/853.json
+?? .data/course-states/854.json
+?? .data/course-states/855.json
+?? .data/course-states/856.json
+?? .data/course-states/857.json
+?? .data/course-states/858.json
+?? .data/course-states/860.json
+?? .data/course-states/861.json
+?? .data/course-states/862.json
+?? .data/course-states/863.json
+?? .data/course-states/864.json
+?? .data/course-states/865.json
+?? .data/course-states/866.json
+?? .data/course-states/868.json
+?? .data/course-states/869.json
+?? .data/course-states/870.json
+?? .data/course-states/871.json
+?? .data/course-states/872.json
+?? .data/course-states/course_834.json
+?? .superpowers/
+?? HANDOVER_APRIL_1.md
+?? HANDOVER_APRIL_3.md
+?? HANDOVER_MARCH_27.md
+?? HANDOVER_MARCH_28.md
+?? HANDOVER_MARCH_29.md
+?? HANDOVER_MARCH_31.md
+?? app/api/sterling/llm/
+?? app/globals.css.bak
+?? app/layout.tsx.bak
+?? components/course/premium-curriculum.tsx.bak
+?? components/ui/llm-visualization.tsx
+?? components/ui/matrix-rain.tsx
+?? components/ui/neural-network-animation-3d.tsx
+?? docs/superpowers/plans/2026-03-27-lesson-quality-standard.md
+?? docs/superpowers/plans/2026-03-28-premium-curriculum-cinematic.md
+?? docs/superpowers/plans/2026-04-01-universal-lesson-spec.md
+?? git_status.txt
+?? handover-april-4.md
+?? lib/ai/thumbnail-templates.ts
+?? patch.diff
+?? public/logos/ai-bytes-learning-logo-teal.png
+?? public/logos/ai-bytes-learning-logo-white-bytes-teal-00C896.svg
+?? public/logos/ai-bytes-logo-transparency-1.png
+?? public/logos/ai-bytes-logo-transparency.png
+?? public/videos/cta-neural-network.mp4
+?? public/videos/hero-neural-network.mp4
+?? scripts/fix-banned-words-in-titles.ts
+?? scripts/regen-lesson-3573.ts

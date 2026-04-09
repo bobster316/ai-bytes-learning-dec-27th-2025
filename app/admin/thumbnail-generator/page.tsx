@@ -1,555 +1,298 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Download, Sparkles, RefreshCw, Palette } from 'lucide-react';
+import { Loader2, Download, Sparkles, RefreshCw, Zap } from 'lucide-react';
 import { Header } from '@/components/header';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-// Enhanced Style Definitions
-const TEXT_STYLES = [
-    {
-        id: 'mrbeast-viral',
-        name: 'viral / yellow',
-        category: 'High Impact',
-        font: '900 150px "Inter", sans-serif',
-        align: 'center',
-        vAlign: 'center',
-        color: '#FFFF00', // Bright Yellow
-        strokeColor: '#000000',
-        strokeWidth: 25,
-        shadow: true,
-        shadowColor: 'black',
-        shadowBlur: 0,
-        shadowOffset: 15,
-        rotation: -5,
-        uppercase: true,
-        bgDim: 0.3
-    },
-    {
-        id: 'viral-red',
-        name: 'viral / red',
-        category: 'High Impact',
-        font: '900 160px "Impact", sans-serif', // Impact font for classic meme/viral look
-        align: 'center',
-        vAlign: 'center',
-        color: '#FFFFFF',
-        strokeColor: '#FF0000', // Red Stroke
-        strokeWidth: 20,
-        shadow: true,
-        shadowColor: 'black',
-        shadowBlur: 5,
-        shadowOffset: 20,
-        rotation: 3, // Tilt opposite way
-        uppercase: true,
-        bgDim: 0.4
-    },
-    {
-        id: 'viral-blue',
-        name: 'viral / tech blue',
-        category: 'High Impact',
-        font: '900 140px "Roboto", sans-serif',
-        align: 'center',
-        vAlign: 'bottom', // Bottom heavy
-        yPadding: 100,
-        color: '#00FFFF', // Cyan
-        strokeColor: '#0000AA', // Dark Blue
-        strokeWidth: 15,
-        shadow: true,
-        shadowColor: 'rgba(0,0,255,0.5)',
-        shadowBlur: 50, // Glowing
-        shadowOffset: 0,
-        rotation: 0, // Straight
-        uppercase: true,
-        bgDim: 0.6
-    },
-    {
-        id: 'tech-minimalist',
-        name: 'tech / mkbhd',
-        category: 'Clean',
-        font: '800 110px "Inter", sans-serif', // Cleaner bold
-        align: 'left',
-        vAlign: 'bottom',
-        xPadding: 80,
-        yPadding: 80,
-        color: '#FFFFFF',
-        strokeColor: 'rgba(0,0,0,0.5)',
-        strokeWidth: 4,
-        shadow: true,
-        shadowColor: 'rgba(0,0,0,0.8)',
-        shadowBlur: 40, // Soft sleek shadow
-        uppercase: false, // Normal casing looks more premium/tech
-        bgDim: 0.5,
-        cornerAccent: true // Add a little color bar?
-    },
-    {
-        id: 'documentary-cinema',
-        name: 'cinema / vox',
-        category: 'Elegant',
-        font: '700 100px "Playfair Display", serif', // Serif for elegance
-        align: 'center',
-        vAlign: 'center',
-        color: '#FFFFFF',
-        stroke: false,
-        shadow: true,
-        shadowColor: 'rgba(0,0,0,0.9)',
-        shadowBlur: 20,
-        letterSpacing: '5px',
-        uppercase: true,
-        bgDim: 0.6, // Darker background for cinema feel
-        letterbox: true // Cinematic bars
-    },
-    {
-        id: 'dev-terminal',
-        name: 'code / terminal',
-        category: 'Niche',
-        font: 'bold 90px "Courier New", monospace',
-        align: 'left',
-        vAlign: 'top',
-        xPadding: 100,
-        yPadding: 120,
-        color: '#00FF41', // Matrix Green
-        strokeColor: '#003B00',
-        strokeWidth: 4,
-        shadow: true,
-        shadowColor: '#00FF41',
-        shadowBlur: 15, // Glowing effect
-        uppercase: false,
-        prefix: '> ', // Terminal prompt
-        bgDim: 0.8 // very dark
-    },
-    {
-        id: 'business-insider',
-        name: 'news / bold',
-        category: 'Business',
-        font: '900 110px "Arial", sans-serif',
-        align: 'left',
-        vAlign: 'center', // Left-aligned but vertically centered
-        xPadding: 100,
-        color: '#FFFFFF',
-        highlight: true, // Text background highlight
-        highlightColor: '#E11D48', // Red background
-    }
-];
+// Category definitions matching the brief
+const CATEGORIES = [
+    { slug: 'ai-foundations', label: 'AI Foundations', dark: '#3C3489', vivid: '#7F77DD', accent: '#9B8FFF', description: 'How AI works, model internals, mathematics of AI' },
+    { slug: 'prompting',      label: 'Prompting',      dark: '#085041', vivid: '#1D9E75', accent: '#1D9E75', description: 'Prompt engineering, few-shot, chain-of-thought' },
+    { slug: 'agents',         label: 'Agents & Tools', dark: '#042C53', vivid: '#378ADD', accent: '#378ADD', description: 'Agentic AI, tool use, MCP, automation workflows' },
+    { slug: 'safety',         label: 'Safety & Ethics', dark: '#4A1B0C', vivid: '#D85A30', accent: '#D85A30', description: 'AI safety, hallucinations, bias, governance' },
+    { slug: 'business',       label: 'Business AI',    dark: '#412402', vivid: '#EF9F27', accent: '#EF9F27', description: 'ROI, enterprise adoption, AI strategy' },
+    { slug: 'research',       label: 'Research',       dark: '#26215C', vivid: '#AFA9EC', accent: '#AFA9EC', description: 'Papers, cutting-edge models, academic AI' },
+] as const;
 
-const BACKGROUND_STYLES = [
-    { id: 'antigravity-3d', name: 'Antigravity Floating 3D', description: 'Surreal, high-end 3D objects weightless in space.' },
-    { id: 'frosted-glass', name: 'Frosted Glassmorphism', description: 'Premium tech feel with blurred glass and soft glows.' },
-    { id: 'cinematic-studio', name: 'Cinematic Studio', description: 'Photorealistic, documentary-style expert lighting.' },
-    { id: 'neural-flow', name: 'Abstract Neural Flow', description: 'Dynamic liquid lines and glowing nodes.' },
-];
+type CategorySlug = typeof CATEGORIES[number]['slug'];
 
 export default function ThumbnailGeneratorPage() {
-    const [title, setTitle] = useState('AI Revolution');
-    const [styleId, setStyleId] = useState('mrbeast-viral');
-    const [bgStyleId, setBgStyleId] = useState('antigravity-3d');
+    const [title, setTitle] = useState('How LLMs actually think');
+    const [description, setDescription] = useState('');
+    const [category, setCategory] = useState<CategorySlug>('ai-foundations');
+    const [difficulty, setDifficulty] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner');
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [generating, setGenerating] = useState(false);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [bulkRunning, setBulkRunning] = useState(false);
+    const [bulkResult, setBulkResult] = useState<{ total: number; ok: number; failed: number } | null>(null);
 
-    // Initial Load
-    useEffect(() => {
-        // Preload fonts or init if needed
-    }, []);
+    const selectedCat = CATEGORIES.find(c => c.slug === category)!;
 
     const generateThumbnail = async () => {
         setGenerating(true);
+        setError(null);
         try {
-            // 1. Get Background
-            const response = await fetch('/api/generate-thumbnail', {
+            const res = await fetch('/api/generate-thumbnail', {
                 method: 'POST',
-                body: JSON.stringify({ title, bgStyle: bgStyleId })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, description, category, difficulty }),
             });
-            const data = await response.json();
-
-            // 2. Draw
-            const style = TEXT_STYLES.find(s => s.id === styleId) || TEXT_STYLES[0];
-            await drawThumbnail(data.imageUrl, title, style);
-
-        } catch (e) {
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Generation failed');
+            setPreviewUrl(data.imageUrl || data.thumbnail_url);
+        } catch (e: any) {
+            setError(e.message);
             console.error(e);
         } finally {
             setGenerating(false);
         }
     };
 
-    const drawThumbnail = (bgUrl: string, text: string, style: any) => {
-        return new Promise<void>((resolve) => {
-            const canvas = canvasRef.current;
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) return;
-
-            const img = new Image();
-            img.crossOrigin = "anonymous";
-            img.src = bgUrl;
-            img.onload = () => {
-                canvas.width = 1920;
-                canvas.height = 1080;
-
-                // 1. Draw Background (Cover)
-                // 1. Draw Background (Cover) with Filters
-                ctx.save();
-
-                // Style-Specific Filters
-                if (style.id === 'mrbeast-viral') {
-                    ctx.filter = 'saturate(1.5) contrast(1.2) brightness(1.1)'; // POP effect
-                } else if (style.id === 'tech-minimalist') {
-                    ctx.filter = 'grayscale(20%) contrast(1.1) brightness(0.9)'; // Sleek tech
-                } else if (style.id === 'dev-terminal') {
-                    ctx.filter = 'hue-rotate(90deg) contrast(1.4) brightness(0.7)'; // Green tint base
-                } else if (style.id === 'documentary-cinema') {
-                    ctx.filter = 'sepia(30%) contrast(1.1) brightness(0.8)'; // Cinematic mode
-                }
-
-                const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
-                const x = (canvas.width / 2) - (img.width / 2) * scale;
-                const y = (canvas.height / 2) - (img.height / 2) * scale;
-                ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-
-                ctx.restore(); // Clear filters for next operations (text shouldn't be filtered)
-
-                // 1.5 Color Tint Overlay (Composite)
-                if (style.id === 'dev-terminal') {
-                    ctx.fillStyle = 'rgba(0, 50, 0, 0.5)'; // Matrix Green Tint
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                } else if (style.id === 'mrbeast-viral') {
-                    // Vignette
-                    const grad = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 100, canvas.width / 2, canvas.height / 2, 1200);
-                    grad.addColorStop(0, 'rgba(0,0,0,0)');
-                    grad.addColorStop(1, 'rgba(0,0,0,0.6)');
-                    ctx.fillStyle = grad;
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                }
-
-                // 2. Dimming Overlay
-                ctx.fillStyle = `rgba(0,0,0,${style.bgDim || 0.4})`;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                // 3. Cinematic Bars (Documentary Style)
-                if (style.letterbox) {
-                    ctx.fillStyle = 'black';
-                    const barHeight = 140; // Approx 2.35:1 aspect ratio feel
-                    ctx.fillRect(0, 0, canvas.width, barHeight);
-                    ctx.fillRect(0, canvas.height - barHeight, canvas.width, barHeight);
-                }
-
-                // 4. Text Configuration
-                ctx.save(); // Save state before rotation/translation
-
-                // Font Setup
-                ctx.font = style.font;
-                ctx.textAlign = style.highlight ? 'left' : (style.align as CanvasTextAlign); // Highlight needs explicit manual calculation usually
-                ctx.textBaseline = 'middle';
-                const finalColor = style.color;
-
-                // ROTATION Logic (Pivot around center generally looks best for "Viral" style)
-                if (style.rotation) {
-                    ctx.translate(canvas.width / 2, canvas.height / 2);
-                    ctx.rotate((style.rotation * Math.PI) / 180);
-                    ctx.translate(-canvas.width / 2, -canvas.height / 2);
-                }
-
-                // Word Wrapping
-                const processedText = style.uppercase ? text.toUpperCase() : text;
-                const finalLinePrefix = style.prefix || '';
-                const words = processedText.split(' ');
-                let lines = [];
-                let currentLine = words[0];
-                const maxWidth = canvas.width - (style.xPadding ? style.xPadding * 2 : 200);
-
-                for (let i = 1; i < words.length; i++) {
-                    const testLine = currentLine + " " + words[i];
-                    if (ctx.measureText(testLine).width > maxWidth) {
-                        lines.push(finalLinePrefix + currentLine);
-                        currentLine = words[i];
-                    } else {
-                        currentLine = testLine;
-                    }
-                }
-                lines.push(finalLinePrefix + currentLine);
-
-                // Calculate Block Positioning
-                const lineHeight = 160; // Approximate based on huge fonts
-                const totalTextHeight = lines.length * lineHeight;
-
-                let startX = canvas.width / 2;
-                if (style.align === 'left') startX = style.xPadding || 100;
-                if (style.align === 'right') startX = canvas.width - (style.xPadding || 100);
-
-                let startY = (canvas.height / 2) - (totalTextHeight / 2) + (lineHeight / 2);
-                if (style.vAlign === 'top') startY = (style.yPadding || 120) + (lineHeight / 2);
-                if (style.vAlign === 'bottom') startY = canvas.height - (style.yPadding || 150) - totalTextHeight + lineHeight;
-
-                // DRAW LOOP
-                lines.forEach((line, i) => {
-                    const lineY = startY + (i * lineHeight);
-
-                    // A. Highlight Box (Business Style)
-                    if (style.highlight) {
-                        const metrics = ctx.measureText(line);
-                        const boxPadding = 20;
-                        ctx.fillStyle = style.highlightColor;
-                        // Draw box slightly offset
-                        ctx.fillRect(startX - boxPadding, lineY - lineHeight / 2, metrics.width + (boxPadding * 2), lineHeight);
-                    }
-
-                    // B. Hard Shadow (MrBeast Style)
-                    if (style.shadow && style.shadowOffset) {
-                        ctx.fillStyle = 'black';
-                        ctx.fillText(line, startX + style.shadowOffset, lineY + style.shadowOffset);
-                    }
-
-                    // C. Heavy Stroke
-                    if (style.strokeWidth) {
-                        ctx.strokeStyle = style.strokeColor;
-                        ctx.lineWidth = style.strokeWidth;
-                        ctx.lineJoin = 'round';
-                        ctx.strokeText(line, startX, lineY);
-                    }
-
-                    // D. Soft Glow/Shadow
-                    if (style.shadowBlur > 0) {
-                        ctx.shadowColor = style.shadowColor;
-                        ctx.shadowBlur = style.shadowBlur;
-                        ctx.shadowOffsetX = 0;
-                        ctx.shadowOffsetY = 0;
-                    } else {
-                        ctx.shadowColor = 'transparent';
-                    }
-
-                    // E. Main Text
-                    ctx.fillStyle = finalColor;
-                    ctx.fillText(line, startX, lineY);
-
-                    // Reset Shadow for next pass
-                    ctx.shadowBlur = 0;
-                });
-
-                ctx.restore(); // Undo rotation
-
-                // Watermark / Sub-labels (Subtle)
-                if (!style.letterbox) {
-                    ctx.font = 'bold 24px "Inter", sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-                    ctx.fillText("AI BYTES LEARNING", canvas.width / 2, canvas.height - 40);
-                }
-
-                setPreviewUrl(canvas.toDataURL('image/png'));
-                resolve();
-            };
-        });
+    const regenerateAll = async () => {
+        setBulkRunning(true);
+        setBulkResult(null);
+        try {
+            const res = await fetch('/api/admin/courses/regenerate-thumbnails', { method: 'POST' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Bulk regeneration failed');
+            setBulkResult({ total: data.total, ok: data.ok, failed: data.failed });
+        } catch (e: any) {
+            setError(e.message);
+        } finally {
+            setBulkRunning(false);
+        }
     };
 
     const downloadImage = async () => {
         if (!previewUrl) return;
-
-        try {
-            // Strict sanitization for Windows filenames
-            const cleanTitle = title
-                .replace(/[^a-z0-9]/gi, '_')
-                .replace(/_+/g, '_')
-                .replace(/^_+|_+$/g, '')
-                .substring(0, 60);
-
-            const filename = `AI_BYTES_THUMBNAIL_${cleanTitle || 'thumbnail'}_HD.png`;
-
-            // New: Save Directly to User's Disk (Server-Side)
-            const response = await fetch('/api/save-to-disk', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    filename: filename,
-                    imageData: previewUrl
-                })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                alert(`✅ FILE SAVED SUCCESSFULLY!\n\nLocation: ${data.path}\n\n(Saved directly to your Downloads folder via Server)`);
-            } else {
-                throw new Error("Server failed to save file: " + (data.error || "Unknown Error"));
-            }
-
-        } catch (err: any) {
-            console.error("Save failed", err);
-            alert(`⚠️ Initial save failed ("${err.message}").\nAttempting browser fallback...`);
-
-            // FALLBACK TO BROWSER DOWNLOAD IF SERVER FAILS
-            const a = document.createElement('a');
-            a.href = previewUrl;
-            a.download = `FALLBACK_${title.replace(/[^a-z0-9]/gi, '_')}_HD.png`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
+        const a = document.createElement('a');
+        a.href = previewUrl;
+        a.download = `${category}_${title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}_thumb_v1.webp`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     };
 
     return (
-        <div className="min-h-screen bg-[#0A0A0B] text-white font-sans selection:bg-indigo-500/30">
+        <div className="min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)]">
             <Header />
 
             <div className="max-w-7xl mx-auto px-6 py-12">
 
-                {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-                    <div>
-                        <h1 className="text-5xl font-extrabold tracking-tight mb-3 bg-gradient-to-r from-white via-white to-white/50 bg-clip-text text-transparent">
-                            Thumbnail <span className="text-indigo-500">Forge</span>
-                        </h1>
-                        <p className="text-lg text-white/40 max-w-2xl">
-                            Generate viral, click-optimized course thumbnails in distinct YouTuber styles.
-                        </p>
-                    </div>
+                <div className="mb-10">
+                    <h1 className="text-4xl font-black tracking-tight mb-2">
+                        Thumbnail <span style={{ color: selectedCat.accent }}>Generator</span>
+                    </h1>
+                    <p className="text-white/40 text-sm">
+                        AI Bytes Brief v1.0 — 6 category gradients, DALL-E 3 backgrounds, programmatic brand layer
+                    </p>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-                    {/* LEFT PANEL: CONTROLS (4 Cols) */}
-                    <div className="lg:col-span-4 space-y-8">
+                    {/* LEFT: Controls */}
+                    <div className="lg:col-span-4 space-y-6">
 
-                        {/* Title Input */}
-                        <div className="bg-white/5 p-6 rounded-2xl border border-white/10 shadow-xl backdrop-blur-sm">
-                            <label className="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-4 block">
-                                1. Course Headline
+                        {/* Title */}
+                        <div className="bg-white/5 p-5 rounded-2xl border border-white/10">
+                            <label className="block text-xs font-bold uppercase tracking-widest mb-3" style={{ color: selectedCat.accent }}>
+                                Course Title
                             </label>
                             <Textarea
                                 value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                                className="bg-black/40 border-white/10 text-2xl font-bold text-white min-h-[120px] resize-none focus:ring-indigo-500/50"
-                                placeholder="E.g. I Trained an AI in 5 Minutes..."
+                                onChange={e => setTitle(e.target.value)}
+                                className="bg-black/40 border-white/10 text-white text-lg font-semibold min-h-[80px] resize-none"
+                                placeholder="How LLMs actually think"
                             />
-                            <p className="text-xs text-white/30 mt-3 text-right">
-                                Tip: Keep it under 6 words for max impact.
-                            </p>
+                            <p className="text-xs text-white/30 mt-2">Use curiosity-gap language — "How X really works", "Why X is harder than it looks"</p>
                         </div>
 
-                        {/* Style Selector */}
-                        <div className="bg-white/5 p-6 rounded-2xl border border-white/10 shadow-xl backdrop-blur-sm">
-                            <label className="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-4 block">
-                                2. Visual Archetype
+                        {/* Description (optional) */}
+                        <div className="bg-white/5 p-5 rounded-2xl border border-white/10">
+                            <label className="block text-xs font-bold uppercase tracking-widest mb-3 text-white/50">
+                                Description <span className="text-white/30 normal-case font-normal">(helps category detection)</span>
                             </label>
-                            <div className="space-y-3">
-                                {TEXT_STYLES.map((style) => (
-                                    <div
-                                        key={style.id}
-                                        onClick={() => setStyleId(style.id)}
-                                        className={`
-                                            cursor-pointer p-4 rounded-xl border transition-all duration-200 flex items-center justify-between
-                                            ${styleId === style.id
-                                                ? 'bg-indigo-600 border-indigo-500 shadow-lg shadow-indigo-900/50 scale-[1.02]'
-                                                : 'bg-black/20 border-white/5 hover:bg-white/10 hover:border-white/20'
-                                            }
-                                        `}
+                            <Textarea
+                                value={description}
+                                onChange={e => setDescription(e.target.value)}
+                                className="bg-black/40 border-white/10 text-white/70 text-sm min-h-[60px] resize-none"
+                                placeholder="Optional — improves auto-classification"
+                            />
+                        </div>
+
+                        {/* Category */}
+                        <div className="bg-white/5 p-5 rounded-2xl border border-white/10">
+                            <label className="block text-xs font-bold uppercase tracking-widest mb-3" style={{ color: selectedCat.accent }}>
+                                Topic Category
+                            </label>
+                            <div className="space-y-2">
+                                {CATEGORIES.map(cat => (
+                                    <button
+                                        key={cat.slug}
+                                        onClick={() => setCategory(cat.slug)}
+                                        className={`w-full text-left p-3 rounded-xl border transition-all flex items-center gap-3 ${
+                                            category === cat.slug
+                                                ? 'border-white/30 bg-white/10'
+                                                : 'border-white/5 bg-black/20 hover:bg-white/5'
+                                        }`}
                                     >
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${styleId === style.id ? 'bg-white text-indigo-600' : 'bg-white/10 text-white/50'}`}>
-                                                {style.name[0].toUpperCase()}
-                                            </div>
-                                            <div>
-                                                <h3 className="font-bold text-sm capitalize">{style.name}</h3>
-                                                <p className="text-xs text-white/40">{style.category}</p>
-                                            </div>
+                                        {/* Gradient swatch */}
+                                        <div
+                                            className="w-8 h-8 rounded-lg flex-shrink-0"
+                                            style={{ background: `linear-gradient(135deg, ${cat.dark}, ${cat.vivid})` }}
+                                        />
+                                        <div>
+                                            <div className="text-sm font-bold text-white">{cat.label}</div>
+                                            <div className="text-xs text-white/40">{cat.description}</div>
                                         </div>
-                                        {styleId === style.id && <Sparkles className="w-4 h-4 text-white" />}
-                                    </div>
+                                        {category === cat.slug && (
+                                            <Sparkles className="w-4 h-4 ml-auto flex-shrink-0" style={{ color: cat.accent }} />
+                                        )}
+                                    </button>
                                 ))}
                             </div>
                         </div>
 
-                        {/* Background Style Selector */}
-                        <div className="bg-white/5 p-6 rounded-2xl border border-white/10 shadow-xl backdrop-blur-sm">
-                            <label className="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-4 block">
-                                3. Background Art Style
+                        {/* Difficulty */}
+                        <div className="bg-white/5 p-5 rounded-2xl border border-white/10">
+                            <label className="block text-xs font-bold uppercase tracking-widest mb-3 text-white/50">
+                                Difficulty
                             </label>
-                            <div className="space-y-3">
-                                {BACKGROUND_STYLES.map((style) => (
-                                    <div
-                                        key={style.id}
-                                        onClick={() => setBgStyleId(style.id)}
-                                        className={`
-                                            cursor-pointer p-4 rounded-xl border transition-all duration-200
-                                            ${bgStyleId === style.id
-                                                ? 'bg-indigo-600/40 border-indigo-500 shadow-lg shadow-indigo-900/20 scale-[1.01]'
-                                                : 'bg-black/20 border-white/5 hover:bg-white/10 hover:border-white/20'
-                                            }
-                                        `}
+                            <div className="flex gap-2">
+                                {(['beginner', 'intermediate', 'advanced'] as const).map(d => (
+                                    <button
+                                        key={d}
+                                        onClick={() => setDifficulty(d)}
+                                        className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+                                            difficulty === d
+                                                ? 'text-white'
+                                                : 'bg-black/20 border border-white/5 text-white/40 hover:text-white/70'
+                                        }`}
+                                        style={difficulty === d ? { background: selectedCat.accent, color: '#000' } : {}}
                                     >
-                                        <div className="flex flex-col">
-                                            <h3 className="font-bold text-sm">{style.name}</h3>
-                                            <p className="text-[10px] text-white/40">{style.description}</p>
-                                        </div>
-                                    </div>
+                                        {d}
+                                    </button>
                                 ))}
                             </div>
                         </div>
 
                         <Button
                             onClick={generateThumbnail}
-                            disabled={generating}
-                            className="w-full h-16 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-xl font-bold rounded-2xl shadow-xl shadow-indigo-900/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                            disabled={generating || !title.trim()}
+                            className="w-full h-14 text-base font-bold rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98] text-black"
+                            style={{ background: `linear-gradient(135deg, ${selectedCat.dark}, ${selectedCat.vivid})`, color: 'white' }}
                         >
-                            {generating ? (
-                                <Loader2 className="w-6 h-6 animate-spin" />
-                            ) : (
-                                "GENERATE THUMBNAIL"
-                            )}
+                            {generating ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
+                            {generating ? 'Generating...' : 'Generate Thumbnail'}
                         </Button>
+
+                        {error && (
+                            <div className="bg-red-950/40 border border-red-700/40 rounded-xl p-4 text-red-300 text-sm">
+                                {error}
+                            </div>
+                        )}
                     </div>
 
-                    {/* RIGHT PANEL: PREVIEW (8 Cols) */}
-                    <div className="lg:col-span-8 space-y-6">
-                        <div className="relative aspect-video rounded-3xl overflow-hidden bg-[#151515] border border-white/10 shadow-2xl group">
+                    {/* RIGHT: Preview */}
+                    <div className="lg:col-span-8 space-y-4">
+
+                        {/* Preview area */}
+                        <div
+                            className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 group"
+                            style={{
+                                background: previewUrl
+                                    ? undefined
+                                    : `linear-gradient(135deg, ${selectedCat.dark}, ${selectedCat.vivid})`,
+                            }}
+                        >
                             {previewUrl ? (
-                                <img src={previewUrl} className="w-full h-full object-cover" alt="Generated Thumbnail" />
+                                <img src={previewUrl} className="w-full h-full object-cover" alt="Generated thumbnail" />
                             ) : (
-                                <div className="absolute inset-0 flex flex-col items-center justify-center text-white/20">
-                                    <Palette className="w-20 h-20 mb-6 opacity-20" />
-                                    <p className="text-xl font-medium tracking-wide">DESIGN CANVAS READY</p>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center text-white/30">
+                                    <div className="w-16 h-16 rounded-2xl mb-4 opacity-40" style={{ background: selectedCat.accent }} />
+                                    <p className="text-sm font-medium tracking-wide uppercase">Preview</p>
+                                    <p className="text-xs mt-1 opacity-60">{selectedCat.label}</p>
                                 </div>
                             )}
 
                             {previewUrl && (
-                                <div className="absolute bottom-6 right-6 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover:translate-y-0">
+                                <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <Button
                                         onClick={generateThumbnail}
+                                        size="sm"
                                         className="bg-black/80 hover:bg-black text-white border border-white/20 backdrop-blur-md"
                                     >
-                                        <RefreshCw className="w-4 h-4 mr-2" />
+                                        <RefreshCw className="w-4 h-4 mr-1" />
                                         Regenerate
                                     </Button>
                                     <Button
                                         onClick={downloadImage}
-                                        className="bg-white text-black hover:bg-gray-200 font-bold shadow-lg"
+                                        size="sm"
+                                        className="bg-white text-black hover:bg-gray-200 font-bold"
                                     >
-                                        <Download className="w-4 h-4 mr-2" />
-                                        Download HD PNG
+                                        <Download className="w-4 h-4 mr-1" />
+                                        Download
                                     </Button>
                                 </div>
                             )}
                         </div>
 
-                        {/* Quick Tips / Footer */}
-                        <div className="grid grid-cols-3 gap-6 text-center text-white/30 text-xs font-medium uppercase tracking-widest">
-                            <div className="bg-white/5 py-4 rounded-xl border border-white/5">
-                                1920 x 1080 HD
+                        {/* Bulk Regenerate */}
+                        <div className="bg-white/5 rounded-2xl border border-white/10 p-5 flex items-center justify-between gap-4">
+                            <div>
+                                <p className="text-sm font-bold text-white">Regenerate All Course Thumbnails</p>
+                                <p className="text-xs text-white/40 mt-0.5">Applies new SAFE=140 fix to every course in the database</p>
+                                {bulkResult && (
+                                    <p className="text-xs mt-1.5">
+                                        <span className="text-[#00FFB3]">✓ {bulkResult.ok} updated</span>
+                                        {bulkResult.failed > 0 && <span className="text-[#FF6B6B] ml-3">✗ {bulkResult.failed} failed</span>}
+                                        <span className="text-white/30 ml-3">of {bulkResult.total} total</span>
+                                    </p>
+                                )}
                             </div>
-                            <div className="bg-white/5 py-4 rounded-xl border border-white/5">
-                                Optimized for CTR
+                            <Button
+                                onClick={regenerateAll}
+                                disabled={bulkRunning}
+                                className="shrink-0 bg-[#9B8FFF]/20 hover:bg-[#9B8FFF]/30 text-[#9B8FFF] border border-[#9B8FFF]/30 font-bold"
+                            >
+                                {bulkRunning ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Zap className="w-4 h-4 mr-2" />}
+                                {bulkRunning ? 'Running...' : 'Regenerate All'}
+                            </Button>
+                        </div>
+
+                        {/* Specs */}
+                        <div className="grid grid-cols-4 gap-3 text-center text-white/30 text-xs font-medium uppercase tracking-widest">
+                            <div className="bg-white/5 py-3 rounded-xl border border-white/5">1280 × 720px</div>
+                            <div className="bg-white/5 py-3 rounded-xl border border-white/5">16:9 ratio</div>
+                            <div className="bg-white/5 py-3 rounded-xl border border-white/5">PNG master</div>
+                            <div className="bg-white/5 py-3 rounded-xl border border-white/5 text-white/20">
+                                <span style={{ color: selectedCat.accent }}>{selectedCat.label}</span>
                             </div>
-                            <div className="bg-white/5 py-4 rounded-xl border border-white/5">
-                                AI Generated Art
+                        </div>
+
+                        {/* Brief colour reference */}
+                        <div className="bg-white/5 rounded-2xl border border-white/10 p-5">
+                            <p className="text-xs font-bold uppercase tracking-widest text-white/30 mb-4">Category Palette Reference</p>
+                            <div className="grid grid-cols-6 gap-2">
+                                {CATEGORIES.map(cat => (
+                                    <div key={cat.slug} className="flex flex-col items-center gap-2">
+                                        <div
+                                            className="w-full h-12 rounded-lg cursor-pointer transition-transform hover:scale-105"
+                                            style={{ background: `linear-gradient(135deg, ${cat.dark}, ${cat.vivid})` }}
+                                            onClick={() => setCategory(cat.slug)}
+                                            title={cat.label}
+                                        />
+                                        <span className="text-[9px] text-white/40 text-center leading-tight">{cat.label}</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
 
                 </div>
-
-                <canvas ref={canvasRef} className="hidden" />
             </div>
         </div>
     );

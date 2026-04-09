@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Conductor — Implementation Plan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Space+Mono:wght@400;700&display=swap');
+  :root {
+    --pulse: #00FFB3; --iris: #9B8FFF; --amber: #FFB347; --nova: #FF6B6B;
+    --arctic: #5BC8F5; --gold: #D4A840;
+    --bg: #080810; --surface: #0f0f1a; --surface2: #13131f;
+    --border: rgba(255,255,255,0.07); --text: rgba(255,255,255,0.9); --muted: rgba(255,255,255,0.45);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; line-height:1.6; overflow-x:hidden; }
+
+  /* HERO */
+  .hero { min-height:80vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:80px 40px; position:relative; overflow:hidden; }
+  .hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 70% 50% at 50% 50%, rgba(155,143,255,0.07) 0%, transparent 70%); pointer-events:none; }
+  .eyebrow { font-family:'Space Mono',monospace; font-size:0.6rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--iris); margin-bottom:20px; opacity:0.8; }
+  .hero h1 { font-size:clamp(2.2rem,5vw,4.5rem); font-weight:900; letter-spacing:-0.04em; line-height:1.05; max-width:860px; margin-bottom:20px; }
+  .hero h1 em { font-style:normal; background:linear-gradient(135deg,var(--iris),var(--pulse)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .hero-sub { font-size:1rem; color:var(--muted); max-width:560px; line-height:1.7; }
+
+  /* SECTIONS */
+  .section { padding:80px 40px; max-width:1200px; margin:0 auto; }
+  .section-eyebrow { font-family:'Space Mono',monospace; font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--iris); margin-bottom:14px; opacity:0.7; }
+  .section h2 { font-size:clamp(1.6rem,3.5vw,2.8rem); font-weight:900; letter-spacing:-0.03em; margin-bottom:14px; }
+  .section-desc { color:var(--muted); font-size:0.95rem; max-width:640px; margin-bottom:50px; line-height:1.7; }
+  .divider { height:1px; background:var(--border); max-width:1200px; margin:0 auto; }
+
+  /* ARCHITECTURE DIAGRAM */
+  .arch { display:flex; flex-direction:column; align-items:center; gap:0; }
+  .arch-layer {
+    width:100%; max-width:780px;
+    border-radius:16px; padding:22px 28px;
+    border:1px solid var(--border);
+    position:relative;
+    margin-bottom:0;
+  }
+  .arch-layer.l1 { background:linear-gradient(135deg,rgba(0,255,179,0.05),rgba(0,255,179,0.02)); border-color:rgba(0,255,179,0.2); }
+  .arch-layer.l2 { background:linear-gradient(135deg,rgba(155,143,255,0.05),rgba(155,143,255,0.02)); border-color:rgba(155,143,255,0.2); max-width:680px; }
+  .arch-layer.l3 { background:linear-gradient(135deg,rgba(255,179,71,0.08),rgba(255,179,71,0.03)); border-color:rgba(255,179,71,0.35); max-width:580px; box-shadow:0 0 40px rgba(255,179,71,0.06); }
+  .arch-layer.l4 { background:linear-gradient(135deg,rgba(255,107,107,0.05),rgba(255,107,107,0.02)); border-color:rgba(255,107,107,0.2); max-width:480px; }
+  .arch-layer.l5 { background:var(--surface); border-color:var(--border); max-width:380px; }
+  .arch-connector { width:2px; height:24px; margin:0 auto; }
+  .arch-connector.c1 { background:linear-gradient(to bottom,rgba(0,255,179,0.4),rgba(155,143,255,0.4)); }
+  .arch-connector.c2 { background:linear-gradient(to bottom,rgba(155,143,255,0.4),rgba(255,179,71,0.6)); }
+  .arch-connector.c3 { background:linear-gradient(to bottom,rgba(255,179,71,0.6),rgba(255,107,107,0.4)); }
+  .arch-connector.c4 { background:linear-gradient(to bottom,rgba(255,107,107,0.4),rgba(255,255,255,0.15)); }
+  .arch-label { display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+  .arch-badge { font-family:'Space Mono',monospace; font-size:0.55rem; letter-spacing:0.12em; text-transform:uppercase; padding:4px 10px; border-radius:100px; flex-shrink:0; }
+  .l1 .arch-badge { background:rgba(0,255,179,0.12); color:var(--pulse); }
+  .l2 .arch-badge { background:rgba(155,143,255,0.12); color:var(--iris); }
+  .l3 .arch-badge { background:rgba(255,179,71,0.15); color:var(--amber); }
+  .l4 .arch-badge { background:rgba(255,107,107,0.12); color:var(--nova); }
+  .l5 .arch-badge { background:rgba(255,255,255,0.06); color:var(--muted); }
+  .arch-title { font-size:1rem; font-weight:800; letter-spacing:-0.02em; }
+  .arch-items { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .arch-item { font-size:0.7rem; color:var(--muted); background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:6px; padding:4px 10px; }
+  .arch-item.new { border-color:rgba(255,179,71,0.3); color:rgba(255,179,71,0.8); background:rgba(255,179,71,0.05); }
+  .arch-item.conductor { border-color:rgba(255,179,71,0.5); color:var(--amber); background:rgba(255,179,71,0.08); font-weight:700; }
+
+  /* RHYTHM MODEL */
+  .rhythm-track {
+    display:grid; grid-template-columns:repeat(5,1fr); gap:0;
+    border:1px solid var(--border); border-radius:20px; overflow:hidden; margin-bottom:40px;
+  }
+  .rhythm-beat { padding:28px 20px; position:relative; text-align:center; }
+  .rb-calm { background:linear-gradient(to bottom,rgba(91,200,245,0.06),transparent); border-right:1px solid var(--border); }
+  .rb-build { background:linear-gradient(to bottom,rgba(0,255,179,0.06),transparent); border-right:1px solid var(--border); }
+  .rb-tension { background:linear-gradient(to bottom,rgba(155,143,255,0.08),transparent); border-right:1px solid var(--border); }
+  .rb-insight { background:linear-gradient(to bottom,rgba(255,179,71,0.08),transparent); border-right:1px solid var(--border); }
+  .rb-reward { background:linear-gradient(to bottom,rgba(255,107,107,0.06),transparent); }
+  .beat-num { font-family:'Space Mono',monospace; font-size:0.55rem; opacity:0.4; margin-bottom:10px; }
+  .beat-icon { font-size:1.6rem; margin-bottom:10px; }
+  .beat-name { font-size:0.8rem; font-weight:800; letter-spacing:-0.01em; margin-bottom:8px; }
+  .beat-blocks { font-size:0.65rem; color:var(--muted); line-height:1.6; }
+  .beat-colour { height:3px; position:absolute; bottom:0; left:0; right:0; }
+  .rb-calm .beat-colour { background:var(--arctic); }
+  .rb-build .beat-colour { background:var(--pulse); }
+  .rb-tension .beat-colour { background:var(--iris); }
+  .rb-insight .beat-colour { background:var(--amber); }
+  .rb-reward .beat-colour { background:var(--nova); }
+
+  /* ANTI-CHAOS RULES */
+  .rules-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; }
+  .rule-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:22px 20px; display:flex; gap:14px; align-items:flex-start; }
+  .rule-icon { font-size:1.2rem; flex-shrink:0; margin-top:2px; }
+  .rule-title { font-size:0.85rem; font-weight:700; margin-bottom:5px; }
+  .rule-desc { font-size:0.72rem; color:var(--muted); line-height:1.55; }
+
+  /* SEMANTIC MAP */
+  .semantic-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; }
+  .semantic-card { border-radius:18px; padding:24px 20px; border:1px solid var(--border); }
+  .sc-cyber { background:linear-gradient(135deg,rgba(0,255,179,0.04),rgba(91,200,245,0.04)); border-color:rgba(0,255,179,0.15); }
+  .sc-lead { background:linear-gradient(135deg,rgba(155,143,255,0.04),rgba(212,168,64,0.04)); border-color:rgba(155,143,255,0.15); }
+  .sc-data { background:linear-gradient(135deg,rgba(91,200,245,0.04),rgba(139,148,184,0.04)); border-color:rgba(91,200,245,0.15); }
+  .sc-future { background:linear-gradient(135deg,rgba(248,164,200,0.04),rgba(155,143,255,0.04)); border-color:rgba(248,164,200,0.15); }
+  .sc-ethics { background:linear-gradient(135deg,rgba(255,179,71,0.04),rgba(255,107,107,0.04)); border-color:rgba(255,179,71,0.15); }
+  .sc-code { background:linear-gradient(135deg,rgba(184,232,64,0.04),rgba(91,200,245,0.04)); border-color:rgba(184,232,64,0.15); }
+  .semantic-domain { font-family:'Space Mono',monospace; font-size:0.58rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+  .semantic-card h3 { font-size:0.95rem; font-weight:800; letter-spacing:-0.01em; margin-bottom:12px; }
+  .semantic-tags { display:flex; flex-wrap:wrap; gap:6px; }
+  .stag { font-size:0.65rem; padding:3px 10px; border-radius:100px; background:rgba(255,255,255,0.05); color:var(--muted); border:1px solid var(--border); }
+
+  /* PHASES */
+  .phases { display:flex; flex-direction:column; gap:16px; }
+  .phase { border-radius:20px; border:1px solid var(--border); overflow:hidden; }
+  .phase-header { padding:24px 28px; display:flex; align-items:center; gap:16px; cursor:default; }
+  .ph1 .phase-header { background:linear-gradient(135deg,rgba(255,179,71,0.08),rgba(255,179,71,0.03)); border-bottom:1px solid rgba(255,179,71,0.1); }
+  .ph2 .phase-header { background:linear-gradient(135deg,rgba(155,143,255,0.06),rgba(155,143,255,0.02)); border-bottom:1px solid rgba(155,143,255,0.1); }
+  .ph3 .phase-header { background:linear-gradient(135deg,rgba(0,255,179,0.06),rgba(0,255,179,0.02)); border-bottom:1px solid rgba(0,255,179,0.1); }
+  .ph4 .phase-header { background:linear-gradient(135deg,rgba(91,200,245,0.06),rgba(91,200,245,0.02)); border-bottom:1px solid rgba(91,200,245,0.1); }
+  .ph5 .phase-header { background:linear-gradient(135deg,rgba(255,107,107,0.06),rgba(255,107,107,0.02)); border-bottom:1px solid rgba(255,107,107,0.1); }
+  .phase-num { font-family:'Space Mono',monospace; font-size:1.8rem; font-weight:700; line-height:1; opacity:0.4; flex-shrink:0; }
+  .ph1 .phase-num { color:var(--amber); }
+  .ph2 .phase-num { color:var(--iris); }
+  .ph3 .phase-num { color:var(--pulse); }
+  .ph4 .phase-num { color:var(--arctic); }
+  .ph5 .phase-num { color:var(--nova); }
+  .phase-info { flex:1; }
+  .phase-title { font-size:1.1rem; font-weight:800; letter-spacing:-0.02em; margin-bottom:4px; }
+  .phase-tagline { font-size:0.78rem; color:var(--muted); }
+  .phase-meta { text-align:right; flex-shrink:0; }
+  .phase-impact { font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; padding:4px 12px; border-radius:100px; }
+  .ph1 .phase-impact { background:rgba(255,179,71,0.15); color:var(--amber); }
+  .ph2 .phase-impact { background:rgba(155,143,255,0.12); color:var(--iris); }
+  .ph3 .phase-impact { background:rgba(0,255,179,0.1); color:var(--pulse); }
+  .ph4 .phase-impact { background:rgba(91,200,245,0.1); color:var(--arctic); }
+  .ph5 .phase-impact { background:rgba(255,107,107,0.1); color:var(--nova); }
+  .phase-body { padding:24px 28px; background:var(--surface); }
+  .phase-tasks { list-style:none; display:flex; flex-direction:column; gap:8px; }
+  .phase-tasks li { font-size:0.8rem; color:var(--muted); display:flex; gap:10px; align-items:flex-start; line-height:1.5; }
+  .phase-tasks li::before { content:'→'; flex-shrink:0; opacity:0.4; }
+
+  /* CLOSING */
+  .closing { text-align:center; padding:100px 40px; }
+  .closing h2 { font-size:clamp(1.8rem,4vw,3.5rem); font-weight:900; letter-spacing:-0.04em; margin-bottom:16px; }
+  .closing p { color:var(--muted); max-width:560px; margin:0 auto; font-size:0.95rem; line-height:1.7; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="eyebrow">AI Bytes Learning — The Plan</div>
+  <h1>Stop building variation.<br>Start building a <em>Conductor</em>.</h1>
+  <p class="hero-sub">The Conductor is the orchestration intelligence that sits above every visual decision. It doesn't randomise. It composes. Every lesson becomes a scored piece — with tension, rhythm, release, and memory.</p>
+</div>
+
+<div class="divider"></div>
+
+<!-- ARCHITECTURE -->
+<div class="section">
+  <div class="section-eyebrow">System Architecture</div>
+  <h2>The stack, redrawn.</h2>
+  <p class="section-desc">The new Conductor layer sits between Module DNA and Block Expression. It is the intelligence that reads context and decides — not just what something looks like, but when to be quiet and when to detonate.</p>
+
+  <div class="arch">
+    <div class="arch-layer l1">
+      <div class="arch-label">
+        <span class="arch-badge">Level 1</span>
+        <span class="arch-title">Course DNA — The Universe</span>
+      </div>
+      <div class="arch-items">
+        <span class="arch-item">18 archetypes</span>
+        <span class="arch-item">48 palettes</span>
+        <span class="arch-item">10 typography systems</span>
+        <span class="arch-item">8 bg treatments</span>
+        <span class="arch-item">Semantic topic bias</span>
+        <span class="arch-item new">Subject-matter matching NEW</span>
+      </div>
+    </div>
+    <div class="arch-connector c1"></div>
+    <div class="arch-layer l2">
+      <div class="arch-label">
+        <span class="arch-badge">Level 2</span>
+        <span class="arch-title">Module DNA — The District</span>
+      </div>
+      <div class="arch-items">
+        <span class="arch-item new">Hue-shifted accent NEW</span>
+        <span class="arch-item new">5 module header styles NEW</span>
+        <span class="arch-item new">4 moods: open / build / climax / resolve NEW</span>
+        <span class="arch-item new">Diagram style bias NEW</span>
+        <span class="arch-item new">Transition character NEW</span>
+        <span class="arch-item new">Visible district atmosphere NEW</span>
+      </div>
+    </div>
+    <div class="arch-connector c2"></div>
+    <div class="arch-layer l3">
+      <div class="arch-label">
+        <span class="arch-badge">Level 3 — NEW</span>
+        <span class="arch-title">⬛ The Conductor — Lesson Rhythm Engine</span>
+      </div>
+      <div class="arch-items">
+        <span class="arch-item conductor">Reads lesson arc position</span>
+        <span class="arch-item conductor">Reads module mood</span>
+        <span class="arch-item conductor">Plans calm → friction → insight → reward</span>
+        <span class="arch-item conductor">Places signature moments</span>
+        <span class="arch-item conductor">Enforces anti-chaos rules</span>
+        <span class="arch-item conductor">Decides block sequence rhythm</span>
+        <span class="arch-item conductor">Manages dramatic density budget</span>
+      </div>
+    </div>
+    <div class="arch-connector c3"></div>
+    <div class="arch-layer l4">
+      <div class="arch-label">
+        <span class="arch-badge">Level 4</span>
+        <span class="arch-title">Lesson DNA — The Moment</span>
+      </div>
+      <div class="arch-items">
+        <span class="arch-item">12-colour accent cycle</span>
+        <span class="arch-item">8 layout modes per block</span>
+        <span class="arch-item new">6 emotional personalities NEW</span>
+        <span class="arch-item new">Micro-variation seeding NEW</span>
+        <span class="arch-item new">Narrative position signal NEW</span>
+      </div>
+    </div>
+    <div class="arch-connector c4"></div>
+    <div class="arch-layer l5">
+      <div class="arch-label">
+        <span class="arch-badge">Level 5</span>
+        <span class="arch-title">Block Expression — The Instruments</span>
+      </div>
+      <div class="arch-items">
+        <span class="arch-item">37 block types</span>
+        <span class="arch-item">80 visual layouts</span>
+        <span class="arch-item">Seeded micro-variation</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- RHYTHM MODEL -->
+<div class="section">
+  <div class="section-eyebrow">The Rhythm Model</div>
+  <h2>Every lesson is a scored piece. Five beats.</h2>
+  <p class="section-desc">The Conductor maps every lesson onto a five-beat arc. Block types are assigned emotional weights. The engine sequences them so learners are never in the same emotional state for more than two consecutive blocks.</p>
+
+  <div class="rhythm-track">
+    <div class="rhythm-beat rb-calm">
+      <div class="beat-num">BEAT 01</div>
+      <div class="beat-icon">🌊</div>
+      <div class="beat-name">Calm</div>
+      <div class="beat-blocks">lesson_header<br>objective<br>text (opening)</div>
+      <div class="beat-colour"></div>
+    </div>
+    <div class="rhythm-beat rb-build">
+      <div class="beat-num">BEAT 02</div>
+      <div class="beat-icon">📈</div>
+      <div class="beat-name">Building</div>
+      <div class="beat-blocks">type_cards<br>flow_diagram<br>image_text_row<br>instructor_insight</div>
+      <div class="beat-colour"></div>
+    </div>
+    <div class="rhythm-beat rb-tension">
+      <div class="beat-num">BEAT 03</div>
+      <div class="beat-icon">⚡</div>
+      <div class="beat-name">Tension</div>
+      <div class="beat-blocks">signal_interrupt<br>tension_arc<br>contrast_duel<br>myth_buster<br>prediction</div>
+      <div class="beat-colour"></div>
+    </div>
+    <div class="rhythm-beat rb-insight">
+      <div class="beat-num">BEAT 04</div>
+      <div class="beat-icon">💡</div>
+      <div class="beat-name">Insight</div>
+      <div class="beat-blocks">cinematic_moment<br>neural_map<br>applied_case<br>depth_charge<br>punch_quote</div>
+      <div class="beat-colour"></div>
+    </div>
+    <div class="rhythm-beat rb-reward">
+      <div class="beat-num">BEAT 05</div>
+      <div class="beat-icon">🏆</div>
+      <div class="beat-name">Reward</div>
+      <div class="beat-blocks">recap<br>quiz<br>key_terms<br>completion<br>time_capsule</div>
+      <div class="beat-colour"></div>
+    </div>
+  </div>
+
+  <p style="font-size:0.8rem;color:var(--muted);line-height:1.7;">The Conductor does not force this sequence rigidly. It uses it as a scoring guide — ensuring no lesson is all tension, no lesson is all reward. A clinical-archetype course may spend more time in Calm and Building. A provocateur-archetype course may linger in Tension. But every lesson must pass through all five beats.</p>
+</div>
+
+<div class="divider"></div>
+
+<!-- ANTI-CHAOS RULES -->
+<div class="section">
+  <div class="section-eyebrow">Anti-Chaos Rules</div>
+  <h2>The orchestra needs a score, not a jam session.</h2>
+  <p class="section-desc">Constraints are what make the variation feel designed, not random. These rules are enforced by the Conductor at generation time — before blocks are written to the database.</p>
+
+  <div class="rules-grid">
+    <div class="rule-card">
+      <div class="rule-icon">🚫</div>
+      <div>
+        <div class="rule-title">No consecutive drama</div>
+        <div class="rule-desc">Cinematic Moment, Signal Interrupt, and Tension Arc cannot follow each other. At least two non-dramatic blocks must separate high-intensity blocks.</div>
+      </div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-icon">🎛️</div>
+      <div>
+        <div class="rule-title">Dramatic budget per lesson</div>
+        <div class="rule-desc">Max 1 Cinematic Moment, 1 Signal Interrupt, and 1 Tension Arc per lesson. Max 2 high-intensity blocks total. The rest must be calm or building.</div>
+      </div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-icon">🎨</div>
+      <div>
+        <div class="rule-title">Typography locked at course level</div>
+        <div class="rule-desc">Typography system never changes within a course. Module and lesson variation modulates weight, size, spacing — not the type family itself.</div>
+      </div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-icon">🌡️</div>
+      <div>
+        <div class="rule-title">Colour volatility budget</div>
+        <div class="rule-desc">Within a module, accent hue can shift ±15° from the course primary. Lesson accents cycle within that range. No jarring hue jumps between consecutive lessons.</div>
+      </div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-icon">🧭</div>
+      <div>
+        <div class="rule-title">Personality hierarchy</div>
+        <div class="rule-desc">Lesson personality modulates — never overrides — course archetype. A Calm lesson in a Bold archetype course is still bold. A Warm archetype course has no Stark lessons.</div>
+      </div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-icon">📏</div>
+      <div>
+        <div class="rule-title">Block count range</div>
+        <div class="rule-desc">Minimum 8 blocks per lesson. Maximum 16. The Conductor targets 10–13 as the optimal range. Never fewer — never padded beyond utility.</div>
+      </div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-icon">⏱️</div>
+      <div>
+        <div class="rule-title">Animation performance budget</div>
+        <div class="rule-desc">Max 3 simultaneously animated elements per viewport. Heavy blocks (Neural Map, Scroll Story) code-split and lazy-loaded. No layout shift after first paint.</div>
+      </div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-icon">🔒</div>
+      <div>
+        <div class="rule-title">Signature moments are earned</div>
+        <div class="rule-desc">Neural Map only fires once per course (the most concept-dense lesson). Time Capsule only in lesson 1–3. Cinematic Moment only for breakthrough concepts, never routine content.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- SEMANTIC MATCHING -->
+<div class="section">
+  <div class="section-eyebrow">Semantic Matching</div>
+  <h2>The visual system reads the subject matter.</h2>
+  <p class="section-desc">When a new course is created, its topic tags bias the DNA selection. An AI safety course should never look like a prompt engineering course. The system reads the subject and nudges the slot machine toward the right universe.</p>
+
+  <div class="semantic-grid">
+    <div class="semantic-card sc-cyber">
+      <div class="semantic-domain">Cybersecurity · AI Safety</div>
+      <h3>Quantum Terminal / Stark</h3>
+      <div class="semantic-tags">
+        <span class="stag">terminal archetype</span>
+        <span class="stag">arctic / slate palettes</span>
+        <span class="stag">monospace typography</span>
+        <span class="stag">technical personality</span>
+        <span class="stag">circuit bg treatment</span>
+      </div>
+    </div>
+    <div class="semantic-card sc-lead">
+      <div class="semantic-domain">Leadership · Strategy · Management</div>
+      <h3>Editorial Noir / Warm</h3>
+      <div class="semantic-tags">
+        <span class="stag">editorial archetype</span>
+        <span class="stag">gold / iris palettes</span>
+        <span class="stag">classic serif type</span>
+        <span class="stag">cinematic personality</span>
+        <span class="stag">noise film bg</span>
+      </div>
+    </div>
+    <div class="semantic-card sc-data">
+      <div class="semantic-domain">Data · Analytics · Statistics</div>
+      <h3>Arctic Glass / Calm</h3>
+      <div class="semantic-tags">
+        <span class="stag">scientific archetype</span>
+        <span class="stag">arctic / slate palettes</span>
+        <span class="stag">geometric type</span>
+        <span class="stag">technical personality</span>
+        <span class="stag">subtle grid bg</span>
+      </div>
+    </div>
+    <div class="semantic-card sc-future">
+      <div class="semantic-domain">Futures · Innovation · Emerging Tech</div>
+      <h3>Neon Bloom / Electric</h3>
+      <div class="semantic-tags">
+        <span class="stag">futuristic archetype</span>
+        <span class="stag">pulse / rose palettes</span>
+        <span class="stag">kinetic type</span>
+        <span class="stag">electric personality</span>
+        <span class="stag">aurora glow bg</span>
+      </div>
+    </div>
+    <div class="semantic-card sc-ethics">
+      <div class="semantic-domain">Ethics · Policy · Society</div>
+      <h3>Thermal Amber / Provocateur</h3>
+      <div class="semantic-tags">
+        <span class="stag">provocateur archetype</span>
+        <span class="stag">amber / nova palettes</span>
+        <span class="stag">brutalist type</span>
+        <span class="stag">stark personality</span>
+        <span class="stag">topographic bg</span>
+      </div>
+    </div>
+    <div class="semantic-card sc-code">
+      <div class="semantic-domain">Programming · MLOps · Engineering</div>
+      <h3>Void Minimal / Technical</h3>
+      <div class="semantic-tags">
+        <span class="stag">modular archetype</span>
+        <span class="stag">lime / arctic palettes</span>
+        <span class="stag">technical mono type</span>
+        <span class="stag">calm personality</span>
+        <span class="stag">clean flat bg</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- IMPLEMENTATION PHASES -->
+<div class="section">
+  <div class="section-eyebrow">Implementation Plan</div>
+  <h2>Five phases. Conductor first, always.</h2>
+  <p class="section-desc">The phases are ordered by leverage, not complexity. The Conductor is built first because everything else is decorative without it. Each phase can be tested in production independently.</p>
+
+  <div class="phases">
+    <div class="phase ph1">
+      <div class="phase-header">
+        <div class="phase-num">01</div>
+        <div class="phase-info">
+          <div class="phase-title">The Conductor — Lesson Rhythm Engine</div>
+          <div class="phase-tagline">The intelligence layer. Orchestration logic, anti-chaos rules, signature moment placement, five-beat arc scoring.</div>
+        </div>
+        <div class="phase-meta"><div class="phase-impact">Highest leverage</div></div>
+      </div>
+      <div class="phase-body">
+        <ul class="phase-tasks">
+          <li>Define block emotional weights (calm / building / tension / insight / reward) in a config file</li>
+          <li>Build Conductor function: takes lesson arc position + module mood → returns block sequence constraints</li>
+          <li>Implement dramatic density budget (max 2 high-intensity blocks per lesson)</li>
+          <li>Implement consecutive-drama prevention rule</li>
+          <li>Implement signature moment placement logic (Neural Map once per course, Cinematic Moment gated)</li>
+          <li>Wire Conductor output into LessonExpanderAgent prompt construction</li>
+          <li>Add lesson arc position field to DB (lesson_index / total_lessons / module_position)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase ph2">
+      <div class="phase-header">
+        <div class="phase-num">02</div>
+        <div class="phase-info">
+          <div class="phase-title">Module DNA — The Missing Middle</div>
+          <div class="phase-tagline">Give every module its own visual district: hue-shifted accent, mood, header style, transition character.</div>
+        </div>
+        <div class="phase-meta"><div class="phase-impact">High impact</div></div>
+      </div>
+      <div class="phase-body">
+        <ul class="phase-tasks">
+          <li>Add module_dna JSONB column to course_topics table (Supabase migration)</li>
+          <li>Build generateModuleDNA(courseId, moduleIndex, courseDNA) — derives hue shift, mood, header style</li>
+          <li>Implement 4 module moods: opening (airy, spacious) / building (denser) / climax (high contrast) / resolution (warm, settled)</li>
+          <li>Build 5 module header component variants</li>
+          <li>Wire ModuleDNA into layout server component and ModuleDNAProvider context</li>
+          <li>Create module entry transition — brief atmospheric shift when navigating between modules</li>
+          <li>Expose module mood as a CSS custom property so block components can read it</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase ph3">
+      <div class="phase-header">
+        <div class="phase-num">03</div>
+        <div class="phase-info">
+          <div class="phase-title">Semantic Matching + DNA Expansion</div>
+          <div class="phase-tagline">Course topic drives archetype bias. Expand palettes to 48, archetypes to 18, typography to 10. Add 6 new visual worlds.</div>
+        </div>
+        <div class="phase-meta"><div class="phase-impact">High visual impact</div></div>
+      </div>
+      <div class="phase-body">
+        <ul class="phase-tasks">
+          <li>Add topic_tags[] to courses table; populate for existing courses</li>
+          <li>Build SEMANTIC_BIAS_MAP: topic tags → archetype weight array (biases, not forces)</li>
+          <li>Expand course-dna-catalogue.ts: 18 archetypes, 48 palettes, 10 typography, 8 bg treatments</li>
+          <li>Add 6 new visual worlds as distinct archetype + palette combinations</li>
+          <li>Implement biased DNA generation: SHA-256 seed modified by semantic weights</li>
+          <li>Re-generate DNA for all existing courses with new catalogue</li>
+          <li>Expand lesson accent cycle from 4 to 12 colours</li>
+          <li>Implement 6 lesson emotional personalities affecting all 10 rotating block components</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase ph4">
+      <div class="phase-header">
+        <div class="phase-num">04</div>
+        <div class="phase-info">
+          <div class="phase-title">New Block Types — 15 New Instruments</div>
+          <div class="phase-tagline">Build all 15 new block components. Cinematic Moment, Neural Map, Signal Interrupt, Time Capsule and 11 more.</div>
+        </div>
+        <div class="phase-meta"><div class="phase-impact">Feature richness</div></div>
+      </div>
+      <div class="phase-body">
+        <ul class="phase-tasks">
+          <li>Priority tier 1 (signature features): Neural Map, Signal Interrupt, Time Capsule, Cinematic Moment</li>
+          <li>Priority tier 2 (interaction): Depth Charge, Contrast Duel, Myth Buster, Perspective Toggle, Tension Arc</li>
+          <li>Priority tier 3 (data/media): Animated Stat, Reality Anchor, Code Cinema, Quote Mosaic, Scroll Story, World Stage</li>
+          <li>Add all 15 to lesson-blocks.ts type definitions and content-sanitizer.ts repair rules</li>
+          <li>Wire Time Capsule cross-lesson persistence to Supabase user_predictions table</li>
+          <li>Expand block layout modes from 3 to 8 for the existing 10 rotating blocks</li>
+          <li>Add micro-variation seeding (border-radius, glow, spacing offsets) to all blocks</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase ph5">
+      <div class="phase-header">
+        <div class="phase-num">05</div>
+        <div class="phase-info">
+          <div class="phase-title">Performance + Polish</div>
+          <div class="phase-tagline">Code-split heavy blocks. Animation budget enforcement. Lazy loading. Luxury UX means zero-friction response.</div>
+        </div>
+        <div class="phase-meta"><div class="phase-impact">Mandatory</div></div>
+      </div>
+      <div class="phase-body">
+        <ul class="phase-tasks">
+          <li>Dynamic import() for heavy blocks: Neural Map, Scroll Story, World Stage, Code Cinema</li>
+          <li>Intersection Observer lazy activation for all animated blocks (no off-screen animation)</li>
+          <li>Animation frame budget: max 3 simultaneously animated elements enforced via Conductor</li>
+          <li>Preload next lesson's block JS during idle time on current lesson</li>
+          <li>CLS elimination audit — all blocks declare min-height before content loads</li>
+          <li>Motion preference respect: prefers-reduced-motion disables non-essential animations globally</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="closing">
+  <h2>The platform becomes <em style="font-style:normal;background:linear-gradient(135deg,var(--iris),var(--pulse));-webkit-background-clip:text;-webkit-text-fill-color:transparent">the lesson</em>.</h2>
+  <p>When the Conductor works correctly, learners will not notice the design system. They will only feel that this course understood them — that it knew when to be quiet, when to challenge, and when to celebrate. That is the invisible creative director.</p>
+</div>
+
+</body>
+</html>

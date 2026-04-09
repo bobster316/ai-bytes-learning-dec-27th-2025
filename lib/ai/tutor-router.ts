@@ -1,5 +1,4 @@
-
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { OpenAI } from "openai";
 
 interface RouterOutput {
     intent: "COURSE_CONTENT" | "GREETING" | "GENERAL_ASSISTANCE" | "OFF_TOPIC";
@@ -9,14 +8,12 @@ interface RouterOutput {
 }
 
 export class TutorRouter {
-    private model: any;
+    private openai: OpenAI;
 
     constructor() {
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-        // Use Flash for speed and low cost
-        this.model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash-lite-preview-02-05", // Or the latest flash model available
-            generationConfig: { responseMimeType: "application/json" }
+        this.openai = new OpenAI({
+            baseURL: "https://openrouter.ai/api/v1",
+            apiKey: process.env.OPENROUTER_API_KEY || "",
         });
     }
 
@@ -59,10 +56,14 @@ export class TutorRouter {
         `;
 
         try {
-            const result = await this.model.generateContent(prompt);
-            const response = result.response;
-            const text = response.text();
+            const result = await this.openai.chat.completions.create({
+                model: "deepseek/deepseek-v3.2",
+                messages: [{ role: "user", content: prompt }],
+                response_format: { type: "json_object" }
+            });
+            const text = result.choices[0].message.content;
 
+            if (!text) throw new Error("Empty response from OpenRouter");
             return JSON.parse(text) as RouterOutput;
         } catch (error) {
             console.error("Router failed, defaulting to search:", error);

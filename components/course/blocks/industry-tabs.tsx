@@ -21,7 +21,7 @@ export function IndustryTabs({ heading, introText, tabs }: any) {
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             >
                 <h2 className="font-display text-[1.6rem] font-bold text-white mb-2 pl-4 relative">
-                    <span className="absolute left-0 top-1 bottom-1 w-[3px] rounded-full bg-[#4b98ad]" />
+                    <span className="absolute left-0 top-1 bottom-1 w-[3px] rounded-full bg-[#9B8FFF]" />
                     {heading}
                 </h2>
                 <p className="font-body text-[15px] text-[#8A8AB0] mb-4">

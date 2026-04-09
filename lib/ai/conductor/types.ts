@@ -18,6 +18,8 @@ export interface Beat {
     intensity: number;
 }
 
+export type OpeningType = 'question' | 'contradiction' | 'scenario' | 'stat' | 'bold_claim';
+
 export interface ConductorMemory {
     /** Intensity (0–1) of the final block in the previous lesson. 0 if first lesson. */
     previousLessonEndIntensity: number;
@@ -25,6 +27,8 @@ export interface ConductorMemory {
     firedSignatureMoments: SignatureMomentType[];
     /** Block types used in each of the last 3 lessons. Prevents type repetition across lessons. */
     recentBlockTypeHistory: string[][];
+    /** Opening types used in the last 2 lessons — prevents consecutive same-opener. */
+    recentOpeningTypes: OpeningType[];
 }
 
 export interface ConductorContext {
@@ -57,6 +61,8 @@ export interface ConductorOutput {
     lessonAccentIndex: number;
     /** Seeded integer for micro-variation (border-radius noise, glow intensity, spacing offsets) */
     microVariationSeed: number;
+    /** Which opening pattern the generator must use for the hook block */
+    openingType: OpeningType;
     /** Human-readable rhythm directive injected into LessonExpanderAgent system prompt */
     conductorNotes: string;
 }

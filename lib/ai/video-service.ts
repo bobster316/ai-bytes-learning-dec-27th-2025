@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { CourseState } from './course-state';
 import { diagramGenerator } from '@/lib/diagrams/diagram-generator';
+import { kieVideoService } from './kie-video-service';
 
 const PEXELS_API_KEY = process.env.PEXELS_API_KEY;
 const COVERR_API_KEY = process.env.COVERR_API_KEY || 'dummy-key'; // Assuming Coverr usage if available
@@ -36,6 +37,22 @@ export class VideoService {
         // Determine the best query: video_search_query > videoPrompt > title > query
         const bestQuery = (courseState as any)?.video_search_query || query;
         
+        // Tier 0: Dedicated High-Fidelity Generation (Kie.ai Generation)
+        try {
+            console.log(`[VideoService] Triggering dedicated Kie.ai generation for: ${bestQuery}`);
+            const kieResult = await kieVideoService.generateVideo(bestQuery);
+            if (kieResult && kieResult.url) {
+                return {
+                    url: kieResult.url,
+                    alt: bestQuery,
+                    tier: 0,
+                    source: kieResult.source || 'kie-video'
+                };
+            }
+        } catch (e) {
+            console.error('[VideoService] Kie generation failed, falling back to stock waterfall.', e);
+        }
+
         // Tier 1: High-fidelity intent match (Pexels)
         const tier1 = await this.searchPexelsVideo(bestQuery, avoidedUrls);
         if (tier1) return { ...tier1, tier: 1 };

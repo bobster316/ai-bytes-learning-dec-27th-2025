@@ -177,7 +177,7 @@ export function TopicQuizRenderer({ quizTitle, questions, courseId, topicId, qui
                 particleCount: newAttempts === 1 ? 100 : 50,
                 spread: 70,
                 origin: { y: 0.6 },
-                colors: ['#4b98ad', '#34d399', '#ffffff']
+                colors: ['#9B8FFF', '#34d399', '#ffffff']
             });
         } else {
             // Trigger failure shake
@@ -215,7 +215,7 @@ export function TopicQuizRenderer({ quizTitle, questions, courseId, topicId, qui
                     particleCount: 300,
                     spread: 120,
                     origin: { y: 0.5 },
-                    colors: ['#4b98ad', '#34d399', '#7c3aed', '#ffffff']
+                    colors: ['#9B8FFF', '#34d399', '#7c3aed', '#ffffff']
                 });
             }
 

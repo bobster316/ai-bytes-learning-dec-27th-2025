@@ -23,14 +23,14 @@ const perks = [
 
 export default function CareersPage() {
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#020617]">
+        <div className="min-h-screen bg-[var(--page-bg)]">
             <Header />
 
             {/* Hero */}
-            <section className="relative mx-auto w-[95%] max-w-screen-2xl my-4 rounded-3xl border border-white/5 shadow-2xl py-16 bg-slate-900 overflow-hidden">
+            <section className="keep-dark relative mx-auto w-[95%] max-w-screen-2xl my-4 rounded-3xl border border-white/5 shadow-2xl py-16 bg-slate-900 overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-900/20 via-slate-900 to-slate-900"></div>
                 <div className="container relative z-10 mx-auto px-4 max-w-screen-2xl text-center">
-                    <Badge className="mb-4 bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
+                    <Badge className="mb-4 bg-[#00FFB3]/20 text-[#00FFB3] border-[#00FFB3]/30">
                         JOIN OUR TEAM
                     </Badge>
                     <h1 className="text-4xl lg:text-5xl font-black text-white mb-4">
@@ -45,16 +45,16 @@ export default function CareersPage() {
             {/* Perks */}
             <section className="py-16">
                 <div className="container mx-auto px-4 max-w-screen-2xl">
-                    <h2 className="text-3xl font-bold text-center text-slate-900 dark:text-white mb-12">Why Work With Us</h2>
+                    <h2 className="text-3xl font-bold text-center text-white mb-12">Why Work With Us</h2>
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {perks.map((perk, idx) => (
-                            <Card key={idx} className="bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50 text-center">
+                            <Card key={idx} className="bg-white/[0.04] border-white/[0.08] text-center">
                                 <CardContent className="p-6 space-y-3">
                                     <div className="w-14 h-14 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center mx-auto">
                                         <perk.icon className="w-7 h-7 text-white" />
                                     </div>
-                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">{perk.title}</h3>
-                                    <p className="text-slate-600 dark:text-slate-400 text-sm">{perk.description}</p>
+                                    <h3 className="text-lg font-bold text-white">{perk.title}</h3>
+                                    <p className="text-white/50 text-sm">{perk.description}</p>
                                 </CardContent>
                             </Card>
                         ))}
@@ -63,16 +63,16 @@ export default function CareersPage() {
             </section>
 
             {/* Open Positions */}
-            <section className="py-16 bg-white dark:bg-slate-900/50">
+            <section className="py-16 bg-[var(--page-surface)]">
                 <div className="container mx-auto px-4 max-w-4xl">
-                    <h2 className="text-3xl font-bold text-center text-slate-900 dark:text-white mb-12">Open Positions</h2>
+                    <h2 className="text-3xl font-bold text-center text-white mb-12">Open Positions</h2>
                     <div className="space-y-4">
                         {openPositions.map((job, idx) => (
-                            <Card key={idx} className="bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50 hover:shadow-lg transition-all cursor-pointer">
+                            <Card key={idx} className="bg-white/[0.03] border-white/[0.08] hover:shadow-lg transition-all cursor-pointer">
                                 <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                     <div>
-                                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{job.title}</h3>
-                                        <div className="flex flex-wrap gap-3 text-sm text-slate-500">
+                                        <h3 className="text-lg font-bold text-white mb-2">{job.title}</h3>
+                                        <div className="flex flex-wrap gap-3 text-sm text-white/40">
                                             <span className="flex items-center gap-1"><Briefcase className="w-4 h-4" /> {job.department}</span>
                                             <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {job.location}</span>
                                             <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> {job.type}</span>
@@ -85,7 +85,7 @@ export default function CareersPage() {
                             </Card>
                         ))}
                     </div>
-                    <p className="text-center text-slate-500 mt-8">Don't see a fit? Email us at <a href="mailto:admin@ai-bytes.org" className="text-cyan-500 hover:underline">admin@ai-bytes.org</a></p>
+                    <p className="text-center text-white/40 mt-8">Don't see a fit? Email us at <a href="mailto:admin@ai-bytes.org" className="text-[#00FFB3] hover:underline">admin@ai-bytes.org</a></p>
                 </div>
             </section>
 

@@ -1,0 +1,66 @@
+{
+  "course_id": 871,
+  "course_topic": "Deep Learning",
+  "domain_history": [
+    "Gardening",
+    "Music",
+    "Nature",
+    "Culinary"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey",
+    "The Contrast",
+    "The Build"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer",
+    "Confident Expert",
+    "Playful Storyteller"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "neural network data flow",
+    "deep neural network architecture",
+    "neural network layers",
+    "backpropagation visualisation",
+    "deep learning environment setup",
+    "configure GPU support deep learning",
+    "network weights adjusting",
+    "model metrics analysis"
+  ],
+  "used_image_urls": [
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1775036785052-7nevx5-a%20glowing%20neural%20net.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1775036779348-qeavc-a%20meticulously%20detai.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1775036785269-07jzoi-a%20meticulously%20detai.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1775036871129-v9iul7-a%20detailed,%20interact.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1775036867119-7i0fc-a%20detailed%20visualisa.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1775036874499-69eojd-an%20ultra-detailed%20fl.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1775036960615-5q5ow-a%20well-organised%20cod.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1775036959543-qwhrlu-a%20meticulously%20detai.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1775037058588-8y1exd-visualize%20a%20neural%20n.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1775037044322-7jc4ml-ultra-detailed%20rende.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1775037055204-ng2378-create%20an%20extremely%20.jpeg"
+  ],
+  "used_video_urls": [],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 4,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 2,
+    "type_cards": 3,
+    "interactive_vis": 1,
+    "mindmap": 0,
+    "image_text_row": 3,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

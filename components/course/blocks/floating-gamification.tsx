@@ -43,7 +43,7 @@ export function FloatingGamification({ xp, streak }: FloatingGamificationProps) 
             >
                 <div className="flex flex-col items-end mr-1">
                     <span className="font-mono text-[9px] text-[#8A8AB0] uppercase tracking-tighter leading-none mb-1">Total Yield</span>
-                    <span className="font-outfit text-sm font-black text-white leading-none">{xp.toLocaleString()} <span className="text-[#4b98ad]">XP</span></span>
+                    <span className="font-outfit text-sm font-black text-white leading-none">{xp.toLocaleString()} <span className="text-[#00FFB3]">XP</span></span>
                 </div>
 
                 <div className="w-px h-8 bg-white/10" />

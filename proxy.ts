@@ -81,5 +81,6 @@ export const config = {
     "/my-learning/:path*",
     "/account/:path*",
     "/auth/:path*",
+    "/courses/:path*",
   ],
 };

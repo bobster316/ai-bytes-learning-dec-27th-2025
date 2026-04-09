@@ -201,8 +201,40 @@ export async function checkCourseCompletion(courseId: string) {
         .map((q: any) => q.id)
 
     if (allQuizIds.length === 0) {
-        // If no quizzes, check lessons? For now, let's assume quizzes are the gate.
-        return { completed: true }
+        // No quizzes — gate on all lessons being completed instead
+        const { data: allLessons } = await supabase
+            .from('course_lessons')
+            .select('id, course_topics!inner(course_id)')
+            .eq('course_topics.course_id', courseId)
+
+        if (!allLessons || allLessons.length === 0) {
+            return { completed: false }
+        }
+
+        const { data: completedLessons } = await supabase
+            .from('user_lesson_progress')
+            .select('lesson_id')
+            .eq('user_id', user.id)
+            .eq('course_id', courseId)
+            .eq('status', 'completed')
+
+        const completedIds = new Set(completedLessons?.map((l: any) => l.lesson_id))
+        const allLessonsDone = allLessons.every((l: any) => completedIds.has(l.id))
+
+        if (allLessonsDone) {
+            await supabase
+                .from('user_course_progress')
+                .upsert({
+                    user_id: user.id,
+                    course_id: courseId,
+                    status: 'completed',
+                    overall_progress_percentage: 100,
+                    completed_at: new Date().toISOString()
+                }, { onConflict: 'user_id, course_id' })
+            return { completed: true }
+        }
+
+        return { completed: false }
     }
 
     const { data: attempts } = await supabase
@@ -271,7 +303,11 @@ export async function generateCertificate(courseId: string) {
             completion_date: new Date().toISOString(),
             final_score: 100, // Placeholder
             metadata: {
-                studentName: user.user_metadata?.full_name || user.email?.split('@')[0] || "Student",
+                studentName: user.user_metadata?.full_name
+                    || (user.user_metadata?.first_name && user.user_metadata?.last_name
+                        ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`
+                        : null)
+                    || user.email?.split('@')[0] || "Student",
                 courseTitle: course?.title || "Course",
                 score: 100
             }

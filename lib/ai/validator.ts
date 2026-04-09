@@ -169,9 +169,12 @@ export class CourseValidator {
         }).filter(Boolean);
         const fullNarration = fullNarrationChunks.join(' ');
         
-        if (fullNarration.length > 0) {
+        if (fullNarration.length > 0 && courseState.narration_history.length >= 2) {
+            // Only check similarity after 2+ lessons exist — single-lesson history produces
+            // inflated scores. Threshold is 0.6 (was 0.35) — focused single-topic courses
+            // share domain vocabulary and 0.35 caused false rejections on every lesson.
             const simScore = getNarrationSimilarity(fullNarration, courseState.narration_history);
-            if (simScore >= 0.35) {
+            if (simScore >= 0.60) {
                 failures.push(`NARRATION SIMILARITY: Your text content is too semantically similar to a previous lesson (Score: ${Math.round(simScore*100)}%). Rewrite to use completely different phrasing.`);
                 score -= 0.25;
             }

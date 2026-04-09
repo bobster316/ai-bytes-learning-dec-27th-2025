@@ -5,8 +5,9 @@ import { useCourseDNA } from "../course-dna-provider";
 
 
 // ── Markdown helpers ─────────────────────────────────────────────────────────
-function processMarkdown(raw: string, extractedKeyTerms: any[]): string {
-    if (!raw) return raw;
+function processMarkdown(raw: any, extractedKeyTerms: any[]): string {
+    if (!raw) return '';
+    if (typeof raw !== 'string') return String(raw);
     let result = raw
         .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
         .replace(/\*(.+?)\*/g,     "<em>$1</em>");
@@ -42,9 +43,11 @@ export function TextSection({ heading, title, sectionLabel, label, paragraphs, b
     const finalLabel   = sectionLabel || label;
     const hasEmphasis  = finalHeading?.includes("**");
 
-    const allParagraphs: string[] = paragraphs?.length > 0
+    const allParagraphs: string[] = (paragraphs?.length > 0
         ? paragraphs
-        : (body || text || content) ? [body || text || content] : [];
+        : (body || text || content) ? [body || text || content] : [])
+        .filter((p: any) => p != null)
+        .map((p: any) => typeof p === 'string' ? p : JSON.stringify(p));
 
     const [lede, ...rest] = allParagraphs;
 
@@ -85,7 +88,7 @@ export function TextSection({ heading, title, sectionLabel, label, paragraphs, b
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.55 }}
-                    className="font-body text-[1.1rem] text-[#d8d8ec] leading-[1.9] mb-10 [&_strong]:font-semibold [&_strong]:text-white [&_em]:text-[#4b98ad]"
+                    className="font-body text-[1.1rem] text-[#d8d8ec] leading-[1.9] mb-10 [&_strong]:font-semibold [&_strong]:text-white [&_em]:text-[#00FFB3]"
                     dangerouslySetInnerHTML={{ __html: processMarkdown(lede, extractedKeyTerms) }}
                 />
             )}
@@ -118,7 +121,7 @@ export function TextSection({ heading, title, sectionLabel, label, paragraphs, b
                                 {String(i + 2).padStart(2, "0")}
                             </div>
                             <p
-                                className="font-body text-[1rem] text-[#c0c0d8] leading-[1.85] [&_strong]:font-semibold [&_strong]:text-white [&_em]:text-[#4b98ad]"
+                                className="font-body text-[1rem] text-[#c0c0d8] leading-[1.85] [&_strong]:font-semibold [&_strong]:text-white [&_em]:text-[#00FFB3]"
                                 dangerouslySetInnerHTML={{ __html: processMarkdown(p, extractedKeyTerms) }}
                             />
                         </motion.div>

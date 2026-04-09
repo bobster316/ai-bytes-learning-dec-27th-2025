@@ -1,0 +1,47 @@
+{
+  "course_id": 900,
+  "course_topic": "Natural Language Processing Specialization",
+  "domain_history": [
+    "Gardening",
+    "Music"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "NLP tokenization animation data stream",
+    "word sense disambiguation visual context",
+    "AI tokenization process animation"
+  ],
+  "used_image_urls": [
+    "https://v3b.fal.media/files/b/0a95233a/5WjBLiwfHRT-2xCTwIzMP_acd7b3eb1ec64ca7b163554c624e173e.jpg",
+    "https://v3b.fal.media/files/b/0a95233a/Be5C9EQt8wx3s8ZVuF_A-_f86f6bd61dac4316aced672930e1003c.jpg",
+    "https://v3b.fal.media/files/b/0a952342/0uHkbCdajrJJt6A7guag7_1d8a9020ad7a4df38265358891418504.jpg"
+  ],
+  "used_video_urls": [],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 0,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 2,
+    "type_cards": 1,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 1,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

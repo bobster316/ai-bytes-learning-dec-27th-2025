@@ -6,8 +6,8 @@ async function triggerCourseGeneration() {
 
     // Test Payload
     const payload = {
-        courseName: "Introduction to Constellation Automotive Group",
-        courseDescription: "Employee induction for Constellation Automotive Group (owners of BCA, cinch, Marshall). STRICT REQUIREMENT: Create exactly 2 Modules, with 1 Lesson per Module.",
+        courseName: "Introduction to Machine Learning",
+        courseDescription: "A beginner's guide to how machines learn from data.",
         difficultyLevel: "beginner",
         targetDuration: 10,
         targetAudience: "New Employees",

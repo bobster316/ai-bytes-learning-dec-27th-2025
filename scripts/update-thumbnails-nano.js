@@ -1,9 +1,8 @@
 const { createClient } = require('@supabase/supabase-js');
-const { GoogleGenAI } = require('@google/genai');
 require('dotenv').config({ path: '.env.local' });
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
-const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
 async function uploadToStorage(buffer, prompt) {
     try {
@@ -42,22 +41,8 @@ async function generateImage(title) {
     try {
         const prompt = `Create a high-impact, cinematic 3D render for the eLearning course: "${title}". Use weightless visual metaphors in a dark pro tech void. NO TEXT.`;
 
-        const response = await client.models.generateContent({
-            model: 'gemini-2.5-flash-image',
-            contents: prompt,
-            config: {
-                temperature: 0.85
-            }
-        });
-
-        if (response.candidates && response.candidates[0].content && response.candidates[0].content.parts) {
-            const part = response.candidates[0].content.parts.find(p => p.inlineData);
-            if (part && part.inlineData && part.inlineData.data) {
-                const buffer = Buffer.from(part.inlineData.data, 'base64');
-                const url = await uploadToStorage(buffer, title);
-                return url;
-            }
-        }
+        console.log("Image generation disabled (migrating to new fal.ai / text-based prompt system). Gemini has been deprecated.");
+        return null;
     } catch (error) {
         console.error('Generation failed:', error);
     }

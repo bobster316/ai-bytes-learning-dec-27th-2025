@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, X, Maximize, Volume2, VolumeX, Film, Image as LucideImage } from "lucide-react";
 
 interface VideoPlayerProps {
-    url?: string;        // Veo cinematic video overview
+    url?: string;        // Cinematic cinematic video overview
     introUrl?: string;   // AI Avatar intro video
     audioUrl?: string;   // NotebookLM narration audio (separate from video)
     images?: any[];      // Lesson images for slideshow fallback
@@ -27,7 +27,7 @@ export function CinematicVideoPlayer({ url, introUrl, audioUrl, images = [], onC
     // Determines which element drives progress/controls in the current phase
     const getActiveMedia = () => {
         if (isIntroPlaying) return videoRef.current;   // intro AI avatar
-        if (url) return videoRef.current;               // main Veo video
+        if (url) return videoRef.current;               // main Cinematic video
         return audioRef.current;                        // audio-only slideshow
     };
 
@@ -153,7 +153,7 @@ export function CinematicVideoPlayer({ url, introUrl, audioUrl, images = [], onC
                             className="w-full h-full object-contain bg-[#12121A]"
                         />
                     ) : url ? (
-                        /* 2. MAIN VIDEO: Veo cinematic overview */
+                        /* 2. MAIN VIDEO: Cinematic cinematic overview */
                         <motion.video
                             key="main-video"
                             ref={videoRef}

@@ -1,0 +1,57 @@
+{
+  "course_id": 854,
+  "course_topic": "Introduction to Neural Networks",
+  "domain_history": [
+    "Travel",
+    "Culinary",
+    "Music"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey",
+    "The Contrast"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer",
+    "Confident Expert"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "neural network data flow",
+    "neural network prediction animation",
+    "error propagation visualisation",
+    "backpropagation image classifier"
+  ],
+  "used_image_urls": [
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774791420734-q5sitm-abstract%20visualisati.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774791419168-yk3udb-detailed%20diagram%20of%20.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774791421783-u0d24j-a%20multi-layered%20neur.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774791412086-y33l9-abstract%20representat.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774791516296-khcezl-visualize%20data%20flowi.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774791518499-wps4ar-a%20highly%20detailed%20an.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774791519605-z1y3g-a%20comprehensive%20and%20.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774791600463-fhk95j-a%20neural%20network%20lea.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774791616419-q8102-create%20an%20ultra-deta.jpeg"
+  ],
+  "used_video_urls": [],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 2,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 1,
+    "type_cards": 2,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 1,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

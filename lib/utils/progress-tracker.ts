@@ -30,11 +30,14 @@ export class ProgressTracker {
 
     // Persist progress to database
     try {
-      await this.db.updateGenerationProgress(
-        this.generationId,
-        step,
-        this.percentComplete
-      );
+      const db = await this.db;
+      if (typeof (db as any).updateGenerationProgress === 'function') {
+        await (db as any).updateGenerationProgress(
+          this.generationId,
+          step,
+          this.percentComplete
+        );
+      }
     } catch (error) {
       console.error('Failed to update progress in database:', error);
       // Don't throw - progress tracking failures shouldn't break generation

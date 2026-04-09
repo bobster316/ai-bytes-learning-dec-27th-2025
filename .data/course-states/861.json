@@ -1,0 +1,63 @@
+{
+  "course_id": 861,
+  "course_topic": "Generative AI: From Prompts to Production",
+  "domain_history": [
+    "Music",
+    "Gardening",
+    "Sports",
+    "Travel",
+    "Culinary"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey",
+    "The Contrast",
+    "The Build",
+    "The Zoom"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer",
+    "Confident Expert",
+    "Playful Storyteller",
+    "Warm Mentor"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "scalable data pipeline",
+    "optimize data workflows"
+  ],
+  "used_image_urls": [
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774854095694-nu6h8h-a%20futuristic%20prompt%20.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774854102070-e3ut2m-a%20detailed%20diagram%20i.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774854099736-5t1x9s-ultra-detailed%20scien.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774854237024-k3gutd-a%20command-line%20inter.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774854230541-0mxlkm-a%20detailed%20flowchart.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774854230291-js51wa-a%20detailed%20circuit%20b.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774854320535-y2kcu-blueprint%20of%20a%20data%20.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774854334173-2gjjt-photorealistic%203d%20is.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774854466393-t83nfx-design%20an%20interactiv.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774854465336-bl1qno-photorealistic%203d%20is.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774854458333-e97qdl-photorealistic%203d%20is.jpeg"
+  ],
+  "used_video_urls": [],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 1,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 1,
+    "type_cards": 1,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 0,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

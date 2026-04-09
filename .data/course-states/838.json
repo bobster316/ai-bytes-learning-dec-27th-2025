@@ -1,0 +1,54 @@
+{
+  "course_id": 838,
+  "course_topic": "Generative AI",
+  "domain_history": [
+    "Nature",
+    "Craftsmanship"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "Generative AI overview",
+    "AI supply chain"
+  ],
+  "used_image_urls": [
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774693198049-leijb-a%20glowing,%20abstract%20.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774693179359-cel7q-imagine%20a%20highly%20det.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774693198818-ga446b-3d%20isometric%20render%20.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774693194875-o5y9lf-mandatory:%20use%20minim.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774693181790-pktopc-imagine%20a%20dynamic%20vi.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774693181930-cermvmi-imagine%20a%20visualizat.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774693182428-ba2rvx-imagine%20a%20detailed%20d.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774693344596-nmfr5g-create%20an%20interactiv.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774693338366-0erwe-a%20futuristic%20hospita.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774693340697-stp2as-a%20digital%20artist%20usi.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774693333309-l7ddvo-a%20futuristic%20factory.jpeg"
+  ],
+  "used_video_urls": [],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 2,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 2,
+    "type_cards": 2,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 4,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

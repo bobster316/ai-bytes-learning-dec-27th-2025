@@ -1,0 +1,63 @@
+{
+  "course_id": 898,
+  "course_topic": "Generative AI for Everyone",
+  "domain_history": [
+    "Music",
+    "Nature",
+    "Gardening",
+    "Travel"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey",
+    "The Contrast",
+    "The Build"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer",
+    "Confident Expert",
+    "Playful Storyteller"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "AI architecture transformation generative",
+    "AI probability sampling generation visualisation",
+    "AI language model token prediction visualization",
+    "AI data flow animation wireframe",
+    "data corruption animation wireframe",
+    "AI prompt engineering animation"
+  ],
+  "used_image_urls": [
+    "https://v3b.fal.media/files/b/0a95233a/5WjBLiwfHRT-2xCTwIzMP_acd7b3eb1ec64ca7b163554c624e173e.jpg",
+    "https://v3b.fal.media/files/b/0a95233a/Be5C9EQt8wx3s8ZVuF_A-_f86f6bd61dac4316aced672930e1003c.jpg",
+    "https://v3b.fal.media/files/b/0a95233a/S4MVsLtCODIQ6_ALFKT6h_0f5a923f7b0a41ac82458aa587bb9271.jpg",
+    "https://v3b.fal.media/files/b/0a952342/0uHkbCdajrJJt6A7guag7_1d8a9020ad7a4df38265358891418504.jpg",
+    "https://v3b.fal.media/files/b/0a9525e2/Jv1JsflMdde6UW_peSTqb_0260c397951d4ec28d989a2b8a661513.jpg",
+    "https://v3b.fal.media/files/b/0a9525e2/Yd1BOhe4FQC59TRHjcsLR_3512e9c8b51647fa8ccb2b3a8d08fc26.jpg",
+    "https://v3b.fal.media/files/b/0a95234c/E04hULnpAA94kXCMrnMtj_fab96c7d9cc941deb019a6f670d8f5f2.jpg",
+    "https://v3b.fal.media/files/b/0a95234c/YFpsp9AWzFY_jTJy4jCgv_c1b17a31e4b44bde89f96ba005940af5.jpg",
+    "https://v3b.fal.media/files/b/0a952355/P-hqZuLrkpXiOWK0AJw9q_02e8db02cafb46069295e649a1944d07.jpg",
+    "https://v3b.fal.media/files/b/0a952355/qEACd6dmKBsUGNlKZ8XeB_03576684631843a89d4ac00f03c8d05a.jpg"
+  ],
+  "used_video_urls": [],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 4,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 4,
+    "type_cards": 2,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 2,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

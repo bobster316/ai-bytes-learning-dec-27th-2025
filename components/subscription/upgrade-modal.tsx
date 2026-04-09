@@ -57,19 +57,19 @@ export function UpgradeModal({ isOpen, onClose, reason, currentPlan = 'free' }: 
                         <div className="p-4 rounded-xl border border-cyan-500/20 bg-cyan-500/5 hover:border-cyan-500/40 transition-colors">
                             <div className="flex items-start justify-between">
                                 <div className="flex items-start gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center flex-shrink-0">
-                                        <Zap className="w-5 h-5 text-cyan-500" />
+                                    <div className="w-10 h-10 rounded-xl bg-[#00FFB3]/10 flex items-center justify-center flex-shrink-0">
+                                        <Zap className="w-5 h-5 text-[#00FFB3]" />
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-foreground">Byte Pass</h3>
                                         <p className="text-sm text-foreground/60 mb-2">Perfect for casual learners</p>
                                         <ul className="text-sm space-y-1">
                                             <li className="flex items-center gap-2 text-foreground/70">
-                                                <CheckCircle2 className="w-4 h-4 text-cyan-500" />
+                                                <CheckCircle2 className="w-4 h-4 text-[#00FFB3]" />
                                                 5 bytes per month
                                             </li>
                                             <li className="flex items-center gap-2 text-foreground/70">
-                                                <CheckCircle2 className="w-4 h-4 text-cyan-500" />
+                                                <CheckCircle2 className="w-4 h-4 text-[#00FFB3]" />
                                                 50 AI queries per month
                                             </li>
                                         </ul>

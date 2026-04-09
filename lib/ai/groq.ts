@@ -1,34 +1,35 @@
 
 import { CourseGenerationRequest, AIGeneratedOutline, AIGeneratedLesson } from '../types/course-generator';
 
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite-preview-02-05:generateContent';
+const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 export class GroqClient {
   private async makeRequest(prompt: string, isJson: boolean = true) {
-    const contents = [{
-      parts: [{ text: prompt }]
-    }];
+    const messages = [{ role: 'user', content: prompt }];
 
     try {
-      const response = await fetch(`${GEMINI_URL}?key=${process.env.GEMINI_API_KEY}`, {
+      const response = await fetch(`${OPENROUTER_URL}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            'HTTP-Referer': 'http://localhost:3000'
+        },
         body: JSON.stringify({
-          contents,
-          generationConfig: {
-            temperature: 0.7,
-            responseMimeType: isJson ? "application/json" : "text/plain",
-          }
+          model: 'deepseek/deepseek-v3.2',
+          messages,
+          temperature: 0.7,
+          ...(isJson ? { response_format: { type: "json_object" } } : {})
         })
       });
 
       if (!response.ok) {
         const err = await response.text();
-        throw new Error(`Gemini API Error: ${err}`);
+        throw new Error(`OpenRouter API Error: ${err}`);
       }
 
       const data = await response.json();
-      let text = data.candidates[0].content.parts[0].text;
+      let text = data.choices[0].message.content;
 
       if (isJson) {
         // Aggressive cleaning: strip markdown fences, extra whitespace, and potential prose
@@ -54,7 +55,7 @@ export class GroqClient {
       }
       return text;
     } catch (e) {
-      console.error("Groq/Gemini Request Failed:", e);
+      console.error("OpenRouter/DeepSeek Request Failed:", e);
       throw e;
     }
   }

@@ -20,7 +20,16 @@ export function CourseDNAProvider({
 }) {
     return (
         <CourseDNAContext.Provider value={render}>
-            {children}
+            <div
+                style={{
+                    "--course-primary":   render.primary_colour,
+                    "--course-secondary": render.secondary_colour,
+                    "--course-surface":   render.surface_colour,
+                    display: "contents",
+                } as React.CSSProperties}
+            >
+                {children}
+            </div>
         </CourseDNAContext.Provider>
     );
 }

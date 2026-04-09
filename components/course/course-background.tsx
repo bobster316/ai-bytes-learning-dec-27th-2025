@@ -14,11 +14,15 @@ export function CourseBackground() {
         return (
             <div className="fixed inset-0 -z-10" style={{ backgroundColor: surface_colour }}>
                 <div
-                    className="absolute inset-0 opacity-[0.03]"
+                    className="absolute inset-0 opacity-[0.06]"
                     style={{
                         backgroundImage: `linear-gradient(${primary_colour} 1px, transparent 1px), linear-gradient(90deg, ${primary_colour} 1px, transparent 1px)`,
                         backgroundSize: "60px 60px",
                     }}
+                />
+                <div
+                    className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full opacity-[0.12] blur-[140px] pointer-events-none"
+                    style={{ background: `radial-gradient(circle, ${primary_colour}, transparent 70%)` }}
                 />
             </div>
         );
@@ -27,6 +31,10 @@ export function CourseBackground() {
     if (bg_treatment === "grain_texture") {
         return (
             <div className="fixed inset-0 -z-10" style={{ backgroundColor: surface_colour }}>
+                <div
+                    className="absolute top-1/4 right-1/4 w-[600px] h-[600px] rounded-full opacity-[0.15] blur-[140px] pointer-events-none"
+                    style={{ background: `radial-gradient(circle, ${primary_colour}, transparent 70%)` }}
+                />
                 <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
                     <filter id="grain-bg">
                         <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
@@ -42,11 +50,11 @@ export function CourseBackground() {
     return (
         <div className="fixed inset-0 -z-10" style={{ backgroundColor: surface_colour }}>
             <div
-                className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full opacity-[0.08] blur-[120px] pointer-events-none"
+                className="absolute top-0 left-1/4 w-[700px] h-[700px] rounded-full opacity-[0.18] blur-[140px] pointer-events-none"
                 style={{ background: `radial-gradient(circle, ${primary_colour}, transparent 70%)` }}
             />
             <div
-                className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full opacity-[0.06] blur-[100px] pointer-events-none"
+                className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full opacity-[0.12] blur-[110px] pointer-events-none"
                 style={{ background: `radial-gradient(circle, ${secondary_colour}, transparent 70%)` }}
             />
             <svg className="absolute inset-0 w-full h-full opacity-[0.025]" xmlns="http://www.w3.org/2000/svg">

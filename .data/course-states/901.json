@@ -1,0 +1,82 @@
+{
+  "course_id": 901,
+  "course_topic": "Google AI Essentials Specialization",
+  "domain_history": [
+    "Craftsmanship",
+    "Travel",
+    "Culinary",
+    "Gardening",
+    "Travel",
+    "Sports"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey",
+    "The Contrast",
+    "The Build",
+    "The Zoom",
+    "The Dialogue"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer",
+    "Confident Expert",
+    "Playful Storyteller",
+    "Warm Mentor",
+    "Curious Explorer"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "AI rule-based to neural network transformation",
+    "AI dashboard recognition generation recommendation",
+    "ai tools selection animation",
+    "ai tool workflow animation",
+    "AI prompt structure wireframe animation",
+    "AI feedback loop interface animation",
+    "text restructuring AI directive typing",
+    "AI task workflow parallel processing animation",
+    "AI human in the loop validation checkpoint",
+    "data filter animation evaluation"
+  ],
+  "used_image_urls": [
+    "https://v3b.fal.media/files/b/0a95233a/5WjBLiwfHRT-2xCTwIzMP_acd7b3eb1ec64ca7b163554c624e173e.jpg",
+    "https://v3b.fal.media/files/b/0a95233a/Be5C9EQt8wx3s8ZVuF_A-_f86f6bd61dac4316aced672930e1003c.jpg",
+    "https://v3b.fal.media/files/b/0a952342/0uHkbCdajrJJt6A7guag7_1d8a9020ad7a4df38265358891418504.jpg",
+    "https://v3b.fal.media/files/b/0a9525e2/Jv1JsflMdde6UW_peSTqb_0260c397951d4ec28d989a2b8a661513.jpg",
+    "https://v3b.fal.media/files/b/0a95234c/E04hULnpAA94kXCMrnMtj_fab96c7d9cc941deb019a6f670d8f5f2.jpg",
+    "https://v3b.fal.media/files/b/0a95234c/YFpsp9AWzFY_jTJy4jCgv_c1b17a31e4b44bde89f96ba005940af5.jpg",
+    "https://v3b.fal.media/files/b/0a952355/P-hqZuLrkpXiOWK0AJw9q_02e8db02cafb46069295e649a1944d07.jpg",
+    "https://v3b.fal.media/files/b/0a952355/qEACd6dmKBsUGNlKZ8XeB_03576684631843a89d4ac00f03c8d05a.jpg",
+    "https://v3b.fal.media/files/b/0a952b82/dU7LFXAkjIBLVg0LTd2as_fdc1fff903d143b1ac3bc1ed82bbd397.jpg",
+    "https://v3b.fal.media/files/b/0a952360/zqnSzQzDqFBz-ER2LVEho_27bb1edfd5594493b26ff1a81ccff84e.jpg",
+    "https://v3b.fal.media/files/b/0a952b8d/sYHmXTAHu3F80810sY7ra_dd54575497d740689d36cbe8adf9ddfe.jpg",
+    "https://v3b.fal.media/files/b/0a952b8d/cmrCYu7EKQFYGAF8zDzQm_c7bd4b23a0bd4bb08f48fec73e09261a.jpg",
+    "https://v3b.fal.media/files/b/0a952b8d/r5T1TZt3p41_z8EtcrA1W_b2be2cf1b1314bc9889c7c0977d64be1.jpg",
+    "https://v3b.fal.media/files/b/0a952b8d/ZQym_OPO9shfnk2xzX5WU_d97fc527b91b47e2a7d3947b97ad02ab.jpg",
+    "https://v3b.fal.media/files/b/0a95236c/SQpkSPUkYXwyvffsMhbar_e53360988dba4bbca0cdd4e3aca5fb8a.jpg",
+    "https://v3b.fal.media/files/b/0a95236c/nGOzU8MHxzmQ1ZZ8Ao8jU_52a0a66b34ee4b98b34d8a1cfa6a3119.jpg",
+    "https://v3b.fal.media/files/b/0a952b96/eNGRlgc-hfgDPbfzAhEPM_a8ba47f94f6c4246a3fdbbfc88661c20.jpg",
+    "https://v3b.fal.media/files/b/0a952b96/V-v8PzH8SOFH6GKph8IvG_f1a6e7800d5f43f48286baa14bd65818.jpg",
+    "https://v3b.fal.media/files/b/0a952b96/3iDA-chqrozgkE9ibm8kO_0010cd19d43143f89878f904e43c7a1c.jpg"
+  ],
+  "used_video_urls": [],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 4,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 6,
+    "type_cards": 3,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 3,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

@@ -2,7 +2,7 @@
 
 export type MediaApiSource =
     | 'gemini-image'
-    | 'veo'
+    | 'kie'
     | 'pexels'
     | 'supabase-storage';
 
@@ -54,7 +54,7 @@ export interface ImageGenerationResult {
 
 export interface VideoGenerationResult {
     url: string | null;
-    source: 'veo' | 'pexels' | null;
+    source: 'kie' | 'pexels' | 'kie-video' | 'kie-wan-2.5' | 'kie-wan-2.6' | 'kie-kling-2.1' | null;
     errorCode: string | null;
     errorMessage: string | null;
 }

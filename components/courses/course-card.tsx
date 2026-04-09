@@ -50,6 +50,7 @@ export function CourseCard({ title, description, imageUrl, duration }: CourseCar
             src={imageUrl || "/placeholders/course-placeholder.jpg"}
             alt={title}
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="transition-transform duration-700 ease-out group-hover:scale-110"
             style={{ objectFit: 'cover' }}
           />
@@ -68,10 +69,10 @@ export function CourseCard({ title, description, imageUrl, duration }: CourseCar
           {/* Title moved to image overlay */}
           <p className="mb-4 text-sm text-gray-600 line-clamp-2">{description}</p>
           <div className="flex items-center justify-between text-sm">
-            <Badge variant="secondary" className="bg-slate-100/80 backdrop-blur-sm text-slate-600 border-none group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+            <Badge variant="secondary" className="bg-slate-100/80 backdrop-blur-sm text-slate-600 border-none group-hover:bg-[#00FFB3]/10 group-hover:text-[#00FFB3] transition-colors">
               Course
             </Badge>
-            <div className="flex items-center gap-1 text-gray-500 group-hover:text-blue-500 transition-colors">
+            <div className="flex items-center gap-1 text-gray-500 group-hover:text-[#00FFB3] transition-colors">
               <Clock className="h-4 w-4" />
               <span>{duration} mins</span>
             </div>

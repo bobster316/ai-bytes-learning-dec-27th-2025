@@ -26,20 +26,33 @@ export async function POST(request: NextRequest) {
 
         // Parse request body
         const body = await request.json();
-        const { plan, billingCycle } = body as { plan: PlanType; billingCycle: BillingCycle };
+        const { plan, billingCycle } = body as { plan: string; billingCycle: BillingCycle };
 
-        // Validate plan
-        const validPlans = ['standard', 'unlimited', 'professional'];
-        if (!plan || !validPlans.includes(plan as string)) {
+        // Normalise plan ID — pricing page sends "standard" but internal key is "byte_pass"
+        const planIdMap: Record<string, Exclude<PlanType, 'free' | 'enterprise'>> = {
+            standard:     'byte_pass',
+            byte_pass:    'byte_pass',
+            professional: 'professional',
+            unlimited:    'unlimited',
+        };
+
+        const selectedPlan = planIdMap[plan];
+        if (!selectedPlan) {
             return NextResponse.json(
-                { error: `Invalid plan selected. Must be one of: ${validPlans.join(', ')}` },
+                { error: `Invalid plan selected: ${plan}` },
                 { status: 400 }
             );
         }
 
-        // Get price ID
-        const selectedPlan = plan as Exclude<PlanType, 'free' | 'enterprise'>;
-        const selectedCycle = billingCycle || 'monthly';
+        // Validate billing cycle
+        if (billingCycle && billingCycle !== 'monthly' && billingCycle !== 'annual') {
+            return NextResponse.json(
+                { error: `Invalid billing cycle: ${billingCycle}` },
+                { status: 400 }
+            );
+        }
+
+        const selectedCycle: BillingCycle = billingCycle || 'monthly';
         const priceId = getPriceId(selectedPlan, selectedCycle);
 
         if (!priceId) {
@@ -94,11 +107,11 @@ export async function POST(request: NextRequest) {
             subscription_data: {
                 metadata: {
                     supabase_user_id: user.id,
-                    plan: plan,
-                    billing_cycle: billingCycle,
+                    plan: selectedPlan,       // always the normalised key e.g. "byte_pass"
+                    billing_cycle: selectedCycle,
                 },
                 // Only Apply 7-day free trial for Unlimited plan
-                trial_period_days: plan === 'unlimited' ? 7 : undefined,
+                trial_period_days: selectedPlan === 'unlimited' ? 7 : undefined,
             },
             allow_promotion_codes: true,
         });

@@ -18,7 +18,7 @@ export function RetrospectiveSummary({ xp, streak, termsCount, terms, onContinue
             viewport={{ once: true }}
             onViewportEnter={() => {
                 const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#00FFB3';
-                const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#4b98ad';
+                const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#9B8FFF';
 
                 const duration = 3 * 1000;
                 const animationEnd = Date.now() + duration;

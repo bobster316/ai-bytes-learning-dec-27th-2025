@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="446" height="146" viewBox="304 416 446 146" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Transparent background -->
+  <g transform="translate(312, 424)">
+    <!-- AI block -->
+    <rect x="0" y="0" width="142" height="130" rx="0" fill="#00C896"/>
+
+    <!-- AI -->
+    <text x="16" y="104"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="90"
+          font-weight="700"
+          letter-spacing="0"
+          fill="#FFFFFF">AI</text>
+
+    <!-- BYTES -->
+    <text x="165" y="74"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="74"
+          font-weight="700"
+          letter-spacing="0"
+          fill="#FFFFFF">BYTES</text>
+
+    <!-- LEARNING -->
+    <text x="190" y="122"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="44"
+          font-weight="700"
+          letter-spacing="4"
+          fill="#00C896">LEARNING</text>
+  </g>
+</svg>

@@ -174,7 +174,7 @@ export default async function CourseOverviewPage(props: { params: Promise<{ cour
     const priceDisplay = (course.price || 0) === 0 ? "Free" : `£${course.price}`;
 
     return (
-        <section className="min-h-screen flex flex-col bg-[#080810] font-sans selection:bg-[#4b98ad]/30 selection:text-[#4b98ad]">
+        <section className="min-h-screen flex flex-col bg-[var(--page-bg)] font-sans selection:bg-[#00FFB3]/30 selection:text-[#00FFB3]">
             {/* Client-side Utilities Hub */}
             <div className="hidden">
                 <AutoVideoSync courseId={courseId} />
@@ -189,11 +189,11 @@ export default async function CourseOverviewPage(props: { params: Promise<{ cour
             {/* --- PREMIUM HERO SECTION (Floating Card Style) --- */}
             {/* Added container wrapper to constrain width and standard spacing */}
             <div className="mx-auto w-[95%] max-w-screen-2xl pt-24 pb-8">
-                <div className="relative bg-[#0F1117] text-white rounded-[2.5rem] p-8 md:p-12 lg:p-16 overflow-hidden shadow-2xl">
+                <div className="relative bg-[#0F1117] text-white keep-dark rounded-[2.5rem] p-8 md:p-12 lg:p-16 overflow-hidden shadow-2xl">
 
                     {/* Dynamic Background Mesh */}
                     <div className="absolute inset-0 pointer-events-none">
-                        <div className="absolute top-[-20%] right-[-10%] w-[700px] h-[700px] bg-[#4b98ad]/15 rounded-full blur-[120px]" />
+                        <div className="absolute top-[-20%] right-[-10%] w-[700px] h-[700px] bg-[#00FFB3]/15 rounded-full blur-[120px]" />
                         <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] bg-[#00FFB3]/8 rounded-full blur-[100px]" />
                     </div>
 
@@ -203,7 +203,7 @@ export default async function CourseOverviewPage(props: { params: Promise<{ cour
                         <div className="lg:col-span-8 space-y-8">
                             {/* Badges */}
                             <div className="flex flex-wrap gap-3">
-                                <span className="px-3 py-1 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase bg-[#4b98ad]/15 border border-[#4b98ad]/30 text-[#4b98ad]">
+                                <span className="px-3 py-1 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase bg-[#00FFB3]/15 border border-[#00FFB3]/30 text-[#00FFB3]">
                                     {course.difficulty_level || "Premium Course"}
                                 </span>
                                 <span className="px-3 py-1 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase bg-white/5 border border-white/10 text-white/50">
@@ -249,14 +249,14 @@ export default async function CourseOverviewPage(props: { params: Promise<{ cour
                                                 View Certificate
                                             </Link>
                                         ) : (
-                                            <Link href={`/courses/${courseId}/lessons/${firstLessonId}`} className={cn(buttonVariants({ variant: "default" }), "h-14 px-8 rounded-full bg-white text-slate-900 hover:bg-slate-100 font-bold text-base transition-all w-full sm:w-auto")}>
-                                                <CirclePlay className="w-5 h-5 mr-2" />
+                                            <Link href={`/courses/${courseId}/lessons/${firstLessonId}`} suppressHydrationWarning className={cn(buttonVariants({ variant: "default" }), "h-14 px-8 rounded-full bg-white text-slate-900 hover:bg-slate-100 font-bold text-base transition-all w-full sm:w-auto")}>
+                                                <CirclePlay className="w-5 h-5 mr-2" suppressHydrationWarning />
                                                 Continue Learning
                                             </Link>
                                         )}
                                     </div>
                                 ) : (
-                                    <Button className="h-14 px-8 rounded-full bg-[#4b98ad] hover:bg-[#8a7fee] text-[#080810] font-bold text-base transition-all shadow-[0_0_30px_-5px_rgba(155,143,255,0.4)] w-full sm:w-auto border-0">
+                                    <Button className="h-14 px-8 rounded-full bg-[#00FFB3] hover:bg-[#8a7fee] text-[#080810] font-bold text-base transition-all shadow-[0_0_30px_-5px_rgba(155,143,255,0.4)] w-full sm:w-auto border-0">
                                         {(course.price || 0) > 0 ? (
                                             <>
                                                 <Lock className="w-5 h-5 mr-2" />
@@ -328,15 +328,15 @@ export default async function CourseOverviewPage(props: { params: Promise<{ cour
 
                 {/* Subscription CTA Card - Only show if not admin */}
                 {!hasAccess && (
-                    <div className="relative overflow-hidden rounded-3xl bg-[#0f0f1a] p-8 md:p-12 text-center border border-[#4b98ad]/20 shadow-2xl">
-                        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-[#4b98ad]/15 blur-[80px] rounded-full pointer-events-none" />
+                    <div className="relative overflow-hidden rounded-3xl bg-[#0f0f1a] keep-dark p-8 md:p-12 text-center border border-[#00FFB3]/20 shadow-2xl">
+                        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-[#00FFB3]/15 blur-[80px] rounded-full pointer-events-none" />
                         <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-64 h-64 bg-[#00FFB3]/8 blur-[80px] rounded-full pointer-events-none" />
                         <div className="relative z-10 space-y-6">
                             <h2 className="text-3xl font-bold text-white tracking-tight">Ready to start learning?</h2>
                             <p className="text-white/50 max-w-xl mx-auto text-lg">
                                 Get unlimited access to this course and 50+ others with our Pro subscription.
                             </p>
-                            <Button className="h-12 px-8 bg-[#4b98ad] hover:bg-[#8a7fee] text-[#080810] font-bold text-base rounded-full border-0">
+                            <Button className="h-12 px-8 bg-[#00FFB3] hover:bg-[#8a7fee] text-[#080810] font-bold text-base rounded-full border-0">
                                 Get All-Access Pass
                             </Button>
                             <p className="text-xs text-white/25 mt-4">

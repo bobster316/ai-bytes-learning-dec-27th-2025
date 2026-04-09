@@ -25,7 +25,7 @@ const LESSON_IDS = ['3568', '3567'];
 const MAX_CHARS = 800;
 
 async function condense(text: string, title: string, lessonTitle: string): Promise<string | null> {
-    const model = genai.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genai.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `You are writing content for a MICRO-LEARNING platform. Lessons must be bite-sized.
 

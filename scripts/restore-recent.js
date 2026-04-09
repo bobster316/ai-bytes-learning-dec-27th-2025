@@ -46,7 +46,7 @@ async function runNanoRestoration() {
             STRICT JSON ARRAY: ["prompt1", "prompt2", ...]`;
 
             const textResult = await genAI.models.generateContent({
-                model: 'gemini-2.0-flash',
+                model: 'gemini-2.5-flash',
                 contents: [{ role: 'user', parts: [{ text: promptGenerator }] }]
             });
             const textResponse = textResult.candidates[0].content.parts[0].text;

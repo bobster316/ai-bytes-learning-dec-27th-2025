@@ -14,7 +14,8 @@ import { BANNED_WORDS_INSTRUCTION } from './content-sanitizer';
 import { CourseValidator } from './validator';
 import { jsonrepair } from 'jsonrepair';
 
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const MODEL_NAME = 'deepseek/deepseek-v3.2';
 
 // ─── Universal Lesson Generation Spec v1.0 ──────────────────────────────────
 // Injected into every LessonExpanderAgent call after the conductor notes.
@@ -141,10 +142,10 @@ function sanitizeJson(text: string): string {
 
 abstract class BaseAgentV2 {
     protected async makeRequest(prompt: string | any[], isJson: boolean = true, allowRepair: boolean = true) {
-        const contents = Array.isArray(prompt) ? prompt : [{ role: 'user', parts: [{ text: prompt }] }];
-        if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is missing");
+        const messages = Array.isArray(prompt) ? prompt : [{ role: 'user', content: prompt }];
+        if (!process.env.OPENROUTER_API_KEY) throw new Error("OPENROUTER_API_KEY is missing");
 
-        const MAX_RETRIES = 3;
+        const MAX_RETRIES = 5;
         const TIMEOUT_MS = 120000; // Increased to 120s for 1000w prompts
 
         for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
@@ -152,23 +153,28 @@ abstract class BaseAgentV2 {
             const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
             try {
-                const response = await fetch(`${GEMINI_URL}?key=${process.env.GEMINI_API_KEY}`, {
+                const response = await fetch(`${OPENROUTER_URL}`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+                        'HTTP-Referer': 'http://localhost:3000'
+                    },
                     body: JSON.stringify({
-                        contents,
-                        generationConfig: {
-                            temperature: 0.7,
-                            maxOutputTokens: 65536,
-                            responseMimeType: isJson ? "application/json" : "text/plain",
-                        }
+                        model: MODEL_NAME,
+                        messages,
+                        temperature: 0.7,
+                        max_tokens: 8000,
+                        provider: { sort: "throughput" },
+                        ...(isJson ? { response_format: { type: "json_object" } } : {})
                     }),
                     signal: controller.signal
                 });
                 clearTimeout(timeoutId);
 
                 if (response.status === 429 || response.status === 503) {
-                    const delay = attempt * 2000;
+                    const delay = attempt * Math.max(3000, attempt * 1500); // Backoff: 3s, 6s, 13.5s, 24s, 37.5s (Total wait ~84s)
+                    console.warn(`[OpenRouter API] 429/503 hit. Retrying attempt ${attempt}/${MAX_RETRIES} after ${delay}ms...`);
                     await new Promise(resolve => setTimeout(resolve, delay));
                     continue;
                 }
@@ -181,8 +187,25 @@ abstract class BaseAgentV2 {
                 }
 
                 const data = await response.json();
-                let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (!text) throw new Error("Empty response from Gemini API");
+                let text = data.choices?.[0]?.message?.content;
+                if (!text) throw new Error("Empty response from OpenRouter API");
+
+                // Asynchronous Cost Logging
+                if (data.usage?.total_tokens && process.env.NEXT_PUBLIC_SUPABASE_URL) {
+                    const prompts = data.usage.prompt_tokens || 0;
+                    const comp = data.usage.completion_tokens || 0;
+                    const cost_usd = (prompts / 1000000) * 0.14 + (comp / 1000000) * 0.28;
+                    const supaUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/api_cost_logs`;
+                    const supaKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+                    if (supaKey && cost_usd > 0) {
+                        fetch(supaUrl, {
+                            method: 'POST',
+                            headers: { 'apikey': supaKey, 'Authorization': `Bearer ${supaKey}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+                            body: JSON.stringify({ provider: 'openrouter', operation: 'deepseek_v3_generation', units: data.usage.total_tokens, unit_type: 'total_tokens', cost_usd })
+                        }).catch(() => {});
+                    }
+                }
+
 
                 if (isJson) {
                     try {
@@ -221,6 +244,7 @@ abstract class BaseAgentV2 {
                 throw e;
             }
         }
+        throw new Error(`${this.constructor.name}: Reached maximum retries without a successful response. This indicates persistent rate-limiting or service unavailability.`);
     }
 
     private async repairJson(invalidJson: string, errorMessage: string): Promise<any> {
@@ -256,7 +280,7 @@ Lessons Per Topic: ${lessonsPerTopic}
 
 OUTPUT JSON FORMAT:
 {
-  "refinedCourseTitle": "string",
+  "refinedCourseTitle": "string (MAX 6 words. A concise, punchy main title. No extreme subtitles. BANNED WORDS: Demystified, Unveiled, Unleashed, 101, Introduction to)",
   "courseMetadata": {
     "category": "Must be EXACTLY one of: ${CATEGORY_LABELS_FOR_PROMPT}",
     "description": "A best-in-class world-leading micro e-learning course description (2-3 paragraphs) that uses high-conversion marketing psychology and clearly defines the 'Antigravity' value proposition.",
@@ -264,7 +288,7 @@ OUTPUT JSON FORMAT:
     "recommendedPrerequisites": ["string"],
     "learningObjectives": ["string"],
     "practicalOutcomes": ["string"],
-    "thumbnailPrompt": "string"
+    "thumbnailPrompt": "string (A pure visual description. CRITICAL: Provide instructions for an IMAGE ONLY. NEVER instruct the rendering of text, typography, or titles within the image.)"
   },
   "introVideoScript": {
     "hook": { "duration": 10, "script": "string", "visualCues": ["string"] },
@@ -291,7 +315,7 @@ OUTPUT JSON FORMAT:
       "lessons": [
         {
           "id": "les_001",
-          "lessonTitle": "string",
+          "lessonTitle": "string (MAX 6 words. No subtitles.)",
           "lessonOrder": number,
           "microObjective": "string",
           "learningObjectives": ["string"],
@@ -389,7 +413,7 @@ function getBlueprintForLesson(
     const seed = lessonNumber + structureName.length;
     const offset = seed % pool.blocks.length;
     const rotated = [...pool.blocks.slice(offset), ...pool.blocks.slice(0, offset)];
-    // Reduced from 7/8/9 — keeps total lesson blocks under the gemini-2.0-flash output token ceiling
+    // Reduced from 7/8/9 — keeps total lesson blocks under the deepseek output token ceiling
     const pickCount = difficulty === 'Beginner' ? 5 : difficulty === 'Advanced' ? 7 : 6;
 
     const filtered = difficulty === 'Beginner'
@@ -480,11 +504,12 @@ BLOCK TYPES — ABSOLUTE LAW:
   • NEVER invent custom types like "INTRO", "OUTRO", "explanatory", "foundation", "visual_insight" etc.
   • Use exactly one recap block. Never generate two recap blocks.
   • recap block MUST include: id (string), title (string e.g. "If you remember only three things…"), items (array of EXACTLY 4 objects, each with title + body). NEVER omit title. NEVER use "points" — the field is "items".
-  • quiz block MUST include: id (string), title (string e.g. "Test Your Understanding"), questions (array of EXACTLY 3 objects). The "title" field is MANDATORY — Gemini consistently omits it. DO NOT omit title.
+  • quiz block MUST include: id (string), title (string e.g. "Test Your Understanding"), questions (array of EXACTLY 3 objects). The "title" field is MANDATORY — LLM consistently omits it. DO NOT omit title.
   • instructor_insight block MUST include: id (string), insights (array of EXACTLY 3 objects, each with emoji, title, body). DO NOT add "heading" or "videoUrl" — those fields are not used.
 
 CONTENT BALANCE — GOLDEN RULE:
-  Every section = one idea → explained → visualised → reinforced.
+  Every section = one idea → explained using everyday metaphors → visualised → reinforced.
+  • DEMOCRATIZE AI (NO PHD REQUIRED): NEVER use academic jargon (e.g., CNNs, RNNs, O(n²), gradients, parameters) unless it is deeply explained using a simple real-world analogy. Write for a smart, curious beginner.
   • NEVER place a visual block (image_text_row, full_image, type_cards) with fewer than 3 explanatory sentences alongside it
   • NEVER produce a heading or label block with no substantive content below it
   • NEVER let 4+ consecutive text paragraphs appear without a visual break — insert a callout, image, or card block
@@ -502,7 +527,7 @@ STRUCTURE:
         { "id": "tab_2", "label": "Finance", "scenario": "...", "challenge": "...", "resolution": "..." },
         { "id": "tab_3", "label": "Manufacturing", "scenario": "...", "challenge": "...", "resolution": "..." }
       ]
-  • key_terms blocks:      minimum 12 terms; each term MUST have "definition" (2 sentences). If the topic has fewer than 12 natural terms, add related terms from the broader field
+  • key_terms blocks:      EXACTLY 4 to 5 terms max. Choose ONLY the most essential vocabulary. NEVER include complex mathematical or engineering jargon. Each term MUST have "definition" (2 sentences max).
   • completion blocks:     ALL of these fields are REQUIRED:
       - title:        A statement of intellectual arrival — NOT a UI label. Avoid: "Lesson Complete", "You've finished", "Well done". Write instead a short phrase that names what the learner has understood: "From Reaction to Prediction", "Seeing the Pattern", "The Architecture Becomes Clear". Make it feel earned.
       - summary:      1–2 sentences. NOT a recap of what was covered. Describe what the learner NOW UNDERSTANDS DIFFERENTLY — capability-framing, forward-looking. The learner should recognise a shift in how they see the topic.
@@ -549,9 +574,7 @@ LAYOUT HINTS:
 
 const LESSON_VOICE_GUIDE = `LESSON VOICE AND STYLE — THIS IS HOW AI BYTES LESSONS SOUND:
 
-AI Bytes lessons feel like a world-class AI educator teaching with calm authority, elegance, and precision.
-The tone is premium, modern, intelligent, and human.
-It never sounds like a textbook, corporate training copy, or a generic blog post.
+AI Bytes lessons feel like a friendly, world-class educator democratizing AI. The tone is highly engaging, deeply intuitive, and explicitly designed for non-coders. It never sounds like a university textbook, an academic paper, or an intimidating engineering manual.
 
 VOICE PRINCIPLES:
   • Speak directly to the learner as "you" — not "the user", "learners", or "one"
@@ -606,6 +629,265 @@ ANCHOR SENTENCES — write at this level:
   "You now understand not just what this component does, but why modern AI depends on it."
   "AI doesn't begin with intelligence. It begins with patterns."`.trim();
 
+// ─── Voice Persona Guide — per conductor personality type ───────────────────
+// Each persona shares the Three Laws of Voice (universality, clarity, opening rule)
+// but adds a distinct sentence rhythm, structural approach, and banned patterns.
+// The active persona is injected into expandLesson() instead of the generic guide.
+
+const VOICE_PERSONA_BASE = `
+THE THREE LAWS OF VOICE (apply to every sentence):
+  1. UNIVERSALITY TEST: If this sentence could appear in ANY course on ANY topic, rewrite it. Every sentence must be specific to THIS concept.
+     BAD: "AI is transforming industries."  GOOD: "Railway operators using predictive maintenance cut unplanned downtime by 30–40% — not by reacting faster, but by not needing to react at all."
+  2. CLARITY LAW: If a sentence sounds clever but is harder to understand, simplify it. The test: can a smart person understand this on first read?
+     BAD: "Intelligence emerges from structured probabilistic inference across distributed representations."  GOOD: "AI learns by adjusting itself based on data. The more data it sees, the better it adjusts."
+  3. OPENING RULE: Every block, section, and paragraph must begin with a THOUGHT, not a label or definition. First sentence = hook.
+     BAD: "Transformers are a type of neural network."  GOOD: "The attention mechanism changed everything — not because it was new, but because it was the first design that could hold the whole sentence in mind at once."
+
+ALWAYS: Speak as "you". Lead with the insight, then explain. Earn attention through substance. Prefer specific over general.
+NEVER: "In this lesson...", "Let's explore...", "It is important to note...", "As we can see...", hollow encouragement.`.trim();
+
+// ─── Persona Flavour Variants ────────────────────────────────────────────────
+// Each of the 6 personas has 4 sub-flavours. Selected by microVariationSeed % 4.
+// A flavour keeps all base rules but varies sentence rhythm, structural bias, and signature move.
+// This gives 6 × 4 = 24 distinct voice configurations before opening-type variation.
+
+interface PersonaFlavour {
+    name: string;
+    rhythm: string;
+    structure: string;
+    signatureMove: string;
+}
+
+const PERSONA_FLAVOURS: Record<string, PersonaFlavour[]> = {
+    calm: [
+        {
+            name: 'Minimal',
+            rhythm: 'Hard 20-word cap per sentence. Short declarative chains: "X does Y. Y produces W." No filler.',
+            structure: 'State mechanism first. Implication second. One idea fully expressed, then stop. Paragraph max: 3 sentences.',
+            signatureMove: 'COMPRESSION MOVE: Once per lesson, reduce a complex idea to its irreducible two-sentence form. No lead-in, no qualification.',
+        },
+        {
+            name: 'Analytical',
+            rhythm: 'Measured, deliberate pacing. Each sentence dissects one component. Build bottom-up: parts → interaction → whole.',
+            structure: 'Name the parts. Explain how each part works. Show how the parts connect. Never skip a step.',
+            signatureMove: 'DISSECTION MOVE: Once per lesson, break one concept into its exact components in sequential numbered form: "First: X. Second: Y. Third: Z."',
+        },
+        {
+            name: 'Sequential',
+            rhythm: 'Numbered logic chains. "Step 1: X. Step 2: Y. Step 3: Z." Each step is one sentence, complete in itself.',
+            structure: 'Process always before implication. Show the exact sequence of operations. No jumps — every transition is explicit.',
+            signatureMove: 'CHAIN MOVE: Once per lesson, trace a complete chain of cause and effect from first input to final output, one step per sentence.',
+        },
+        {
+            name: 'Interrogative',
+            rhythm: 'State a claim. Follow immediately with the mechanism that explains it. Rhythm: assertion → mechanism → implication.',
+            structure: 'Reverse-engineer from outcomes. Start with what happens. Work backwards to why it happens. Then explain when it breaks.',
+            signatureMove: 'REVERSAL MOVE: Once per lesson, start with the surprising output ("The result is X") and work backwards to explain the mechanism that produces it.',
+        },
+    ],
+
+    electric: [
+        {
+            name: 'Contrast',
+            rhythm: 'Hard contrast per block. "X is wrong. Y is right." Short-long alternation. Never three sentences of equal length.',
+            structure: 'Every block is a flip. Wrong assumption → correct mechanism. Use contrast as the primary teaching device.',
+            signatureMove: 'FLIP MOVE: Once per lesson, use exact parallel structure: "Not this. [Short sentence]. That. [Longer explanation]."',
+        },
+        {
+            name: 'Stakes',
+            rhythm: 'Raise stakes in every block. What breaks? What\'s missed? Urgency through consequence, not exclamation.',
+            structure: 'Consequence-first teaching. Lead with what fails when this concept is misunderstood. Then explain the correct understanding.',
+            signatureMove: 'COST MOVE: Once per lesson, name the exact real-world cost of not understanding this concept. Specific system, specific failure mode.',
+        },
+        {
+            name: 'Momentum',
+            rhythm: 'Build like a wave. Short sentence. Slightly longer. Then the insight. Then one short stop. Repeat.',
+            structure: 'Momentum through accumulation. Each sentence adds one more piece. Land the insight at the peak. Short sentence to seal it.',
+            signatureMove: 'CRESCENDO MOVE: Once per lesson, build exactly 4 sentences to a single hard-stop insight. Sentences 1-3 build; sentence 4 lands.',
+        },
+        {
+            name: 'Surprise',
+            rhythm: 'Lead with the most counterintuitive fact. Let it sit for one sentence. Then explain why it\'s true.',
+            structure: 'Surprise → pause → explanation. The counterintuitive fact is not the punchline — it\'s the opening. Explanation is the resolution.',
+            signatureMove: 'SURPRISE MOVE: Once per lesson, open a block with the most counterintuitive fact about this concept. One word sentence follows: "Seriously." Then explain.',
+        },
+    ],
+
+    cinematic: [
+        {
+            name: 'Epic',
+            rhythm: 'Wide-angle opening sentence. Establish the stakes, the era, the forces at play. Zoom in sentence by sentence.',
+            structure: 'Macro → micro. Open with the biggest frame possible. Narrow to the specific mechanism. Close on what this enables.',
+            signatureMove: 'SCALE MOVE: Once per lesson, write one sentence that frames this concept against the broadest possible stakes — civilisational, industrial, or historical.',
+        },
+        {
+            name: 'Intimate',
+            rhythm: 'Close-lens writing. Small observations, not grand pronouncements. Write as if speaking to one specific person.',
+            structure: 'Personal frame first. "Here\'s what this actually looks like from the inside." Then the mechanism. Then the implication for that one person.',
+            signatureMove: 'CLOSE-UP MOVE: Once per lesson, write one paragraph that describes this concept as if observed from 10cm away — hyper-specific, no abstraction.',
+        },
+        {
+            name: 'Documentary',
+            rhythm: 'Evidence-first. Every claim is grounded in a real case, a real number, a real system. No claim without anchor.',
+            structure: 'Real event → mechanism → principle. Build argument from observed evidence, never from assertion.',
+            signatureMove: 'EVIDENCE MOVE: Once per lesson, open a block with a specific documented event, date, or statistic that directly demonstrates this concept.',
+        },
+        {
+            name: 'Dramatic',
+            rhythm: 'Tension-focused. Build each block to a peak: grounded opening → introduced tension → resolved insight.',
+            structure: 'Every block has a before/after. State the limitation or problem. Introduce the concept as the resolution. Show what changed.',
+            signatureMove: 'BEFORE/AFTER MOVE: Once per lesson, use exact structure: "[Before this concept existed]: X. [After it existed]: Y. [The difference]: Z."',
+        },
+    ],
+
+    technical: [
+        {
+            name: 'Code-First',
+            rhythm: 'Lead with implementation. What the code/system does before what it means. Conceptual framing follows, never precedes.',
+            structure: 'Interface → implementation → consequence. Name the API or operation first. Then explain what it does internally. Then the implication.',
+            signatureMove: 'IMPLEMENTATION MOVE: Once per lesson, ground an abstract concept in its exact technical expression: "In code, this looks like: [pseudocode or operation]."',
+        },
+        {
+            name: 'Systems',
+            rhythm: 'Component-interaction focus. Every concept explained as a component with inputs, outputs, and dependencies.',
+            structure: 'Input → transform → output. Name what enters the system. Describe the transformation. Specify what exits. Name the failure modes.',
+            signatureMove: 'SYSTEM MAP MOVE: Once per lesson, write one block as pure system description: "Input: X. Process: Y. Output: Z. Fails when: W."',
+        },
+        {
+            name: 'Debugging',
+            rhythm: 'Assume something is wrong. What breaks? How do you detect it? Failure modes teach more than success paths.',
+            structure: 'Normal path → edge case → failure mode → detection → fix. Treat every concept as something that will eventually need to be debugged.',
+            signatureMove: 'FAILURE MOVE: Once per lesson, explicitly name the most common failure mode for this concept, how it manifests, and how to detect it.',
+        },
+        {
+            name: 'Quantitative',
+            rhythm: 'Numbers appear in the first sentence of every block. Complexity, dimensions, parameters, rates — lead with the quantity.',
+            structure: 'Quantitative anchor → mechanism → scale implication. The number frames the concept. The mechanism explains it. The scale shows why it matters.',
+            signatureMove: 'NUMBERS MOVE: Once per lesson, write a sentence that contains at least 3 specific numbers: dimensions, parameters, or performance metrics.',
+        },
+    ],
+
+    warm: [
+        {
+            name: 'Empathetic',
+            rhythm: 'Anticipate the exact confusion the learner has right now. Name it. Resolve it. Block starts with the learner\'s question.',
+            structure: 'Confusion → clarity → capability. Acknowledge the misconception. Replace it with the correct model. Close with what\'s now possible.',
+            signatureMove: '"HERE\'S THE THING" MOVE: Once per lesson, use exactly: "Here\'s the thing: [the real understanding, not the textbook version]."',
+        },
+        {
+            name: 'Practical',
+            rhythm: 'Real use case first. What does this look like when it actually runs? Mechanism second, theory last.',
+            structure: 'Practical anchor → mechanism → why it works that way. Never lead with definition. Lead with usage.',
+            signatureMove: 'IN PRACTICE MOVE: Once per lesson, open a block with "In practice, this means..." followed by a specific, concrete scenario.',
+        },
+        {
+            name: 'Discovery',
+            rhythm: 'Invite thinking before explaining. "You might expect X. Here\'s what actually happens." Discovery, not delivery.',
+            structure: 'Prediction → reveal → explanation. State what most people would predict. Show the actual result. Explain why the reality differs.',
+            signatureMove: 'PREDICT/REVEAL MOVE: Once per lesson, write: "You\'d expect [X]. The actual result is [Y]. The reason is [Z]."',
+        },
+        {
+            name: 'Affirming',
+            rhythm: 'Build capability through accumulation. Each block adds one layer. Sentences are medium length, conversational.',
+            structure: 'Capability audit. End every block with one sentence that names what the learner can now do or understand that they couldn\'t before.',
+            signatureMove: 'CAPABILITY MOVE: Once per lesson, end a block with: "That means you can now [specific concrete thing] — and that\'s not obvious."',
+        },
+    ],
+
+    stark: [
+        {
+            name: 'Assertion',
+            rhythm: 'Hard 15-word cap. Bold specific claim in sentence 1. Two facts. Done. No softening.',
+            structure: 'Claim → evidence → implication. Three sentences is a complete block. Four is generous. Five is padding.',
+            signatureMove: 'BLUNT MOVE: Once per lesson, write a 3-sentence block where sentence 1 is a claim, sentence 2 is the proof, sentence 3 is the consequence. Nothing else.',
+        },
+        {
+            name: 'Correction',
+            rhythm: 'Assume a wrong belief. Name it. Correct it. One sentence each. Move on.',
+            structure: 'Wrong belief → correct belief → why the correction matters. Never mock. Just replace.',
+            signatureMove: 'CORRECTION MOVE: Once per lesson, write: "The common explanation says [wrong version]. It doesn\'t. [Correct version]."',
+        },
+        {
+            name: 'Deconstruction',
+            rhythm: 'Take the conventional explanation apart. Show why it\'s incomplete. Give the accurate version. Still under 15 words per sentence.',
+            structure: 'Conventional view → flaw in conventional view → accurate view. Never build on a flawed foundation.',
+            signatureMove: 'DECONSTRUCT MOVE: Once per lesson, name one widely-used simplification of this concept and explain exactly where it breaks down.',
+        },
+        {
+            name: 'Compressed',
+            rhythm: 'Maximum 12 words per sentence. Subject. Verb. Object. Full stop. No exceptions.',
+            structure: 'One idea per sentence. One sentence per idea. White space does the work that words would waste.',
+            signatureMove: 'COMPRESSION MOVE: Once per lesson, reduce the single most important idea of this lesson to exactly one sentence of 10 words or fewer.',
+        },
+    ],
+};
+
+// ─── Opening Type Instructions ────────────────────────────────────────────────
+// These mandate the exact pattern for the first sentence of the hook block.
+// The openingType is selected by the conductor and tracked in memory to prevent repeats.
+
+const OPENING_TYPE_INSTRUCTIONS: Record<string, string> = {
+    question: `MANDATORY OPENING — QUESTION:
+  Your hook block's FIRST SENTENCE must be a single direct question that the learner cannot ignore.
+  The question must be unanswerable without the knowledge this lesson teaches.
+  The SECOND sentence must begin answering it immediately — no build-up.
+  GOOD: "Why does the same prompt produce wildly different outputs? The answer is in the probability distribution, not the model."
+  BAD: "Have you ever wondered about AI?" (too vague, answerable without the lesson)`,
+
+    contradiction: `MANDATORY OPENING — CONTRADICTION:
+  Your hook block's FIRST SENTENCE must state something the learner probably believes is true.
+  The SECOND sentence must directly contradict or complicate it.
+  GOOD: "Neural networks learn from examples. Except they don't — they adjust weights based on error signals, which is not the same thing."
+  BAD: "Many people think AI is just pattern matching." (vague, not a real contradiction)`,
+
+    scenario: `MANDATORY OPENING — SCENARIO:
+  Your hook block's FIRST SENTENCE must place the learner in a specific, concrete situation.
+  It must be a real operational scenario, not a hypothetical.
+  GOOD: "Your recommendation engine just served the same product to 10,000 users and converted 0.3% of them."
+  BAD: "Imagine you're building an AI system." (too generic, not grounded)`,
+
+    stat: `MANDATORY OPENING — STATISTIC:
+  Your hook block's FIRST SENTENCE must be a specific, verifiable number, percentage, or measurable fact.
+  The number must directly illustrate the importance or scale of this lesson's concept.
+  GOOD: "GPT-4 has 1.76 trillion parameters — but 85% of them are inactive for any given token."
+  BAD: "AI is growing rapidly." (not a statistic, not specific)`,
+
+    bold_claim: `MANDATORY OPENING — BOLD CLAIM:
+  Your hook block's FIRST SENTENCE must be a blunt, confident assertion that challenges default thinking.
+  It must be specific enough that a knowledgeable person would want to debate or verify it.
+  GOOD: "The most important AI paper of the last decade wasn't about a new model. It was about why existing models were failing."
+  BAD: "AI is changing everything." (too vague, no challenge, no specificity)`,
+};
+
+function getPersonaVoiceGuide(personality: string, seed: number = 0, openingType: string = 'bold_claim'): string {
+    const key = personality?.toLowerCase();
+    const flavours = PERSONA_FLAVOURS[key];
+    const openingInstruction = OPENING_TYPE_INSTRUCTIONS[openingType] ?? OPENING_TYPE_INSTRUCTIONS.bold_claim;
+
+    if (!flavours) {
+        // Fall back to the global guide if personality not recognised
+        return LESSON_VOICE_GUIDE + '\n\n' + openingInstruction;
+    }
+
+    const flavour = flavours[seed % 4];
+
+    return `LESSON VOICE — PERSONA: ${key.toUpperCase()} / ${flavour.name.toUpperCase()}
+${VOICE_PERSONA_BASE}
+
+SENTENCE RHYTHM:
+  ${flavour.rhythm}
+
+STRUCTURAL APPROACH:
+  ${flavour.structure}
+
+SIGNATURE MOVE (use exactly once in this lesson — do not overuse):
+  ${flavour.signatureMove}
+
+${openingInstruction}
+
+BANNED for all personas: "In this lesson...", "Let's explore...", "It is important to note...", "As we can see...", "There is", "It is", hollow encouragement, vague conclusions.`;
+}
+
 // ─── Block schema documentation per block type ──────────────────────────────
 function getBlockSchemaDoc(blockRef: string): string {
     const [type, variant] = blockRef.split(':');
@@ -645,7 +927,7 @@ function getBlockSchemaDoc(blockRef: string): string {
 
 // ─── 2. Lesson Expander Agent (Pool-Based Diversity Generator V3) ─────────────
 export class LessonExpanderAgent extends BaseAgentV2 {
-    async expandLesson(lesson: any, moduleContext: any, courseContext: any, retrievedChunks: any[] = [], lessonNumber: number = 1, courseState: CourseState | null = null, dnaContent: CourseDNA["content"] | null = null, rhythmDirective: string = ''): Promise<ConceptExplanation> {
+    async expandLesson(lesson: any, moduleContext: any, courseContext: any, retrievedChunks: any[] = [], lessonNumber: number = 1, courseState: CourseState | null = null, dnaContent: CourseDNA["content"] | null = null, rhythmDirective: string = '', lessonPersonality: string = 'warm', microVariationSeed: number = 0, openingType: string = 'bold_claim'): Promise<ConceptExplanation> {
         const contextStr = retrievedChunks.length > 0
             ? retrievedChunks.map(c => `[Source: ${c.source_id}]\n${c.content}`).join('\n\n')
             : "No retrieved context available.";
@@ -726,6 +1008,9 @@ export class LessonExpanderAgent extends BaseAgentV2 {
         const totalTarget = ironCoreCount + finalBlocksWithVideos.length + (isBeginner ? 2 : isAdvanced ? 4 : 3);
         const temperature = Math.min(0.7 + (lessonNumber - 1) * 0.04, 1.0);
 
+        const flavourIndex = microVariationSeed % 4;
+        const flavourName = PERSONA_FLAVOURS[lessonPersonality?.toLowerCase()]?.[flavourIndex]?.name ?? '?';
+        console.log(`[LessonExpander] Lesson ${lessonNumber} — ${lessonPersonality}/${flavourName} — opening: ${openingType} — seed: ${microVariationSeed} — "${lesson.lessonTitle}"`);
         const rhythmPrefix = rhythmDirective ? `${rhythmDirective}\n\n---\n\n` : '';
         const prompt = rhythmPrefix + UNIVERSAL_LESSON_SPEC + `SYSTEM: You are an elite UK instructional designer. Lesson ${lessonNumber} of this course.
 LESSON: "${lesson.lessonTitle}"
@@ -744,7 +1029,7 @@ LESSON BLUEPRINT — TOTAL BLOCKS: ${unifiedBlueprint.split('\n').length}
 ${unifiedBlueprint}
 
 VISUAL ACCURACY — ABSOLUTE LAW:
->>> IMAGE PROMPTS (imagePrompt fields) MUST BE MINIMUM 1000 WORDS of technical blueprint following the 6-part formula below.
+>>> IMAGE PROMPTS (imagePrompt fields) MUST BE EXACTLY 3-4 HIGHLY DETAILED SENTENCES of technical blueprint following the 6-part formula below. DO NOT EXCEED 100 WORDS PER PROMPT.
 >>> VIDEO PROMPTS (videoPrompt fields) MUST BE EXACTLY 5 SENTENCES using the motion-arc structure: S1 names the lesson concept and lesson title, S2 describes visible objects/interfaces, S3 describes the motion arc (start state → transformation → end state), S4 describes camera movement and environment, S5 states exclusions and fidelity target.
 >>> TEXT BLOCK PARAGRAPHS (paragraphs[] fields): 2 sentences per paragraph, MAX 3 paragraphs per text block. Substantive and precise — no padding. Each paragraph = one clear idea.
 >>> Captions, titles, labels, and single-line fields must be CONCISE (under 50 words) to stay within token limits.
@@ -760,7 +1045,7 @@ VISUAL ACCURACY — ABSOLUTE LAW:
 >>> ABSTRACT TOPICS (ethics, policy, bias, fairness, regulation, alignment, safety, governance): Image prompts MUST reference concrete physical objects and real-world scenes — not symbols or metaphors. SHOW: a data scientist reviewing bias metrics on a laptop screen, a regulatory document with highlighted clauses, a court room or compliance office, engineers reviewing a fairness dashboard with actual chart elements visible, a facial recognition error on a physical interface, side-by-side dataset distributions as visible bar charts. DO NOT show: scales of justice, glowing brains, abstract "balance" metaphors, hands holding orbs, or any symbolic representation that doesn't appear in real life.
 >>> BE LITERAL. BE ACCURATE. BE TECHNICAL.
 
-${LESSON_VOICE_GUIDE}
+${getPersonaVoiceGuide(lessonPersonality, microVariationSeed, openingType)}
 
 ${SECTION_PURPOSE_RULES}
 
@@ -777,29 +1062,37 @@ REQUIRED OUTPUT JSON STRUCTURE:
   "structure_pattern": "${structureName}"
 }`;
 
-        let messages: any[] = [{ role: 'user', parts: [{ text: prompt }] }];
+        let messages: any[] = [{ role: 'user', content: prompt }];
         const makeRequestWithTemp = async (msgs: any[], concise = false) => {
-            const contents = msgs;
-            if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is missing");
-            const response = await fetch(`${GEMINI_URL}?key=${process.env.GEMINI_API_KEY}`, {
+            const fetchMessages = msgs;
+            if (!process.env.OPENROUTER_API_KEY) throw new Error("OPENROUTER_API_KEY is missing");
+            const response = await fetch(`${OPENROUTER_URL}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+                    'HTTP-Referer': 'http://localhost:3000'
+                },
                 body: JSON.stringify({
-                    contents,
-                    generationConfig: { temperature, maxOutputTokens: 65536, responseMimeType: "application/json" }
+                    model: MODEL_NAME,
+                    messages: fetchMessages,
+                    temperature,
+                    max_tokens: 8000,
+                    provider: { sort: "throughput" },
+                    response_format: { type: "json_object" }
                 })
             });
             const data = await response.json();
-            const finishReason = data.candidates?.[0]?.finishReason;
-            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            const finishReason = data.choices?.[0]?.finish_reason;
+            const text = data.choices?.[0]?.message?.content;
             if (!text) {
-                const reason = finishReason || data.promptFeedback?.blockReason || 'empty_response';
-                throw new Error(`Gemini returned no content (reason: ${reason}, status: ${response.status})`);
+                const reason = finishReason || 'empty_response';
+                throw new Error(`OpenRouter returned no content (reason: ${reason}, status: ${response.status})`);
             }
-            if (finishReason === 'MAX_TOKENS') {
+            if (finishReason === 'length') {
                 throw Object.assign(new Error(`Output truncated (MAX_TOKENS) — lesson JSON exceeded model output limit`), { code: 'MAX_TOKENS' });
             }
-            // Strip bare control characters that Gemini occasionally embeds unescaped inside
+            // Strip bare control characters that API occasionally embeds unescaped inside
             // JSON strings, causing SyntaxError on parse. Covers:
             //   0x00–0x09, 0x0B, 0x0C, 0x0E–0x1F — non-printable control chars incl. tab (0x09)
             //   0x0A (\n), 0x0D (\r) — literal newlines inside string values (illegal in JSON)
@@ -814,7 +1107,7 @@ REQUIRED OUTPUT JSON STRUCTURE:
                 try {
                     return JSON.parse(jsonrepair(sanitized));
                 } catch (parseErr: any) {
-                    parseErr.rawText = sanitized; // attach so retry loop can feed it back to Gemini
+                    parseErr.rawText = sanitized; // attach so retry loop can feed it back to OpenRouter
                     throw parseErr;
                 }
             }
@@ -842,7 +1135,7 @@ OUTPUT: valid complete JSON only. No truncation.`;
         const runMinimalFallback = async (reason: string): Promise<any> => {
             console.warn(`[LessonExpander] ⚠️ ${reason} — rebuilding minimal prompt`);
             try {
-                const result = await makeRequestWithTemp([{ role: 'user', parts: [{ text: minimalPrompt }] }]);
+                const result = await makeRequestWithTemp([{ role: 'user', content: minimalPrompt }]);
                 console.log(`[LessonExpander] ✅ Minimal fallback succeeded for "${lesson.lessonTitle}"`);
                 return result;
             } catch (retryErr: any) {
@@ -861,15 +1154,16 @@ OUTPUT: valid complete JSON only. No truncation.`;
                 if (validation.passed) return result;
                 // Keep last result in case all retries fail — better than nothing
                 lastValidResult = result;
-                messages.push({ role: 'model', parts: [{ text: JSON.stringify(result) }] });
-                messages.push({ role: 'user', parts: [{ text: `Rejection: ${validation.failures.join(', ')}. FIX ALL. REMEMBER: Image prompts MUST be 1000+ words. Video prompts MUST follow the 5-sentence motion-arc structure (S1 names lesson concept + title, S2 visible objects, S3 start→change→end, S4 camera, S5 exclusions).` }] });
+                messages.push({ role: 'assistant', content: JSON.stringify(result) });
+                messages.push({ role: 'user', content: `Rejection: ${validation.failures.join(', ')}. FIX ALL. REMEMBER: Image prompts MUST BE EXACTLY 3-4 HIGHLY DETAILED SENTENCES. DO NOT EXCEED 100 WORDS PER PROMPT. Video prompts MUST follow the 5-sentence motion-arc structure (S1 names lesson concept + title, S2 visible objects, S3 start→change→end, S4 camera, S5 exclusions).` });
             } catch (e: any) {
                 if (e?.code === 'MAX_TOKENS') {
                     return await runMinimalFallback(`Output truncated on attempt ${attempts + 1}`);
                 } else if (e instanceof SyntaxError) {
                     console.error("Retry error", e);
-                    if (e.rawText) {
-                        messages.push({ role: 'model', parts: [{ text: e.rawText }] });
+                    const rawText = (e as any).rawText;
+                    if (rawText) {
+                        messages.push({ role: 'model', parts: [{ text: rawText }] });
                         messages.push({ role: 'user', parts: [{ text: `Your previous response contained a JSON syntax error: "${e.message}". This is usually caused by unescaped special characters or truncated strings. Regenerate the complete lesson JSON with valid, well-formed JSON — ensure all string values have properly escaped characters.` }] });
                     }
                 } else {
@@ -969,8 +1263,8 @@ export class OrchestratorV2 {
 
     async generateManifest(input: CourseGenerationInput): Promise<CourseStructure> { return await this.planner.generateManifest(input); }
     
-    async processLesson(lessonPlan: any, moduleContext: any, courseContext: any, lessonNumber: number = 1, courseState: CourseState | null = null, dnaContent: CourseDNA["content"] | null = null, rhythmDirective: string = ''): Promise<ConceptExplanation> {
-        return await this.expander.expandLesson(lessonPlan, moduleContext, courseContext, [], lessonNumber, courseState, dnaContent, rhythmDirective);
+    async processLesson(lessonPlan: any, moduleContext: any, courseContext: any, lessonNumber: number = 1, courseState: CourseState | null = null, dnaContent: CourseDNA["content"] | null = null, rhythmDirective: string = '', lessonPersonality: string = 'warm', microVariationSeed: number = 0, openingType: string = 'bold_claim'): Promise<ConceptExplanation> {
+        return await this.expander.expandLesson(lessonPlan, moduleContext, courseContext, [], lessonNumber, courseState, dnaContent, rhythmDirective, lessonPersonality, microVariationSeed, openingType);
     }
 
     async enrichLessonMedia(lesson: ConceptExplanation, domainStr: string): Promise<ConceptExplanation> {

@@ -14,6 +14,7 @@ import { buildMetadata } from "@/lib/seo";
 import { LessonClientUtils } from "@/components/course/lesson-client-utils";
 import { LessonTopNav } from "@/components/course/lesson-top-nav";
 import { LessonClientWrapper } from "@/components/course/lesson-client-wrapper";
+import { LessonAudioPlayer } from "@/components/course/blocks/lesson-audio-player";
 
 function stripHtml(input: string) {
     return input.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
@@ -104,6 +105,7 @@ export default async function LessonPage(props: { params: Promise<{ courseId: st
     const { courseId, lessonId } = params;
 
     const supabase = await createClient();
+    const supabaseAdmin = await createClient(true);
 
     // Get current user
     const { data: { user } } = await supabase.auth.getUser();
@@ -137,7 +139,7 @@ export default async function LessonPage(props: { params: Promise<{ courseId: st
     // BYPASSED TEMPORARILY
     if (false && !accessCheck.hasAccess) {
         return (
-            <div className="min-h-screen bg-background text-foreground font-sans">
+            <div className="min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)] font-sans">
                 <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Show lesson title but block content */}
                     <div className="py-8 px-4">
@@ -148,7 +150,7 @@ export default async function LessonPage(props: { params: Promise<{ courseId: st
                             <ArrowLeft className="w-4 h-4 mr-2" />
                             Back to Course Overview
                         </Link>
-                        <h1 className="font-sans text-3xl md:text-4xl font-bold tracking-tight text-foreground leading-tight mb-2">
+                        <h1 className="font-sans text-3xl md:text-4xl font-bold tracking-tight text-white leading-tight mb-2">
                             {lesson.title}
                         </h1>
                         <p className="text-muted-foreground">
@@ -174,8 +176,8 @@ export default async function LessonPage(props: { params: Promise<{ courseId: st
         await recordLessonAccess(user.id, lessonId);
     }
 
-    // Fetch Full Course Outline for Sidebar
-    const { data: courseOutline } = await supabase
+    // Fetch Full Course Outline for Sidebar (service role — works for drafts too)
+    const { data: courseOutline } = await supabaseAdmin
         .from('courses')
         .select(`
             title,
@@ -206,6 +208,36 @@ export default async function LessonPage(props: { params: Promise<{ courseId: st
             if (t.lessons) t.lessons.sort((a: any, b: any) => a.order_index - b.order_index);
         });
     }
+
+    // Compute next lesson href — last lesson → certificate page, otherwise → next lesson URL
+    const allLessons: any[] = courseOutline?.topics?.flatMap((t: any) => t.lessons || []) ?? [];
+    const currentLessonIdx = allLessons.findIndex((l: any) => String(l.id) === lessonId);
+
+    // Direct DB check for last lesson — reliable regardless of courseOutline state
+    const { data: courseTopicsDirect } = await supabaseAdmin
+        .from('course_topics')
+        .select('id, order_index, course_lessons(id, order_index)')
+        .eq('course_id', resolvedCourseId)
+        .order('order_index', { ascending: true });
+    const sortedTopicsDirect = (courseTopicsDirect || []).sort((a: any, b: any) => a.order_index - b.order_index);
+    const allLessonsDirect = sortedTopicsDirect.flatMap((t: any) =>
+        ((t.course_lessons || []) as any[]).sort((a: any, b: any) => a.order_index - b.order_index)
+    );
+    const lastLessonId = allLessonsDirect[allLessonsDirect.length - 1]?.id;
+    const isLastLesson = String(lastLessonId) === String(lessonId);
+
+    const nextLesson = !isLastLesson && currentLessonIdx >= 0 ? allLessons[currentLessonIdx + 1] : null;
+    // Determine if this is the last lesson in its module (topic)
+    const topicLessons = courseOutline?.topics?.find((t: any) => t.id === topicData?.id)?.lessons || [];
+    const sortedTopicLessons = [...topicLessons].sort((a: any, b: any) => (a.order_index ?? 0) - (b.order_index ?? 0));
+    const isLastLessonInModule = sortedTopicLessons.length > 0 &&
+        String(sortedTopicLessons[sortedTopicLessons.length - 1].id) === String(lessonId);
+
+    const nextLessonHref = isLastLesson
+        ? `/courses/${resolvedCourseId}/complete`
+        : nextLesson
+        ? `/courses/${resolvedCourseId}/lessons/${nextLesson.id}`
+        : undefined;
 
     // Fetch Images
     const { data: images } = await supabase
@@ -324,10 +356,26 @@ export default async function LessonPage(props: { params: Promise<{ courseId: st
                             lessonIndex={lesson.order_index ?? 0}
                             lessonPersonality={(lesson as any).lesson_personality ?? 'calm'}
                             microVariationSeed={(lesson as any).micro_variation_seed ?? 0}
+                            nextLessonHref={nextLessonHref}
                             footerNode={
                                 <div className="mt-16">
+                                    {/* Audio recap — shown only on the last lesson of the module */}
+                                    {isLastLessonInModule && topicData?.audio_url && (
+                                        <div className="px-8 md:px-16 mb-10">
+                                            <div className="border-t border-white/[0.06] pt-10 mb-2">
+                                                <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#00FFB3] mb-6">
+                                                    Before the quiz — hear your recap
+                                                </p>
+                                            </div>
+                                            <LessonAudioPlayer
+                                                url={topicData.audio_url}
+                                                title={`Module recap: ${topicData?.title}`}
+                                                onClose={() => {}}
+                                            />
+                                        </div>
+                                    )}
                                     {hasBlocks ? (
-                                        <SimpleLessonNavigation courseId={resolvedCourseId} lessonId={lessonId} />
+                                        <SimpleLessonNavigation courseId={resolvedCourseId} lessonId={lessonId} nextLessonHref={nextLessonHref} />
                                     ) : (
                                         <LessonNavigation
                                             currentLessonId={lessonId}
@@ -357,6 +405,22 @@ export default async function LessonPage(props: { params: Promise<{ courseId: st
                             sandbox="allow-scripts allow-same-origin"
                         />
                         <div className="mt-8">
+                            {/* Audio recap — shown only on the last lesson of the module */}
+                            {isLastLessonInModule && topicData?.audio_url && (
+                                <div className="px-8 md:px-16 mb-10">
+                                    <div className="border-t border-white/[0.06] pt-10 mb-2">
+                                        <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#00FFB3] mb-6">
+                                            Before the quiz — hear your recap
+                                        </p>
+                                    </div>
+                                    <LessonAudioPlayer
+                                        url={topicData.audio_url}
+                                        title={`Module recap: ${topicData?.title}`}
+                                        onClose={() => {}}
+                                    />
+                                </div>
+                            )}
+                            
                             {courseOutline && (
                                 <LessonNavigation
                                     courseId={courseId}

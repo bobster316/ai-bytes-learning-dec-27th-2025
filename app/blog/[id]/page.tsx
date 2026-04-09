@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, ArrowLeft, Share2, Home, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
 
 // Blog post data (same as in blog listing)
 const blogPosts = {
@@ -16,7 +18,7 @@ const blogPosts = {
     image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&h=600&fit=crop",
     author: {
       name: "AI Bytes Team",
-      avatar: "/ai-bytes-logo.png"
+      avatar: "/logos/ai-bytes-logo-transparency-1.png"
     },
     content: `
       <p class="lead">Artificial Intelligence is transforming every industry, and now is the perfect time to start learning. This comprehensive guide will walk you through the fundamentals and help you begin your AI journey.</p>
@@ -65,7 +67,7 @@ const blogPosts = {
     image: "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=1200&h=600&fit=crop",
     author: {
       name: "AI Bytes Team",
-      avatar: "/ai-bytes-logo.png"
+      avatar: "/logos/ai-bytes-logo-transparency-1.png"
     },
     content: `
       <p class="lead">Machine learning algorithms are the building blocks of AI systems. Understanding which algorithm to use and when is crucial for building effective solutions.</p>
@@ -101,11 +103,11 @@ const blogPosts = {
       <h2>Deep Learning Algorithms</h2>
 
       <h3>Convolutional Neural Networks (CNNs)</h3>
-      <p>Specialized for processing grid-like data such as images. CNNs power facial recognition, autonomous vehicles, and medical image analysis.</p>
+      <p>Specialised for processing grid-like data such as images. CNNs power facial recognition, autonomous vehicles, and medical image analysis.</p>
       <p><strong>Use when:</strong> Working with image or spatial data.</p>
 
       <h3>Recurrent Neural Networks (RNNs)</h3>
-      <p>Designed for sequential data, making them perfect for time series prediction, language modeling, and speech recognition.</p>
+      <p>Designed for sequential data, making them perfect for time series prediction, language modelling, and speech recognition.</p>
       <p><strong>Use when:</strong> Dealing with sequential or time-series data.</p>
 
       <h2>Choosing the Right Algorithm</h2>
@@ -137,7 +139,7 @@ const blogPosts = {
     image: "https://images.unsplash.com/photo-1676573409381-c0d74a44f7ad?w=1200&h=600&fit=crop",
     author: {
       name: "AI Bytes Team",
-      avatar: "/ai-bytes-logo.png"
+      avatar: "/logos/ai-bytes-logo-transparency-1.png"
     },
     content: `
       <p class="lead">Prompt engineering is the art and science of communicating effectively with large language models. Master these techniques to get better results from AI tools.</p>
@@ -185,7 +187,7 @@ Constraints: [Any limitations]</code></pre>
       <h2>Iterative Refinement</h2>
       <ol>
         <li>Start with a basic prompt</li>
-        <li>Analyze the output</li>
+        <li>Analyse the output</li>
         <li>Identify what's missing or incorrect</li>
         <li>Refine your prompt</li>
         <li>Repeat until satisfied</li>
@@ -220,7 +222,7 @@ Constraints: [Any limitations]</code></pre>
     image: "https://images.unsplash.com/photo-1535378917042-10a22c95931a?w=1200&h=600&fit=crop",
     author: {
       name: "AI Bytes Team",
-      avatar: "/ai-bytes-logo.png"
+      avatar: "/logos/ai-bytes-logo-transparency-1.png"
     },
     content: `
       <p class="lead">As AI becomes more powerful and prevalent, ensuring its ethical development and deployment is crucial for creating technology that benefits everyone.</p>
@@ -240,7 +242,7 @@ Constraints: [Any limitations]</code></pre>
 
       <h3>3. Privacy and Data Protection</h3>
       <p>Respect user privacy and handle personal data responsibly.</p>
-      <p><strong>In practice:</strong> Implement data minimization, obtain informed consent, use encryption, and comply with regulations like GDPR.</p>
+      <p><strong>In practice:</strong> Implement data minimisation, obtain informed consent, use encryption, and comply with regulations like GDPR.</p>
 
       <h3>4. Accountability</h3>
       <p>Establish clear responsibility for AI system outcomes.</p>
@@ -317,7 +319,7 @@ Constraints: [Any limitations]</code></pre>
       </ul>
 
       <h2>Conclusion</h2>
-      <p>Ethical AI isn't just about compliance - it's about building technology that enhances human capabilities while respecting human rights and dignity. By prioritizing ethics from the start, we can create AI systems that are not just powerful, but also trustworthy and beneficial.</p>
+      <p>Ethical AI isn't just about compliance - it's about building technology that enhances human capabilities while respecting human rights and dignity. By prioritising ethics from the start, we can create AI systems that are not just powerful, but also trustworthy and beneficial.</p>
     `
   },
   "5": {
@@ -329,7 +331,7 @@ Constraints: [Any limitations]</code></pre>
     image: "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=1200&h=600&fit=crop",
     author: {
       name: "AI Bytes Team",
-      avatar: "/ai-bytes-logo.png"
+      avatar: "/logos/ai-bytes-logo-transparency-1.png"
     },
     content: `
       <p class="lead">Python has become the go-to language for AI development. Here are the essential libraries every AI developer should know.</p>
@@ -367,7 +369,7 @@ model = keras.Sequential([
 ])</code></pre>
 
       <h3>PyTorch</h3>
-      <p>Facebook's deep learning library, favored by researchers for its flexibility and ease of use.</p>
+      <p>Facebook's deep learning library, favoured by researchers for its flexibility and ease of use.</p>
       <pre><code>import torch
 import torch.nn as nn
 
@@ -383,7 +385,7 @@ class NeuralNet(nn.Module):
       <p>Comprehensive library for text processing and linguistic analysis.</p>
 
       <h3>spaCy</h3>
-      <p>Industrial-strength NLP library, optimized for production use.</p>
+      <p>Industrial-strength NLP library, optimised for production use.</p>
 
       <h3>Transformers (Hugging Face)</h3>
       <p>State-of-the-art pre-trained models for NLP tasks.</p>
@@ -396,13 +398,13 @@ class NeuralNet(nn.Module):
       <h3>Pillow (PIL)</h3>
       <p>Image processing library for Python.</p>
 
-      <h2>Visualization Libraries</h2>
+      <h2>Visualisation Libraries</h2>
 
       <h3>Matplotlib</h3>
-      <p>Create static, animated, and interactive visualizations.</p>
+      <p>Create static, animated, and interactive visualisations.</p>
 
       <h3>Seaborn</h3>
-      <p>Statistical data visualization built on Matplotlib.</p>
+      <p>Statistical data visualisation built on Matplotlib.</p>
 
       <h3>Plotly</h3>
       <p>Interactive, publication-quality graphs.</p>
@@ -412,7 +414,7 @@ class NeuralNet(nn.Module):
         <li>Start with NumPy and Pandas to build a strong foundation</li>
         <li>Learn Scikit-learn for classical ML algorithms</li>
         <li>Choose either TensorFlow or PyTorch for deep learning</li>
-        <li>Add specialized libraries as needed for your projects</li>
+        <li>Add specialised libraries as needed for your projects</li>
         <li>Use virtual environments to manage dependencies</li>
       </ol>
 
@@ -440,7 +442,7 @@ pip install transformers opencv-python</code></pre>
     image: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1200&h=600&fit=crop",
     author: {
       name: "AI Bytes Team",
-      avatar: "/ai-bytes-logo.png"
+      avatar: "/logos/ai-bytes-logo-transparency-1.png"
     },
     content: `
       <p class="lead">Natural Language Processing has evolved dramatically. Here's what's happening in NLP right now and where it's heading.</p>
@@ -457,7 +459,7 @@ pip install transformers opencv-python</code></pre>
         <li>Translate between languages</li>
         <li>Answer complex questions</li>
         <li>Write code</li>
-        <li>Summarize documents</li>
+        <li>Summarise documents</li>
       </ul>
 
       <h3>Multimodal Models</h3>
@@ -546,11 +548,11 @@ export default function BlogPostPage() {
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)] flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-foreground mb-4">Post Not Found</h1>
+          <h1 className="text-4xl font-bold text-white mb-4">Post Not Found</h1>
           <Link href="/blog">
-            <button className="text-[#00BFA5] hover:underline">
+            <button className="text-[#00FFB3] hover:underline">
               ← Back to Blog
             </button>
           </Link>
@@ -560,39 +562,41 @@ export default function BlogPostPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-card">
+    <div className="min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)]">
+      <Header />
+
       {/* Navigation Breadcrumb */}
-      <nav className="bg-background border-b border-border">
+      <nav className="bg-[var(--page-surface)] border-b border-white/[0.08]">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
             {/* Breadcrumb */}
-            <div className="flex items-center gap-2 text-sm text-foreground/70">
-              <Link href="/" className="flex items-center gap-1 hover:text-[#00BFA5] transition-colors">
+            <div className="flex items-center gap-2 text-sm text-white/65">
+              <Link href="/" className="flex items-center gap-1 hover:text-[#00FFB3] transition-colors">
                 <Home className="w-4 h-4" />
                 <span>Home</span>
               </Link>
               <ChevronRight className="w-4 h-4" />
-              <Link href="/blog" className="hover:text-[#00BFA5] transition-colors">
+              <Link href="/blog" className="hover:text-[#00FFB3] transition-colors">
                 Blog
               </Link>
               <ChevronRight className="w-4 h-4" />
-              <span className="text-foreground font-medium truncate max-w-[200px] md:max-w-[400px]">
+              <span className="text-white font-medium truncate max-w-[200px] md:max-w-[400px]">
                 {post.title}
               </span>
             </div>
 
             {/* Quick Navigation Links */}
             <div className="flex items-center gap-6 text-sm">
-              <Link href="/" className="text-foreground/70 hover:text-[#00BFA5] transition-colors">
+              <Link href="/" className="text-white/65 hover:text-[#00FFB3] transition-colors">
                 Home
               </Link>
-              <Link href="/courses" className="text-foreground/70 hover:text-[#00BFA5] transition-colors">
+              <Link href="/courses" className="text-white/65 hover:text-[#00FFB3] transition-colors">
                 Courses
               </Link>
-              <Link href="/pricing" className="text-foreground/70 hover:text-[#00BFA5] transition-colors">
+              <Link href="/pricing" className="text-white/65 hover:text-[#00FFB3] transition-colors">
                 Pricing
               </Link>
-              <Link href="/about" className="text-foreground/70 hover:text-[#00BFA5] transition-colors">
+              <Link href="/about" className="text-white/65 hover:text-[#00FFB3] transition-colors">
                 About
               </Link>
             </div>
@@ -607,34 +611,34 @@ export default function BlogPostPage() {
           alt={post.title}
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/50 to-transparent" />
       </div>
 
       {/* Article Content */}
       <article className="container mx-auto px-4 -mt-32 relative z-10">
         <div className="max-w-4xl mx-auto">
           {/* Back Button */}
-          <Link href="/blog" className="inline-flex items-center gap-2 text-foreground/80 hover:text-[#00BFA5] transition-colors mb-8">
+          <Link href="/blog" className="inline-flex items-center gap-2 text-white/65 hover:text-[#00FFB3] transition-colors mb-8">
             <ArrowLeft className="w-4 h-4" />
             Back to Blog
           </Link>
 
           {/* Article Header */}
-          <div className="bg-card rounded-2xl shadow-xl p-8 md:p-12 mb-8 border border-border">
-            <Badge className="bg-[#00BFA5] text-foreground-inverse mb-4">
+          <div className="bg-white/[0.04] rounded-2xl p-8 md:p-12 mb-8 border border-white/[0.08] backdrop-blur-sm">
+            <Badge className="bg-[#00FFB3] text-black mb-4">
               {post.category}
             </Badge>
 
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6 leading-tight">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
               {post.title}
             </h1>
 
-            <div className="flex items-center gap-6 text-foreground/60">
+            <div className="flex items-center gap-6 text-white/50">
               <span className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
-                {new Date(post.date).toLocaleDateString('en-US', {
-                  month: 'long',
+                {new Date(post.date).toLocaleDateString('en-GB', {
                   day: 'numeric',
+                  month: 'long',
                   year: 'numeric'
                 })}
               </span>
@@ -642,7 +646,7 @@ export default function BlogPostPage() {
                 <Clock className="w-4 h-4" />
                 {post.readTime}
               </span>
-              <button className="flex items-center gap-2 hover:text-[#00BFA5] transition-colors ml-auto">
+              <button className="flex items-center gap-2 hover:text-[#00FFB3] transition-colors ml-auto">
                 <Share2 className="w-4 h-4" />
                 Share
               </button>
@@ -650,28 +654,27 @@ export default function BlogPostPage() {
           </div>
 
           {/* Article Body */}
-          <div className="bg-card rounded-2xl shadow-xl p-8 md:p-12 border border-border">
+          <div className="bg-white/[0.04] rounded-2xl p-8 md:p-12 border border-white/[0.08] backdrop-blur-sm">
             <div
               className="prose prose-lg max-w-none
-                prose-headings:text-foreground prose-headings:font-bold
+                prose-headings:text-white prose-headings:font-bold
                 prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6
                 prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-4
-                prose-p:text-foreground/80 prose-p:leading-relaxed prose-p:mb-6
-                prose-a:text-[#00BFA5] prose-a:no-underline hover:prose-a:underline
-                prose-strong:text-foreground prose-strong:font-semibold
+                prose-p:text-white/65 prose-p:leading-relaxed prose-p:mb-6
+                prose-a:text-[#00FFB3] prose-a:no-underline hover:prose-a:underline
+                prose-strong:text-white prose-strong:font-semibold
                 prose-ul:my-6 prose-ol:my-6
-                prose-li:text-foreground/80 prose-li:my-2
-                prose-code:text-[#00BFA5] prose-code:bg-border prose-code:px-2 prose-code:py-1 prose-code:rounded
-                prose-pre:bg-border prose-pre:text-foreground
-                dark:prose-invert"
+                prose-li:text-white/65 prose-li:my-2
+                prose-code:text-[#00FFB3] prose-code:bg-white/[0.08] prose-code:px-2 prose-code:py-1 prose-code:rounded
+                prose-pre:bg-white/[0.06] prose-pre:text-white"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
           </div>
 
           {/* Author Section */}
-          <div className="bg-card rounded-2xl shadow-xl p-8 mt-8 border border-border">
+          <div className="bg-white/[0.04] rounded-2xl p-8 mt-8 border border-white/[0.08] backdrop-blur-sm">
             <div className="flex items-center gap-4">
-              <div className="w-24 h-24 rounded-full bg-background-inverse flex items-center justify-center p-3 flex-shrink-0">
+              <div className="w-24 h-24 rounded-full bg-white/[0.06] flex items-center justify-center p-3 flex-shrink-0">
                 <img
                   src={post.author.avatar}
                   alt={post.author.name}
@@ -679,22 +682,22 @@ export default function BlogPostPage() {
                 />
               </div>
               <div>
-                <p className="font-semibold text-foreground">Written by</p>
-                <p className="text-lg text-foreground">{post.author.name}</p>
+                <p className="font-semibold text-white/65">Written by</p>
+                <p className="text-lg text-white">{post.author.name}</p>
               </div>
             </div>
           </div>
 
           {/* CTA */}
-          <div className="bg-gradient-to-r from-[#00BFA5] to-[#00A896] rounded-2xl shadow-xl p-8 mt-8 text-center">
-            <h3 className="text-2xl font-bold text-foreground-inverse mb-4">
+          <div className="bg-[var(--page-surface)] border border-white/[0.08] rounded-2xl p-8 mt-8 text-center">
+            <h3 className="text-2xl font-bold text-white mb-4">
               Ready to Learn More?
             </h3>
-            <p className="text-foreground-inverse/90 mb-6">
+            <p className="text-white/65 mb-6">
               Explore our AI courses and take your skills to the next level
             </p>
             <Link href="/courses">
-              <button className="bg-background text-foreground px-8 py-3 rounded-lg font-semibold hover:bg-background/90 transition-colors shadow-lg">
+              <button className="bg-[#00FFB3] text-black px-8 py-3 rounded-lg font-semibold hover:bg-[#00FFB3]/90 transition-colors shadow-lg">
                 Browse Courses
               </button>
             </Link>
@@ -702,8 +705,8 @@ export default function BlogPostPage() {
         </div>
       </article>
 
-      {/* Spacing */}
       <div className="h-16" />
+      <Footer />
     </div>
   );
 }

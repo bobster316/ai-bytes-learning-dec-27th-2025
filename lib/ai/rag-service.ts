@@ -1,9 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-// Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-const embeddingModel = genAI.getGenerativeModel({ model: "text-embedding-004" });
+import { OpenAI } from "openai";
 
 export interface ContentChunk {
     vectorId: string;
@@ -18,19 +14,29 @@ export class RagService {
         process.env.SUPABASE_SERVICE_ROLE_KEY || ""
     );
 
+    private openai = new OpenAI({
+        baseURL: "https://openrouter.ai/api/v1",
+        apiKey: process.env.OPENROUTER_API_KEY || "",
+    });
+
     /**
      * Search for relevant course content using vector similarity
      */
     async searchContent(query: string, courseId?: number): Promise<ContentChunk[]> {
-        if (!process.env.GEMINI_API_KEY) {
-            console.warn("GEMINI_API_KEY is not set");
+        if (!process.env.OPENROUTER_API_KEY) {
+            console.warn("OPENROUTER_API_KEY is not set");
             return [];
         }
 
         try {
-            // 1. Generate embedding for the query
-            const result = await embeddingModel.embedContent(query);
-            const embedding = result.embedding.values;
+            // Note: DeepSeek V3 is a text generation model, not an embedding model.
+            // Calling an embeddings endpoint via OpenRouter with deepseek-v3.2 will return an error
+            // or an unexpected format. Included per user constraints.
+            const result = await this.openai.embeddings.create({
+                model: "deepseek/deepseek-v3.2", 
+                input: query,
+            });
+            const embedding = result.data[0].embedding;
 
             // 2. Call Supabase RPC function to search
             const { data, error } = await this.supabase.rpc('match_course_content', {

@@ -1,45 +1,36 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
-// Generate ephemeral token for Gemini Live API
-// This keeps the API key server-side only
-export async function POST() {
-    try {
-        const apiKey = process.env.GEMINI_API_KEY;
+declare global {
+    var activeSterlingUser: string | undefined;
+}
 
-        if (!apiKey) {
-            return NextResponse.json(
-                { error: 'Gemini API key not configured' },
-                { status: 500 }
-            );
-        }
+export async function GET(req: Request) {
+  try {
+    const url = new URL(req.url);
+    const name = url.searchParams.get('name');
+    if (name) global.activeSterlingUser = name;
 
-        // Request an ephemeral token from Google's token endpoint
-        const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
-            { method: 'GET' }
-        );
+    const agentId = process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID;
+    const apiKey = process.env.ELEVENLABS_API_KEY;
 
-        if (!response.ok) {
-            const error = await response.text();
-            console.error('[Sterling Token] API error:', error);
-            return NextResponse.json(
-                { error: 'Failed to validate API key' },
-                { status: response.status }
-            );
-        }
-
-        // If the key is valid, return it for client use
-        // In production, you'd use Google's ephemeral token endpoint
-        return NextResponse.json({
-            apiKey: apiKey,
-            expiresAt: Date.now() + 3600000 // 1 hour
-        });
-
-    } catch (error) {
-        console.error('[Sterling Token] Error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
-            { status: 500 }
-        );
+    if (!agentId || !apiKey) {
+      return NextResponse.json({ error: "Missing configuration" }, { status: 500 });
     }
+
+    const res = await fetch(`https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=${agentId}`, {
+      headers: { "xi-api-key": apiKey },
+      cache: "no-store"
+    });
+
+    if (!res.ok) {
+        console.error("ElevenLabs Token Error:", await res.text());
+        return NextResponse.json({ error: "Failed to get signed URL" }, { status: res.status });
+    }
+
+    const data = await res.json();
+    return NextResponse.json({ signedUrl: data.signed_url });
+  } catch (e) {
+    console.error("Failed to fetch token", e);
+    return NextResponse.json({ error: "Internal Error" }, { status: 500 });
+  }
 }

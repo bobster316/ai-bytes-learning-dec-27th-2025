@@ -18,11 +18,11 @@ export const PALETTES = [
     { id: "arctic_blue",  primary: "#5BC8F5", secondary: "#00FFB3", surface: "#080c12" },
     { id: "gold_ink",     primary: "#D4A840", secondary: "#9B8FFF", surface: "#0c0b08" },
     { id: "coral_sage",   primary: "#FF8C69", secondary: "#7EC8A4", surface: "#0a0d0b" },
-    { id: "ice_white",    primary: "#E8EFF5", secondary: "#5BC8F5", surface: "#09090f" },
+    { id: "ice_white",    primary: "#5BC8F5", secondary: "#A8D8EA", surface: "#06090f" },
     { id: "lime_tech",    primary: "#B8E840", secondary: "#5BC8F5", surface: "#090c06" },
     { id: "rose_glass",   primary: "#F8A4C8", secondary: "#D4A840", surface: "#0f090d" },
     { id: "deep_ocean",   primary: "#2EC4F0", secondary: "#B8E840", surface: "#060c12" },
-    { id: "slate_mono",   primary: "#C4C8D8", secondary: "#9B8FFF", surface: "#0a0a0c" },
+    { id: "slate_mono",   primary: "#8B94B8", secondary: "#9B8FFF", surface: "#0a0a0c" },
 ] as const;
 
 export const IMAGE_AESTHETICS         = ["photorealistic", "abstract_gradient", "flat_illustration", "technical_diagram"] as const;

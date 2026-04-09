@@ -46,7 +46,7 @@ export function FeaturePageLayout({
                     <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
                         {subtitle}
                     </p>
-                    <div className="h-1 w-32 bg-[#4b98ad] mx-auto rounded-full mt-8" />
+                    <div className="h-1 w-32 bg-[#00FFB3] mx-auto rounded-full mt-8" />
                 </div>
 
                 {/* Main Content */}

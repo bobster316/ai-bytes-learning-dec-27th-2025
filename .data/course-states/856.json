@@ -1,0 +1,57 @@
+{
+  "course_id": 856,
+  "course_topic": "Introduction to Machine Learning",
+  "domain_history": [
+    "Gardening",
+    "Nature",
+    "Culinary"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey",
+    "The Contrast"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer",
+    "Confident Expert"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "machine learning types",
+    "robot reinforcement learning",
+    "data cleaning transformation",
+    "data validation interface"
+  ],
+  "used_image_urls": [
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774848006629-7f2wo-a%20network%20of%20interco.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774848011354-womfs5-a%20detailed%20visualisa.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774848010909-cmcdbc-photorealistic%203d%20is.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774848003497-cppki-a%20concept%20illustrati.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774848114140-5g0vz-a%20schematic%20diagram%20.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774848113686-h14ssn-photorealistic%203d%20is.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774848116011-jcpvsl-a%20meticulously%20desig.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774848211340-u4av26-visualize%20a%20data%20pip.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774848203358-aphod-ultra-detailed%203d%20re.jpeg"
+  ],
+  "used_video_urls": [],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 2,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 1,
+    "type_cards": 2,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 1,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

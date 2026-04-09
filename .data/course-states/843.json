@@ -1,0 +1,52 @@
+{
+  "course_id": 843,
+  "course_topic": "AI in Air Traffic Control",
+  "domain_history": [
+    "Travel",
+    "Nature"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [],
+  "used_image_urls": [
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774705025071-lvrgwn-3d%20isometric%20render%20.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774705025108-0lzkk2-a%20detailed%20rendering.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774705014490-eksneo-a%20high-resolution,%20p.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774705019454-sn8p6k-a%20futuristic%20air%20tra.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774705022987-x5hfyt-mandatory:%20use%20minim.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774705039042-zce5bm-3d%20isometric%20render%20.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774705037791-q0nrx-3d%20isometric%20render%20.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774705173059-8mb2nf-a%20high-tech%20air%20traf.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774705168026-tydxos-an%20air%20traffic%20contr.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774705196115-zp8c0p-3d%20isometric%20render%20.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774705163907-6dwfth-mandatory:%20use%20minim.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774705184841-kokkjb-mandatory:%20use%20minim.jpeg"
+  ],
+  "used_video_urls": [],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 0,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 0,
+    "type_cards": 0,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 0,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

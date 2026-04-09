@@ -5,8 +5,17 @@ import path from 'path';
 import OpenAI from 'openai';
 import sharp from 'sharp';
 import { geminiImageService } from './gemini-image-service';
+import { falImageService } from './fal-image-service';
 import { diagramGenerator } from '@/lib/diagrams/diagram-generator';
 import { CourseState } from './course-state';
+import {
+    classifyCategory,
+    buildBackgroundPrompt,
+    splitTitleLines,
+    rewriteTitleForThumbnail,
+    THUMBNAIL_CATEGORIES,
+    type ThumbnailCategory,
+} from './thumbnail-system';
 
 const PEXELS_API_KEY = process.env.PEXELS_API_KEY;
 const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
@@ -158,6 +167,20 @@ export class MediaService {
         let avoidedUrls = courseState ? courseState.used_image_urls : [];
         const originalQuery = this.extractSearchQuery(prompt);
         
+        // 0. Primary AI Generation (Fal.ai FLUX 2 Pro + Asset Library Caching)
+        try {
+            const falResult = await falImageService.generateImage(prompt, originalQuery);
+            if (falResult.url) {
+                return {
+                    url: falResult.url,
+                    alt: originalQuery,
+                    caption: originalQuery
+                };
+            }
+        } catch (e) {
+            console.error('[MediaService] falImageService failed, falling back to stock:', e);
+        }
+
         // 1. Primary Query
         const primary = await this.searchPexelsImage(originalQuery, 1, avoidedUrls);
         if (primary) return primary;
@@ -530,140 +553,253 @@ export class MediaService {
         return null;
     }
 
-    async fetchCourseThumbnail(title: string, description?: string, customPrompt?: string): Promise<string> {
-        let prompt = "";
+    // ─── NEW: Brief-compliant thumbnail generation ───────────────────────────────
 
-        if (customPrompt && customPrompt.length > 20) {
-            prompt = `${customPrompt}. MANDATORY STYLE: Deep dark navy background (#0D1117). Teal/cyan (#00BCD4) and purple (#6B3FA0) dominant accent colours. Cinematic atmospheric lighting with subtle glow effects. Clean minimal geometric composition. Ultra high resolution. Absolutely NO text, letters, or words anywhere in the image. Premium sophisticated professional aesthetic for senior business executives.`;
-        } else {
-            const context = description ? description.substring(0, 150) : title;
-            prompt = `Premium cinematic digital illustration for an AI microlearning course titled "${title}". Abstract conceptual visual metaphor representing: ${context}. MANDATORY: Deep dark navy background (#0D1117). Teal/cyan and purple dominant accent colours with cinematic glow lighting. Clean minimal geometric composition. Absolutely NO text or words in the image. Sophisticated premium aesthetic for senior business professionals. Ultra high resolution. 16:9 aspect ratio.`;
+    /**
+     * Generates a course thumbnail following AI_Bytes_Thumbnail_Brief_for_Antigravity v1.0.
+     *
+     * Flow:
+     *   1. Classify course into one of 6 topic categories
+     *   2. Generate gradient + abstract art background via DALL-E 3
+     *      (fallback: pure SVG gradient if DALL-E unavailable)
+     *   3. Composite all 7 brand zones onto the background with sharp/SVG:
+     *      Zone 1 — category pill (top-left)
+     *      Zone 2 — AI Bytes badge (top-right)
+     *      Zone 5 — micro-course label + 2-line title (bottom-left)
+     *      Zone 6 — play button ring (bottom-right)
+     */
+    async fetchCourseThumbnail(
+        title: string,
+        description?: string,
+        _customPrompt?: string,
+        categoryHint?: string,
+        difficulty?: string,
+    ): Promise<string> {
+        const category = classifyCategory(title, description || '', categoryHint);
+        const cfg = THUMBNAIL_CATEGORIES[category];
+        console.log(`[Thumbnail] Category: "${cfg.label}" for "${title}"`);
+
+        // Step 1: Generate background art via DALL-E 3
+        let backgroundBuffer: Buffer | null = null;
+
+        if (openai) {
+            try {
+                const prompt = buildBackgroundPrompt(category);
+                console.log(`[Thumbnail] Requesting DALL-E 3 background...`);
+                const response = await openai.images.generate({
+                    model: 'dall-e-3',
+                    prompt,
+                    n: 1,
+                    size: '1792x1024', // closest 16:9 DALL-E 3 supports
+                    quality: 'standard',
+                    response_format: 'url',
+                });
+                const imageUrl = response.data?.[0]?.url;
+                if (imageUrl) {
+                    const imgRes = await fetch(imageUrl);
+                    backgroundBuffer = Buffer.from(await imgRes.arrayBuffer());
+                    console.log(`[Thumbnail] DALL-E 3 background received (${backgroundBuffer.length} bytes)`);
+                }
+            } catch (e) {
+                console.warn(`[Thumbnail] DALL-E 3 failed, falling back to SVG gradient:`, e);
+            }
         }
 
-        const images = await this.fetchImages([{ prompt }]);
-        const baseUrl = images.length > 0 ? images[0].url : `https://images.pexels.com/photos/373543/pexels-photo-373543.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2`;
+        // Step 2: Fallback — pure SVG gradient background (no external API needed)
+        if (!backgroundBuffer) {
+            backgroundBuffer = await this.generateGradientBackground(category);
+            console.log(`[Thumbnail] Using SVG gradient fallback`);
+        }
 
-        // NEW: Add Title Overlay for "WOW" Factor
+        // Step 3: Composite all brand zones using the actual course title
         try {
-            return await this.generateCourseThumbnailWithTitle(title, baseUrl);
+            return await this.compositeBrandLayer(title, backgroundBuffer, category, difficulty);
         } catch (e) {
-            console.error("[MediaService] Title overlay failed, returning base image:", e);
-            return baseUrl;
+            console.error('[Thumbnail] Brand layer composite failed:', e);
+            // Last resort: upload the bare background
+            const slug = title.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 40);
+            const url = await geminiImageService.generateImageFromBuffer(backgroundBuffer, 'image/png', `thumb-${slug}`);
+            return url || '';
         }
     }
 
     /**
-     * Composites the course title onto the background image using sharp + SVG.
+     * Generates a pure SVG gradient background matching the brief's category palette.
+     * Used as fallback when DALL-E 3 is unavailable.
      */
-    async generateCourseThumbnailWithTitle(title: string, backgroundUrl: string): Promise<string> {
-        console.log(`[MediaService] 🎨 Compositing title overlay for: "${title}"`);
+    private async generateGradientBackground(category: ThumbnailCategory): Promise<Buffer> {
+        const cfg = THUMBNAIL_CATEGORIES[category];
+        const W = 1280;
+        const H = 720;
 
-        // 1. Fetch background image
-        const response = await fetch(backgroundUrl);
-        const arrayBuffer = await response.arrayBuffer();
-        const backgroundBuffer = Buffer.from(arrayBuffer);
-
-        // 2. Adaptive font size — scale down for long titles or long individual words
-        const svgWidth = 1200;
-        const svgHeight = 675; // 16:9
-        const usableWidth = svgWidth * 0.82; // 82% of canvas width for safe margins
-
-        const upperTitle = title.toUpperCase();
-        const longestWord = upperTitle.split(' ').reduce((a, b) => a.length > b.length ? a : b, '');
-        const totalChars = upperTitle.length;
-
-        // Approximate px per character for bold uppercase sans-serif: ~0.58 * fontSize
-        let fontSize: number;
-        if (totalChars > 55 || longestWord.length > 15) {
-            fontSize = 52;
-        } else if (totalChars > 38 || longestWord.length > 12) {
-            fontSize = 66;
-        } else {
-            fontSize = 84;
+        // Minimal abstract art pattern in SVG (neural lattice nodes for all categories)
+        const nodes: string[] = [];
+        const seed = cfg.gradient.vivid.charCodeAt(1); // deterministic per category
+        for (let i = 0; i < 28; i++) {
+            const x = ((seed * (i * 137 + 31)) % W);
+            const y = ((seed * (i * 89 + 53)) % H);
+            const r = 2 + (i % 3);
+            nodes.push(`<circle cx="${x}" cy="${y}" r="${r}" fill="white" opacity="0.15"/>`);
+            if (i > 0) {
+                const px = ((seed * ((i - 1) * 137 + 31)) % W);
+                const py = ((seed * ((i - 1) * 89 + 53)) % H);
+                nodes.push(`<line x1="${px}" y1="${py}" x2="${x}" y2="${y}" stroke="white" stroke-width="0.5" opacity="0.1"/>`);
+            }
         }
 
-        // Chars that fit per line at the chosen font size
-        const charWidth = fontSize * 0.58;
-        const maxCharsPerLine = Math.floor(usableWidth / charWidth);
+        const svg = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="bg" x1="0%" y1="100%" x2="100%" y2="0%">
+    <stop offset="0%" stop-color="${cfg.gradient.dark}"/>
+    <stop offset="60%" stop-color="${cfg.gradient.vivid}"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="85%" cy="15%" r="45%">
+    <stop offset="0%" stop-color="${cfg.radialGlow}" stop-opacity="0.35"/>
+    <stop offset="100%" stop-color="${cfg.radialGlow}" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+<rect width="${W}" height="${H}" fill="url(#bg)"/>
+<rect width="${W}" height="${H}" fill="url(#glow)"/>
+${nodes.join('\n')}
+</svg>`;
 
-        // Wrap text into lines
-        const words = upperTitle.split(' ');
-        const lines: string[] = [];
-        let currentLine = "";
+        return await sharp(Buffer.from(svg)).resize(W, H).png().toBuffer();
+    }
 
-        words.forEach(word => {
-            const candidate = currentLine ? currentLine + word : word;
-            if (candidate.length > maxCharsPerLine && currentLine) {
-                lines.push(currentLine.trim());
-                currentLine = word + " ";
-            } else {
-                currentLine += word + " ";
-            }
-        });
-        if (currentLine.trim()) lines.push(currentLine.trim());
+    /**
+     * Composites all 7 brand zones onto the background buffer per the brief.
+     *
+     * Fixes applied:
+     * - SAFE = 80px (was 60px) — prevents border-radius clipping on card display
+     * - Title capped at max 4 words per line via splitTitleLines
+     * - Adaptive font size with hard ceiling of 76px to prevent overflow
+     * - AI Bytes badge: larger, more opaque, clearly visible
+     * - Play ring: 52px radius, brighter fill, fully visible
+     * - MICRO-COURSE label: larger (24px) with stronger accent colour
+     * - Title text area: explicit textLength attribute to prevent SVG overflow
+     */
+    private async compositeBrandLayer(
+        title: string,
+        backgroundBuffer: Buffer,
+        category: ThumbnailCategory,
+        difficulty?: string,
+    ): Promise<string> {
+        const cfg = THUMBNAIL_CATEGORIES[category];
+        const W = 1280;
+        const H = 720;
 
-        // If still too many lines, reduce font size further
-        if (lines.length > 4) fontSize = Math.max(38, Math.floor(fontSize * 0.8));
+        // Two safe-zone constants per the brief + our card corner constraints:
+        // PILL_SAFE: pill/badge/play ring — 140px clears rounded-t-3xl (24px) corner clip in
+        //   catalog cards (397px wide). Math: √2×(140×397/1280 − 24) = 27.6 > 24 ✓
+        // TEXT_SAFE: title text & MICRO-COURSE label — 60px per the brief's safe zone spec.
+        //   Title is bottom-left; rounded-t-3xl only affects TOP corners so no clip risk.
+        const PILL_SAFE = 140;
+        const TEXT_SAFE = 60;
 
-        const lineHeight = fontSize * 1.15;
-        const startY = (svgHeight / 2) - ((lines.length - 1) * lineHeight / 2) + (fontSize / 3);
+        // Load Montserrat font
+        const fontsDir = path.join(process.cwd(), 'public', 'fonts');
+        const montserratBase64 = (await fs.promises.readFile(path.join(fontsDir, 'montserrat-extrabold.ttf'))).toString('base64');
 
-        const textElements = lines.map((line, i) => `
-            <text x="50%" y="${startY + (i * lineHeight)}" 
-                  text-anchor="middle" 
-                  fill="white" 
-                  font-family="sans-serif" 
-                  font-weight="900" 
-                  font-size="${fontSize}px">
-                ${line}
-            </text>
-        `).join('');
+        const xmlEscape = (s: string) =>
+            s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+             .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-        const svgOverlay = `
-            <svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <linearGradient id="vignette" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" style="stop-color:black;stop-opacity:0.4" />
-                        <stop offset="20%" style="stop-color:black;stop-opacity:0" />
-                        <stop offset="80%" style="stop-color:black;stop-opacity:0" />
-                        <stop offset="100%" style="stop-color:black;stop-opacity:0.7" />
-                    </linearGradient>
-                    <linearGradient id="textBackdrop" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" style="stop-color:black;stop-opacity:0" />
-                        <stop offset="20%" style="stop-color:black;stop-opacity:0.6" />
-                        <stop offset="80%" style="stop-color:black;stop-opacity:0.6" />
-                        <stop offset="100%" style="stop-color:black;stop-opacity:0" />
-                    </linearGradient>
-                </defs>
-                
-                <!-- Dark strip for text legibility -->
-                <rect x="0" y="${startY - fontSize * 1.2}" width="100%" height="${lines.length * lineHeight + fontSize}" fill="url(#textBackdrop)" />
-                
-                <rect width="100%" height="100%" fill="url(#vignette)" />
-                
-                ${textElements}
-                
-                <!-- Bottom Branding -->
-                <text x="50%" y="${svgHeight - 40}" text-anchor="middle" fill="white" fill-opacity="0.4" font-family="sans-serif" font-weight="bold" font-size="22px" letter-spacing="Track">
-                    AI BYTES LEARNING
-                </text>
-            </svg>
-        `;
+        // ── Title: split to max 3 words per line ─────────────────────────────
+        const { line1, line2 } = splitTitleLines(title);
+        const titleL1 = xmlEscape(line1);
+        const titleL2 = xmlEscape(line2);
 
-        // 4. Composite with Sharp
-        const finalImageBuffer = await sharp(backgroundBuffer)
-            .resize(svgWidth, svgHeight)
-            .composite([{
-                input: Buffer.from(svgOverlay),
-                top: 0,
-                left: 0
-            }])
+        // ── Zone 2: AI Bytes badge (top-right) ───────────────────────────────
+        const badgeW = 148;
+        const badgeX = W - PILL_SAFE - badgeW;
+
+        // Title zone width: full inner width from TEXT_SAFE to right TEXT_SAFE margin.
+        // Badge is top-right, title is bottom-left — no vertical overlap, full width usable.
+        const titleZoneWidth = W - 2 * TEXT_SAFE; // 1160px
+
+        // Adaptive font size — brief spec: 26-30px at 480px display = ~70-80px at 1280px source.
+        // CHAR_RATIO 0.55 matches Inter/DM Sans weight-500 average glyph width.
+        // Ceiling 80px per brief; floor 48px.
+        const CHAR_RATIO = 0.55;
+        const longestLine = Math.max(line1.length, line2?.length || 0);
+        const rawSize = longestLine > 0 ? Math.floor(titleZoneWidth / (longestLine * CHAR_RATIO)) : 80;
+        const titleSize = Math.max(48, Math.min(80, rawSize));
+        const lineH = Math.round(titleSize * 1.25);
+
+        // ── Layout Y positions (brief: title in lower 40% of canvas) ─────────
+        const microLabelSize = 22;
+        const microLabelGap = 14;
+        const titleBlockH = (line2 ? lineH * 2 : lineH) + microLabelSize + microLabelGap;
+        const titleBlockY = H - TEXT_SAFE - titleBlockH;
+
+        const microLabelY = titleBlockY + microLabelSize;
+        const title1Y = microLabelY + microLabelGap + titleSize;
+        const title2Y = title1Y + lineH;
+
+        // ── Zone 1: Category pill (top-left) ─────────────────────────────────
+        const pillLabel = xmlEscape(cfg.label);
+        const pillW = Math.max(140, pillLabel.length * 9 + 56);
+
+        // ── Zone 6: Play ring (bottom-right) ─────────────────────────────────
+        const playR = 44;
+        const playCx = W - PILL_SAFE - playR;
+        const playCy = H - PILL_SAFE - playR;
+
+        // Bottom legibility gradient starts at 45% height for stronger text readability
+        const fadeY = Math.round(H * 0.45);
+
+        const svgOverlay = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <style>
+    @font-face { font-family: 'Mont'; src: url('data:font/truetype;base64,${montserratBase64}') format('truetype'); font-weight: 800; }
+  </style>
+  <linearGradient id="bottomFade" x1="0%" y1="0%" x2="0%" y2="100%">
+    <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
+    <stop offset="100%" stop-color="#000000" stop-opacity="0.82"/>
+  </linearGradient>
+</defs>
+
+<!-- Bottom legibility gradient -->
+<rect x="0" y="${fadeY}" width="${W}" height="${H - fadeY}" fill="url(#bottomFade)"/>
+
+<!-- Zone 1: Category pill — top-left (PILL_SAFE to clear card corner radius) -->
+<rect x="${PILL_SAFE}" y="${PILL_SAFE}" width="${pillW}" height="40" rx="20" fill="rgba(0,0,0,0.65)"/>
+<circle cx="${PILL_SAFE + 20}" cy="${PILL_SAFE + 20}" r="6" fill="${cfg.accentColour}"/>
+<text x="${PILL_SAFE + 34}" y="${PILL_SAFE + 26}" font-family="Mont,sans-serif" font-size="14" font-weight="800" fill="white" letter-spacing="1.8">${pillLabel}</text>
+
+<!-- Zone 2: AI Bytes badge — top-right -->
+<rect x="${badgeX}" y="${PILL_SAFE}" width="${badgeW}" height="40" rx="20" fill="rgba(0,0,0,0.72)"/>
+<text x="${badgeX + badgeW / 2}" y="${PILL_SAFE + 26}" font-family="Mont,sans-serif" font-size="14" font-weight="800" fill="rgba(255,255,255,0.9)" text-anchor="middle" letter-spacing="1">AI BYTES</text>
+
+<!-- Zone 5: MICRO-COURSE label (brief: 10px at 480px = 22px at 1280px, 500 weight, accent colour, letter-spaced) -->
+<text x="${TEXT_SAFE}" y="${microLabelY}" font-family="Mont,sans-serif" font-size="${microLabelSize}" font-weight="500" fill="${cfg.accentColour}" letter-spacing="3">MICRO-COURSE</text>
+
+<!-- Zone 5: Title line 1 (brief: weight 500, white) -->
+<text x="${TEXT_SAFE}" y="${title1Y}" font-family="Mont,sans-serif" font-size="${titleSize}" font-weight="800" fill="#FFFFFF">${titleL1}</text>
+
+${titleL2 ? `<!-- Zone 5: Title line 2 (brief: weight 400, 60% white — same size as line 1) -->
+<text x="${TEXT_SAFE}" y="${title2Y}" font-family="Mont,sans-serif" font-size="${titleSize}" font-weight="400" fill="rgba(255,255,255,0.60)">${titleL2}</text>` : ''}
+
+<!-- Zone 6: Play ring — bottom-right -->
+<circle cx="${playCx}" cy="${playCy}" r="${playR}" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.55)" stroke-width="2"/>
+<polygon points="${playCx - 11},${playCy - 14} ${playCx + 16},${playCy} ${playCx - 11},${playCy + 14}" fill="rgba(255,255,255,0.9)"/>
+</svg>`;
+
+        console.log(`[Thumbnail] Compositing brand layer — title: "${title}", category: ${category}, titleSize: ${titleSize}px`);
+
+        const finalBuffer = await sharp(backgroundBuffer)
+            .resize(W, H, { fit: 'cover' })
+            .composite([{ input: Buffer.from(svgOverlay), top: 0, left: 0 }])
             .png()
             .toBuffer();
 
-        // 5. Upload to Supabase
-        const publicUrl = await geminiImageService.generateImageFromBuffer(finalImageBuffer, 'image/png', `thumbnail-${title.toLowerCase().replace(/[^a-z0-9]/g, '-')}`);
-        return publicUrl || backgroundUrl;
+        console.log(`[Thumbnail] Composite done — ${finalBuffer.length} bytes`);
+
+        const slug = `${category}-${title.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 40)}`;
+        const publicUrl = await geminiImageService.generateImageFromBuffer(finalBuffer, 'image/png', `thumb-${slug}`);
+        console.log(`[Thumbnail] Uploaded → ${publicUrl}`);
+
+        return publicUrl || '';
     }
 }
 

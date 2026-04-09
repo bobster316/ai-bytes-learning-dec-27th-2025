@@ -4,12 +4,11 @@
  * This service provides superior text rendering accuracy and advanced capabilities for educational content.
  */
 
-import { GoogleGenAI } from "@google/genai";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { OpenAI } from "openai";
 import { createClient } from "@supabase/supabase-js";
 import type { ImageGenerationResult } from './media-errors';
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
 export interface GeminiImage {
     url: string;
@@ -18,19 +17,23 @@ export interface GeminiImage {
 }
 
 class GeminiImageService {
-    private client: GoogleGenAI | null = null;
-    private textClient: GoogleGenerativeAI | null = null;
-    // Using the correct Nano Banana image generation model
-    private model = "gemini-3.1-flash-image-preview";
+    private client: any | null = null;
+    private textClient: OpenAI | null = null;
+    // Disabling Google Imagen 3 generation model as the API is shut down
+    private model = "disabled";
     private supabase: any = null;
 
     constructor() {
-        if (GEMINI_API_KEY) {
-            this.client = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-            this.textClient = new GoogleGenerativeAI(GEMINI_API_KEY);
-            console.log('[GeminiImageService] Initialized with both Image and Text clients');
-        } else {
-            console.warn('[GeminiImageService] No GEMINI_API_KEY found, service disabled');
+        // FLAGGED EXCEPTION RESOLVED:
+        // User reported Gemini API is strictly shut down without billing. We must disable GoogleGenAI.
+        // The service will safely return an error payload and the parent MediaService will fall back to unsplash.
+        console.warn('[GeminiImageService] GoogleGenAI disabled entirely per user shutdown notice.');
+        
+        if (OPENROUTER_API_KEY) {
+            this.textClient = new OpenAI({
+                baseURL: "https://openrouter.ai/api/v1",
+                apiKey: OPENROUTER_API_KEY,
+            });
         }
 
         // Initialize Supabase for storage uploads
@@ -125,12 +128,14 @@ class GeminiImageService {
         const client = this.textClient;
         if (!client) return null;
         try {
-            const model = client.getGenerativeModel({ model: "gemini-2.0-flash" });
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            return response.text();
+            const result = await client.chat.completions.create({
+                model: "deepseek/deepseek-v3.2",
+                messages: [{ role: "user", content: prompt }],
+                temperature: temperature
+            });
+            return result.choices[0].message.content;
         } catch (error) {
-            console.error('[GeminiImageService] Text generation failed:', error);
+            console.error('[GeminiImageService] Text generation failed on OpenRouter:', error);
             return null;
         }
     }
@@ -276,6 +281,49 @@ STYLE: Photorealistic, high-contrast, professional, 8k resolution, cinematic tec
         }
 
         return caption || 'Visual Concept';
+    }
+
+    /**
+     * Generate a thumbnail image using the prompt as-is (no educational wrapper).
+     * Used for course thumbnails where the template prompt is already fully specified.
+     */
+    async generateThumbnailImage(prompt: string): Promise<string | null> {
+        if (!this.client) {
+            console.warn('[GeminiImageService] Client not initialized, skipping thumbnail generation');
+            return null;
+        }
+
+        try {
+            console.log(`[GeminiImageService] Generating thumbnail: "${prompt.substring(0, 60)}..."`);
+
+            const randomSeed = Math.floor(Date.now() * Math.random());
+
+            const response = await this.client.models.generateContent({
+                model: this.model,
+                contents: prompt,
+                config: {
+                    temperature: 0.9,
+                    randomSeed
+                } as any
+            });
+
+            if (response.candidates && response.candidates.length > 0) {
+                const parts = response.candidates[0].content?.parts || [];
+                for (const part of parts) {
+                    if (part.inlineData && part.inlineData.data) {
+                        const mimeType = part.inlineData.mimeType || 'image/png';
+                        const publicUrl = await this.uploadToStorage(part.inlineData.data, mimeType, prompt);
+                        if (publicUrl) return publicUrl;
+                    }
+                }
+            }
+
+            console.warn('[GeminiImageService] No image data in thumbnail response');
+            return null;
+        } catch (error: any) {
+            console.error('[GeminiImageService] Thumbnail generation failed:', error?.message || error);
+            return null;
+        }
     }
 
     /**

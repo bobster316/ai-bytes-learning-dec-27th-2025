@@ -1,0 +1,48 @@
+{
+  "course_id": 849,
+  "course_topic": "Prompt Engineering for AI Systems",
+  "domain_history": [
+    "Sports",
+    "Architecture"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "prompt engineering nuance"
+  ],
+  "used_image_urls": [
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774776091607-n3f92u-a%20vibrant,%20dynamic%20p.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774776091992-uqxeeh-a%20close-up%20of%20a%20sili.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774776103322-511tz9-a%20complex%20flow%20diagr.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774776207933-lnamp8-photorealistic%203d%20is.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774776211363-ujddnc-photorealistic%203d%20is.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774776209802-wkr9ng-photorealistic%203d%20is.jpeg"
+  ],
+  "used_video_urls": [],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 0,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 0,
+    "type_cards": 0,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 0,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

@@ -1,5 +1,5 @@
 // lib/ai/conductor/index.ts
-import type { ConductorContext, ConductorOutput, ConductorMemory, ModuleMood, ArcType, Beat, SignatureMomentType } from './types';
+import type { ConductorContext, ConductorOutput, ConductorMemory, ModuleMood, ArcType, Beat, SignatureMomentType, LessonPersonality, OpeningType } from './types';
 import { ARC_DEFINITIONS } from './arc-definitions';
 import { selectArcType } from './arc-selector';
 import { selectSignatureMoment } from './signature-moments';
@@ -15,6 +15,62 @@ const LESSON_ACCENT_CYCLE = [
     '#5BC8F5', '#D4A840', '#7EC8A4', '#FF8C69',
     '#B8E840', '#F8A4C8', '#2EC4F0', '#8B94B8',
 ] as const;
+
+// ── Opening Pattern System ────────────────────────────────────────────────────
+// 5 opening types cycle through lessons. No two consecutive lessons share a type.
+// Enforced by tracking recentOpeningTypes in ConductorMemory.
+
+const ALL_OPENING_TYPES: OpeningType[] = ['question', 'contradiction', 'scenario', 'stat', 'bold_claim'];
+
+/** Select an opening type that hasn't been used in the last 2 lessons. */
+function computeOpeningType(ctx: ConductorContext, memory: ConductorMemory): OpeningType {
+    const seed = ctx.moduleIndex * 7 + ctx.lessonIndex * 3;
+    const recent = memory.recentOpeningTypes ?? [];
+    const candidates = ALL_OPENING_TYPES.filter(t => !recent.slice(-2).includes(t));
+    // fallback: if all 5 have been used recently (impossible with 2-window), use full list
+    const pool = candidates.length > 0 ? candidates : ALL_OPENING_TYPES;
+    return pool[seed % pool.length];
+}
+
+// ── Voice Drift Map ───────────────────────────────────────────────────────────
+// Each personality has a 3-phase register drift: [opening, core, close]
+// Arc type can override the opening phase for stronger emotional contrast.
+
+const DRIFT_COMPANIONS: Record<LessonPersonality, [string, string, string]> = {
+    calm:      ['stark',     'calm',      'warm'],
+    electric:  ['electric',  'technical', 'warm'],
+    cinematic: ['cinematic', 'technical', 'cinematic'],
+    technical: ['stark',     'technical', 'warm'],
+    warm:      ['warm',      'calm',      'warm'],
+    stark:     ['stark',     'technical', 'calm'],
+};
+
+// Arc overrides for opening phase
+const ARC_OPENING_OVERRIDES: Partial<Record<ArcType, string>> = {
+    tension_first: 'electric',
+    exploratory:   'cinematic',
+};
+
+function buildDriftInstruction(personality: LessonPersonality, arcType: ArcType): string {
+    const [openPhase, corePhase, closePhase] = DRIFT_COMPANIONS[personality];
+    const resolvedOpen = ARC_OPENING_OVERRIDES[arcType] ?? openPhase;
+
+    if (resolvedOpen === corePhase && corePhase === closePhase) {
+        return ''; // No meaningful drift — skip injection
+    }
+
+    const phases: string[] = [
+        `  Opening phase (hook, prediction): write in ${resolvedOpen.toUpperCase()} register — see persona definition below`,
+    ];
+    if (corePhase !== resolvedOpen) {
+        phases.push(`  Core phase (explanation, process, contrast, flow): write in ${corePhase.toUpperCase()} register`);
+    }
+    if (closePhase !== corePhase) {
+        phases.push(`  Closing phase (mental_checkpoint, recap, completion): write in ${closePhase.toUpperCase()} register`);
+    }
+
+    return `VOICE DRIFT — shift register through the lesson:\n${phases.join('\n')}`;
+}
 
 /** Derive a seeded integer from course + lesson position. Pure — no randomness. */
 function computeMicroSeed(ctx: ConductorContext): number {
@@ -47,7 +103,8 @@ function buildConductorNotes(
         `LESSON RHYTHM DIRECTIVE (follow exactly):`,
         `Arc type: ${arcType} — ${arcDef.description}`,
         `Emotional sequence: ${beatNames}`,
-        `Lesson personality: ${output.lessonPersonality} — let this tone colour your word choices and visual cues`,
+        `Lesson personality: ${output.lessonPersonality} — full prose rules injected separately as VOICE PERSONA`,
+        `Persona flavour seed: ${output.microVariationSeed} (controls sub-variant within personality)`,
         `Dramatic budget: max ${output.dramaticBudget} blocks with intensity ≥ 0.7 (tension/insight-level blocks)`,
         `Block count target: 10–13 blocks total. Minimum 8. Maximum 16.`,
     ];
@@ -57,6 +114,17 @@ function buildConductorNotes(
         lines.push(`⭐ SIGNATURE MOMENT — place a "${output.signatureMoment.type}" block at beat index ${output.signatureMoment.beatIndex} (${beats[output.signatureMoment.beatIndex]?.name ?? 'insight'} beat).`);
         lines.push(`   This is a once-per-course event. It must feel unmistakably special. Give it exceptional content.`);
     }
+
+    // Voice drift instruction
+    const driftInstruction = buildDriftInstruction(output.lessonPersonality, arcType);
+    if (driftInstruction) {
+        lines.push('');
+        lines.push(driftInstruction);
+    }
+
+    // Opening type mandate
+    lines.push('');
+    lines.push(`OPENING TYPE: ${output.openingType} — the very first sentence of your hook block MUST use this pattern (enforced — see VOICE PERSONA section for examples)`);
 
     if (avoidList.length > 0) {
         lines.push('');
@@ -110,6 +178,7 @@ export function conduct(ctx: ConductorContext): ConductorOutput {
     const signatureMoment = selectSignatureMoment(ctx, arcType);
     const lessonAccentIndex = computeAccentIndex(ctx);
     const microVariationSeed = computeMicroSeed(ctx);
+    const openingType = computeOpeningType(ctx, ctx.memory);
 
     const partial: Omit<ConductorOutput, 'conductorNotes'> = {
         arcType,
@@ -119,6 +188,7 @@ export function conduct(ctx: ConductorContext): ConductorOutput {
         signatureMoment,
         lessonAccentIndex,
         microVariationSeed,
+        openingType,
     };
 
     const conductorNotes = buildConductorNotes(arcType, beatSequence, partial, ctx);
@@ -145,7 +215,8 @@ export function computeModuleMood(moduleIndex: number, totalModules: number): Mo
 export function updateConductorMemory(
     memory: ConductorMemory,
     generatedBlockTypes: string[],
-    firedSignatureMomentType: SignatureMomentType | null
+    firedSignatureMomentType: SignatureMomentType | null,
+    usedOpeningType?: OpeningType
 ): void {
 
     // Update end-of-lesson intensity
@@ -161,5 +232,14 @@ export function updateConductorMemory(
     memory.recentBlockTypeHistory.push([...generatedBlockTypes]);
     if (memory.recentBlockTypeHistory.length > 3) {
         memory.recentBlockTypeHistory.shift();
+    }
+
+    // Track opening types (keep last 2 to enforce anti-repeat window)
+    if (usedOpeningType) {
+        if (!memory.recentOpeningTypes) memory.recentOpeningTypes = [];
+        memory.recentOpeningTypes.push(usedOpeningType);
+        if (memory.recentOpeningTypes.length > 2) {
+            memory.recentOpeningTypes.shift();
+        }
     }
 }

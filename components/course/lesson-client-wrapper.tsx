@@ -10,11 +10,9 @@ export function LessonClientWrapper({ voiceContext, courseId, lessonId }: any) {
         setHasMounted(true);
     }, []);
 
-    if (!hasMounted) return null;
-
     return (
         <div className="hidden">
-            <LessonClientUtils voiceContext={voiceContext} courseId={courseId} lessonId={lessonId} />
+            {hasMounted && <LessonClientUtils voiceContext={voiceContext} courseId={courseId} lessonId={lessonId} />}
         </div>
     );
 }

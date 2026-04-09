@@ -173,7 +173,7 @@ export function VideoSnippet(props: VideoSnippetBlock) {
                                 </div>
                             )}
                         </>
-                    ) : (!props.videoUrl || hasError) ? (
+                    ) : hasError ? (
                         /* Error state */
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#141422] gap-4 p-4 text-center">
                             <div className="w-14 h-14 rounded-2xl bg-red-500/5 border border-red-500/10 flex items-center justify-center">
@@ -182,7 +182,7 @@ export function VideoSnippet(props: VideoSnippetBlock) {
                             <div className="text-center">
                                 <p className="text-[#8A8AB0] font-mono text-[10px] uppercase tracking-widest mb-2 opacity-50">Visual Signal Lost</p>
                                 <p className="text-[#8A8AB0]/50 font-mono text-[9px] max-w-[200px] mx-auto mb-4">
-                                    {!props.videoUrl ? "Failed to resolve related HD video or animation." : "Video failed to load."}
+                                    Video stream severed or failed to load.
                                 </p>
                                 {props.videoUrl && (
                                     <button

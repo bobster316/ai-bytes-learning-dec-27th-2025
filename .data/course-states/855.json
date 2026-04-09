@@ -1,0 +1,49 @@
+{
+  "course_id": 855,
+  "course_topic": "Introduction to Neural Networks",
+  "domain_history": [
+    "Architecture",
+    "Nature"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "activation function visualization",
+    "neural network learning visualisation"
+  ],
+  "used_image_urls": [
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774794525095-sz5vtl-a%20shimmering,%20interc.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774794530509-a8af6n-a%20highly%20detailed%20di.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774794530292-pcqnui-a%20detailed%20architect.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774794626406-gnlgge-a%20neural%20network%20vis.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774794626798-tjpma16-a%20hyperrealistic,%20de.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774794623121-6yl62q-envision%20a%20sprawling.jpeg"
+  ],
+  "used_video_urls": [],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 1,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 0,
+    "type_cards": 1,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 1,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

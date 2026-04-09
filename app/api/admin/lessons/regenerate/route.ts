@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { pcmToWav } from "@/lib/utils/audio-utils";
-import { veoVideoService } from "@/lib/ai/veo-video-service";
+import { kieVideoService } from "@/lib/ai/kie-video-service";
 import { NextResponse } from "next/server";
 
 // --- Constants (Shared with generate-v2) ---
@@ -99,17 +99,17 @@ export async function POST(req: Request) {
             }
         } else if (type === 'video') {
             const videoPrompt = `${VIDEO_OVERVIEW_PROMPT} ${lesson.title}.`;
-            const veoResult = await veoVideoService.generateVideo(videoPrompt, `Regen: ${lesson.title}`);
+            const kieResult = await kieVideoService.generateVideo(videoPrompt);
 
-            if (veoResult) {
+            if (kieResult) {
                 await supabase.from('course_lessons').update({
-                    video_url: veoResult.url,
-                    video_overview_url: veoResult.url
+                    video_url: kieResult.url,
+                    video_overview_url: kieResult.url
                 }).eq('id', lessonId);
-                return NextResponse.json({ success: true, url: veoResult.url });
+                return NextResponse.json({ success: true, url: kieResult.url });
             }
         } else if (type === 'video_block') {
-            // Re-trigger Veo for video_snippet blocks that have a videoPrompt but no videoUrl
+            // Re-trigger Kie for video_snippet blocks that have a videoPrompt but no videoUrl
             const blocks: any[] = Array.isArray(lesson.content_blocks) ? lesson.content_blocks : [];
             const pendingBlocks = blocks.filter((b: any) => b.type === 'video_snippet' && b.videoPrompt && !b.videoUrl);
 
@@ -119,9 +119,9 @@ export async function POST(req: Request) {
 
             let generated = 0;
             for (const block of pendingBlocks) {
-                const veoResult = await veoVideoService.generateVideo(block.videoPrompt, block.caption || lesson.title);
-                if (veoResult?.url) {
-                    block.videoUrl = veoResult.url;
+                const kieResult = await kieVideoService.generateVideo(block.videoPrompt);
+                if (kieResult?.url) {
+                    block.videoUrl = kieResult.url;
                     generated++;
                 }
             }

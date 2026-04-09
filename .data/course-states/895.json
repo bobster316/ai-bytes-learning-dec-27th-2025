@@ -1,0 +1,79 @@
+{
+  "course_id": 895,
+  "course_topic": "Generative AI for Everyone",
+  "domain_history": [
+    "Sports",
+    "Gardening",
+    "Travel",
+    "Culinary",
+    "Gardening",
+    "Music"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey",
+    "The Contrast",
+    "The Build",
+    "The Zoom",
+    "The Dialogue"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer",
+    "Confident Expert",
+    "Playful Storyteller",
+    "Warm Mentor",
+    "Curious Explorer"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "AI tokenization visualisation abstract",
+    "AI context window sliding visual",
+    "transformer self attention visualization",
+    "AI prompt transformation animation",
+    "AI prompt building table generation",
+    "abstract data transformation visualization",
+    "AI error detection visualization",
+    "workflow diagram animation integration"
+  ],
+  "used_image_urls": [
+    "https://v3b.fal.media/files/b/0a95233a/5WjBLiwfHRT-2xCTwIzMP_acd7b3eb1ec64ca7b163554c624e173e.jpg",
+    "https://v3b.fal.media/files/b/0a95233a/Be5C9EQt8wx3s8ZVuF_A-_f86f6bd61dac4316aced672930e1003c.jpg",
+    "https://v3b.fal.media/files/b/0a95233a/S4MVsLtCODIQ6_ALFKT6h_0f5a923f7b0a41ac82458aa587bb9271.jpg",
+    "https://v3b.fal.media/files/b/0a952342/0uHkbCdajrJJt6A7guag7_1d8a9020ad7a4df38265358891418504.jpg",
+    "https://v3b.fal.media/files/b/0a952342/OLj-olXleg6sW2s60rxAw_a8a3db93016b4554ae0846d99421f1a2.jpg",
+    "https://v3b.fal.media/files/b/0a952342/VygPC4ykAemqkZFqjUyuy_723a705733914102a87863f6c7ec23c8.jpg",
+    "https://v3b.fal.media/files/b/0a95234c/E04hULnpAA94kXCMrnMtj_fab96c7d9cc941deb019a6f670d8f5f2.jpg",
+    "https://v3b.fal.media/files/b/0a95234c/YFpsp9AWzFY_jTJy4jCgv_c1b17a31e4b44bde89f96ba005940af5.jpg",
+    "https://v3b.fal.media/files/b/0a952355/P-hqZuLrkpXiOWK0AJw9q_02e8db02cafb46069295e649a1944d07.jpg",
+    "https://v3b.fal.media/files/b/0a952355/qEACd6dmKBsUGNlKZ8XeB_03576684631843a89d4ac00f03c8d05a.jpg",
+    "https://v3b.fal.media/files/b/0a952360/zqnSzQzDqFBz-ER2LVEho_27bb1edfd5594493b26ff1a81ccff84e.jpg",
+    "https://v3b.fal.media/files/b/0a952360/dhTQhZytLsZDd83sf7z9k_bf6772debcd54abfbb84b047aa443431.jpg",
+    "https://v3b.fal.media/files/b/0a952360/woDcptiSX2ZiNTgfeNyFh_aefaf7541ef24147b86f76df09ede71d.jpg",
+    "https://v3b.fal.media/files/b/0a952360/qNZY7ee7nW1NMxy1r8dY-_f0fd561ab2cf472181f6599868349768.jpg",
+    "https://v3b.fal.media/files/b/0a952360/4qP1sgWi1UeBAw2GBo8e4_61e2f24fcf6942e0823bbfbe010c40bf.jpg",
+    "https://v3b.fal.media/files/b/0a95236c/SQpkSPUkYXwyvffsMhbar_e53360988dba4bbca0cdd4e3aca5fb8a.jpg",
+    "https://v3b.fal.media/files/b/0a95236c/nGOzU8MHxzmQ1ZZ8Ao8jU_52a0a66b34ee4b98b34d8a1cfa6a3119.jpg",
+    "https://v3b.fal.media/files/b/0a95236c/Afsqkx4XuuI-CdXN4K4UZ_2e7bf780b10a40829a750e45af60c68c.jpg"
+  ],
+  "used_video_urls": [],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 6,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 6,
+    "type_cards": 2,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 3,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

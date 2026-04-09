@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { elevenLabsService } from '@/lib/services/elevenlabs-service';
-import { magicHourClient } from '@/lib/magichour/client';
 import { videoGenerationService } from '@/lib/services/video-generation';
 
 export async function GET(req: NextRequest) {
@@ -26,10 +25,10 @@ export async function GET(req: NextRequest) {
                 startsWithQuote: process.env.MAGIC_HOUR_API_KEY.startsWith('"'),
                 preview: process.env.MAGIC_HOUR_API_KEY.substring(0, 15) + '...'
             } : { present: false },
-            GEMINI_API_KEY: process.env.GEMINI_API_KEY ? {
+            OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY ? {
                 present: true,
-                length: process.env.GEMINI_API_KEY.length,
-                preview: process.env.GEMINI_API_KEY.substring(0, 15) + '...'
+                length: process.env.OPENROUTER_API_KEY.length,
+                preview: process.env.OPENROUTER_API_KEY.substring(0, 15) + '...'
             } : { present: false }
         }
     });

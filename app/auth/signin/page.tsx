@@ -72,11 +72,11 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#080810] flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-[var(--page-bg)] flex flex-col relative overflow-hidden">
       {/* Mesh blobs */}
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        <div className="absolute top-[-15%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[#4b98ad] opacity-[0.08] blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] rounded-full bg-[#00FFB3] opacity-[0.06] blur-[120px]" />
+        <div className="absolute top-[-15%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[#00FFB3]/5 blur-[140px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] rounded-full bg-[#9B8FFF]/5 blur-[140px]" />
       </div>
 
       {/* Grain */}
@@ -101,25 +101,25 @@ export default function SignInPage() {
               </div>
               <div>
                 <h2 className="font-display text-3xl font-black text-white mb-2">
-                  Welcome back, <span className="text-[#4b98ad]">{welcomeName}</span>
+                  Welcome back, <span className="text-[#00FFB3]">{welcomeName}</span>
                 </h2>
                 <p className="text-white/40 text-sm">Taking you to your dashboard...</p>
               </div>
-              <div className="w-48 h-0.5 bg-white/[0.06] mx-auto rounded-full overflow-hidden">
-                <div className="h-full bg-[#4b98ad] rounded-full animate-[progress_1.8s_linear_forwards]" style={{ width: "100%" }} />
+              <div className="w-48 h-0.5 bg-white/[0.08] mx-auto rounded-full overflow-hidden">
+                <div className="h-full bg-[#00FFB3] rounded-full animate-[progress_1.8s_linear_forwards]" style={{ width: "100%" }} />
               </div>
             </div>
           ) : (
-            <div className="bg-[#0d0d1c] rounded-2xl p-8 lg:p-10 border border-white/[0.06] shadow-[0_0_60px_rgba(0,0,0,0.4)]">
+            <div className="bg-white/[0.04] rounded-2xl p-8 lg:p-10 border border-white/[0.08] backdrop-blur-sm shadow-[0_0_60px_rgba(0,0,0,0.4)]">
               <div className="space-y-8">
 
                 {/* Heading */}
                 <div className="text-center space-y-3">
                   <p className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-white/30">Sign in</p>
                   <h1 className="font-display text-3xl font-black text-white leading-tight">
-                    Welcome <span className="text-[#4b98ad]">Back</span>
+                    Welcome <span className="text-[#00FFB3]">Back</span>
                   </h1>
-                  <p className="text-white/40 text-sm">Log in to reach your 15-minute daily goal.</p>
+                  <p className="text-white/50 text-sm">Log in to reach your 15-minute daily goal.</p>
                 </div>
 
                 {/* Google */}
@@ -143,7 +143,7 @@ export default function SignInPage() {
                     <div className="w-full border-t border-white/[0.06]" />
                   </div>
                   <div className="relative flex justify-center">
-                    <span className="bg-[#0d0d1c] px-4 font-mono text-[10px] uppercase tracking-[0.2em] text-white/25">
+                    <span className="bg-[var(--page-bg)] px-4 font-mono text-[10px] uppercase tracking-[0.2em] text-white/25">
                       or email
                     </span>
                   </div>
@@ -159,13 +159,13 @@ export default function SignInPage() {
                   )}
 
                   <div className="space-y-1.5">
-                    <label className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/35 ml-1">Email</label>
+                    <label className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/40 ml-1">Email</label>
                     <div className="relative group">
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/25 group-focus-within:text-[#4b98ad] transition-colors" />
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/25 group-focus-within:text-[#00FFB3] transition-colors" />
                       <Input
                         type="email"
                         placeholder="name@example.com"
-                        className="h-12 pl-11 rounded-xl border border-white/[0.08] bg-white/[0.04] focus:bg-white/[0.06] focus:border-[#4b98ad]/50 focus:ring-0 text-sm text-white placeholder:text-white/20 transition-all"
+                        className="h-12 pl-11 rounded-xl border border-white/[0.08] bg-white/[0.06] focus:bg-white/[0.08] focus:border-white/20 focus:ring-0 text-sm text-white placeholder:text-white/20 transition-all"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
@@ -175,17 +175,17 @@ export default function SignInPage() {
 
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between ml-1">
-                      <label className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/35">Password</label>
-                      <Link href="/auth/reset-password" className="font-mono text-[10px] uppercase tracking-[0.1em] text-[#4b98ad]/60 hover:text-[#4b98ad] transition-colors">
+                      <label className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">Password</label>
+                      <Link href="/auth/reset-password" className="font-mono text-[10px] uppercase tracking-[0.1em] text-[#00FFB3]/60 hover:text-[#00FFB3] transition-colors">
                         Forgot?
                       </Link>
                     </div>
                     <div className="relative group">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/25 group-focus-within:text-[#4b98ad] transition-colors" />
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/25 group-focus-within:text-[#00FFB3] transition-colors" />
                       <Input
                         type="password"
                         placeholder="••••••••"
-                        className="h-12 pl-11 rounded-xl border border-white/[0.08] bg-white/[0.04] focus:bg-white/[0.06] focus:border-[#4b98ad]/50 focus:ring-0 text-sm text-white placeholder:text-white/20 transition-all"
+                        className="h-12 pl-11 rounded-xl border border-white/[0.08] bg-white/[0.06] focus:bg-white/[0.08] focus:border-white/20 focus:ring-0 text-sm text-white placeholder:text-white/20 transition-all"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
@@ -196,7 +196,7 @@ export default function SignInPage() {
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="w-full h-12 bg-[#4b98ad] hover:bg-[#4b98ad]/90 text-white rounded-xl font-black text-sm uppercase tracking-[0.15em] shadow-lg shadow-[#4b98ad]/20 transition-all"
+                    className="w-full h-12 bg-[#00FFB3] hover:bg-[#00FFB3]/90 text-black rounded-xl font-black text-sm uppercase tracking-[0.15em] shadow-lg shadow-[#00FFB3]/20 transition-all disabled:bg-white/[0.04] disabled:text-white/20 disabled:cursor-not-allowed"
                   >
                     {loading ? "Signing in..." : "Sign In"}
                   </Button>
@@ -204,7 +204,7 @@ export default function SignInPage() {
 
                 <p className="text-center font-mono text-[10px] uppercase tracking-[0.1em] text-white/30">
                   No account?{" "}
-                  <Link href="/auth/signup" className="text-[#4b98ad] hover:text-[#4b98ad]/80 transition-colors">
+                  <Link href="/auth/signup" className="text-[#00FFB3] hover:text-[#00FFB3]/80 transition-colors">
                     Get Started Free
                   </Link>
                 </p>

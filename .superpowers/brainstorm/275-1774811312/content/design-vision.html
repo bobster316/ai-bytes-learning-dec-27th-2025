@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Bytes — World-Class Variation System Design Vision</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --pulse: #00FFB3;
+    --iris: #9B8FFF;
+    --amber: #FFB347;
+    --nova: #FF6B6B;
+    --bg: #080810;
+    --surface: #0f0f1a;
+    --border: rgba(255,255,255,0.07);
+    --text: rgba(255,255,255,0.9);
+    --muted: rgba(255,255,255,0.45);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(0,255,179,0.06) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(155,143,255,0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--pulse);
+    margin-bottom: 24px;
+    opacity: 0.8;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+    max-width: 900px;
+    margin-bottom: 24px;
+  }
+  .hero h1 em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--pulse), var(--iris));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero-sub {
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 600px;
+    margin-bottom: 48px;
+  }
+  .stat-row {
+    display: flex;
+    gap: 48px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-size: 2.5rem;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    background: linear-gradient(135deg, var(--pulse), var(--iris));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 4px;
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    padding: 100px 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .section-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--pulse);
+    margin-bottom: 16px;
+    opacity: 0.7;
+  }
+  .section h2 {
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    margin-bottom: 16px;
+  }
+  .section-desc {
+    color: var(--muted);
+    font-size: 1rem;
+    max-width: 680px;
+    margin-bottom: 60px;
+    line-height: 1.7;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* ── VARIATION MATH ── */
+  .math-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  .math-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .math-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--pulse), transparent);
+  }
+  .math-card.iris::before { background: linear-gradient(90deg, var(--iris), transparent); }
+  .math-card.amber::before { background: linear-gradient(90deg, var(--amber), transparent); }
+  .math-card.nova::before { background: linear-gradient(90deg, var(--nova), transparent); }
+  .math-num {
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    color: var(--pulse);
+    margin-bottom: 4px;
+  }
+  .math-card.iris .math-num { color: var(--iris); }
+  .math-card.amber .math-num { color: var(--amber); }
+  .math-card.nova .math-num { color: var(--nova); }
+  .math-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .math-desc {
+    font-size: 0.7rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .math-total {
+    background: linear-gradient(135deg, rgba(0,255,179,0.08), rgba(155,143,255,0.08));
+    border: 1px solid rgba(0,255,179,0.2);
+    border-radius: 20px;
+    padding: 32px 40px;
+    text-align: center;
+  }
+  .math-total-num {
+    font-size: 3.5rem;
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    background: linear-gradient(135deg, var(--pulse), var(--iris));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .math-total-label {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-top: 8px;
+  }
+
+  /* ── LEVEL CARDS ── */
+  .levels-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  @media (max-width: 768px) { .levels-grid { grid-template-columns: 1fr; } }
+  .level-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 36px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .level-card.course { border-color: rgba(0,255,179,0.15); }
+  .level-card.module { border-color: rgba(155,143,255,0.15); }
+  .level-card.lesson { border-color: rgba(255,179,71,0.15); }
+  .level-badge {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+  }
+  .course .level-badge { background: rgba(0,255,179,0.1); color: var(--pulse); }
+  .module .level-badge { background: rgba(155,143,255,0.1); color: var(--iris); }
+  .lesson .level-badge { background: rgba(255,179,71,0.1); color: var(--amber); }
+  .level-card h3 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .level-card .level-count {
+    font-size: 2.5rem;
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    margin-bottom: 16px;
+  }
+  .course .level-count { color: var(--pulse); }
+  .module .level-count { color: var(--iris); }
+  .lesson .level-count { color: var(--amber); }
+  .level-list {
+    list-style: none;
+    space-y: 8px;
+  }
+  .level-list li {
+    font-size: 0.8rem;
+    color: var(--muted);
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .level-list li:last-child { border-bottom: none; }
+  .level-list li::before {
+    content: '';
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+  .course .level-list li::before { color: var(--pulse); }
+  .module .level-list li::before { color: var(--iris); }
+  .lesson .level-list li::before { color: var(--amber); }
+  .level-new {
+    display: inline-block;
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: rgba(255,107,107,0.15);
+    color: var(--nova);
+    margin-left: 4px;
+    flex-shrink: 0;
+  }
+
+  /* ── NEW BLOCKS ── */
+  .blocks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  .block-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px 24px;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .block-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,0.15);
+  }
+  .block-icon {
+    font-size: 1.6rem;
+    margin-bottom: 14px;
+  }
+  .block-name {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+  }
+  .block-desc {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+  .block-tag {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 100px;
+  }
+  .tag-never { background: rgba(255,107,107,0.12); color: var(--nova); }
+  .tag-cinematic { background: rgba(155,143,255,0.12); color: var(--iris); }
+  .tag-interactive { background: rgba(0,255,179,0.1); color: var(--pulse); }
+  .tag-data { background: rgba(255,179,71,0.12); color: var(--amber); }
+
+  /* ── AESTHETICS ── */
+  .aesthetics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .aesthetic-card {
+    border-radius: 20px;
+    padding: 28px 24px;
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+  }
+  .a1 { background: linear-gradient(135deg, #0a0a0f, #0f1520); border: 1px solid rgba(0,255,179,0.2); }
+  .a2 { background: linear-gradient(135deg, #0c0810, #180d24); border: 1px solid rgba(155,143,255,0.25); }
+  .a3 { background: linear-gradient(135deg, #100c06, #201408); border: 1px solid rgba(255,179,71,0.2); }
+  .a4 { background: linear-gradient(135deg, #06090f, #081525); border: 1px solid rgba(91,200,245,0.2); }
+  .a5 { background: linear-gradient(135deg, #0a0a0c, #13151f); border: 1px solid rgba(139,148,184,0.2); }
+  .a6 { background: linear-gradient(135deg, #0a060d, #1a0a14); border: 1px solid rgba(248,164,200,0.2); }
+  .aesthetic-glow {
+    position: absolute;
+    top: -20px; right: -20px;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    opacity: 0.25;
+    filter: blur(30px);
+  }
+  .a1 .aesthetic-glow { background: #00FFB3; }
+  .a2 .aesthetic-glow { background: #9B8FFF; }
+  .a3 .aesthetic-glow { background: #FFB347; }
+  .a4 .aesthetic-glow { background: #5BC8F5; }
+  .a5 .aesthetic-glow { background: #8B94B8; }
+  .a6 .aesthetic-glow { background: #F8A4C8; }
+  .aesthetic-name {
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+    position: relative;
+    z-index: 1;
+  }
+  .aesthetic-desc {
+    font-size: 0.72rem;
+    color: var(--muted);
+    line-height: 1.5;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── NEVER BEFORE SECTION ── */
+  .never-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .never-card {
+    border-radius: 20px;
+    padding: 32px 28px;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .never-card::after {
+    content: 'NEVER DONE BEFORE';
+    position: absolute;
+    top: 16px; right: 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.12em;
+    color: var(--nova);
+    opacity: 0.6;
+  }
+  .nc1 { background: linear-gradient(135deg, rgba(0,255,179,0.03), rgba(0,255,179,0.06)); }
+  .nc2 { background: linear-gradient(135deg, rgba(155,143,255,0.03), rgba(155,143,255,0.06)); }
+  .nc3 { background: linear-gradient(135deg, rgba(255,179,71,0.03), rgba(255,179,71,0.06)); }
+  .nc4 { background: linear-gradient(135deg, rgba(255,107,107,0.03), rgba(255,107,107,0.06)); }
+  .nc5 { background: linear-gradient(135deg, rgba(91,200,245,0.03), rgba(91,200,245,0.06)); }
+  .nc6 { background: linear-gradient(135deg, rgba(212,168,64,0.03), rgba(212,168,64,0.06)); }
+  .never-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    opacity: 0.4;
+    margin-bottom: 12px;
+  }
+  .never-card h3 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+  }
+  .never-card p {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── MOTION PALETTE ── */
+  .motion-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .motion-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 18px;
+  }
+  .motion-icon { font-size: 1.4rem; margin-bottom: 10px; }
+  .motion-name { font-size: 0.9rem; font-weight: 700; margin-bottom: 6px; }
+  .motion-desc { font-size: 0.72rem; color: var(--muted); line-height: 1.5; }
+
+  /* ── CLOSING ── */
+  .closing {
+    text-align: center;
+    padding: 120px 40px;
+    background: linear-gradient(to bottom, transparent, rgba(0,255,179,0.03));
+  }
+  .closing h2 {
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    margin-bottom: 20px;
+  }
+  .closing p { color: var(--muted); font-size: 1rem; max-width: 560px; margin: 0 auto; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">AI Bytes Learning — Design Vision 2026</div>
+  <h1>The World's Most <em>Visually Infinite</em> E-Learning Platform</h1>
+  <p class="hero-sub">A variation system so large that no two learners — across 100 courses, thousands of lessons — ever see the same visual experience twice.</p>
+  <div class="stat-row">
+    <div class="stat">
+      <div class="stat-num">1.7B+</div>
+      <div class="stat-label">Unique course combinations</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">37</div>
+      <div class="stat-label">New block types total</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">3</div>
+      <div class="stat-label">Variation levels</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">∞</div>
+      <div class="stat-label">Wow factor</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- VARIATION MATH -->
+<div class="section">
+  <div class="section-eyebrow">The Numbers</div>
+  <h2>From 7,776 combinations to 1.7 Billion</h2>
+  <p class="section-desc">The current system generates 7,776 possible course looks. The new system expands every dimension to create an astronomically large design space — effectively unlimited for any realistic number of courses.</p>
+
+  <div class="math-grid">
+    <div class="math-card">
+      <div class="math-num">18</div>
+      <div class="math-label">Archetypes</div>
+      <div class="math-desc">Up from 6. Each drives writing style, density & divider. New: Brutalist, Cinematic, Zen, Data-Dense, Narrative Arc, Provocateur Pro, Modular, Scientific, Story World, Expressive, Editorial, Immersive.</div>
+    </div>
+    <div class="math-card iris">
+      <div class="math-num">48</div>
+      <div class="math-label">Colour Palettes</div>
+      <div class="math-desc">Up from 12. New palettes span 4 families: Neon Dark, Deep Earth, Pastel Night, Mono Accent. Every palette is contrast-tested, accessibility-verified, and visually distinct.</div>
+    </div>
+    <div class="math-card amber">
+      <div class="math-num">10</div>
+      <div class="math-label">Typography Systems</div>
+      <div class="math-desc">Up from 3. New: Kinetic, Brutalist, Editorial, Geometric, Humanist, Cinematic Title, Technical Mono, Expressive Variable, Japanese Rhythm, Compact Dense.</div>
+    </div>
+    <div class="math-card nova">
+      <div class="math-num">8</div>
+      <div class="math-label">Background Treatments</div>
+      <div class="math-desc">Up from 4. New: Noise Film, Aurora Glow, Deep Space, Topographic Lines, Liquid Glass, Circuit Board, Void Particle, Thermal Map.</div>
+    </div>
+    <div class="math-card">
+      <div class="math-num">6</div>
+      <div class="math-label">Layout Densities</div>
+      <div class="math-desc">Up from 3. New: Magazine (asymmetric columns), Dashboard (data-dense), Film (full-viewport moments), Immersive (content in atmosphere).</div>
+    </div>
+    <div class="math-card iris">
+      <div class="math-num">7</div>
+      <div class="math-label">Section Dividers</div>
+      <div class="math-desc">Up from 3. New: Glitch Interrupt, Gradient Bleed, Chapter Number Oversized, Particle Burst, Waveform Line, DNA Helix trace.</div>
+    </div>
+  </div>
+
+  <div class="math-total">
+    <div class="math-total-num">1,741,824,000</div>
+    <div class="math-total-label">Unique course visual identities &nbsp;·&nbsp; 18 × 48 × 10 × 8 × 6 × 7 = effectively unlimited</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- THREE LEVELS -->
+<div class="section">
+  <div class="section-eyebrow">Variation Architecture</div>
+  <h2>Three independent levels. Each amplifies the last.</h2>
+  <p class="section-desc">Course DNA sets the universe. Module DNA sets the chapter. Lesson DNA sets the moment. The same concept taught in lesson 3 of course A feels completely different from lesson 3 of course B — and from lesson 4 of the same course.</p>
+
+  <div class="levels-grid">
+    <div class="level-card course">
+      <div class="level-badge">Course Level</div>
+      <h3>Course DNA</h3>
+      <div class="level-count">1.7B+</div>
+      <ul class="level-list">
+        <li>18 archetypes (was 6)</li>
+        <li>48 colour palettes (was 12)</li>
+        <li>10 typography systems (was 3)</li>
+        <li>8 background treatments (was 4)</li>
+        <li>6 layout densities (was 3)</li>
+        <li>7 section dividers (was 3)</li>
+        <li>Deterministic — same course always identical</li>
+      </ul>
+    </div>
+    <div class="level-card module">
+      <div class="level-badge">Module Level <span class="level-new">NEW</span></div>
+      <h3>Module DNA</h3>
+      <div class="level-count">120+</div>
+      <ul class="level-list">
+        <li>Hue-shifted accent from course palette <span class="level-new">NEW</span></li>
+        <li>5 module header styles <span class="level-new">NEW</span></li>
+        <li>5 module progress display styles <span class="level-new">NEW</span></li>
+        <li>Per-module section divider variant <span class="level-new">NEW</span></li>
+        <li>Module "mood" (opening / building / climax / resolution) <span class="level-new">NEW</span></li>
+        <li>Derived from: course DNA + module index</li>
+      </ul>
+    </div>
+    <div class="level-card lesson">
+      <div class="level-badge">Lesson Level</div>
+      <h3>Lesson DNA</h3>
+      <div class="level-count">Infinite</div>
+      <ul class="level-list">
+        <li>12-colour accent cycle (was 4)</li>
+        <li>8 layout modes per block (was 3)</li>
+        <li>6 visual personalities <span class="level-new">NEW</span></li>
+        <li>Micro-variation seed (spacing, radius, glow) <span class="level-new">NEW</span></li>
+        <li>Narrative position (early/mid/late in module) <span class="level-new">NEW</span></li>
+        <li>Block sequence entropy injection <span class="level-new">NEW</span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- NEW BLOCK TYPES -->
+<div class="section">
+  <div class="section-eyebrow">New Block Types</div>
+  <h2>15 new blocks. Never seen in e-learning.</h2>
+  <p class="section-desc">Each block is a complete visual experience. Not a content container with a border — a cinematic moment, an interaction, a revelation. Total block count goes from 22 to 37.</p>
+
+  <div class="blocks-grid">
+    <div class="block-card">
+      <div class="block-icon">🌑</div>
+      <div class="block-name">Cinematic Moment</div>
+      <div class="block-desc">Full-viewport dark takeover. One massive statement in kinetic typography. Atmospheric ambient sound. The screen holds the learner still for 3 seconds. Then continues.</div>
+      <span class="block-tag tag-never">Never done</span>
+    </div>
+    <div class="block-card">
+      <div class="block-icon">🧠</div>
+      <div class="block-name">Neural Map</div>
+      <div class="block-desc">A live concept graph that builds node-by-node as the learner scrolls through the lesson. By the end, the full network of this lesson's ideas is visible, glowing, interconnected.</div>
+      <span class="block-tag tag-never">Never done</span>
+    </div>
+    <div class="block-card">
+      <div class="block-icon">⚡</div>
+      <div class="block-name">Signal Interrupt</div>
+      <div class="block-desc">Everything stops. Screen dims to near-black. A single sentence appears: "Before you continue — explain what you just read." Learner must type a response. Then the lesson unlocks.</div>
+      <span class="block-tag tag-never">Never done</span>
+    </div>
+    <div class="block-card">
+      <div class="block-icon">🔴</div>
+      <div class="block-name">Reality Anchor</div>
+      <div class="block-desc">A live or recent real-world data point directly tied to the lesson concept. "Right now: 847 AI patents filed this week." Makes learning feel urgent, current, real.</div>
+      <span class="block-tag tag-interactive">Interactive</span>
+    </div>
+    <div class="block-card">
+      <div class="block-icon">🌊</div>
+      <div class="block-name">Tension Arc</div>
+      <div class="block-desc">Visual tension builds (screen darkens, typography tightens, pulse sound) as a problem is presented. Then the solution RELEASES it — burst of colour, screen breathes out. Emotional learning.</div>
+      <span class="block-tag tag-cinematic">Cinematic</span>
+    </div>
+    <div class="block-card">
+      <div class="block-icon">🔬</div>
+      <div class="block-name">Depth Charge</div>
+      <div class="block-desc">Three layers: Surface (30 words) → Practitioner (120 words) → Expert (300 words). Each expands smoothly in-place. The block transforms without leaving the page.</div>
+      <span class="block-tag tag-interactive">Interactive</span>
+    </div>
+    <div class="block-card">
+      <div class="block-icon">⚔️</div>
+      <div class="block-name">Contrast Duel</div>
+      <div class="block-desc">Two viewpoints in a cinematic face-off. Split screen. Each side has its own colour temperature, typography, and argument. Learner decides who wins. Result revealed with a vote count.</div>
+      <span class="block-tag tag-interactive">Interactive</span>
+    </div>
+    <div class="block-card">
+      <div class="block-icon">🕰️</div>
+      <div class="block-name">Time Capsule</div>
+      <div class="block-desc">Learner makes a prediction, locked into their profile. "We'll test this in Lesson 7." When they reach that lesson, their past self's prediction is surfaced and tested. Cross-lesson memory.</div>
+      <span class="block-tag tag-never">Never done</span>
+    </div>
+    <div class="block-card">
+      <div class="block-icon">🌍</div>
+      <div class="block-name">World Stage</div>
+      <div class="block-desc">An animated globe or choropleth showing where this technology is being adopted, regulated, or debated. Geo-political context makes AI concepts feel real and globally relevant.</div>
+      <span class="block-tag tag-data">Data</span>
+    </div>
+    <div class="block-card">
+      <div class="block-icon">💬</div>
+      <div class="block-name">Quote Mosaic</div>
+      <div class="block-desc">3–5 expert quotes arranged in a magazine-style editorial mosaic. Real photos, names, companies. Variable-size layout. Typography as art. Credibility and visual richness in one block.</div>
+      <span class="block-tag tag-cinematic">Cinematic</span>
+    </div>
+    <div class="block-card">
+      <div class="block-icon">📜</div>
+      <div class="block-name">Scroll Story</div>
+      <div class="block-desc">Apple product page effect inside a lesson. Content reveals sequentially as you scroll — diagrams build step by step, text morphs, the narrative has momentum. Scroll = progress.</div>
+      <span class="block-tag tag-cinematic">Cinematic</span>
+    </div>
+    <div class="block-card">
+      <div class="block-icon">💥</div>
+      <div class="block-name">Animated Stat Block</div>
+      <div class="block-desc">Big numbers that animate from 0 when they enter the viewport. "1.76 trillion parameters" counts up in 1.5 seconds. Optional comparison bar chart below. Data made visceral.</div>
+      <span class="block-tag tag-data">Data</span>
+    </div>
+    <div class="block-card">
+      <div class="block-icon">👁️</div>
+      <div class="block-name">Myth Buster</div>
+      <div class="block-desc">Common misconception shown. Learner guesses true/false. Then the truth explodes onto screen with full drama — colour burst, corrected statement, explanation. Memorable through surprise.</div>
+      <span class="block-tag tag-interactive">Interactive</span>
+    </div>
+    <div class="block-card">
+      <div class="block-icon">🎭</div>
+      <div class="block-name">Perspective Toggle</div>
+      <div class="block-desc">Same concept explained from 3 roles — Developer, CEO, Regulator (role set is course-specific). Each tab has different typography weight, tone, and visual density. Instant understanding of context.</div>
+      <span class="block-tag tag-interactive">Interactive</span>
+    </div>
+    <div class="block-card">
+      <div class="block-icon">💻</div>
+      <div class="block-name">Code Cinema</div>
+      <div class="block-desc">Code that writes itself. Each line types out with syntax highlighting, with an annotation that explains it as it appears. Expandable sections. Copy button. Dark terminal aesthetic.</div>
+      <span class="block-tag tag-cinematic">Cinematic</span>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- BLOCK LAYOUT EXPANSION -->
+<div class="section">
+  <div class="section-eyebrow">Layout Mode Expansion</div>
+  <h2>Every block: 3 modes → 8 modes</h2>
+  <p class="section-desc">The current 10 rotating blocks have 3 visual layouts each. We expand to 8 genuinely distinct layouts — not variations of the same design, but completely different visual approaches to the same content. 10 blocks × 8 modes = 80 distinct visual components.</p>
+
+  <div class="math-grid">
+    <div class="math-card">
+      <div class="math-num">80</div>
+      <div class="math-label">Distinct Visual Components</div>
+      <div class="math-desc">10 rotating blocks × 8 modes each. Previously: 10 × 3 = 30.</div>
+    </div>
+    <div class="math-card iris">
+      <div class="math-num">6</div>
+      <div class="math-label">Lesson Visual Personalities</div>
+      <div class="math-desc">NEW: Calm, Electric, Cinematic, Technical, Warm, Stark. Affects all 10 components simultaneously — creates a consistent emotional tone for the whole lesson.</div>
+    </div>
+    <div class="math-card amber">
+      <div class="math-num">12</div>
+      <div class="math-label">Lesson Accent Colours</div>
+      <div class="math-desc">Up from 4. Full brand colour spectrum: 3 teals, 3 purples, 2 ambers, 2 reds, 1 blue, 1 gold. Each lesson in a course gets a distinct accent.</div>
+    </div>
+    <div class="math-card nova">
+      <div class="math-num">Seeded</div>
+      <div class="math-label">Micro-Variation</div>
+      <div class="math-desc">NEW: Tiny seeded noise in border-radius (8px–20px range), glow intensity, and spacing offsets. Makes each lesson feel hand-crafted even when generated.</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- NEVER SEEN BEFORE -->
+<div class="section">
+  <div class="section-eyebrow">Never-Before-Done</div>
+  <h2>Six experiences that don't exist anywhere else.</h2>
+  <p class="section-desc">Beyond blocks. These are platform-level experiences that no e-learning platform — Brilliant, MasterClass, Duolingo, Khan Academy — has ever shipped.</p>
+
+  <div class="never-grid">
+    <div class="never-card nc1">
+      <div class="never-num">01</div>
+      <h3>Cross-Lesson Memory</h3>
+      <p>Time Capsule blocks create predictions that surface in future lessons. The platform remembers what you thought at lesson 2 and confronts you with it at lesson 8. Narrative arc across an entire course.</p>
+    </div>
+    <div class="never-card nc2">
+      <div class="never-num">02</div>
+      <h3>Live Concept Graph</h3>
+      <p>Neural Map builds in real-time as you read. By the end of every lesson, you can see exactly how all the ideas connect as an animated node network. Understanding becomes visible.</p>
+    </div>
+    <div class="never-card nc3">
+      <div class="never-num">03</div>
+      <h3>Enforced Reflection Gate</h3>
+      <p>Signal Interrupt blocks stop progress mid-lesson and demand typed reflection before the next block unlocks. The only platform that makes comprehension a physical act, not a passive assumption.</p>
+    </div>
+    <div class="never-card nc4">
+      <div class="never-num">04</div>
+      <h3>Lesson Visual Personality</h3>
+      <p>Each lesson has an emotional tone — Electric for high-stakes topics, Calm for foundational concepts, Cinematic for case studies. The UI's entire character shifts to match the content's energy.</p>
+    </div>
+    <div class="never-card nc5">
+      <div class="never-num">05</div>
+      <h3>Module-Level DNA</h3>
+      <p>The first platform where not just courses, but individual modules have their own visual identity — hue-shifted from the course palette, with their own header style and progress display. Three nested design systems.</p>
+    </div>
+    <div class="never-card nc6">
+      <div class="never-num">06</div>
+      <h3>Micro-Variation Seeding</h3>
+      <p>Tiny seeded differences in border-radius, glow intensity, and spacing offsets make every lesson feel hand-designed even though it's generated. The platform looks crafted, not templated.</p>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- NEW AESTHETIC DIRECTIONS -->
+<div class="section">
+  <div class="section-eyebrow">New Aesthetic Families</div>
+  <h2>6 new visual worlds. Each unmistakable.</h2>
+  <p class="section-desc">New archetype aesthetics added to the DNA catalogue. These go far beyond the current clinical/bold/warm palette — each is a distinct design universe.</p>
+
+  <div class="aesthetics-grid">
+    <div class="aesthetic-card a1">
+      <div class="aesthetic-glow"></div>
+      <div class="aesthetic-name">Quantum Terminal</div>
+      <div class="aesthetic-desc">Monospace grids, scan-line overlays, neon-on-black. Like hacking the future.</div>
+    </div>
+    <div class="aesthetic-card a2">
+      <div class="aesthetic-glow"></div>
+      <div class="aesthetic-name">Editorial Noir</div>
+      <div class="aesthetic-desc">Magazine typography, deep purple blacks, oversized pull quotes. Intelligence as luxury.</div>
+    </div>
+    <div class="aesthetic-card a3">
+      <div class="aesthetic-glow"></div>
+      <div class="aesthetic-name">Thermal Amber</div>
+      <div class="aesthetic-desc">Warm amber tones, topographic line backgrounds, data-dense. Feels like mission control.</div>
+    </div>
+    <div class="aesthetic-card a4">
+      <div class="aesthetic-glow"></div>
+      <div class="aesthetic-name">Arctic Glass</div>
+      <div class="aesthetic-desc">Ice-blue glassmorphism, frosted panels, crystalline edges. Cold clarity.</div>
+    </div>
+    <div class="aesthetic-card a5">
+      <div class="aesthetic-glow"></div>
+      <div class="aesthetic-name">Void Minimal</div>
+      <div class="aesthetic-desc">Near-white on near-black. Maximum contrast. Zero decoration. Every element earned.</div>
+    </div>
+    <div class="aesthetic-card a6">
+      <div class="aesthetic-glow"></div>
+      <div class="aesthetic-name">Neon Bloom</div>
+      <div class="aesthetic-desc">Soft pinks and blues, bloom effects, dreamy. Like learning inside a lo-fi playlist.</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- MOTION LANGUAGE -->
+<div class="section">
+  <div class="section-eyebrow">Motion Language</div>
+  <h2>Every transition earns its place.</h2>
+  <p class="section-desc">Animations are not decoration — each motion pattern communicates something. The platform has a defined motion vocabulary that varies by archetype, never uses generic easing, and serves the pedagogy.</p>
+
+  <div class="motion-row">
+    <div class="motion-card">
+      <div class="motion-icon">🌊</div>
+      <div class="motion-name">Semantic Reveal</div>
+      <div class="motion-desc">Blocks reveal in the direction knowledge flows — left-to-right for process, top-to-bottom for hierarchy, radial for concepts.</div>
+    </div>
+    <div class="motion-card">
+      <div class="motion-icon">⚡</div>
+      <div class="motion-name">Kinetic Typography</div>
+      <div class="motion-desc">Key terms animate their entry with weight and impact. Variable font width compresses on entry, expands to full. Text has velocity.</div>
+    </div>
+    <div class="motion-card">
+      <div class="motion-icon">🌀</div>
+      <div class="motion-name">Archetype Easing</div>
+      <div class="motion-desc">Bold archetype uses spring physics. Clinical uses linear precision. Warm uses ease-in-out curves. Motion matches personality.</div>
+    </div>
+    <div class="motion-card">
+      <div class="motion-icon">🔬</div>
+      <div class="motion-name">Micro-Choreography</div>
+      <div class="motion-desc">Staggered delays between related elements (0.04s per child). Grid items don't all appear at once — they cascade in formation.</div>
+    </div>
+    <div class="motion-card">
+      <div class="motion-icon">🌑</div>
+      <div class="motion-name">Context Transition</div>
+      <div class="motion-desc">Moving from module to module: a brief dark-field moment — the old context fades, new module DNA breathes in. Like a film cut.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CLOSING -->
+<div class="closing">
+  <h2>This is what <em style="font-style:normal;background:linear-gradient(135deg,#00FFB3,#9B8FFF);-webkit-background-clip:text;-webkit-text-fill-color:transparent">top 0.1%</em> looks like.</h2>
+  <p>Every design decision serves the learner. Every visual choice teaches something. Every interaction is intentional. The platform itself is the lesson.</p>
+</div>
+
+</body>
+</html>

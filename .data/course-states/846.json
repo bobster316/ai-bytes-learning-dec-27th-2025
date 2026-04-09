@@ -1,0 +1,47 @@
+{
+  "course_id": 846,
+  "course_topic": "Prompting for Image Generation",
+  "domain_history": [
+    "Nature",
+    "Sports"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [],
+  "used_image_urls": [
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774708709705-ie6ice-generate%20a%20vibrant,%20.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774708713227-uc7qt8-a%20detailed%20diagram%20o.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774708711411-ubi1v3-a%20high-resolution%20vi.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774708708337-3u6hra-a%20layered%20diagram%20il.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774708817579-ageygk-a%20futuristic%20ai%20inte.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774708813690-xpz4wd-a%20split-screen%20compa.jpeg",
+    "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/generated/gemini-1774708816975-e1sch9-a%20high-resolution%20vi.jpeg"
+  ],
+  "used_video_urls": [],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 0,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 0,
+    "type_cards": 0,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 0,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

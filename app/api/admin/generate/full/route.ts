@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
             // Fetch Topic Thumbnail (100% relevant high quality)
             let topicThumbnail = null;
             try {
-                const topicImages = await imageService.fetchImages([topic.title + " abstract technology"]);
+                const topicImages = await imageService.fetchImages([{ prompt: topic.title + " abstract technology" }]);
                 if (topicImages.length > 0) topicThumbnail = topicImages[0].url;
             } catch (e) {
                 console.warn(`Failed to fetch thumbnail for topic ${topic.title}`);
@@ -99,7 +99,8 @@ export async function POST(req: NextRequest) {
                     );
 
                     // Fetch exactly 6 unique high-relevance images
-                    const imagePromptsToFetch = lessonContent.metadata?.imagePrompts || [];
+                    const rawImagePrompts: string[] = lessonContent.metadata?.imagePrompts || [];
+                    const imagePromptsToFetch = rawImagePrompts.map((p: string) => ({ prompt: p }));
                     const images = await imageService.fetchImages(imagePromptsToFetch);
 
                     // Fetch a 100% relevant video for the FIRST lesson only (Course Introduction)

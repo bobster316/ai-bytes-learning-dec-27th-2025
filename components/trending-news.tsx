@@ -104,8 +104,10 @@ function ArticleCard({ article, index, featured = false }: { article: NewsArticl
       transition={{ delay: index * 0.08 }}
       className="h-full"
     >
-      <Link
-        href={`/news/${encodeURIComponent(article.title)}?url=${encodeURIComponent(article.url)}&imageUrl=${encodeURIComponent(article.urlToImage || '')}&description=${encodeURIComponent(article.description || '')}&source=${encodeURIComponent(article.source?.name || 'AI News')}&date=${encodeURIComponent(article.publishedAt)}`}
+      <a
+        href={article.url}
+        target="_blank"
+        rel="noopener noreferrer"
         className="group flex flex-col h-full rounded-2xl bg-white/[0.04] border border-white/[0.08] overflow-hidden hover:bg-white/[0.07] hover:border-white/[0.14] transition-all duration-300"
       >
         {/* Image */}
@@ -116,13 +118,25 @@ function ArticleCard({ article, index, featured = false }: { article: NewsArticl
               alt={article.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
               onError={(e) => {
-                const parent = (e.target as HTMLImageElement).parentElement;
-                if (parent) parent.innerHTML = `<div class="h-full flex items-center justify-center bg-white/[0.06]"><svg class="w-10 h-10 opacity-20" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg></div>`;
+                const el = e.target as HTMLImageElement;
+                const parent = el.parentElement;
+                if (parent) {
+                  const src = article.source?.name || 'AI';
+                  const initials = src.split(' ').map((w: string) => w[0]).join('').substring(0, 3).toUpperCase();
+                  parent.innerHTML = `<div class="h-full w-full flex flex-col items-center justify-center" style="background:linear-gradient(135deg,#0d1f35 0%,#0a1220 100%)"><span style="font-family:monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(0,200,150,0.5);margin-bottom:8px">${src}</span><span style="font-size:28px;font-weight:900;color:rgba(255,255,255,0.06);letter-spacing:-0.02em">${initials}</span></div>`;
+                }
               }}
             />
           ) : (
-            <div className="h-full flex items-center justify-center bg-white/[0.06]">
-              <Newspaper className="w-10 h-10 text-white/20" />
+            <div className="h-full w-full flex flex-col items-center justify-center"
+                 style={{ background: 'linear-gradient(135deg, #0d1f35 0%, #0a1220 100%)' }}>
+              <span className="font-mono text-[11px] uppercase tracking-[0.2em] mb-2"
+                    style={{ color: 'rgba(0,200,150,0.5)' }}>
+                {article.source?.name || 'AI News'}
+              </span>
+              <span className="font-black text-[1.8rem]" style={{ color: 'rgba(255,255,255,0.06)', letterSpacing: '-0.02em' }}>
+                {(article.source?.name || 'AI').split(' ').map((w: string) => w[0]).join('').substring(0, 3).toUpperCase()}
+              </span>
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -131,7 +145,7 @@ function ArticleCard({ article, index, featured = false }: { article: NewsArticl
         {/* Content */}
         <div className="flex flex-col flex-1 p-5 md:p-6">
           <div className="flex items-center gap-2 mb-3">
-            <span className="font-mono text-[11px] uppercase tracking-widest text-[#4b98ad]">
+            <span className="font-mono text-[11px] uppercase tracking-widest text-[#00FFB3]">
               {article.source?.name || "AI News"}
             </span>
             <span className="w-1 h-1 rounded-full bg-white/20" />
@@ -140,7 +154,7 @@ function ArticleCard({ article, index, featured = false }: { article: NewsArticl
             </span>
           </div>
 
-          <h3 className={`font-bold text-white leading-snug group-hover:text-[#4b98ad] transition-colors line-clamp-2 mb-3 ${featured ? "text-xl md:text-2xl" : "text-base md:text-lg"}`}>
+          <h3 className={`font-bold text-white leading-snug group-hover:text-[#00FFB3] transition-colors line-clamp-2 mb-3 ${featured ? "text-xl md:text-2xl" : "text-base md:text-lg"}`}>
             {article.title}
           </h3>
 
@@ -148,12 +162,12 @@ function ArticleCard({ article, index, featured = false }: { article: NewsArticl
             {article.description}
           </p>
 
-          <div className="flex items-center gap-2 text-[12px] font-bold text-[#4b98ad] group-hover:gap-3 transition-all duration-300 mt-auto">
+          <div className="flex items-center gap-2 text-[12px] font-bold text-[#00FFB3] group-hover:gap-3 transition-all duration-300 mt-auto">
             Read story
             <ArrowRight className="w-3.5 h-3.5" />
           </div>
         </div>
-      </Link>
+      </a>
     </motion.div>
   );
 }
@@ -183,7 +197,7 @@ export function TrendingNews() {
 
   if (loading) {
     return (
-      <section className="w-full py-20 border-t border-white/[0.06]" style={{ background: "#080810" }}>
+      <section className="w-full py-20 border-t border-[var(--page-border)] bg-[var(--page-bg)]">
         <div className="mx-auto w-[88%] max-w-6xl px-6 lg:px-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {[...Array(5)].map((_, i) => (
@@ -206,18 +220,18 @@ export function TrendingNews() {
   const moreStories = articles.slice(TOP_STORIES);
 
   return (
-    <section id="trending" className="w-full py-20 md:py-28 border-t border-white/[0.06]" style={{ background: "#080810" }}>
+    <section id="trending" className="w-full py-20 md:py-28 border-t border-[var(--page-border)] bg-[var(--page-bg)]">
       <div className="mx-auto w-[88%] max-w-6xl px-6 lg:px-12">
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-12">
           <div>
-            <span className="font-mono text-[13px] uppercase tracking-[0.28em] text-[#4b98ad] mb-4 block">
+            <span className="font-mono text-[13px] uppercase tracking-[0.28em] text-[#00FFB3] mb-4 block">
               Live Intelligence
             </span>
             <h2 className="font-black text-white tracking-tight leading-[0.92]"
               style={{ fontSize: "clamp(2.2rem, 5vw, 3.8rem)", letterSpacing: "-0.03em" }}>
-              Trending in <span className="text-[#4b98ad]">AI</span>
+              Trending in <span className="text-[#00FFB3]">AI</span>
             </h2>
           </div>
           <Link href="/news" className="inline-flex items-center gap-2 font-mono text-[13px] text-white/35 uppercase tracking-widest hover:text-white/65 transition-colors group shrink-0">

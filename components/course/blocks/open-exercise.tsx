@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 const ACCENT = {
     pulse: { border: "border-[#00FFB3]", text: "text-[#00FFB3]", bg: "bg-[#00FFB3]/10", glow: "shadow-[0_0_0_1px_rgba(0,255,179,0.3)]" },
-    iris:  { border: "border-[#4b98ad]", text: "text-[#4b98ad]", bg: "bg-[#4b98ad]/10", glow: "shadow-[0_0_0_1px_rgba(155,143,255,0.3)]" },
+    iris:  { border: "border-[#9B8FFF]", text: "text-[#9B8FFF]", bg: "bg-[#9B8FFF]/10", glow: "shadow-[0_0_0_1px_rgba(155,143,255,0.3)]" },
     amber: { border: "border-[#FFB347]", text: "text-[#FFB347]", bg: "bg-[#FFB347]/10", glow: "shadow-[0_0_0_1px_rgba(255,179,71,0.3)]" },
     nova:  { border: "border-[#FF6B6B]", text: "text-[#FF6B6B]", bg: "bg-[#FF6B6B]/10", glow: "shadow-[0_0_0_1px_rgba(255,107,107,0.3)]" },
 };
@@ -65,7 +65,7 @@ export function OpenExercise({ instruction, weakPrompt, scaffoldLabels, modelAns
                                     "w-full rounded-xl border bg-white/[0.04] px-4 py-3 text-sm text-white/80 placeholder:text-white/20",
                                     "resize-none outline-none transition-all duration-200 text-base",
                                     "border-white/10 focus:border-white/25 focus:bg-white/[0.06]",
-                                    "focus-visible:ring-2 focus-visible:ring-[#4b98ad]/40"
+                                    "focus-visible:ring-2 focus-visible:ring-[#9B8FFF]/40"
                                 )}
                             />
                         </div>

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thumbnail Placement — Cinematic Scroll</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #07070e;
+    color: #f0f0f8;
+    font-family: -apple-system, 'Inter', sans-serif;
+    padding: 32px 24px 80px;
+  }
+  h1 { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 6px; letter-spacing: -0.03em; }
+  .subtitle { font-size: 14px; color: rgba(255,255,255,0.38); margin-bottom: 36px; line-height: 1.6; }
+
+  .options-wrap { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; max-width: 1200px; margin: 0 auto; }
+
+  .opt {
+    border-radius: 18px;
+    overflow: hidden;
+    border: 2px solid rgba(255,255,255,0.07);
+    background: #0d0d18;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s;
+    position: relative;
+  }
+  .opt:hover { border-color: rgba(255,255,255,0.14); transform: translateY(-2px); }
+  .opt.selected { border-color: #00FFB3; }
+  .opt.selected::after {
+    content: '✓';
+    position: absolute; top: 10px; right: 10px;
+    background: #00FFB3; color: #07070e;
+    font-size: 11px; font-weight: 900;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .opt-label {
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .opt-letter {
+    width: 24px; height: 24px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 900;
+  }
+  .opt-name { font-size: 13px; font-weight: 800; color: #fff; }
+  .opt-tag { font-size: 10px; color: rgba(255,255,255,0.32); }
+
+  /* ── SHARED MODULE HEADER ── */
+  .mod-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    position: relative; overflow: hidden;
+  }
+  .mod-header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(0,255,179,0.07), transparent 60%);
+  }
+  .mod-bignum {
+    font-size: 32px; font-weight: 900; letter-spacing: -0.06em;
+    color: #00FFB3; opacity: 0.18; flex-shrink: 0; line-height: 1;
+  }
+  .mod-info { flex: 1; }
+  .mod-tag { font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: #00FFB3; margin-bottom: 2px; }
+  .mod-title { font-size: 12px; font-weight: 800; color: #fff; }
+  .mod-chips { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+  .chip { font-size: 8px; padding: 1px 5px; border-radius: 3px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.35); border: 1px solid rgba(255,255,255,0.07); }
+
+  /* ─────────────────────────────────────────── */
+  /* OPTION A — CARD WITH IMAGE LEFT             */
+  /* ─────────────────────────────────────────── */
+  .lessons-a { padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .lesson-a {
+    display: flex; gap: 0; border-radius: 10px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02);
+  }
+  .lesson-a-img {
+    width: 70px; height: 52px; flex-shrink: 0;
+    object-fit: cover; display: block;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    position: relative; overflow: hidden;
+  }
+  .lesson-a-img-inner {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; opacity: 0.4;
+  }
+  .lesson-a-body { padding: 6px 10px; flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 2px; }
+  .lesson-a-num { font-size: 8px; font-family: monospace; color: rgba(0,255,179,0.5); }
+  .lesson-a-title { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.8); line-height: 1.3; }
+  .lesson-a-meta { font-size: 8px; color: rgba(255,255,255,0.25); }
+
+  /* ─────────────────────────────────────────── */
+  /* OPTION B — FULL ROW BACKGROUND IMAGE        */
+  /* ─────────────────────────────────────────── */
+  .lessons-b { display: flex; flex-direction: column; gap: 1px; }
+  .lesson-b {
+    position: relative; overflow: hidden;
+    padding: 10px 14px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .lesson-b-bg {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+    opacity: 0.06;
+  }
+  .lesson-b-bg-gradient {
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(7,7,14,0.5) 0%, rgba(7,7,14,0.2) 50%, rgba(7,7,14,0.8) 100%);
+  }
+  .lesson-b-num { font-size: 9px; font-family: monospace; color: rgba(0,255,179,0.4); flex-shrink: 0; position: relative; z-index: 1; }
+  .lesson-b-title { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.8); flex: 1; position: relative; z-index: 1; }
+  .lesson-b-time { font-size: 8px; color: rgba(255,255,255,0.25); font-family: monospace; position: relative; z-index: 1; }
+  /* small image preview on right */
+  .lesson-b-thumb {
+    width: 40px; height: 30px; border-radius: 5px; overflow: hidden; flex-shrink: 0; position: relative; z-index: 1;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; opacity: 0.5;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* ─────────────────────────────────────────── */
+  /* OPTION C — LARGE THUMBNAIL CARD GRID        */
+  /* ─────────────────────────────────────────── */
+  .lessons-c { padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .lesson-c {
+    border-radius: 10px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02);
+    position: relative;
+  }
+  .lesson-c-img {
+    height: 64px;
+    background: linear-gradient(135deg, #0f0f20, #1a1025);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; opacity: 0.35;
+    position: relative; overflow: hidden;
+  }
+  .lesson-c-img::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 50%;
+    background: linear-gradient(to bottom, transparent, rgba(7,7,14,0.8));
+  }
+  .lesson-c-body { padding: 6px 8px; }
+  .lesson-c-title { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.8); margin-bottom: 2px; line-height: 1.3; }
+  .lesson-c-meta { font-size: 8px; color: rgba(255,255,255,0.25); }
+  .lesson-c-play {
+    position: absolute; top: 8px; right: 8px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: rgba(0,255,179,0.18); border: 1px solid rgba(0,255,179,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8px; color: #00FFB3;
+  }
+
+  .opt-desc {
+    padding: 12px 16px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    font-size: 10px; color: rgba(255,255,255,0.38); line-height: 1.6;
+  }
+  .opt-desc strong { color: rgba(255,255,255,0.65); }
+
+  .footer { text-align: center; margin-top: 36px; font-size: 11px; color: rgba(255,255,255,0.22); }
+
+  /* Fake image fills with gradient colours so it looks realistic without real images */
+  .img-fill-1 { background: linear-gradient(135deg, #0d1f2d 0%, #1a3a4a 100%); }
+  .img-fill-2 { background: linear-gradient(135deg, #1a0d2d 0%, #2d1a4a 100%); }
+  .img-fill-3 { background: linear-gradient(135deg, #2d1a0d 0%, #4a2d0d 100%); }
+  .img-fill-4 { background: linear-gradient(135deg, #0d1a0d 0%, #1a3a1a 100%); }
+</style>
+</head>
+<body>
+
+<h1>Thumbnail placement in Cinematic Scroll</h1>
+<p class="subtitle">Module header stays the same (full-width row with big number + lesson chips).<br>These show how individual lesson thumbnails appear <strong>when a module is expanded.</strong></p>
+
+<div class="options-wrap">
+
+  <!-- ── A: Card + image left ── -->
+  <div class="opt" data-choice="a" onclick="toggleSelect(this)">
+    <div class="opt-label">
+      <div class="opt-letter" style="background:rgba(0,255,179,0.12);color:#00FFB3">A</div>
+      <div>
+        <div class="opt-name">Image-left card row</div>
+        <div class="opt-tag">Thumbnail left, text right</div>
+      </div>
+    </div>
+
+    <!-- Module header -->
+    <div class="mod-header">
+      <div class="mod-bignum">01</div>
+      <div class="mod-info">
+        <div class="mod-tag">Module One</div>
+        <div class="mod-title">Foundations of AI</div>
+        <div class="mod-chips">
+          <span class="chip">4 lessons</span><span class="chip">60 min</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Expanded lessons -->
+    <div class="lessons-a">
+      <div class="lesson-a">
+        <div class="lesson-a-img img-fill-1">
+          <div class="lesson-a-img-inner">🧠</div>
+        </div>
+        <div class="lesson-a-body">
+          <div class="lesson-a-num">01</div>
+          <div class="lesson-a-title">What is Machine Learning?</div>
+          <div class="lesson-a-meta">15 min · Beginner</div>
+        </div>
+      </div>
+      <div class="lesson-a">
+        <div class="lesson-a-img img-fill-2">
+          <div class="lesson-a-img-inner">⚡</div>
+        </div>
+        <div class="lesson-a-body">
+          <div class="lesson-a-num">02</div>
+          <div class="lesson-a-title">Neural Networks Explained</div>
+          <div class="lesson-a-meta">15 min · Beginner</div>
+        </div>
+      </div>
+      <div class="lesson-a">
+        <div class="lesson-a-img img-fill-3">
+          <div class="lesson-a-img-inner">🔬</div>
+        </div>
+        <div class="lesson-a-body">
+          <div class="lesson-a-num">03</div>
+          <div class="lesson-a-title">Training vs Inference</div>
+          <div class="lesson-a-meta">15 min · Beginner</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="opt-desc">
+      <strong>How it works:</strong> Thumbnail sits left like a YouTube thumbnail. Text right. Clean editorial row. On hover — image zooms in slightly, row lifts. On mobile stacks vertically.
+    </div>
+  </div>
+
+  <!-- ── B: Full-row background ── -->
+  <div class="opt" data-choice="b" onclick="toggleSelect(this)">
+    <div class="opt-label">
+      <div class="opt-letter" style="background:rgba(155,143,255,0.12);color:#9B8FFF">B</div>
+      <div>
+        <div class="opt-name">Immersive background row</div>
+        <div class="opt-tag">Image bleeds behind each lesson row</div>
+      </div>
+    </div>
+
+    <!-- Module header -->
+    <div class="mod-header">
+      <div class="mod-bignum">01</div>
+      <div class="mod-info">
+        <div class="mod-tag">Module One</div>
+        <div class="mod-title">Foundations of AI</div>
+        <div class="mod-chips">
+          <span class="chip">4 lessons</span><span class="chip">60 min</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Expanded lessons -->
+    <div class="lessons-b">
+      <div class="lesson-b">
+        <div class="lesson-b-bg img-fill-1"></div>
+        <div class="lesson-b-bg-gradient"></div>
+        <span class="lesson-b-num">01</span>
+        <span class="lesson-b-title">What is Machine Learning?</span>
+        <span class="lesson-b-time">15m</span>
+        <div class="lesson-b-thumb img-fill-1">🧠</div>
+      </div>
+      <div class="lesson-b">
+        <div class="lesson-b-bg img-fill-2"></div>
+        <div class="lesson-b-bg-gradient"></div>
+        <span class="lesson-b-num">02</span>
+        <span class="lesson-b-title">Neural Networks Explained</span>
+        <span class="lesson-b-time">15m</span>
+        <div class="lesson-b-thumb img-fill-2">⚡</div>
+      </div>
+      <div class="lesson-b">
+        <div class="lesson-b-bg img-fill-3"></div>
+        <div class="lesson-b-bg-gradient"></div>
+        <span class="lesson-b-num">03</span>
+        <span class="lesson-b-title">Training vs Inference</span>
+        <span class="lesson-b-time">15m</span>
+        <div class="lesson-b-thumb img-fill-3">🔬</div>
+      </div>
+    </div>
+
+    <div class="opt-desc">
+      <strong>How it works:</strong> Each lesson row has its thumbnail as a very subtle background (6% opacity) with a small crisp thumb on the far right. On hover — background image opacity rises to 15%, row glows. Most cinematic of the three.
+    </div>
+  </div>
+
+  <!-- ── C: Large card grid ── -->
+  <div class="opt" data-choice="c" onclick="toggleSelect(this)">
+    <div class="opt-label">
+      <div class="opt-letter" style="background:rgba(255,179,71,0.12);color:#FFB347">C</div>
+      <div>
+        <div class="opt-name">Large thumbnail grid</div>
+        <div class="opt-tag">Netflix-style 2-col cards</div>
+      </div>
+    </div>
+
+    <!-- Module header -->
+    <div class="mod-header">
+      <div class="mod-bignum">01</div>
+      <div class="mod-info">
+        <div class="mod-tag">Module One</div>
+        <div class="mod-title">Foundations of AI</div>
+        <div class="mod-chips">
+          <span class="chip">4 lessons</span><span class="chip">60 min</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Expanded lessons grid -->
+    <div class="lessons-c">
+      <div class="lesson-c">
+        <div class="lesson-c-img img-fill-1">🧠</div>
+        <div class="lesson-c-body">
+          <div class="lesson-c-title">What is Machine Learning?</div>
+          <div class="lesson-c-meta">01 · 15 min</div>
+        </div>
+        <div class="lesson-c-play">▶</div>
+      </div>
+      <div class="lesson-c">
+        <div class="lesson-c-img img-fill-2">⚡</div>
+        <div class="lesson-c-body">
+          <div class="lesson-c-title">Neural Networks Explained</div>
+          <div class="lesson-c-meta">02 · 15 min</div>
+        </div>
+        <div class="lesson-c-play">▶</div>
+      </div>
+      <div class="lesson-c">
+        <div class="lesson-c-img img-fill-3">🔬</div>
+        <div class="lesson-c-body">
+          <div class="lesson-c-title">Training vs Inference</div>
+          <div class="lesson-c-meta">03 · 15 min</div>
+        </div>
+        <div class="lesson-c-play">▶</div>
+      </div>
+      <div class="lesson-c">
+        <div class="lesson-c-img img-fill-4">📊</div>
+        <div class="lesson-c-body">
+          <div class="lesson-c-title">Deep Learning Basics</div>
+          <div class="lesson-c-meta">04 · 15 min</div>
+        </div>
+        <div class="lesson-c-play">▶</div>
+      </div>
+    </div>
+
+    <div class="opt-desc">
+      <strong>How it works:</strong> Lessons expand into a 2-column image card grid like Netflix. Thumbnail fills the top half, title below. Play button top-right. On hover — image scales up, play button glows.
+    </div>
+  </div>
+
+</div>
+
+<p class="footer">Each thumbnail is the AI-generated image already stored per lesson in the database — unique to each lesson's content.<br>Click your preferred layout then tell me in the terminal.</p>
+
+<script>
+function toggleSelect(el) {
+  document.querySelectorAll('.opt').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  if (window.__sp_select) window.__sp_select(el.dataset.choice, el.querySelector('.opt-name').textContent.trim());
+}
+</script>
+</body>
+</html>

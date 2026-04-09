@@ -1,0 +1,83 @@
+{
+  "course_id": 902,
+  "course_topic": "Introduction to Generative AI",
+  "domain_history": [
+    "Music",
+    "Nature",
+    "Gardening",
+    "Architecture",
+    "Travel",
+    "Music"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey",
+    "The Contrast",
+    "The Build",
+    "The Zoom",
+    "The Dialogue"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer",
+    "Confident Expert",
+    "Playful Storyteller",
+    "Warm Mentor",
+    "Curious Explorer"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "generative AI creation visual metaphor",
+    "AI error propagation animation",
+    "AI data training flow animation",
+    "neural network training data mapping",
+    "neural network layer assembly line",
+    "AI tool selection workflow animation",
+    "prompt engineering animation framework"
+  ],
+  "used_image_urls": [
+    "https://v3b.fal.media/files/b/0a95233a/5WjBLiwfHRT-2xCTwIzMP_acd7b3eb1ec64ca7b163554c624e173e.jpg",
+    "https://v3b.fal.media/files/b/0a95233a/Be5C9EQt8wx3s8ZVuF_A-_f86f6bd61dac4316aced672930e1003c.jpg",
+    "https://v3b.fal.media/files/b/0a95233a/S4MVsLtCODIQ6_ALFKT6h_0f5a923f7b0a41ac82458aa587bb9271.jpg",
+    "https://v3b.fal.media/files/b/0a952342/0uHkbCdajrJJt6A7guag7_1d8a9020ad7a4df38265358891418504.jpg",
+    "https://v3b.fal.media/files/b/0a9525e2/Jv1JsflMdde6UW_peSTqb_0260c397951d4ec28d989a2b8a661513.jpg",
+    "https://v3b.fal.media/files/b/0a9525e2/Yd1BOhe4FQC59TRHjcsLR_3512e9c8b51647fa8ccb2b3a8d08fc26.jpg",
+    "https://v3b.fal.media/files/b/0a95234c/E04hULnpAA94kXCMrnMtj_fab96c7d9cc941deb019a6f670d8f5f2.jpg",
+    "https://v3b.fal.media/files/b/0a95234c/YFpsp9AWzFY_jTJy4jCgv_c1b17a31e4b44bde89f96ba005940af5.jpg",
+    "https://v3b.fal.media/files/b/0a952355/P-hqZuLrkpXiOWK0AJw9q_02e8db02cafb46069295e649a1944d07.jpg",
+    "https://v3b.fal.media/files/b/0a952355/qEACd6dmKBsUGNlKZ8XeB_03576684631843a89d4ac00f03c8d05a.jpg",
+    "https://v3b.fal.media/files/b/0a952360/zqnSzQzDqFBz-ER2LVEho_27bb1edfd5594493b26ff1a81ccff84e.jpg",
+    "https://v3b.fal.media/files/b/0a952360/dhTQhZytLsZDd83sf7z9k_bf6772debcd54abfbb84b047aa443431.jpg",
+    "https://v3b.fal.media/files/b/0a9552ea/JW8Fh5nss-FG_SNGsa6SU_1cba11dedb2e4f69a0cef794b442e43a.jpg",
+    "https://v3b.fal.media/files/b/0a9552ea/kvefs7RAvX7zEuNtbPQ30_20ab258a62f8445687b86de11f1b054f.jpg",
+    "https://v3b.fal.media/files/b/0a9552ea/vAtZmuh61t5cyQtr9qqXe_46d8cbf2a2444b03a23ac8d0daa1fce8.jpg",
+    "https://v3b.fal.media/files/b/0a9552ea/Yly71v4Cb5-snAmN4XCpQ_6914ffaf29ee46cab4a0db1fe30af4ce.jpg",
+    "https://v3b.fal.media/files/b/0a9552ea/YyUfhISv0Q7lhIJx1HItz_dca5354941134201bb06b1d014f29748.jpg",
+    "https://v3b.fal.media/files/b/0a9552ea/P85ZaVkSMImhiancmcAb8_85923302abe24a538d2bb0b60b3f1cb3.jpg",
+    "https://v3b.fal.media/files/b/0a9552ea/Dq8jRT-Dzc0rDn7Xni8Vo_23d6dbc2029547799158d0cc3a6ee92b.jpg",
+    "https://v3b.fal.media/files/b/0a95236c/SQpkSPUkYXwyvffsMhbar_e53360988dba4bbca0cdd4e3aca5fb8a.jpg",
+    "https://v3b.fal.media/files/b/0a952611/S27M9YG7Y4QY-r8Edz-Sy_fca129c7e536435995a117c4b5860501.jpg",
+    "https://v3b.fal.media/files/b/0a952611/vVm5YJTv3thgvU9oL-Vdg_9b3593b8ab6b49d9b07a47fd5b48103a.jpg",
+    "https://v3b.fal.media/files/b/0a952611/J7P2z0zlQ4d_yJUmwHese_220a65bbb8aa46d0b212ddf7b8165d83.jpg"
+  ],
+  "used_video_urls": [],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 5,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 6,
+    "type_cards": 2,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 2,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

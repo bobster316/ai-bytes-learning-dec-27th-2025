@@ -32,20 +32,20 @@ export function NewsTicker() {
   if (articles.length === 0) return null;
 
   return (
-    <section className="py-20 border-b border-white/[0.06] bg-[#080810] relative overflow-hidden">
+    <section className="py-20 border-b border-[var(--page-border)] bg-[var(--page-bg)] relative overflow-hidden">
       {/* Subtle top gradient */}
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#4b98ad]/20 to-transparent" />
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#00FFB3]/20 to-transparent" />
       
       <div className="mx-auto w-[88%] max-w-6xl px-6 lg:px-12">
         
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#4b98ad]/10 rounded-full border border-[#4b98ad]/20 mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#00FFB3]/10 rounded-full border border-[#00FFB3]/20 mb-4">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#4b98ad] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#4b98ad]"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00FFB3] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00FFB3]"></span>
               </span>
-              <span className="font-mono text-[11px] uppercase tracking-widest text-[#4b98ad]">Live Autoblog</span>
+              <span className="font-mono text-[11px] uppercase tracking-widest text-[#00FFB3]">Live Autoblog</span>
             </div>
             <h2
               className="font-black text-white leading-tight"
@@ -58,7 +58,7 @@ export function NewsTicker() {
           
           <Link
             href="/news"
-            className="inline-flex items-center gap-2 font-mono text-[13px] text-white/40 uppercase tracking-widest hover:text-[#4b98ad] hover:gap-3 transition-all group"
+            className="inline-flex items-center gap-2 font-mono text-[13px] text-white/40 uppercase tracking-widest hover:text-[#00FFB3] hover:gap-3 transition-all group"
           >
             Read all news
             <ArrowRight className="w-3.5 h-3.5 transition-transform" />
@@ -75,7 +75,7 @@ export function NewsTicker() {
             <Link
               key={article.slug}
               href={`/news/${article.slug}`}
-              className="group flex flex-col rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] hover:border-[#4b98ad]/30 transition-all duration-300 overflow-hidden"
+              className="group flex flex-col rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] hover:border-[#00FFB3]/30 transition-all duration-300 overflow-hidden"
             >
               {/* Featured image */}
               <div className="relative h-48 w-full overflow-hidden">
@@ -88,7 +88,7 @@ export function NewsTicker() {
                   />
                 ) : (
                   <div className="w-full h-full bg-[#111116] flex items-center justify-center">
-                    <Newspaper className="w-10 h-10 text-[#4b98ad]/20" />
+                    <Newspaper className="w-10 h-10 text-[#00FFB3]/20" />
                   </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#080810] via-transparent to-transparent opacity-70" />
@@ -98,7 +98,7 @@ export function NewsTicker() {
               <div className="flex flex-col justify-between p-6 flex-1">
                 <div>
                   <div className="flex items-center gap-2 text-white/30 font-mono text-[10px] md:text-xs uppercase tracking-widest mb-3">
-                    <Newspaper className="w-3.5 h-3.5 text-[#4b98ad]/70" />
+                    <Newspaper className="w-3.5 h-3.5 text-[#00FFB3]/70" />
                     {new Date(article.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </div>
                   <h3 className="text-lg md:text-xl font-bold text-white/80 group-hover:text-white leading-snug">
@@ -106,7 +106,7 @@ export function NewsTicker() {
                   </h3>
                 </div>
                 
-                <div className="mt-6 flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-[#4b98ad] opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                <div className="mt-6 flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-[#00FFB3] opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
                   Explore Story <ArrowRight className="w-3 h-3" />
                 </div>
               </div>

@@ -3,8 +3,9 @@
 
 import { useCourseDNA } from "./course-dna-provider";
 
-export function SectionDivider({ sectionNumber }: { sectionNumber?: number }) {
+export function SectionDivider({ sectionNumber, dividerColour }: { sectionNumber?: number; dividerColour?: string }) {
     const { section_divider, primary_colour } = useCourseDNA();
+    const colour = dividerColour || primary_colour;
 
     if (section_divider === "bold_number") {
         if (sectionNumber !== undefined) {
@@ -12,7 +13,7 @@ export function SectionDivider({ sectionNumber }: { sectionNumber?: number }) {
                 <div className="flex items-center justify-center my-8 select-none pointer-events-none">
                     <span
                         className="font-mono text-[80px] font-black leading-none opacity-[0.06]"
-                        style={{ color: primary_colour }}
+                        style={{ color: colour }}
                     >
                         {String(sectionNumber).padStart(2, "0")}
                     </span>
@@ -23,7 +24,7 @@ export function SectionDivider({ sectionNumber }: { sectionNumber?: number }) {
         return (
             <div
                 className="my-10 h-[3px] w-16 mx-auto rounded-full"
-                style={{ backgroundColor: primary_colour, opacity: 0.4 }}
+                style={{ backgroundColor: colour, opacity: 0.4 }}
             />
         );
     }
@@ -35,7 +36,7 @@ export function SectionDivider({ sectionNumber }: { sectionNumber?: number }) {
                     <span
                         key={i}
                         className="w-1.5 h-1.5 rounded-full"
-                        style={{ backgroundColor: primary_colour, opacity: 0.3 }}
+                        style={{ backgroundColor: colour, opacity: 0.3 }}
                     />
                 ))}
             </div>
@@ -46,7 +47,7 @@ export function SectionDivider({ sectionNumber }: { sectionNumber?: number }) {
     return (
         <div
             className="my-10 h-px w-full max-w-[1140px] mx-auto"
-            style={{ backgroundColor: primary_colour, opacity: 0.12 }}
+            style={{ backgroundColor: colour, opacity: 0.12 }}
         />
     );
 }

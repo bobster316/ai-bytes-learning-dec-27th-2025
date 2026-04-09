@@ -267,7 +267,7 @@ function validateAndRepairBlock(block: Record<string, unknown>): Record<string, 
     }
 
     // ─── Compound type name normalisation (type mutation only) ───────────────
-    // Gemini sometimes writes the schema-doc reference as the type field,
+    // LLM sometimes writes the schema-doc reference as the type field,
     // e.g. "type_cards grid" or "image_text_row reversed".
     // Mutate `type` here so `repaired` is initialised with the correct type;
     // the matching layout/reverse fields are set on `repaired` below.
@@ -351,7 +351,7 @@ function validateAndRepairBlock(block: Record<string, unknown>): Record<string, 
 
     // REPAIR: any paragraph in a text block that exceeds 350 chars → split on sentence boundaries.
     // Handles both single-paragraph blocks (original case) and multi-paragraph blocks where
-    // individual paragraphs are too dense (e.g. 800-1000 char walls of text from Gemini).
+    // individual paragraphs are too dense (e.g. 800-1000 char walls of text from LLM).
     if (type === 'text' && Array.isArray(repaired.paragraphs) && repaired.paragraphs.length > 0) {
         const MAX_PARA_CHARS = 350;
         const newParas: string[] = [];

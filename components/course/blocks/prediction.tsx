@@ -11,7 +11,7 @@ export function Prediction({ question, options, correctIndex, reveal, accentColo
 
     const accentHex = accentColour === "pulse" ? "#00FFB3"
         : accentColour === "amber" ? "#FFB347"
-        : "#4b98ad";
+        : "#9B8FFF";
 
     const getOptionState = (i: number) => {
         if (!answered) return "idle";

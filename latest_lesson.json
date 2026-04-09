@@ -1,0 +1,355 @@
+{
+  "title": "Lesson 1: The Attention Revolution",
+  "content_blocks": [
+    {
+      "tag": "Core Mechanism",
+      "type": "lesson_header",
+      "order": 0,
+      "title": "The Attention Revolution",
+      "purpose": "Introduce",
+      "duration": "15 min",
+      "heroType": "interactive",
+      "imageUrl": "https://v3b.fal.media/files/b/0a950f02/otr_3ONQz2K81WUF3QcVJ_f572d53e43ec4047b0a777f80eb6a563.jpg",
+      "difficulty": "Intermediate",
+      "heroPrompt": "An architectural plan of a transformer neural network, rendered in clean, glowing wireframes. The central attention mechanism is highlighted with a dynamic, flowing light connecting distant nodes. The mood is precise, elegant, and quietly effective, suggesting a fundamental shift in design.",
+      "objectives": [
+        "Explain why pre-attention models struggled with context.",
+        "Describe how attention weights dynamically link information.",
+        "Contrast the computational view of attention with a simple filter.",
+        "Identify where attention creates a decisive advantage in real systems."
+      ],
+      "description": "Discover how the attention mechanism transformed AI from a passive observer into an active, context-aware system.",
+      "heroImageUrl": "https://v3b.fal.media/files/b/0a950f02/otr_3ONQz2K81WUF3QcVJ_f572d53e43ec4047b0a777f80eb6a563.jpg"
+    },
+    {
+      "text": "By the end of this lesson you will be able to articulate how the attention mechanism fundamentally changed how AI models process information, moving from treating all inputs equally to dynamically focusing on what matters. This capability matters because it explains why modern language, vision, and recommendation systems can handle ambiguity and long-range dependencies that stumped earlier designs. It builds the mental model that intelligent processing is not about more computation, but about smarter allocation of the computation you have.",
+      "type": "objective",
+      "label": "Learning Objective",
+      "order": 1,
+      "purpose": "Introduce"
+    },
+    {
+      "type": "punch_quote",
+      "order": 2,
+      "quote": "Attention is not a feature added to AI. It is the architectural shift that made modern AI possible.",
+      "accent": "iris",
+      "purpose": "Introduce"
+    },
+    {
+      "type": "hook",
+      "order": 3,
+      "content": "A language model without attention reads the sentence 'The cat sat on the mat because it was tired.' It has a 50% chance of linking 'it' to 'mat' instead of 'cat'. Why does this simple task break a complex system?",
+      "purpose": "Introduce",
+      "hook_style": "scenario",
+      "analytics_tag": "hook"
+    },
+    {
+      "id": "prediction_1",
+      "type": "prediction",
+      "order": 4,
+      "reveal": "The answer is B. Without attention, models processed sequences by treating each element with roughly equal weight, or by using rigid, position-based rules. This made them poor at tasks where meaning depends on relationships between distant elements.",
+      "options": [
+        "It used a fixed rule, like always focusing on the last three words.",
+        "It assigned equal importance to every single word in the sequence.",
+        "It relied on a separate, hand-crafted algorithm written by engineers."
+      ],
+      "purpose": "Reinforce",
+      "question": "Before the attention mechanism, how did a typical neural network decide which part of an input sentence was most important for its next prediction?",
+      "accentColour": "amber",
+      "correctIndex": 1
+    },
+    {
+      "type": "core_explanation",
+      "order": 5,
+      "heading": "The Problem of Fixed Context",
+      "purpose": "Explain",
+      "paragraphs": [
+        "Pre-attention neural networks, like RNNs and CNNs, process data with a fixed, local view. An RNN reads a sentence word by word, and the influence of the first word decays as it passes through the sequence.",
+        "This creates a bottleneck. The model's 'working memory' for understanding the relationship between 'cat' and 'tired' is limited by this fixed pathway, regardless of how semantically vital that connection is."
+      ],
+      "analytics_tag": "core_explanation"
+    },
+    {
+      "type": "time_capsule",
+      "order": 6,
+      "title": "A Moment of Realisation",
+      "prompt": "Write a note to your future self about the one idea from this lesson you want to remember when AI feels overwhelmingly complex.",
+      "content": "In 2017, the 'Attention Is All You Need' paper proposed removing recurrence and convolution entirely. The audacity wasn't in adding a new component, but in stripping away the established structures and proving that dynamic, learned relationships were sufficient. This is the capsule: the insight that the core operation of intelligence might be alignment, not sequential processing.",
+      "purpose": "Reinforce"
+    },
+    {
+      "text": "This visual contrasts the constrained data flow of a recurrent network with the dynamic connectivity of an attention-based system. The key mechanism it reveals is that attention bypasses the sequential bottleneck by allowing direct, weighted connections between any two points in the sequence. You should infer that this is not a minor efficiency gain, but a change in the fundamental computational model. The concrete implication is that models can now directly link 'Paris' and 'France' in a sentence, regardless of the 20 words between them.",
+      "type": "image_text_row",
+      "label": "Architectural Shift",
+      "order": 7,
+      "title": "From Pipeline to Web",
+      "purpose": "Visualise",
+      "reverse": false,
+      "imageUrl": "https://v3b.fal.media/files/b/0a950f03/0R8xyj2K6sbuMQHzqb9VF_9265b2d5c70c4cd98a2b92a0affbba0c.jpg",
+      "imagePrompt": "GEOMETRY: A side-by-side architectural diagram. Left: a linear chain of recurrent nodes, each connected only to its neighbour, forming a narrow pipeline. Right: a fully connected web where every node links to every other node with lines of varying thickness. PHYSICS: The recurrent chain is solid, matte grey silicon. The web's connections are semi-transparent beams of light, with thicker beams indicating stronger 'attention' weights. LITE & OPTICS: Three-point lighting with a cool rim light on the web to emphasise its dimensionality. DATA VISUALISATION: Overlaid on the web, a simple matrix of numerical weights (e.g., 0.7, 0.1, 0.9) corresponds to connection thickness. PEDAGOGICAL ALIGNMENT: LO_001_01 - contrast fixed, sequential context with dynamic, all-to-all context."
+    },
+    {
+      "type": "text",
+      "order": 8,
+      "heading": "The Weight of a Connection",
+      "purpose": "Explain",
+      "paragraphs": [
+        "Attention works by calculating a simple score: how relevant is every other element to the one I'm currently processing? These scores become weights. A high weight means a strong link, pulling that information forward.",
+        "This scoring happens dynamically, for every element, every time. The model isn't following a pre-written rule; it's learning, in the moment, which connections matter for the task at hand."
+      ]
+    },
+    {
+      "type": "flow_diagram",
+      "order": 9,
+      "title": "How Attention Reweights a Sentence",
+      "purpose": "Compare",
+      "contrast": {
+        "labelA": "Without Attention",
+        "labelB": "With Attention",
+        "stepsA": [
+          "Input: 'The cat sat on the mat because it was tired.'",
+          "Process: Each word is encoded sequentially.",
+          "Context: 'it' can only refer to recent words ('mat').",
+          "Output: Ambiguous or incorrect pronoun resolution."
+        ],
+        "stepsB": [
+          "Input: 'The cat sat on the mat because it was tired.'",
+          "Process: The model computes pairwise relevance scores.",
+          "Context: 'it' receives a high score for 'cat', low for 'mat'.",
+          "Output: Clear pronoun resolution ('cat' is tired)."
+        ],
+        "outcomeA": "Context is limited by sequence position.",
+        "outcomeB": "Context is determined by semantic relevance.",
+        "middleNode": "Query: 'What does 'it' refer to?'"
+      },
+      "explanation": "This cause-effect chain shows that attention intervenes at the point of context formation. It reveals that the system's output changes not because it computes more, but because it computes a specific set of relationships first. The shift from positional to relevance-based linking is what enables accurate understanding of long-range dependencies."
+    },
+    {
+      "id": "video_attention_flow",
+      "type": "video_snippet",
+      "order": 10,
+      "title": "Dynamic Focus in Action",
+      "_veoId": "kie_1775453177429_nhh0o",
+      "caption": "Watch how attention weights shift as a sentence is processed.",
+      "purpose": "Visualise",
+      "duration": "8s",
+      "videoUrl": "https://aysqedgkpdbcbubadrrr.supabase.co/storage/v1/object/public/course-images/videos/kie-wan-1775453230042-8jncf.mp4",
+      "description": "You will see the abstract concept of attention weights represented as glowing connections that strengthen or weaken in real-time. This matters because it moves the mechanism from a mathematical abstraction to an intuitive, visual model of dynamic focus.",
+      "videoPrompt": "This video visualises the lesson concept of dynamic attention weighting from 'The Attention Revolution'. Visible objects are glowing, translucent word tokens ('The', 'cat', 'sat', 'it', 'tired') floating in space, connected by thin, faint grey lines to every other token. The motion arc begins with all connection lines at equal, low brightness; the camera focuses on the word 'it' as a query pulse emanates from it, travelling along the lines. The lines to 'cat' and 'tired' brighten and thicken dramatically, while lines to other words fade away, visually reweighting the network. The camera performs a slow orbit around the now brightened sub-network, highlighting the new, focused connections. Exclude any UI elements, text labels, or human figures; the fidelity target is a clean, abstract, cinematic data visualisation.",
+      "video_search_query": "neural network attention visualization"
+    },
+    {
+      "id": "insights_1",
+      "type": "instructor_insight",
+      "order": 11,
+      "purpose": "Explain",
+      "insights": [
+        {
+          "body": "Attention is often mistaken for a filter that removes irrelevant data. It's better understood as a dynamic focusing lens that amplifies some signals and dampens others, all of which remain present.",
+          "emoji": "🎯",
+          "title": "Focus, Not Filter"
+        },
+        {
+          "body": "The all-to-all potential of attention is computationally expensive. This is the direct trade-off: perfect theoretical context comes with a quadratic increase in calculations, which is why efficient variants like sparse attention were invented.",
+          "emoji": "⚖️",
+          "title": "The Cost of Connection"
+        },
+        {
+          "body": "While it revolutionised translation, the same mechanism lets a robot decide which sensor input matters most when grasping an object, and lets a recommendation system weigh your recent clicks against your long-term preferences.",
+          "emoji": "🧩",
+          "title": "Beyond Language"
+        }
+      ]
+    },
+    {
+      "type": "full_image",
+      "order": 12,
+      "layout": "split",
+      "caption": "The city on the left illuminates everything equally. The city on the right allocates its energy where activity is highest.",
+      "purpose": "Visualise",
+      "imageUrl": "https://v3b.fal.media/files/b/0a952066/c5s4jRKyU-OYyQMnJEdkg_c5f56cc16f8042eaa712270e0e7ceedd.jpg",
+      "explanation": "This visual reveals the core shift from uniform to weighted processing. The left city represents a system without attention, spending equal energy everywhere. The right city embodies attention, dynamically concentrating its resources—its 'light'—on the most active, relevant pathways. This is not about seeing more, but about seeing smarter.",
+      "imagePrompt": "GEOMETRY: A split-screen visualisation showing two side-by-side, high-resolution satellite images of a dense city at night. The left image is a uniform grid of bright, evenly lit city blocks. The right image is the same city, but with light intensity dynamically varied: major highways and central hubs glow intensely, while residential side streets are dimmer. PHYSICS: The light in the right image has volumetric properties, with subsurface scattering creating a soft glow around bright arteries. LITE & OPTICS: Shot with a 35mm focal length, the contrast between the two scenes is emphasised by a single, cool spotlight highlighting the central hub in the right image. DATA VISUALISATION: Overlaid on the right image are faint, pulsing data streams flowing along the bright highways, representing information flow. PEDAGOGICAL ALIGNMENT: LO_001_01 - visualising the shift from uniform processing (left) to dynamic, relevance-weighted allocation of 'light' or computational focus (right)."
+    },
+    {
+      "tabs": [
+        {
+          "id": "tab_1",
+          "label": "Medical Imaging",
+          "scenario": "A radiologist analyses a chest X-ray, looking for a small, early-stage tumour amidst complex tissue structures.",
+          "challenge": "A standard convolutional network might treat all regions of the image with equal priority, potentially overlooking subtle, low-contrast abnormalities that are clinically significant.",
+          "resolution": "An attention-equipped model learns to weight the visual features around suspected nodules more heavily. It doesn't see more pixels; it allocates more of its analytical capacity to the pixels that matter, improving early detection rates."
+        },
+        {
+          "id": "tab_2",
+          "label": "Financial Monitoring",
+          "scenario": "A fraud detection system monitors thousands of transactions per second across a global banking network.",
+          "challenge": "Rule-based systems flag transactions in isolation, missing complex fraud patterns that involve a sequence of small, seemingly legitimate actions across multiple accounts.",
+          "resolution": "Using attention, the system can dynamically link a current transaction in London to a related account login in Singapore two hours prior. It constructs a contextual story of behaviour, not just a point-in-time alert."
+        },
+        {
+          "id": "tab_3",
+          "label": "Autonomous Driving",
+          "scenario": "A self-driving car's perception system processes video feeds from multiple cameras and LiDAR sensors in real-time.",
+          "challenge": "In a busy urban intersection, treating every pedestrian, car, and traffic signal with equal computational importance is inefficient and risky.",
+          "resolution": "Attention mechanisms allow the system to dynamically focus its highest-fidelity processing on the pedestrian about to step off the curb, while maintaining a lower-weight awareness of the stationary parked cars. It manages computational resources by relevance to the immediate task."
+        }
+      ],
+      "type": "applied_case",
+      "order": 13,
+      "purpose": "Apply"
+    },
+    {
+      "type": "mental_checkpoint",
+      "order": 14,
+      "prompt": "How would you explain the core advantage of attention to a colleague who only knows about older, sequential models?",
+      "purpose": "Reinforce",
+      "analytics_tag": "mental_checkpoint",
+      "response_mode": "reflective",
+      "checkpoint_style": "reflection"
+    },
+    {
+      "id": "quiz_1",
+      "type": "quiz",
+      "order": 15,
+      "title": "Test Your Understanding",
+      "purpose": "Reinforce",
+      "questions": [
+        {
+          "options": [
+            "The high cost of training on large datasets.",
+            "The inability to process information in parallel.",
+            "The decay of relevant information over long sequential distances."
+          ],
+          "question": "What is the primary limitation that the attention mechanism was designed to address in neural networks?",
+          "explanation": "Attention directly mitigates the information bottleneck and decay problem in sequential models like RNNs by creating direct, learned pathways between any two elements, regardless of their positional distance.",
+          "correctIndex": 2
+        },
+        {
+          "options": [
+            "The importance or relevance of one input element to another.",
+            "The processing speed allocated to different parts of the network.",
+            "The probability of an input being correct or incorrect."
+          ],
+          "question": "In the attention mechanism, what do the learned 'weights' fundamentally represent?",
+          "explanation": "Attention weights are relevance scores. A high weight between word A and word B means the model has learned that understanding B is highly dependent on the context provided by A.",
+          "correctIndex": 0
+        },
+        {
+          "options": [
+            "It guarantees a 100% accurate translation every time.",
+            "It allows the model to correctly align words in the source and target languages that are far apart in the sentence.",
+            "It removes the need for any form of grammatical rules in the model's design."
+          ],
+          "question": "Which of the following is a real-world consequence of using attention in a machine translation system?",
+          "explanation": "A key breakthrough was that attention weights visually showed which source word the model was 'looking at' when producing each target word, solving long-standing alignment problems in translation.",
+          "correctIndex": 1
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "order": 16,
+      "heading": "The Underlying Shift",
+      "purpose": "Explain",
+      "paragraphs": [
+        "The move to attention-based models represents a shift from hard-coded architectural priors, like locality or sequence, to learned relational priors. The model is no longer told how to structure its world view; it discovers the relevant structure from data.",
+        "This is why attention is described as a 'revolution'. It changed the design philosophy. The question stopped being 'how should we process this sequence?' and became 'what in this data is related to what else?'"
+      ]
+    },
+    {
+      "id": "recap_1",
+      "type": "recap",
+      "items": [
+        {
+          "body": "Pre-attention models struggled because their ability to link distant information was constrained by fixed, sequential pathways. Attention broke this bottleneck by enabling direct connections.",
+          "title": "The Context Bottleneck"
+        },
+        {
+          "body": "Attention doesn't discard data. It dynamically amplifies the most relevant signals and dampens others through learned weights, creating a focused context for each computation.",
+          "title": "Dynamic Weighting, Not Filtering"
+        },
+        {
+          "body": "The core innovation was architectural: making relationship-learning the primary operation. This shift from processing steps to relevance mapping enabled systems to handle ambiguity and long-range dependencies.",
+          "title": "A New Design Principle"
+        },
+        {
+          "body": "The power of all-to-all attention comes with increased computational cost. This inherent trade-off drives ongoing research into more efficient attention variants for practical deployment.",
+          "title": "The Trade-Off Accepted"
+        }
+      ],
+      "order": 17,
+      "style": "card",
+      "title": "If you remember only three things…",
+      "purpose": "Reinforce"
+    },
+    {
+      "type": "key_terms",
+      "order": 18,
+      "terms": [
+        {
+          "term": "Attention Mechanism",
+          "definition": "A component in neural networks that computes a weighted sum of input features, where the weights are dynamically learned based on the relevance of each feature to a given query. It allows models to focus on different parts of the input selectively, mimicking cognitive attention."
+        },
+        {
+          "term": "Query, Key, Value",
+          "definition": "The three core components used to calculate attention. The Query represents the current item seeking context, Keys are identifiers for all input items, and Values are the actual content being aggregated. The similarity between Query and Keys determines the weights applied to the Values."
+        },
+        {
+          "term": "Self-Attention",
+          "definition": "A specific form of attention where the Query, Key, and Value vectors are all derived from the same set of inputs. It allows each element in a sequence to attend to all other elements in the same sequence, capturing internal dependencies."
+        },
+        {
+          "term": "Scaled Dot-Product Attention",
+          "definition": "The standard mathematical operation for computing attention weights. It involves taking the dot product of Query and Key vectors, scaling the result to stabilise gradients, applying a softmax to get probabilities, and using these to weight the Value vectors."
+        },
+        {
+          "term": "Long-Range Dependency",
+          "definition": "A relationship between elements in a sequence that are separated by many intermediate steps. Traditional RNNs struggle with these due to vanishing gradients, while attention mechanisms can model them directly."
+        },
+        {
+          "term": "Transformer Architecture",
+          "definition": "A neural network architecture based primarily on the attention mechanism, eschewing recurrence and convolution. Introduced in 'Attention Is All You Need', it has become the foundation for most modern models in NLP and beyond."
+        },
+        {
+          "term": "Multi-Head Attention",
+          "definition": "A technique where multiple sets of attention weights (heads) are computed in parallel on the same input. Each head can learn to focus on different types of relationships (e.g., syntactic vs. semantic), increasing the model's representational power."
+        },
+        {
+          "term": "Context Vector",
+          "definition": "The output of an attention layer; a weighted sum of input values. This vector represents the aggregated, relevance-filtered information that the model uses for its next step of processing or prediction."
+        },
+        {
+          "term": "Positional Encoding",
+          "definition": "Since the attention mechanism is inherently permutation-invariant, positional encodings are added to input embeddings to inject information about the order or position of elements in the sequence."
+        },
+        {
+          "term": "Vanishing Gradient Problem",
+          "definition": "A training issue in deep neural networks, particularly RNNs, where gradients become exponentially small as they are backpropagated through many layers, preventing weights from updating effectively. Attention helps mitigate this by creating shorter paths for gradient flow."
+        },
+        {
+          "term": "Computational Complexity",
+          "definition": "A major consideration for attention. Standard self-attention has quadratic complexity O(n²) with respect to sequence length, making it expensive for very long sequences and motivating research into efficient approximations."
+        },
+        {
+          "term": "Encoder-Decoder Architecture",
+          "definition": "A common framework using attention, where an encoder processes the input into a set of context vectors, and a decoder generates the output while attending to these contexts. This is central to tasks like machine translation."
+        }
+      ],
+      "purpose": "Reinforce"
+    },
+    {
+      "type": "completion",
+      "order": 19,
+      "title": "Seeing the Web of Meaning",
+      "summary": "You now understand that the leap in AI capability from translation to complex reasoning wasn't just about more data or bigger models, but about a fundamental redesign around dynamic, learned relationships. This mental model is your key to recognising where and why attention creates an advantage, and what its inherent costs are.",
+      "nextStep": "Next, we'll see how this mechanism scales into the multi-headed attention that powers modern language models, and what new capabilities—and challenges—that introduces.",
+      "closingLine": "Intelligent processing begins not with seeing everything, but with knowing where to look.",
+      "skillsEarned": [
+        "You can now explain why pre-attention models failed at tasks requiring long-range context, identifying the sequential bottleneck as the root cause.",
+        "You can now describe how attention weights function as a dynamic relevance-scoring system, not a simple on/off filter.",
+        "You can now identify the real-world applications where attention provides a decisive advantage by managing computational focus, from medical diagnosis to fraud detection."
+      ]
+    }
+  ]
+}

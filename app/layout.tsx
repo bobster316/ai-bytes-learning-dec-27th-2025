@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Outfit, JetBrains_Mono, Cormorant_Garamond, Syne, Plus_Jakarta_Sans, Instrument_Serif, DM_Mono } from "next/font/google";
+import { Outfit, JetBrains_Mono, Cormorant_Garamond, Instrument_Serif } from "next/font/google";
 import { AnalyticsProvider } from "@/components/analytics-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SterlingVoice } from "@/components/voice/SterlingVoice";
@@ -21,25 +21,11 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-const syne = Syne({
-  variable: "--font-syne",
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["400", "500", "600", "700", "800"],
-});
-
 const cormorantGaramond = Cormorant_Garamond({
   variable: "--font-cormorant",
   subsets: ["latin"],
   display: "swap",
   weight: ["300", "400", "500", "600", "700"],
-});
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["400", "500", "600", "700", "800"],
 });
 
 const instrumentSerif = Instrument_Serif({
@@ -50,12 +36,6 @@ const instrumentSerif = Instrument_Serif({
   style: ["normal", "italic"],
 });
 
-const dmMono = DM_Mono({
-  variable: "--font-dm-mono",
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["300", "400", "500"],
-});
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -113,14 +93,13 @@ export default function RootLayout({
   return (
     <html lang="en-GB" suppressHydrationWarning={true} data-scroll-behavior="smooth">
       <body
-        className={`${outfit.variable} ${jetbrainsMono.variable} ${cormorantGaramond.variable} ${syne.variable} ${plusJakartaSans.variable} ${instrumentSerif.variable} ${dmMono.variable} antialiased`}
+        className={`${outfit.variable} ${jetbrainsMono.variable} ${cormorantGaramond.variable} ${instrumentSerif.variable} antialiased`}
         suppressHydrationWarning={true}
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
+          defaultTheme="dark"
           enableSystem={false}
-          forcedTheme="light"
           disableTransitionOnChange
         >
           <AnalyticsProvider>

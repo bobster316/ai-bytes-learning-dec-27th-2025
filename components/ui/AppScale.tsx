@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 const DESIGN_WIDTH = 1440;
 const MIN_SCALE   = 0.4;   // never shrink below 40% (prevents unusably tiny layout)
-const MAX_SCALE   = 1.0;   // never upscale above 100%
+const MAX_SCALE   = 0.9;   // cap at 90% — content is designed slightly large; 90% is the correct visual sweet spot on all screen sizes
 const MOBILE_BREAKPOINT = 768; // below this, zoom = 1 and Tailwind responsive takes over
 
 function clamp(value: number, min: number, max: number) {

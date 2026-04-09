@@ -112,7 +112,7 @@ Return ONLY a valid JSON object matching this schema:
     "moduleImagePrompt": "string",
     "moduleSynthesis": "string",
     "lessons": [{
-      "lessonTitle": "string (Action-oriented, e.g., 'Build Your First Prompt')",
+      "lessonTitle": "string (Action-oriented, e.g., 'Build Your First Prompt'. NEVER use banned words — especially: demystify/demystified, unpack, unlock, delve, harness, leverage, transformative, comprehensive, mastering, unleash. Write a specific, plain-English title that names what the learner DOES or UNDERSTANDS.)",
       "lessonOrder": number,
       "micro_objective": "string (ONE sentence objective)",
       "lesson_action": "string (The ONE practical step the student must take)",

@@ -1,33 +1,14 @@
 [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
-[V3-Sanitizer] ⚠️ Domain leak "Architecture" detected. Rewriting for: "Understanding and Implementing Attention"
-[V3-Sanitizer] ⚠️ Metaphor language detected in prompt. Rewriting for: "Understanding and Implementing Attention"
-[V3-Sanitizer] ⚠️ Metaphor language detected in prompt. Rewriting for: "Understanding and Implementing Attention"
-[V3-Sanitizer] ⚠️ Metaphor language detected in prompt. Rewriting for: "Understanding and Implementing Attention"
-[GeminiImageService] No image data in response
-[API-V2] ❌ Generation failed: MediaGenerationError: [gemini-image] content_policy_violation — Content blocked by provider safety filter (lesson: "Understanding and Implementing Attention", block: type_cards, slot: type_card_2)
-    at D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:6479:39
-    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-    at async Promise.all (index 5)
-    at async D:\ai-bytes-leaning-22nd-feb-2026 Backup\.next\dev\server\chunks\[root-of-the-server]__1d678d1e._.js:6468:49
-[GeminiImageService] No image data in response
-[V3-Sanitizer] ⚠️ Metaphor language detected in prompt. Rewriting for: "The Inner Workings of Attention"
-[V3-Sanitizer] ⚠️ Domain leak "Architecture" detected. Rewriting for: "The Inner Workings of Attention"
-[V3-Sanitizer] ⚠️ Domain leak "Architecture" detected. Rewriting for: "The Inner Workings of Attention"
-[V3-Sanitizer] ⚠️ Metaphor language detected in prompt. Rewriting for: "The Inner Workings of Attention"
-[V3-Sanitizer] ⚠️ Off-topic prompt detected (no reference to "The Inner Workings of Attention"). Rewriting.
-[GeminiImageService] No image data in response
-[API-V2] ⚠️ Image blocked (slot: full_image) — retrying with fallback prompt
-[GeminiImageService] No image data in response
-[API-V2] ⚠️ Image blocked (slot: type_card_1) — retrying with fallback prompt
-[GeminiImageService] No image data in response
-[API-V2] ⚠️ Image blocked (slot: hero_image) — retrying with fallback prompt
-[GeminiImageService] No image data in response
-[API-V2] ⚠️ Image blocked (slot: image_text_row) — retrying with fallback prompt
-[ContentSanitizer] ⚠️ Block "prediction" (id: undefined) missing required field "accentColour" — using fallback
-[ContentSanitizer] Block "prediction" (id: undefined) was repaired before DB save
+[ContentSanitizer] ⚠️ Block "instructor_insight" (id: network-design-insights) missing required field "heading" — using fallback
+[ContentSanitizer] ⚠️ Block "instructor_insight" (id: network-design-insights) missing required field "videoUrl" — using fallback
+[ContentSanitizer] Block "instructor_insight" (id: network-design-insights) was repaired before DB save
+[ContentSanitizer] ⚠️ Block "recap" (id: undefined) missing required field "title" — using fallback
 [ContentSanitizer] ⚠️ Block "recap" (id: undefined) missing required field "points" — using fallback
 [ContentSanitizer] Block "recap" (id: undefined) was repaired before DB save
 [ContentSanitizer] ⚠️ Block "quiz" (id: undefined) missing required field "title" — using fallback
 [ContentSanitizer] Block "quiz" (id: undefined) was repaired before DB save
-[ContentSanitizer] ⚠️ Block "completion" (id: undefined) missing required field "skillsEarned" — using fallback
-[ContentSanitizer] Block "completion" (id: undefined) was repaired before DB save
+[ContentSanitizer] ⚠️ Block "recap" (id: undefined) missing required field "title" — using fallback
+[ContentSanitizer] ⚠️ Block "recap" (id: undefined) missing required field "points" — using fallback
+[ContentSanitizer] Block "recap" (id: undefined) was repaired before DB save
+[ContentSanitizer] ⚠️ Block "quiz" (id: undefined) missing required field "title" — using fallback
+[ContentSanitizer] Block "quiz" (id: undefined) was repaired before DB save

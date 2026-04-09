@@ -1,0 +1,71 @@
+{
+  "course_id": 894,
+  "course_topic": "Generative AI for Everyone",
+  "domain_history": [
+    "Architecture",
+    "Travel",
+    "Craftsmanship",
+    "Gardening",
+    "Travel",
+    "Sports"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey",
+    "The Contrast",
+    "The Build",
+    "The Zoom",
+    "The Dialogue"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer",
+    "Confident Expert",
+    "Playful Storyteller",
+    "Warm Mentor",
+    "Curious Explorer"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "data analysis AI dashboard",
+    "generative design AI 3D model",
+    "AI diffusion model process visualization",
+    "AI prompt engineering interface transformation",
+    "extracting tasks from document to AI prompt",
+    "AI context window expansion visualization",
+    "AI multi-screen workflow pattern",
+    "AI product design configurator",
+    "workflow automation planning interface"
+  ],
+  "used_image_urls": [
+    "https://v3b.fal.media/files/b/0a950f02/otr_3ONQz2K81WUF3QcVJ_f572d53e43ec4047b0a777f80eb6a563.jpg",
+    "https://v3b.fal.media/files/b/0a950f03/0R8xyj2K6sbuMQHzqb9VF_9265b2d5c70c4cd98a2b92a0affbba0c.jpg",
+    "https://v3b.fal.media/files/b/0a952066/c5s4jRKyU-OYyQMnJEdkg_c5f56cc16f8042eaa712270e0e7ceedd.jpg",
+    "https://v3b.fal.media/files/b/0a952260/MojnmtPQdaWELcbVEOz4c_211a1d5befcf478891d57ce29ad9fc55.jpg",
+    "https://v3b.fal.media/files/b/0a952260/7bs-Ss2zw-2tNbE7PnPT4_a499282136f84b39980407e168f8e8d2.jpg",
+    "https://v3b.fal.media/files/b/0a952260/GCkeBmXorXJu0oN_o-Q9I_d3c5054cba0342929cf18329e5a0448c.jpg",
+    "https://v3b.fal.media/files/b/0a952260/6FGmb91sF7pA8ntgkjCkj_5a8c531655314f8b97d202daa77babee.jpg",
+    "https://v3b.fal.media/files/b/0a952260/Mw9ivW2k0gU9aTRBGTUjD_6690c809d70644ab9417dc08036e5210.jpg",
+    "https://v3b.fal.media/files/b/0a952260/yDqUP6ce4sPh9EHOHHHH7_17e25f9ed0164dd7b7769275469423b1.jpg"
+  ],
+  "used_video_urls": [],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 3,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 7,
+    "type_cards": 3,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 2,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

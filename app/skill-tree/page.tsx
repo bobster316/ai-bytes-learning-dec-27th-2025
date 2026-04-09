@@ -13,13 +13,13 @@ import { FloatingBadge3D } from "@/components/ui/floating-badge-3d";
 
 // Brand-mapped category accent colours
 const categoryAccent: Record<string, string> = {
-    "foundational":        "#4b98ad",
+    "foundational":        "#00FFB3",
     "generative":          "#FFB347",
     "prompt-engineering":  "#00FFB3",
-    "applications":        "#4b98ad",
+    "applications":        "#00FFB3",
     "machine-learning":    "#FF6B6B",
     "business":            "#FFB347",
-    "security":            "#4b98ad",
+    "security":            "#00FFB3",
     "vision":              "#00FFB3",
 };
 
@@ -51,8 +51,8 @@ export default function MasteryPage() {
 
     if (loading || !data) {
         return (
-            <div className="min-h-screen bg-[#080810] flex items-center justify-center">
-                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#4b98ad]" />
+            <div className="min-h-screen bg-[var(--page-bg)] flex items-center justify-center">
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#00FFB3]" />
             </div>
         );
     }
@@ -63,11 +63,11 @@ export default function MasteryPage() {
     );
 
     return (
-        <div className="min-h-screen bg-[#080810] text-white font-body relative overflow-hidden">
+        <div className="min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)] font-body relative overflow-hidden">
 
             {/* ── Mesh gradient blobs ─────────────────────────────────────── */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }} aria-hidden="true">
-                <div className="absolute rounded-full" style={{ width: 900, height: 900, background: "#4b98ad", top: "-5%",  left: "-20%", filter: "blur(120px)", opacity: 0.1,  animation: "stMesh 35s linear infinite" }} />
+                <div className="absolute rounded-full" style={{ width: 900, height: 900, background: "#00FFB3", top: "-5%",  left: "-20%", filter: "blur(120px)", opacity: 0.1,  animation: "stMesh 35s linear infinite" }} />
                 <div className="absolute rounded-full" style={{ width: 700, height: 700, background: "#00FFB3", top: "40%",  right: "-15%",filter: "blur(120px)", opacity: 0.07, animation: "stMesh 28s linear infinite reverse" }} />
                 <div className="absolute rounded-full" style={{ width: 600, height: 600, background: "#FFB347", bottom: "5%",left: "30%",  filter: "blur(120px)", opacity: 0.06, animation: "stMesh 22s linear infinite", animationDelay: "-11s" }} />
             </div>
@@ -110,7 +110,7 @@ export default function MasteryPage() {
                         style={{ fontSize: "clamp(2.8rem, 7vw, 5.5rem)" }}
                     >
                         The AI{" "}
-                        <span style={{ color: "#4b98ad" }}>Skill Tree</span>
+                        <span style={{ color: "#00FFB3" }}>Skill Tree</span>
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0 }}
@@ -194,7 +194,7 @@ export default function MasteryPage() {
                                 boxShadow: "0 0 60px rgba(155,143,255,0.12), 0 0 120px rgba(155,143,255,0.05)"
                             }}
                         >
-                            <Brain className="w-8 h-8 md:w-10 md:h-10 mb-1.5" style={{ color: "#4b98ad" }} />
+                            <Brain className="w-8 h-8 md:w-10 md:h-10 mb-1.5" style={{ color: "#00FFB3" }} />
                             <p className="font-mono text-[0.52rem] uppercase tracking-[0.2em] text-white/35 mb-0.5">Growth Level</p>
                             <p className="font-display font-black text-white leading-none" style={{ fontSize: "clamp(1.8rem, 5vw, 3rem)" }}>{totalMastery}%</p>
                             <p className="font-mono text-[0.52rem] uppercase tracking-[0.14em] text-white/30 mt-0.5">Total Mastery</p>
@@ -202,14 +202,14 @@ export default function MasteryPage() {
                         {/* Pulse ring */}
                         <div
                             className="absolute inset-0 rounded-full animate-ping opacity-[0.08]"
-                            style={{ border: "1px solid #4b98ad" }}
+                            style={{ border: "1px solid #00FFB3" }}
                         />
                     </motion.div>
 
                     {/* Orbital nodes */}
                     {categories.map((cat: any, idx: number) => {
                         const Icon   = iconMap[cat.icon] || Brain;
-                        const accent = categoryAccent[cat.id] ?? "#4b98ad";
+                        const accent = categoryAccent[cat.id] ?? "#00FFB3";
                         const angle  = (idx / categories.length) * 2 * Math.PI - Math.PI / 2;
                         const radius = typeof window !== "undefined" && window.innerWidth < 768 ? 155 : 300;
                         const x      = Math.cos(angle) * radius;
@@ -313,18 +313,18 @@ export default function MasteryPage() {
                 <div className="grid md:grid-cols-3 gap-5 mt-10">
                     <StatCard icon={<Trophy className="w-5 h-5" style={{ color: "#FFB347" }} />} accent="#FFB347" label="Account Level"   value={profile?.current_level  ?? 1} subtext="Skill Rank" />
                     <StatCard icon={<Flame   className="w-5 h-5" style={{ color: "#FF6B6B" }} />} accent="#FF6B6B" label="Current Streak"  value={profile?.current_streak ?? 0} subtext="Day Continuity" />
-                    <StatCard icon={<Zap     className="w-5 h-5" style={{ color: "#4b98ad" }} />} accent="#4b98ad" label="Total XP"        value={profile?.total_xp       ?? 0} subtext="Lifetime Influence" />
+                    <StatCard icon={<Zap     className="w-5 h-5" style={{ color: "#00FFB3" }} />} accent="#00FFB3" label="Total XP"        value={profile?.total_xp       ?? 0} subtext="Lifetime Influence" />
                 </div>
 
                 {/* ── CTA ─────────────────────────────────────────────────── */}
                 <div className="mt-16 text-center">
                     <Link href="/courses">
                         <button
-                            className="inline-flex items-center gap-2.5 h-13 px-10 rounded-full font-mono text-[0.68rem] uppercase tracking-[0.15em] border transition-all duration-200 hover:bg-[#4b98ad]/10 hover:border-[#4b98ad]/50"
+                            className="inline-flex items-center gap-2.5 h-13 px-10 rounded-full font-mono text-[0.68rem] uppercase tracking-[0.15em] border transition-all duration-200 hover:bg-[#00FFB3]/10 hover:border-[#00FFB3]/50"
                             style={{ height: "3.25rem", borderColor: "rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.65)" }}
                         >
                             Expand Your Knowledge
-                            <Sparkles className="w-4 h-4" style={{ color: "#4b98ad" }} />
+                            <Sparkles className="w-4 h-4" style={{ color: "#00FFB3" }} />
                         </button>
                     </Link>
                 </div>
@@ -342,7 +342,7 @@ function StatCard({ icon, label, value, subtext, accent }: { icon: React.ReactNo
             whileHover={{ y: -3 }}
             transition={{ ease: [0.16, 1, 0.3, 1] }}
             className="p-6 rounded-3xl border relative overflow-hidden"
-            style={{ background: "#0d0d1c", borderColor: "rgba(255,255,255,0.06)" }}
+            style={{ background: "var(--page-surface)", borderColor: "var(--page-border)" }}
         >
             <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center mb-5"

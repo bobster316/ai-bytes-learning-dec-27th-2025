@@ -7,8 +7,14 @@
  */
 
 import { GoogleAuth } from "google-auth-library";
-import type { VideoGenerationResult } from './media-errors';
 import path from "path";
+
+export interface VideoGenerationResult {
+    url: string | null;
+    source: string | null;
+    errorCode: string | null;
+    errorMessage: string | null;
+}
 
 export interface VeoVideo {
     url: string;

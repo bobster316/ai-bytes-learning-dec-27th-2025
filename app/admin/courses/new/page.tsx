@@ -163,18 +163,17 @@ export default function NewCoursePage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-violet-500/20 selection:text-violet-900">
+        <div className="min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)] font-sans selection:bg-violet-500/20">
 
             {/* AMBIENT BACKGROUND */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-[-20%] left-[-10%] w-[1000px] h-[1000px] bg-violet-100/50 rounded-full blur-[120px]" />
-                <div className="absolute bottom-[-20%] right-[-10%] w-[1000px] h-[1000px] bg-cyan-100/50 rounded-full blur-[120px]" />
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.4] mix-blend-soft-light" />
+                <div className="absolute top-[-20%] left-[-10%] w-[1000px] h-[1000px] bg-[#9B8FFF]/5 rounded-full blur-[120px]" />
+                <div className="absolute bottom-[-20%] right-[-10%] w-[1000px] h-[1000px] bg-[#00FFB3]/5 rounded-full blur-[120px]" />
             </div>
 
             {/* HEADER */}
             <nav className="relative z-50 px-8 py-6 flex items-center justify-between">
-                <Link href="/admin/courses" className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors group">
+                <Link href="/admin/courses" className="flex items-center gap-2 text-sm font-medium text-white/40 hover:text-white transition-colors group">
                     <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                     Back to Studio
                 </Link>
@@ -194,39 +193,39 @@ export default function NewCoursePage() {
                 >
                     {/* H1 HEADER */}
                     <div className="text-center mb-12 space-y-4">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-sm mb-4">
-                            <Sparkles className="w-3.5 h-3.5 text-violet-500 fill-violet-500" />
-                            <span className="text-xs font-semibold text-slate-600 tracking-wide uppercase">Course Designer</span>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] mb-4">
+                            <Sparkles className="w-3.5 h-3.5 text-[#9B8FFF] fill-[#9B8FFF]" />
+                            <span className="text-xs font-semibold text-white/60 tracking-wide uppercase">Course Designer</span>
                         </div>
-                        <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-slate-900">
-                            What enters your mind, <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-cyan-500">
-                                becomes your curriculum.
+                        <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-white">
+                            Name your subject. <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#9B8FFF] to-[#00FFB3]">
+                                Our AI architects the rest.
                             </span>
                         </h1>
-                        <p className="text-lg text-slate-500 max-w-2xl mx-auto">
+                        <p className="text-lg text-white/45 max-w-2xl mx-auto">
                             Design professional courses in seconds. Our curriculum engine crafts the syllabus, content, and diagrams while you focus on the vision.
                         </p>
                     </div>
 
                     {/* INTERACTIVE CARD */}
-                    <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-8 md:p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-white space-y-10 relative overflow-hidden group">
+                    <div className="bg-white/[0.04] backdrop-blur-sm rounded-[2rem] p-8 md:p-12 border border-white/[0.08] space-y-10 relative overflow-hidden group">
 
-                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
                         {/* COURSE SUBJECT */}
                         <div className="space-y-4 relative z-10">
-                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1">Course Subject</label>
+                            <label className="text-xs font-bold text-white/40 uppercase tracking-wider ml-1">Course Subject</label>
                             <div className="relative group/input">
-                                <div className="absolute -inset-0.5 bg-gradient-to-r from-violet-500 to-cyan-500 rounded-2xl opacity-0 group-focus-within/input:opacity-20 transition-opacity duration-300 blur-sm" />
+                                <div className="absolute -inset-0.5 bg-gradient-to-r from-[#9B8FFF] to-[#00FFB3] rounded-2xl opacity-0 group-focus-within/input:opacity-20 transition-opacity duration-300 blur-sm" />
                                 <input
                                     value={topic}
                                     onChange={(e) => setTopic(e.target.value)}
                                     placeholder="e.g. Advanced Neural Architectures..."
-                                    className="relative w-full bg-slate-50 border border-slate-200 text-slate-900 text-2xl md:text-3xl font-medium placeholder:text-slate-300 rounded-xl px-6 py-6 focus:outline-none focus:bg-white focus:shadow-lg transition-all duration-300"
+                                    className="relative w-full bg-white/[0.06] border border-white/[0.10] text-white text-2xl md:text-3xl font-medium placeholder:text-white/20 rounded-xl px-6 py-6 focus:outline-none focus:bg-white/[0.08] focus:border-white/20 transition-all duration-300"
                                     autoFocus
                                 />
-                                <div className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none">
+                                <div className="absolute right-6 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none">
                                     <Wand2 className={cn("w-6 h-6", topic ? "text-violet-500 animate-pulse" : "")} />
                                 </div>
                             </div>
@@ -234,9 +233,9 @@ export default function NewCoursePage() {
 
                         {/* COURSE STRUCTURE — module count */}
                         <div className="space-y-4 relative z-10">
-                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1">
+                            <label className="text-xs font-bold text-white/40 uppercase tracking-wider ml-1">
                                 Course Structure
-                                <span className="ml-2 font-normal normal-case text-slate-400">— each module contains 2 lessons</span>
+                                <span className="ml-2 font-normal normal-case text-white/30">— each module contains 2 lessons</span>
                             </label>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 {MODULE_OPTIONS.map((opt) => {
@@ -248,17 +247,17 @@ export default function NewCoursePage() {
                                             className={cn(
                                                 "relative rounded-xl border p-4 text-left transition-all duration-200",
                                                 active
-                                                    ? "bg-slate-900 border-slate-900 shadow-xl scale-[1.03] ring-2 ring-violet-500/30"
-                                                    : "bg-white border-slate-100 hover:border-slate-300 hover:shadow-md"
+                                                    ? "bg-white/[0.10] border-[#9B8FFF]/50 shadow-xl scale-[1.03] ring-2 ring-[#9B8FFF]/30"
+                                                    : "bg-white/[0.03] border-white/[0.08] hover:border-white/20 hover:bg-white/[0.06]"
                                             )}
                                         >
-                                            <div className={cn("text-2xl font-bold mb-1", active ? "text-white" : "text-slate-900")}>
+                                            <div className={cn("text-2xl font-bold mb-1", active ? "text-white" : "text-white/70")}>
                                                 {opt.count}
                                             </div>
-                                            <div className={cn("text-xs font-semibold", active ? "text-violet-300" : "text-slate-500")}>
+                                            <div className={cn("text-xs font-semibold", active ? "text-[#9B8FFF]" : "text-white/40")}>
                                                 {opt.label}
                                             </div>
-                                            <div className={cn("text-[10px] mt-0.5", active ? "text-slate-400" : "text-slate-400")}>
+                                            <div className={cn("text-[10px] mt-0.5", active ? "text-white/40" : "text-white/30")}>
                                                 {opt.desc}
                                             </div>
                                         </button>
@@ -269,7 +268,7 @@ export default function NewCoursePage() {
 
                         {/* DIFFICULTY */}
                         <div className="space-y-4 relative z-10">
-                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1">Target Audience</label>
+                            <label className="text-xs font-bold text-white/40 uppercase tracking-wider ml-1">Target Audience</label>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {[
                                     { id: "beginner", label: "Beginner", desc: "Foundational Concepts", icon: BookOpen },
@@ -285,17 +284,17 @@ export default function NewCoursePage() {
                                             className={cn(
                                                 "relative md:h-32 rounded-xl border p-4 text-left transition-all duration-200 group/card",
                                                 active
-                                                    ? "bg-slate-900 border-slate-900 shadow-xl scale-[1.02]"
-                                                    : "bg-white border-slate-100 hover:border-slate-300 hover:shadow-md"
+                                                    ? "bg-white/[0.10] border-[#9B8FFF]/50 shadow-xl scale-[1.02]"
+                                                    : "bg-white/[0.03] border-white/[0.08] hover:border-white/20 hover:bg-white/[0.06]"
                                             )}
                                         >
                                             <div className="flex flex-col h-full justify-between">
-                                                <div className={cn("p-2 rounded-lg w-fit transition-colors", active ? "bg-white/10 text-white" : "bg-slate-100 text-slate-500 group-hover/card:bg-slate-200")}>
+                                                <div className={cn("p-2 rounded-lg w-fit transition-colors", active ? "bg-white/10 text-white" : "bg-white/[0.06] text-white/40 group-hover/card:bg-white/[0.10]")}>
                                                     <Icon className="w-5 h-5" />
                                                 </div>
                                                 <div>
-                                                    <div className={cn("font-semibold", active ? "text-white" : "text-slate-900")}>{level.label}</div>
-                                                    <div className={cn("text-xs mt-1", active ? "text-slate-400" : "text-slate-500")}>{level.desc}</div>
+                                                    <div className={cn("font-semibold", active ? "text-white" : "text-white/70")}>{level.label}</div>
+                                                    <div className={cn("text-xs mt-1", active ? "text-white/40" : "text-white/35")}>{level.desc}</div>
                                                 </div>
                                             </div>
                                         </button>
@@ -306,8 +305,8 @@ export default function NewCoursePage() {
 
                         {/* AVATAR SELECTION */}
                         <div className="space-y-4 relative z-10">
-                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1">Exclusive AI Host</label>
-                            <div className="bg-slate-50/50 p-6 rounded-2xl border border-slate-200/50">
+                            <label className="text-xs font-bold text-white/40 uppercase tracking-wider ml-1">Exclusive AI Host</label>
+                            <div className="bg-white/[0.03] p-6 rounded-2xl border border-white/[0.06]">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {/* SARAH */}
                                     <button
@@ -316,8 +315,8 @@ export default function NewCoursePage() {
                                         className={cn(
                                             "relative w-full overflow-hidden rounded-xl border text-left transition-all duration-300 group/avatar h-56 z-10 cursor-pointer",
                                             courseHost === 'sarah'
-                                                ? "border-violet-500 ring-2 ring-violet-500 shadow-xl scale-[1.02] bg-[#0A4F70]"
-                                                : "border-slate-200 bg-slate-100/50 hover:border-slate-300 opacity-80 hover:opacity-100"
+                                                ? "border-[#9B8FFF] ring-2 ring-[#9B8FFF] shadow-xl scale-[1.02] bg-[#0A4F70]"
+                                                : "border-white/[0.10] bg-white/[0.04] hover:border-white/20 opacity-80 hover:opacity-100"
                                         )}
                                     >
                                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -343,8 +342,8 @@ export default function NewCoursePage() {
                                         className={cn(
                                             "relative w-full overflow-hidden rounded-xl border text-left transition-all duration-300 group/avatar h-56 z-10 cursor-pointer",
                                             courseHost === 'gemma'
-                                                ? "border-cyan-500 ring-2 ring-cyan-500 shadow-xl scale-[1.02] bg-[#3B2C50]"
-                                                : "border-slate-200 bg-slate-100/50 hover:border-slate-300 opacity-80 hover:opacity-100"
+                                                ? "border-[#00FFB3] ring-2 ring-[#00FFB3] shadow-xl scale-[1.02] bg-[#3B2C50]"
+                                                : "border-white/[0.10] bg-white/[0.04] hover:border-white/20 opacity-80 hover:opacity-100"
                                         )}
                                     >
                                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -354,7 +353,7 @@ export default function NewCoursePage() {
                                         <div className="absolute bottom-0 left-0 p-5 w-full pointer-events-none">
                                             <div className="flex items-center gap-2 mb-1.5">
                                                 <div className={cn("w-2 h-2 rounded-full", courseHost === 'gemma' ? "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)] animate-pulse" : "bg-slate-400")} />
-                                                <span className={cn("text-[10px] font-bold uppercase tracking-widest", courseHost === 'gemma' ? "text-cyan-400" : "text-slate-400")}>
+                                                <span className={cn("text-[10px] font-bold uppercase tracking-widest", courseHost === 'gemma' ? "text-[#00FFB3]" : "text-slate-400")}>
                                                     {courseHost === 'gemma' ? "AI HOST ACTIVE" : "SELECT GEMMA"}
                                                 </span>
                                             </div>
@@ -364,8 +363,8 @@ export default function NewCoursePage() {
                                     </button>
                                 </div>
 
-                                <div className="mt-4 p-4 rounded-xl bg-violet-50 border border-violet-100">
-                                    <p className="text-[11px] text-violet-700 leading-relaxed font-medium">
+                                <div className="mt-4 p-4 rounded-xl bg-[#9B8FFF]/10 border border-[#9B8FFF]/20">
+                                    <p className="text-[11px] text-[#9B8FFF] leading-relaxed font-medium">
                                         <strong>Selection Tip:</strong> Sarah uses a warm, nurturing tone perfect for soft skills and theory, while Gemma's energetic delivery is ideal for fast-moving technical bytes.
                                     </p>
                                 </div>
@@ -381,7 +380,7 @@ export default function NewCoursePage() {
                                     "w-full relative overflow-hidden rounded-xl py-6 font-bold text-lg tracking-wide transition-all duration-300 shadow-xl",
                                     topic
                                         ? "bg-gradient-to-r from-violet-600 to-cyan-600 text-white shadow-violet-500/25 hover:shadow-violet-500/40 hover:scale-[1.01]"
-                                        : "bg-slate-100 text-slate-300 cursor-not-allowed"
+                                        : "bg-white/[0.04] text-white/20 cursor-not-allowed"
                                 )}
                             >
                                 <span className="relative z-10 flex items-center justify-center gap-2">
@@ -400,19 +399,19 @@ export default function NewCoursePage() {
                             </button>
 
                             {topic && (
-                                <div className="flex items-center justify-center gap-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                                <div className="flex items-center justify-center gap-4 text-[10px] font-bold uppercase tracking-widest text-white/40">
                                     <div className="flex items-center gap-1.5">
-                                        <Layers className="w-3 h-3 text-violet-500" />
+                                        <Layers className="w-3 h-3 text-[#9B8FFF]" />
                                         {topicCount} module{topicCount > 1 ? 's' : ''} · {totalLessons} lessons
                                     </div>
-                                    <div className="w-1 h-1 rounded-full bg-slate-200" />
+                                    <div className="w-1 h-1 rounded-full bg-white/20" />
                                     <div className="flex items-center gap-1.5">
-                                        <Zap className="w-3 h-3 text-amber-500" />
+                                        <Zap className="w-3 h-3 text-[#FFB347]" />
                                         Est. Cost: ~£{(topicCount * 0.20).toFixed(2)}
                                     </div>
-                                    <div className="w-1 h-1 rounded-full bg-slate-200" />
+                                    <div className="w-1 h-1 rounded-full bg-white/20" />
                                     <div className="flex items-center gap-1.5">
-                                        <BookOpen className="w-3 h-3 text-cyan-500" />
+                                        <BookOpen className="w-3 h-3 text-[#00FFB3]" />
                                         1 AI Intro Video (45s)
                                     </div>
                                 </div>
@@ -424,16 +423,16 @@ export default function NewCoursePage() {
                     {/* FOOTER METRICS */}
                     <div className="mt-8 grid grid-cols-3 gap-8 text-center px-12 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
                         <div className="space-y-1">
-                            <div className="text-2xl font-bold text-slate-900">1.2s</div>
-                            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Avg. Gen Time</div>
+                            <div className="text-2xl font-bold text-white">1.2s</div>
+                            <div className="text-xs font-semibold text-white/40 uppercase tracking-wider">Avg. Gen Time</div>
                         </div>
                         <div className="space-y-1">
-                            <div className="text-2xl font-bold text-slate-900">Top 1%</div>
-                            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Quality Score</div>
+                            <div className="text-2xl font-bold text-white">Top 1%</div>
+                            <div className="text-xs font-semibold text-white/40 uppercase tracking-wider">Quality Score</div>
                         </div>
                         <div className="space-y-1">
-                            <div className="text-2xl font-bold text-slate-900">4K+</div>
-                            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Courses Created</div>
+                            <div className="text-2xl font-bold text-white">4K+</div>
+                            <div className="text-xs font-semibold text-white/40 uppercase tracking-wider">Courses Created</div>
                         </div>
                     </div>
 

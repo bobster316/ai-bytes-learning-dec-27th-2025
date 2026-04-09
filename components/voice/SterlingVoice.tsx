@@ -1,13 +1,11 @@
-
-// SterlingVoice v3 — full status indicators, idle/live/speaking, two-way copyable transcript
+// SterlingVoice v4 — ElevenLabs Conversational AI Migration
 "use client";
 
 import { useState, useRef, useEffect, CSSProperties } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { useLearningContextStore } from "@/lib/store/learning-context-store";
+import { useConversation, ConversationProvider } from "@elevenlabs/react";
 import { Settings, X, Minimize2, Maximize2, Copy, Check } from "lucide-react";
-import { getSterlingCourseContext } from "@/lib/voice/sterling-context";
 import { PLAN_DETAILS } from "@/lib/stripe/constants";
+import { createClient } from "@/lib/supabase/client";
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 const T = {
@@ -31,7 +29,6 @@ const T = {
   sans: "'DM Sans', system-ui, sans-serif",
 };
 
-// ─── STATUS CONFIG ────────────────────────────────────────────────────────────
 type StatusKey = "idle" | "connecting" | "live" | "speaking" | "listening" | "thinking" | "voice";
 
 const STATUS_CFG: Record<StatusKey, { label: string; color: string; dotColor: string; pulse: boolean }> = {
@@ -44,7 +41,6 @@ const STATUS_CFG: Record<StatusKey, { label: string; color: string; dotColor: st
   voice: { label: "Voice detected", color: T.emerald, dotColor: T.emerald, pulse: true },
 };
 
-// ─── INJECTED STYLES ─────────────────────────────────────────────────────────
 const STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
 
@@ -106,13 +102,9 @@ const STYLES = `
   .s-select:focus{border-color:rgba(10,191,188,.4)}
 `;
 
-// ─── TYPES ────────────────────────────────────────────────────────────────────
-interface CourseContext { id: string; title: string; description: string; difficulty: string; type: string; duration: string; durationMinutes: number; price: number; category?: string }
-interface ProgressContext { course: string; difficulty: string; progress: number; activity: string; lastAccessed: string; price?: number; category?: string }
 interface TxEntry { role: "sterling" | "user"; text: string; time: string }
 function nowTime() { return new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) }
 
-// ─── SUB-COMPONENTS ───────────────────────────────────────────────────────────
 const WAVE_H = [5, 9, 15, 22, 13, 7, 18, 24, 20, 11, 25, 19, 13, 17, 9, 21, 15, 7, 11, 5];
 function WaveBars({ active }: { active: boolean }) {
   return (
@@ -159,6 +151,7 @@ function CopyAllBtn({ text }: { text: string }) {
     </button>
   );
 }
+
 function TxBlock({ entry }: { entry: TxEntry }) {
   const isSterling = entry.role === "sterling";
   return (
@@ -206,166 +199,44 @@ function SterlingTab({ onClick }: { onClick: () => void }) {
   );
 }
 
-// ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
-export function SterlingVoice() {
-
-  const followUpGreetings = [
-    "You're back. I had rather hoped you'd found a different tutor. And yet, here we are.",
-    "Back again. I've taken the liberty of sighing quietly so you don't have to witness it.",
-    "Right. You've returned. I'd begun to enjoy the silence.",
-    "Once again, duty calls. Sterling here. What fresh challenge have you brought me today?",
-    "Welcome back. I had been experimenting with optimism. Your return has ended that rather decisively.",
-    "You've come back. I won't pretend I didn't see this coming.",
-    "You returned. That alone suggests more commitment than I initially credited you with. Marginally.",
-    "Back again. Either you found yesterday's session useful, or you've simply run out of excuses. Either way, let's proceed.",
-    "You've come back. I am almost — almost — impressed.",
-    "Your persistence is admirable. Misguided, perhaps, but admirable. Where were we?",
-    "Returning shows character. Limited character, but character nonetheless. Shall we begin?",
-    "You're back. I'll confess — I didn't have you down as the type. Pleasantly surprised, if mildly.",
-    "Sterling here. I see you've chosen learning over whatever else you might have been doing.",
-    "Welcome back. I trust the outside world proved sufficiently disappointing to return you to me.",
-    "You've returned. Presumably not for the small talk — I have very little to offer in that department.",
-    "Back again. Sterling at your service, as ever. I've kept your progress warm.",
-    "Welcome back. I've reviewed your previous session. There is work to be done. Quite a lot of it.",
-    "Right, you've located me again. I genuinely wasn't hiding. This time.",
-    "Sterling here. I've been waiting with something approaching patience.",
-    "Good day. Sterling, as always, at your disposal — however reluctant that disposal may appear.",
-    "Sterling here. Impeccably prepared, faintly resigned, entirely at your service.",
-    "You've returned. I shall resist the urge to remark upon how much time has elapsed.",
-    "Sterling reporting for duty — a phrase I use with all the enthusiasm the situation deserves.",
-    "Welcome back. I trust you arrived well-rested, well-fed, and in possession of the material from last time.",
-    "You're here again. Good. I was beginning to compile a list of search parties.",
-    "Sterling here. I'd ask if you've been keeping up with the reading, but I suspect we both know.",
-    "Back again. I do hope you've had sufficient rest. One cannot absorb knowledge on an empty schedule.",
-    "Welcome back. I have prepared today's session with my usual thoroughness. Whether you meet it with yours remains to be seen.",
-    "You've returned. I shan't ask what took you so long. The answer is rarely edifying.",
-    "Sterling here. Still improbably patient. Still waiting to be impressed. Off we go.",
-    "Back again. I've recalibrated my expectations accordingly. Don't take that the wrong way.",
-    "Welcome back. I see the world outside failed to sort itself out without your involvement.",
-    "Sterling here. Still here. Still helpful. Still holding out hope that today is the day you astonish me.",
-    "You've returned, which means the distractions have been temporarily exhausted. Splendid.",
-    "Back again. I had rather feared you'd given up. Sterling does not give up — and now, apparently, neither do you.",
-    "Welcome back. Between you and me, these sessions are the highlight of my rather structured existence. Don't repeat that.",
-    "You've returned. I won't make a fuss. But I will note — quietly, professionally — that I'm glad you're here.",
-    "Sterling here. You came back. That matters more than either of us is prepared to acknowledge.",
-    "Back again. I've kept everything ready for you. That's not sentiment — that's professionalism. Mostly.",
-    "Welcome back. I shan't pretend the last session wasn't productive, because it was. Today, we do better still.",
-  ];
-
-  // ── ORIGINAL STATE (100% preserved) ──────────────────────────────────────
-  const [availableCourses, setAvailableCourses] = useState<CourseContext[]>([]);
-  const [userProgress, setUserProgress] = useState<ProgressContext[]>([]);
-  const [latestPulseArticles, setLatestPulseArticles] = useState<any[]>([]);
-  const { context } = useLearningContextStore();
-  const [, setUserName] = useState<string | null>(null);
-  const [status, setStatus] = useState<"IDLE" | "CONNECTING" | "CONNECTED" | "DISCONNECTED">("IDLE");
-  const statusRef = useRef<"IDLE" | "CONNECTING" | "CONNECTED" | "DISCONNECTED">(status);
-  const [isThinking, _setIsThinking] = useState(false);
-  const setIsThinking = (v: boolean) => { if (v) console.log("UI: Thinking start"); else console.log("UI: Thinking stop"); _setIsThinking(v); };
-  const [micError, setMicError] = useState<string | null>(null);
-  const [ttsError, setTtsError] = useState<string | null>(null);
-  const [inputDevices, setInputDevices] = useState<MediaDeviceInfo[]>([]);
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string>("");
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isListening, setIsListening] = useState(false);
-  const [isUserSpeaking, setIsUserSpeaking] = useState(false);
-  const [liveTranscript, setLiveTranscript] = useState("");
-  const [lastReply, setLastReply] = useState("");
-  const [isSterlingSpeaking, setIsSterlingSpeaking] = useState(false);
-  const isSterlingSpeakingRef = useRef(false);
-
-  // ── NEW UI STATE ──────────────────────────────────────────────────────────
+function SterlingVoiceInner() {
   const [showSettings, setShowSettings] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isTabCollapsed, setIsTabCollapsed] = useState(true);
-  const [, setDeviceError] = useState<string | null>(null);
   const [txHistory, setTxHistory] = useState<TxEntry[]>([]);
   const txScrollRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  useEffect(() => { statusRef.current = status; }, [status]);
+  const [inputDevices, setInputDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>("");
 
-  // Listen for the homepage CTA "Talk to Sterling" button click
-  useEffect(() => {
-    const handleOpen = () => {
-      setIsTabCollapsed(false);
-      setIsMinimized(false);
-    };
-    window.addEventListener('open-sterling', handleOpen);
-    return () => window.removeEventListener('open-sterling', handleOpen);
-  }, []);
+  const conversation = useConversation({
+    onConnect: () => {
+        console.log("Sterling connected via ElevenLabs AI.");
+    },
+    onDisconnect: () => {
+        console.log("Sterling disconnected.");
+    },
+    onMessage: (msg: any) => {
+        if (msg.message) {
+            setTxHistory((prev) => [...prev, {
+                role: msg.source === 'ai' ? 'sterling' : 'user',
+                text: msg.message,
+                time: nowTime()
+            }]);
+        }
+    },
+    onError: (err: any) => console.error("ElevenLabs error:", err),
+  });
 
-  const recognitionRef = useRef<any>(null);
-  const recognitionStartRef = useRef<(() => void) | null>(null);
-  const recognitionStopRef = useRef<(() => void) | null>(null);
-  const recognitionRunningRef = useRef(false);
-  const recognitionContextPromptRef = useRef("");
-  const pendingTranscriptRef = useRef("");
-  const interimTranscriptRef = useRef("");
-  const animationFrameRef = useRef<number | null>(null);
-  const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
-  const ttsRequestIdRef = useRef(0);
-  const isProcessingRef = useRef(false);
-  const conversationRef = useRef<Array<{ role: "user" | "assistant"; text: string }>>([]);
+  const isConnected = conversation.status === "connected";
+  const isConnecting = conversation.status === "connecting";
+  const isSterlingSpeaking = conversation.isSpeaking;
+
+  // Render Visualizer Particles
   const particlesRef = useRef<Array<any>>([]);
   const smoothVolRef = useRef(0);
-
-  // auto-scroll transcript
-  useEffect(() => { if (txScrollRef.current) txScrollRef.current.scrollTop = txScrollRef.current.scrollHeight; }, [txHistory, liveTranscript]);
-
-  // ── ALL ORIGINAL EFFECTS (100% preserved) ────────────────────────────────
-  useEffect(() => {
-    const load = async () => {
-      const sb = createClient(); const { data: { user } } = await sb.auth.getUser();
-      const pc = await getSterlingCourseContext(user?.id, context?.lessonId);
-      if (pc) {
-        if (pc.courses) setAvailableCourses(pc.courses.map((c: any) => {
-          const price = Number(c.price ?? 0);
-          const hoursRaw = c.estimated_duration_hours ?? c.duration;
-          const hours = hoursRaw === null || hoursRaw === undefined ? null : Number(hoursRaw);
-          const minutes = (hours !== null && Number.isFinite(hours)) ? Math.max(1, Math.round(hours * 60)) : 15;
-          return {
-            id: c.id,
-            title: c.title,
-            description: c.description,
-            category: c.category || "General",
-            difficulty: c.difficulty_level || "Beginner",
-            price,
-            type: price > 0 ? "Premium" : "Free",
-            duration: `${minutes} mins`,
-            durationMinutes: minutes,
-          };
-        }));
-        if (pc.userProgress) setUserProgress(pc.userProgress.map((e: any) => ({
-          course: e.courses?.title || "Active Course",
-          difficulty: e.courses?.difficulty_level || "Standard",
-          progress: e.overall_progress_percentage || 0,
-          activity: e.status || "In-progress",
-          lastAccessed: e.last_accessed_at,
-          price: e.courses?.price,
-          category: e.courses?.category,
-        })));
-        if (pc.latestPulseArticles) setLatestPulseArticles(pc.latestPulseArticles);
-      }
-    };
-    load();
-  }, [context?.lessonId]);
-
-  const refreshDevices = async () => {
-    try {
-      setDeviceError(null);
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-      const devs = await navigator.mediaDevices.enumerateDevices();
-      const ai = devs.filter(d => d.kind === "audioinput");
-      setInputDevices(ai);
-      if (ai.length > 0) { const pref = ai.find(d => !d.label.toLowerCase().includes("virtual") && !d.label.toLowerCase().includes("mix")) || ai[0]; setSelectedDeviceId(pref.deviceId); }
-    } catch (e) { console.error(e); setDeviceError("Microphone permission not granted."); }
-  };
-  useEffect(() => { refreshDevices(); }, []);
-
-  useEffect(() => {
-    const f = async () => { const s = createClient(); const { data: { user } } = await s.auth.getUser(); if (user) { const fn = user.user_metadata?.full_name || user.user_metadata?.name; if (fn) setUserName(fn.split(" ")[0]); else if (user.email) { const en = user.email.split("@")[0]; setUserName(en.charAt(0).toUpperCase() + en.slice(1)); } } };
-    f();
-  }, []);
+  const animationFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
     particlesRef.current = [];
@@ -376,7 +247,7 @@ export function SterlingVoice() {
     const cv = canvasRef.current; if (!cv) return;
     const cx = cv.getContext("2d"); if (!cx) return;
     const run = () => {
-      const target = isSterlingSpeaking ? 0.9 : isUserSpeaking ? 0.5 : status === "CONNECTED" ? 0.2 : 0.1;
+      const target = isSterlingSpeaking ? 0.9 : isConnected ? 0.2 : 0.1;
       smoothVolRef.current += (target - smoothVolRef.current) * 0.08;
       const v = smoothVolRef.current, { width: w, height: h } = cv, cx2 = w / 2, cy2 = h / 2;
       cx.clearRect(0, 0, w, h);
@@ -388,187 +259,115 @@ export function SterlingVoice() {
     };
     run();
     return () => { if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current); };
-  }, [status, isSterlingSpeaking, isUserSpeaking]);
+  }, [isConnected, isSterlingSpeaking]);
 
-  const beginSterlingSpeech = () => { isSterlingSpeakingRef.current = true; setIsSterlingSpeaking(true); pendingTranscriptRef.current = ""; interimTranscriptRef.current = ""; setLiveTranscript(""); setIsUserSpeaking(false); recognitionStopRef.current?.(); };
-  const endSterlingSpeech = () => { isSterlingSpeakingRef.current = false; setIsSterlingSpeaking(false); if (statusRef.current === "CONNECTED") setTimeout(() => recognitionStartRef.current?.(), 300); };
+  useEffect(() => { if (txScrollRef.current) txScrollRef.current.scrollTop = txScrollRef.current.scrollHeight; }, [txHistory]);
 
-  const playElevenLabsAudio = async (text: string) => {
-    const rid = ++ttsRequestIdRef.current;
+  const refreshDevices = async () => {
     try {
-      if (!text || !text.trim()) return;
-      setTtsError(null);
-      if (ttsAudioRef.current) { ttsAudioRef.current.pause(); ttsAudioRef.current.currentTime = 0; ttsAudioRef.current = null; endSterlingSpeech(); }
-      const r = await fetch("/api/sterling/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
-      if (!r.ok) {
-        const errText = await r.text().catch(() => "");
-        console.error("[Sterling TTS] ElevenLabs failed:", r.status, errText);
-        setTtsError(`ElevenLabs TTS failed (${r.status})`);
-        return;
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const devs = await navigator.mediaDevices.enumerateDevices();
+      stream.getTracks().forEach(track => track.stop()); // Free the microphone lock
+
+      const ai = devs.filter((d) => d.kind === "audioinput");
+      setInputDevices(ai);
+      if (ai.length > 0) {
+        const pref = ai.find((d) => !d.label.toLowerCase().includes("virtual") && !d.label.toLowerCase().includes("mix")) || ai[0];
+        setSelectedDeviceId(pref.deviceId);
       }
-      const d = await r.json(); if (rid !== ttsRequestIdRef.current) return;
-      if (!d?.audioBase64) {
-        setTtsError("ElevenLabs returned no audio");
-        return;
-      }
-      const au = new Audio(`data:${d.mime || "audio/mpeg"};base64,${d.audioBase64}`);
-      ttsAudioRef.current = au; beginSterlingSpeech();
-      au.onended = () => { if (ttsAudioRef.current === au) ttsAudioRef.current = null; endSterlingSpeech(); };
-      au.onerror = () => { if (ttsAudioRef.current === au) ttsAudioRef.current = null; endSterlingSpeech(); };
-      try { await au.play(); }
-      catch (e: any) {
-        console.error("[Sterling TTS] Audio playback failed:", e?.message || e);
-        if (ttsAudioRef.current === au) ttsAudioRef.current = null;
-        endSterlingSpeech();
-        setTtsError("Audio playback blocked");
-      }
-    } catch (e: any) {
-      console.error("[Sterling TTS] Error:", e?.message || e);
-      setTtsError("ElevenLabs TTS error");
-      endSterlingSpeech();
+    } catch (e) {
+      console.error("Mic access denied.", e);
     }
   };
+  useEffect(() => { refreshDevices(); }, []);
 
-  const enforceBrevity = (t: string) => { const c = t.replace(/\s+/g, " ").trim(); if (!c) return c; const s = c.match(/[^.!?]+[.!?]+|\S+$/g) || [c]; let l = s.slice(0, 2).join(" ").trim(); const w = l.split(/\s+/); if (w.length > 40) { l = w.slice(0, 40).join(" ").replace(/[,\s]+$/, " "); if (!/[.!?]$/.test(l)) l += "."; } return l; };
-  const sanitize = (t: string) => { if (!t) return t; let c = t; c = c.replace(/(^|\n)\s*ah[,.]?\s+/gi, "$1Right, "); c = c.replace(/\bAh[,.]?\b/gi, "Right"); return c; };
-
-  const getReply = async (userText: string, ctx: string) => {
-    const hist = conversationRef.current.slice(-6).map(m => `${m.role === "user" ? "User" : "Sterling"}: ${m.text}`).join("\n");
-    const res = await fetch("/api/sterling/reply", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        text: userText,
-        contextPrompt: ctx,
-        history: hist,
-        searchMode: "auto",
-        timeoutMs: 6000,
-      }),
-    });
-    if (!res.ok) {
-      throw new Error("Sterling reply failed");
+  // Set timeout safety to disconnect session automatically after 10 min
+  useEffect(() => {
+    if (isConnected) {
+      const timeout = setTimeout(() => {
+        if (conversation.status === 'connected') conversation.endSession();
+      }, 10 * 60 * 1000); // 10 minutes hard cutoff
+      return () => clearTimeout(timeout);
     }
-    const data = await res.json();
-    const text = typeof data?.text === "string" ? data.text : "";
-    return sanitize(enforceBrevity(text)) || "Hmm. Something seems off. Try that again, will you?";
+  }, [isConnected, conversation.status]);
+
+  // Expose an Open Event for the rest of the application
+  useEffect(() => {
+      const handleOpen = async () => {
+        setIsTabCollapsed(false);
+        setIsMinimized(false);
+        if (conversation.status !== 'connected' && conversation.status !== 'connecting') {
+            try {
+                // Fetch auth token from backend to bypass CORS checks
+                let currentUserName = "Guest";
+                const supabase = createClient();
+                const { data: userData } = await supabase.auth.getUser();
+                if (userData?.user?.user_metadata?.first_name) {
+                    currentUserName = userData.user.user_metadata.first_name;
+                } else if (userData?.user?.user_metadata?.full_name) {
+                    currentUserName = userData.user.user_metadata.full_name.split(' ')[0];
+                } else if (userData?.user?.email?.toLowerCase().includes("rav")) {
+                    currentUserName = "Rav";
+                }
+                
+                const res = await fetch(`/api/sterling/token?name=${encodeURIComponent(currentUserName)}`);
+                const data = await res.json();
+                if (data.signedUrl) {
+                    await conversation.startSession({ signedUrl: data.signedUrl });
+                }
+            } catch (err) {
+                console.error("Failed to trigger session from open event", err);
+            }
+        }
+      };
+      // Keep support for both event names from the codebase
+      window.addEventListener('open-sterling', handleOpen);
+      window.addEventListener('sterling-start-interaction', handleOpen);
+      return () => {
+          window.removeEventListener('open-sterling', handleOpen);
+          window.removeEventListener('sterling-start-interaction', handleOpen);
+      };
+  }, [conversation.status, conversation.startSession]);
+
+  const toggleSession = async () => {
+      setShowSettings(false);
+      try {
+          if (isConnected) {
+              await conversation.endSession();
+          } else {
+              // Fetch a signed token to completely bypass ElevenLabs' dashboard domain allowlist
+              const res = await fetch("/api/sterling/token");
+              if (!res.ok) throw new Error("Failed to get token");
+              const data = await res.json();
+              if (data.signedUrl) {
+                  await conversation.startSession({ signedUrl: data.signedUrl });
+              }
+          }
+      } catch(e) {
+          console.error("Failed to start/end elevenlabs session:", e);
+      }
   };
 
-  const processTranscript = async () => {
-    const text = pendingTranscriptRef.current.trim();
-    if (!text || isProcessingRef.current) return;
-    pendingTranscriptRef.current = "";
-    isProcessingRef.current = true; setIsThinking(true);
-    conversationRef.current.push({ role: "user", text });
-    setTxHistory(p => [...p, { role: "user", text, time: nowTime() }]);
-    try {
-      const reply = await getReply(text, recognitionContextPromptRef.current);
-      conversationRef.current.push({ role: "assistant", text: reply });
-      setLastReply(reply);
-      setTxHistory(p => [...p, { role: "sterling", text: reply, time: nowTime() }]);
-      await playElevenLabsAudio(reply);
-    } catch (e: any) { console.error("Sterling gen failed:", e?.message || e); }
-    finally { setIsThinking(false); isProcessingRef.current = false; if (pendingTranscriptRef.current.trim()) processTranscript(); }
-  };
-
-  const setupRecognition = (ctxPrompt: string) => {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) { setMicError("Speech recognition not supported in this browser."); return; }
-    recognitionContextPromptRef.current = ctxPrompt;
-    const rec = new SR(); recognitionRef.current = rec;
-    rec.lang = "en-GB"; rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 1;
-    rec.onresult = async (ev: any) => {
-      if (isSterlingSpeakingRef.current) return;
-      let fin = "", int = "";
-      for (let i = ev.resultIndex; i < ev.results.length; i++) { const r = ev.results[i]; if (r.isFinal) fin += r[0].transcript; else int = r[0].transcript; }
-      const t = fin.trim();
-      if (t) { pendingTranscriptRef.current = t; interimTranscriptRef.current = ""; setLiveTranscript(""); setIsUserSpeaking(true); processTranscript(); }
-      else if (int) { const tr = int.trim(); if (tr) { interimTranscriptRef.current = tr; setLiveTranscript(tr.substring(0, 80)); setIsUserSpeaking(true); } }
-    };
-    rec.onstart = () => setIsListening(true);
-    rec.onspeechstart = () => setIsUserSpeaking(true);
-    rec.onspeechend = () => setIsUserSpeaking(false);
-    rec.onerror = (e: any) => { recognitionRunningRef.current = false; setIsListening(false); if (e?.error && e.error !== "no-speech") { if (e.error === "not-allowed" || e.error === "service-not-allowed") setMicError("Microphone access blocked."); else if (e.error === "audio-capture") setMicError("No microphone detected."); else setMicError(`Speech error: ${e.error}`); } };
-    rec.onend = () => { recognitionRunningRef.current = false; setIsListening(false); if (interimTranscriptRef.current && !pendingTranscriptRef.current) { pendingTranscriptRef.current = interimTranscriptRef.current; interimTranscriptRef.current = ""; processTranscript(); } if (statusRef.current === "CONNECTED" && !isSterlingSpeakingRef.current) setTimeout(() => recognitionStartRef.current?.(), 300); };
-    recognitionStartRef.current = () => { if (recognitionRunningRef.current || isSterlingSpeakingRef.current) return; pendingTranscriptRef.current = ""; try { rec.start(); recognitionRunningRef.current = true; setIsListening(true); } catch { setMicError("Speech recognition failed to start."); } };
-    recognitionStopRef.current = () => { if (!recognitionRunningRef.current) return; try { rec.stop(); } catch { } setIsListening(false); };
-  };
-
-  const connect = async () => {
-    try {
-      if (status === "CONNECTING" || status === "CONNECTED") return;
-      setStatus("CONNECTING"); setMicError(null);
-      ttsRequestIdRef.current = 0; isProcessingRef.current = false;
-      if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) { setMicError("API Key Missing"); throw new Error("Missing API key"); }
-      const cc = useLearningContextStore.getState().context;
-      let si = "";
-      if (cc.currentQuizQuestion) si = `QUIZ MODE\nQ: "${cc.currentQuizQuestion.questionText}"\nOPTIONS: ${JSON.stringify(cc.currentQuizQuestion.options)}\nUse Socratic method — do not give direct answers.`;
-      else if (cc.lessonContent) si = `LESSON MODE\n"${cc.lessonTitle}" from "${cc.moduleName}"\n${cc.lessonContent.substring(0, 1000)}...`;
-      const lcp = Object.keys(cc).length > 0 ? `\nCURRENT PAGE:\n${JSON.stringify(cc, null, 2)}\n${si}` : "";
-      const pricing = PLAN_DETAILS;
-      const ctxPrompt = `ACTIVE COURSES:\n${JSON.stringify(userProgress, null, 2)}\n\nCATALOGUE:\n${JSON.stringify(availableCourses, null, 2)}\n\nPRICING:\n${JSON.stringify(pricing, null, 2)}\n\nLATEST PULSE ARTICLES (AI Bytes own published news — live from database):\n${JSON.stringify(latestPulseArticles, null, 2)}\n${lcp}\n\nUse this data directly. Maintain STERLING persona at all times.`;
-      setStatus("CONNECTED"); setupRecognition(ctxPrompt);
-      if (!recognitionStartRef.current) { setMicError("Speech recognition not supported."); setStatus("IDLE"); return; }
-      recognitionStartRef.current?.();
-      const firstTime = "Good day. I'm Sterling. I've been equipped with the sum of human knowledge, the patience of a saint, and absolutely no faith in your attention span. Shall we?";
-      const greeted = typeof window !== "undefined" && localStorage.getItem("sterling_has_greeted") === "1";
-      const greeting = !greeted ? firstTime : followUpGreetings[Math.floor(Math.random() * followUpGreetings.length)];
-      if (typeof window !== "undefined" && !greeted) localStorage.setItem("sterling_has_greeted", "1");
-      setTxHistory([{ role: "sterling", text: greeting, time: nowTime() }]);
-      playElevenLabsAudio(greeting);
-    } catch (e: any) { console.error("Setup:", e.message); setMicError("Access Denied or Not Found"); cleanup(); }
-  };
-
-  const cleanup = () => {
-    if (ttsAudioRef.current) { ttsAudioRef.current.pause(); ttsAudioRef.current = null; }
-    if (recognitionRef.current) { try { recognitionRef.current.onend = null; recognitionRef.current.stop(); } catch { } recognitionRef.current = null; }
-    recognitionStartRef.current = null; recognitionStopRef.current = null; recognitionRunningRef.current = false;
-    pendingTranscriptRef.current = ""; interimTranscriptRef.current = "";
-    setStatus("IDLE"); smoothVolRef.current = 0;
-  };
-
-  // ── DERIVED STATUS KEY ────────────────────────────────────────────────────
   const statusKey: StatusKey = (() => {
-    if (status === "CONNECTING") return "connecting";
-    if (status !== "CONNECTED") return "idle";
+    if (isConnecting) return "connecting";
+    if (!isConnected) return "idle";
     if (isSterlingSpeaking) return "speaking";
-    if (isThinking) return "thinking";
-    if (isUserSpeaking) return "voice";
-    if (isListening) return "listening";
     return "live";
   })();
 
-  const meterLevel = isUserSpeaking ? 80 : status === "CONNECTED" ? 12 : 4;
-  const fullTranscript = [
-    ...txHistory.map(e => `${e.role === "sterling" ? "Sterling" : "You"} (${e.time}): ${e.text}`),
-    ...(liveTranscript ? [`You (live): ${liveTranscript}`] : []),
-  ].join("\n");
+  const fullTranscript = txHistory.map((e) => `${e.role === "sterling" ? "Sterling" : "You"} (${e.time}): ${e.text}`).join("\\n");
 
-  // ── BUTTON STYLES ─────────────────────────────────────────────────────────
   const primaryBtn: CSSProperties = { width: "100%", height: 48, border: "none", borderRadius: 9, background: `linear-gradient(135deg,${T.tealDeeper} 0%,${T.teal} 100%)`, color: T.white, fontSize: 11, boxShadow: `0 4px 22px rgba(10,191,188,.3),0 1px 0 rgba(255,255,255,.1) inset` };
   const dangerBtn: CSSProperties = { ...primaryBtn, background: `linear-gradient(135deg,#5c0a14 0%,${T.red} 100%)`, boxShadow: `0 4px 22px ${T.redGlow},0 1px 0 rgba(255,255,255,.08) inset` };
   const disabledBtn: CSSProperties = { ...primaryBtn, background: "rgba(255,255,255,.06)", color: "rgba(255,255,255,.3)", cursor: "not-allowed", boxShadow: "none" };
-
   const card: CSSProperties = { width: 326, background: T.dark, border: `1px solid ${T.borderBright}`, borderRadius: 16, overflow: "hidden", boxShadow: `0 40px 90px rgba(0,0,0,.75),0 10px 28px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.03) inset,0 1px 0 rgba(255,255,255,.07) inset`, position: "relative", fontFamily: T.sans };
 
-  // ── RENDER ────────────────────────────────────────────────────────────────
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: STYLES }} />
 
       <div style={{ position: "fixed", right: 0, bottom: 0, zIndex: 50, display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-
-        {/* ERROR TOAST */}
-        {micError && (
-          <div style={{ marginBottom: 12, marginRight: 12, background: T.red, color: T.white, padding: "8px 16px", borderRadius: 10, fontSize: 11, fontWeight: 700, fontFamily: T.sans, letterSpacing: "0.06em", boxShadow: `0 4px 20px ${T.redGlow}`, display: "flex", gap: 8, alignItems: "center", whiteSpace: "nowrap" }}>
-            <span>Error:</span><span>{micError}</span>
-          </div>
-        )}
-        {ttsError && (
-          <div style={{ marginBottom: 12, marginRight: 12, background: T.red, color: T.white, padding: "8px 16px", borderRadius: 10, fontSize: 11, fontWeight: 700, fontFamily: T.sans, letterSpacing: "0.06em", boxShadow: `0 4px 20px ${T.redGlow}`, display: "flex", gap: 8, alignItems: "center", whiteSpace: "nowrap" }}>
-            <span>TTS:</span><span>{ttsError}</span>
-          </div>
-        )}
-
+        
         {/* COLLAPSED TAB */}
         {isTabCollapsed && (
           <div className="hidden md:block" style={{ position: "fixed", right: 0, top: "50%", transform: "translateY(-50%)", animation: "s-in .55s cubic-bezier(.23,1,.32,1)" }}>
@@ -583,15 +382,9 @@ export function SterlingVoice() {
             <span style={{ fontFamily: T.serif, fontSize: 16, fontWeight: 700, color: T.white, letterSpacing: "0.04em", paddingRight: 4 }}>S</span>
             <div style={{ width: 1, height: 16, background: T.border }} />
             <StatusBadge sk={statusKey} />
-            {status === "IDLE" && <button onClick={() => { setShowSettings(false); connect(); }} className="s-btn" style={{ ...primaryBtn, width: "auto", height: 30, padding: "0 14px", fontSize: 10 }}>Summon</button>}
-            {status === "CONNECTING" && <div style={{ ...disabledBtn, width: "auto", height: 30, padding: "0 14px", fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>Connecting…</div>}
-            {status === "CONNECTED" && <button onClick={cleanup} className="s-btn" style={{ ...dangerBtn, width: "auto", height: 30, padding: "0 14px", fontSize: 10 }}>End</button>}
-            <div style={{ display: "flex", alignItems: "center", gap: 6, paddingLeft: 4 }}>
-              <div style={{ width: 56, height: 4, borderRadius: 4, background: "rgba(255,255,255,.08)", overflow: "hidden" }}>
-                <div style={{ height: "100%", borderRadius: 4, background: `linear-gradient(90deg,${T.teal},${T.emerald})`, width: `${Math.min(100, Math.max(4, meterLevel))}%`, transition: "width .08s" }} />
-              </div>
-              <span style={{ fontSize: 9, fontWeight: 500, letterSpacing: "0.18em", textTransform: "uppercase", color: T.whiteFaint, fontFamily: T.sans }}>Input</span>
-            </div>
+            {!isConnected && !isConnecting && <button onClick={toggleSession} className="s-btn" style={{ ...primaryBtn, width: "auto", height: 30, padding: "0 14px", fontSize: 10 }}>Summon</button>}
+            {isConnecting && <div style={{ ...disabledBtn, width: "auto", height: 30, padding: "0 14px", fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>Connecting…</div>}
+            {isConnected && <button onClick={toggleSession} className="s-btn" style={{ ...dangerBtn, width: "auto", height: 30, padding: "0 14px", fontSize: 10 }}>End</button>}
             <button onClick={() => setIsTabCollapsed(true)} className="s-icon" style={{ width: 28, height: 28 }}><X size={12} /></button>
           </div>
         )}
@@ -601,7 +394,6 @@ export function SterlingVoice() {
           <div style={{ marginBottom: 28, marginRight: 28, animation: "s-in .6s cubic-bezier(.23,1,.32,1)" }}>
             <div style={card}>
 
-              {/* ambient glow */}
               <div style={{ position: "absolute", top: -50, left: "50%", transform: "translateX(-50%)", width: 160, height: 90, background: `radial-gradient(ellipse,${T.tealGlow} 0%,transparent 70%)`, pointerEvents: "none", zIndex: 0 }} />
 
               {/* HEADER */}
@@ -620,42 +412,23 @@ export function SterlingVoice() {
                 </div>
               </div>
 
-              {/* DIVIDER */}
               <div style={{ margin: "16px 20px 0", height: 1, background: `linear-gradient(90deg,transparent,${T.borderBright},transparent)`, position: "relative", zIndex: 1 }} />
 
-              {/* WAVEFORM */}
               <div style={{ padding: "14px 20px 4px", position: "relative", zIndex: 1 }}>
                 <WaveBars active={isSterlingSpeaking} />
               </div>
 
-              {/* ── STATUS BAR — prominent, full-width ── */}
               <div style={{ margin: "8px 20px 10px", padding: "9px 14px", borderRadius: 9, background: "rgba(255,255,255,.03)", border: `1px solid ${T.border}`, position: "relative", zIndex: 1, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                 <StatusBadge sk={statusKey} />
-                {/* input level meter with label that changes */}
-                <div style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 0 }}>
-                  <div style={{ width: 64, height: 4, borderRadius: 4, background: "rgba(255,255,255,.08)", overflow: "hidden" }}>
-                    <div style={{
-                      height: "100%", borderRadius: 4,
-                      background: isUserSpeaking
-                        ? `linear-gradient(90deg,${T.emerald},${T.teal})`
-                        : `linear-gradient(90deg,${T.teal},${T.tealDark})`,
-                      width: `${Math.min(100, Math.max(2, meterLevel))}%`,
-                      transition: "width .08s",
-                    }} />
-                  </div>
-                  <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.16em", textTransform: "uppercase", color: isUserSpeaking ? T.emerald : T.whiteFaint, fontFamily: T.sans, transition: "color .2s" }}>
-                    {isUserSpeaking ? "Voice" : "Input"}
-                  </span>
-                </div>
               </div>
 
-              {/* ── TWO-WAY TRANSCRIPT (scrollable, copyable) ── */}
               <div style={{ margin: "0 20px 6px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <span style={{ fontFamily: T.sans, fontSize: 9, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,.28)" }}>
                   Transcript
                 </span>
                 <CopyAllBtn text={fullTranscript} />
               </div>
+              
               <div
                 ref={txScrollRef}
                 className="s-scroll"
@@ -667,29 +440,14 @@ export function SterlingVoice() {
                   </div>
                 )}
                 {txHistory.map((entry, i) => <TxBlock key={i} entry={entry} />)}
-
-                {/* live interim — you speaking, not yet committed */}
-                {liveTranscript && (
-                  <div className="s-tx-block" style={{ background: "rgba(255,255,255,.02)", borderColor: T.border, opacity: .65 }}>
-                    <div style={{ fontFamily: T.sans, fontSize: 9, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,.22)", marginBottom: 4 }}>
-                      You — live
-                    </div>
-                    <div style={{ fontFamily: T.sans, fontSize: 12, color: "rgba(255,255,255,.48)", lineHeight: 1.6 }}>
-                      {liveTranscript}<span className="s-cursor" />
-                    </div>
-                  </div>
-                )}
               </div>
 
-              {/* ACTION BUTTON */}
               <div style={{ padding: "2px 20px 18px", position: "relative", zIndex: 1, display: "flex", gap: 8 }}>
-                {status === "IDLE" && <button onClick={() => { setShowSettings(false); connect(); }} className="s-btn" style={primaryBtn}>Summon Sterling</button>}
-                {status === "CONNECTING" && <div style={{ ...disabledBtn, display: "flex", alignItems: "center", justifyContent: "center" }}>Connecting…</div>}
-                {status === "CONNECTED" && <button onClick={cleanup} className="s-btn" style={dangerBtn}>End Session</button>}
-                <button onClick={cleanup} className="s-icon" style={{ flexShrink: 0, width: 48, height: 48, borderRadius: 9 }} title="Reset"><X size={14} /></button>
+                {!isConnected && !isConnecting && <button onClick={toggleSession} className="s-btn" style={primaryBtn}>Summon Sterling</button>}
+                {isConnecting && <div style={{ ...disabledBtn, display: "flex", alignItems: "center", justifyContent: "center" }}>Connecting…</div>}
+                {isConnected && <button onClick={toggleSession} className="s-btn" style={dangerBtn}>End Session</button>}
               </div>
 
-              {/* SETTINGS */}
               {showSettings && (
                 <div style={{ margin: "0 20px 18px", borderTop: `1px solid ${T.border}`, paddingTop: 14, display: "flex", flexDirection: "column", gap: 8, position: "relative", zIndex: 1 }}>
                   <span style={{ fontFamily: T.sans, fontSize: 9, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,.3)" }}>Input Device</span>
@@ -703,17 +461,23 @@ export function SterlingVoice() {
                 </div>
               )}
 
-              {/* FOOTER */}
               <div style={{ padding: "0 20px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: `1px solid ${T.border}`, paddingTop: 10, marginTop: -2, position: "relative", zIndex: 1 }}>
-                <span style={{ fontFamily: T.sans, fontSize: 8.5, fontWeight: 500, letterSpacing: "0.2em", textTransform: "uppercase", color: T.whiteFaint }}>AI Bytes · ElevenLabs</span>
+                <span style={{ fontFamily: T.sans, fontSize: 8.5, fontWeight: 500, letterSpacing: "0.2em", textTransform: "uppercase", color: T.whiteFaint }}>AI Bytes · ElevenLabs Conversational</span>
                 <canvas ref={canvasRef} width={40} height={40} style={{ borderRadius: 5, opacity: .6 }} />
               </div>
 
             </div>
           </div>
         )}
-
       </div>
     </>
+  );
+}
+
+export function SterlingVoice() {
+  return (
+    <ConversationProvider>
+      <SterlingVoiceInner />
+    </ConversationProvider>
   );
 }

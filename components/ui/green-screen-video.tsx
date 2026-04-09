@@ -193,7 +193,7 @@ export const GreenScreenVideo = ({
             {showLogo && (
                 <div className="absolute top-4 right-4 z-10 w-16 md:w-24 opacity-90">
                     <img
-                        src="/logos/ai bytes learning light blue logo dark.png"
+                        src="/logos/ai-bytes-logo-transparency-1.png"
                         alt="AI Bytes Logo"
                         className="w-full h-auto drop-shadow-md"
                     />

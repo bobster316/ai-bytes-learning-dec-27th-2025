@@ -12,7 +12,7 @@ export function generateMetadata(): Metadata {
   });
 }
 
-export const revalidate = 60; // Revalidate every minute
+export const dynamic = 'force-dynamic';
 
 export default async function CoursesPage(
   props: { searchParams: Promise<{ category?: string }> }

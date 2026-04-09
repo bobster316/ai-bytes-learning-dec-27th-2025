@@ -9,7 +9,7 @@ import { Rocket, BookOpen, MessageSquare, Video, Code, ArrowRight } from "lucide
 
 export default function ExecutionPage() {
     return (
-        <div className="min-h-screen bg-background text-foreground">
+        <div className="min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)]">
             <Header />
 
             {/* Hero Section */}

@@ -315,7 +315,7 @@ export function SterlingDiagnostic() {
                             <span className={audioState === 'running' ? 'text-green-500' : 'text-red-500'}>
                                 {audioState.toUpperCase()}
                             </span>
-                            {isSpeaking && <span className="text-cyan-400 animate-pulse">🎙️ LISTENING</span>}
+                            {isSpeaking && <span className="text-[#00FFB3] animate-pulse">🎙️ LISTENING</span>}
                             <span>Peak: {(volume).toFixed(3)}</span>
                         </div>
                     </div>
@@ -340,7 +340,7 @@ export function SterlingDiagnostic() {
                         {status === 'CONNECTED' ? 'DISCONNECT' : 'CONNECT API'}
                     </Button>
                     <Button variant="outline" size="icon" onClick={playTestSound} title="Test Speakers">
-                        <Volume2 size={16} className="text-cyan-500" />
+                        <Volume2 size={16} className="text-[#00FFB3]" />
                     </Button>
                 </div>
 

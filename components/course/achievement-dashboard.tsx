@@ -47,7 +47,7 @@ export function AchievementDashboard({ userId }: { userId: string }) {
                         {stats.profile?.current_level || 1}
                     </div>
                     <div>
-                        <div className="text-[10px] text-cyan-500 font-mono uppercase tracking-[0.3em] font-black mb-1">Explorer Class</div>
+                        <div className="text-[10px] text-[#00FFB3] font-mono uppercase tracking-[0.3em] font-black mb-1">Explorer Class</div>
                         <h3 className="text-3xl font-black text-white tracking-tighter">Level {stats.profile?.current_level || 1}</h3>
                         <div className="flex items-center gap-4 mt-2">
                             <div className="flex items-center gap-1.5 text-xs text-slate-400">
@@ -55,7 +55,7 @@ export function AchievementDashboard({ userId }: { userId: string }) {
                                 <span className="font-bold text-slate-200">{stats.profile?.current_streak || 0} Day Momentum</span>
                             </div>
                             <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                                <Zap size={14} className="text-cyan-500" />
+                                <Zap size={14} className="text-[#00FFB3]" />
                                 <span className="font-bold text-slate-200">{stats.profile?.total_xp || 0} XP Total</span>
                             </div>
                         </div>
@@ -95,7 +95,7 @@ export function AchievementDashboard({ userId }: { userId: string }) {
                     title="Learning Velocity"
                     value={`${((stats.profile?.total_xp || 0) / 100).toFixed(1)}x`}
                     subtitle="Current Efficiency"
-                    icon={<TrendingUp className="text-cyan-500" />}
+                    icon={<TrendingUp className="text-[#00FFB3]" />}
                 />
             </div>
 

@@ -225,8 +225,8 @@ export interface ExpandableBlock extends BaseBlock {
 export interface VideoSnippetBlock extends BaseBlock {
     type: "video_snippet";
     title: string;             // e.g. "Visual Insight: Neural Network Training"
-    videoPrompt: string;       // Veo 3.1 prompt for video generation
-    videoUrl?: string;         // Filled after Veo generation (uploaded to Supabase Storage)
+    videoPrompt: string;       // Video prompt for generation
+    videoUrl?: string;         // Filled after video generation (uploaded to Supabase Storage)
     caption: string;           // Short description
     duration?: number;         // 8 (seconds) — default 8s
     description?: string;      // 2 sentences: what viewer will see + why it matters
@@ -305,7 +305,7 @@ export interface OpenExerciseBlock extends BaseBlock {
 export interface InstructorInsightBlock extends BaseBlock {
     type: "instructor_insight";
     heading?: string;             // e.g. "Instructor Insight"
-    videoUrl?: string;            // Veo-generated contextual clip (optional, generated async)
+    videoUrl?: string;            // AI-generated contextual clip (optional, generated async)
     insights: Array<{
         emoji: string;            // e.g. "🧠"
         title: string;            // Bold heading for the insight card

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
 import {
   BookOpen, CheckCircle2, Clock, ArrowRight, Flame,
   Zap, ChevronRight, Play, Layers, BarChart2, Trophy
@@ -14,7 +15,7 @@ import Image from "next/image";
 // ── Dark panel — matches lesson/home card language ──────────────────────────
 const DarkPanel = ({ children, className }: { children: React.ReactNode; className?: string }) => (
   <div className={cn(
-    "relative overflow-hidden bg-[#0d0d1c] border border-white/[0.06] rounded-3xl",
+    "relative overflow-hidden bg-white/[0.04] border border-white/[0.08] backdrop-blur-sm rounded-3xl",
     className
   )}>
     {children}
@@ -128,17 +129,17 @@ export default function DashboardPage() {
   const weeklyXp      = Math.min((profile?.total_xp ?? 0) % 100, 100);
 
   return (
-    <div className="min-h-screen bg-[#080810] font-body relative overflow-x-hidden">
+    <div className="min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)] font-body relative overflow-x-hidden">
 
       {/* ── Persistent mesh gradient blobs ───────────────────────────────── */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }} aria-hidden="true">
-        <div className="absolute rounded-full" style={{ width: 900, height: 900, background: "#4b98ad", top: "5%", left: "-20%", filter: "blur(110px)", opacity: 0.09, animation: "dbMesh 35s linear infinite" }} />
-        <div className="absolute rounded-full" style={{ width: 700, height: 700, background: "#00FFB3", top: "50%", right: "-10%", filter: "blur(110px)", opacity: 0.07, animation: "dbMesh 28s linear infinite reverse" }} />
-        <div className="absolute rounded-full" style={{ width: 600, height: 600, background: "#FFB347", bottom: "5%", left: "25%", filter: "blur(110px)", opacity: 0.06, animation: "dbMesh 22s linear infinite", animationDelay: "-11s" }} />
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
+        <div className="absolute rounded-full w-[900px] h-[900px] bg-[#9B8FFF]/5 top-[5%] -left-[20%] blur-[110px] animate-[dbMesh_35s_linear_infinite]" />
+        <div className="absolute rounded-full w-[700px] h-[700px] bg-[#00FFB3]/5 top-[50%] -right-[10%] blur-[110px] animate-[dbMesh_28s_linear_infinite_reverse]" />
+        <div className="absolute rounded-full w-[600px] h-[600px] bg-[#FFB347]/5 bottom-[5%] left-[25%] blur-[110px] animate-[dbMesh_22s_linear_infinite_-11s]" />
       </div>
 
       {/* ── Grain texture ─────────────────────────────────────────────────── */}
-      <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0, opacity: 0.025, mixBlendMode: "soft-light" }} aria-hidden="true">
+      <div className="fixed inset-0 pointer-events-none z-0 opacity-[0.025] mix-blend-soft-light" aria-hidden="true">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
           <filter id="db-grain"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" /><feColorMatrix type="saturate" values="0" /></filter>
           <rect width="100%" height="100%" filter="url(#db-grain)" />
@@ -168,29 +169,30 @@ export default function DashboardPage() {
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.28em] text-white/40 mb-4">
             {greeting}
           </p>
-          <h1 className="font-display font-black leading-[0.92] tracking-[-0.03em] mb-8"
-              style={{ fontSize: "clamp(2.6rem, 6vw, 4.8rem)" }}>
+          <h1 className="font-display font-black leading-[0.92] tracking-[-0.03em] mb-8 text-[clamp(2.6rem,6vw,4.8rem)]">
             <span className="text-white/90">Welcome back,{" "}</span>
-            <span style={{ color: "#4b98ad" }}>{userName}.</span>
+            <span className="text-[#00FFB3]">{userName}.</span>
           </h1>
 
           {/* Stat chips */}
           <div className="flex flex-wrap gap-3">
             {[
-              { label: "Day Streak",  value: profile?.current_streak ?? 0, icon: Flame,        color: "#FFB347" },
-              { label: "Total XP",   value: profile?.total_xp ?? 0,        icon: Zap,          color: "#4b98ad" },
-              { label: "Completed",  value: courses.filter(c => c.progress === 100).length, icon: CheckCircle2, color: "#00FFB3" },
+              { label: "Day Streak",  value: profile?.current_streak ?? 0, icon: Flame,        colorClass: "text-[#FFB347]", bgClass: "bg-[#FFB347]/[0.05]", borderClass: "border-[#FFB347]/[0.16]" },
+              { label: "Total XP",   value: profile?.total_xp ?? 0,        icon: Zap,          colorClass: "text-[#00FFB3]", bgClass: "bg-[#00FFB3]/[0.05]", borderClass: "border-[#00FFB3]/[0.16]" },
+              { label: "Completed",  value: courses.filter(c => c.progress === 100).length, icon: CheckCircle2, colorClass: "text-[#00FFB3]", bgClass: "bg-[#00FFB3]/[0.05]", borderClass: "border-[#00FFB3]/[0.16]" },
             ].map((stat, i) => (
               <motion.div
                 key={stat.label}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.18 + i * 0.08, ease: [0.16, 1, 0.3, 1] }}
-                className="flex items-center gap-2.5 px-4 py-2.5 rounded-full border"
-                style={{ background: `${stat.color}0d`, borderColor: `${stat.color}28` }}
+                className={cn(
+                  "flex items-center gap-2.5 px-4 py-2.5 rounded-full border",
+                  stat.bgClass, stat.borderClass
+                )}
               >
-                <stat.icon className="w-3.5 h-3.5 shrink-0" style={{ color: stat.color }} />
-                <span className="font-mono text-sm font-bold" style={{ color: stat.color }}>{stat.value}</span>
+                <stat.icon className={cn("w-3.5 h-3.5 shrink-0", stat.colorClass)} />
+                <span className={cn("font-mono text-sm font-bold", stat.colorClass)}>{stat.value}</span>
                 <span className="font-mono text-[0.62rem] uppercase tracking-[0.1em] text-white/60">{stat.label}</span>
               </motion.div>
             ))}
@@ -210,21 +212,21 @@ export default function DashboardPage() {
               </p>
 
               {loading ? (
-                <div className="w-full h-64 bg-[#0d0d1c] animate-pulse rounded-3xl border border-white/5" />
+                <div className="w-full h-64 bg-white/[0.04] animate-pulse rounded-3xl border border-white/[0.08]" />
               ) : currentCourse ? (
                 <Link href={`/courses/${currentCourse.id}`} className="block group">
                   <DarkPanel className="hover:border-white/[0.12] transition-colors duration-300">
                     <div className="flex flex-col md:flex-row">
 
                       {/* Course image */}
-                      <div className="w-full md:w-[42%] aspect-video md:aspect-auto relative overflow-hidden rounded-t-3xl md:rounded-l-3xl md:rounded-tr-none" style={{ minHeight: 200 }}>
+                      <div className="w-full md:w-[42%] aspect-video md:aspect-auto relative overflow-hidden rounded-t-3xl md:rounded-l-3xl md:rounded-tr-none min-h-[200px]">
                         <Image
                           src={currentCourse.image} alt={currentCourse.title} fill
                           className="object-cover group-hover:scale-105 transition-transform duration-700"
                           sizes="(max-width:768px)100vw,42vw"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#0d0d1c]/70 hidden md:block" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1c]/70 to-transparent md:hidden" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#0a0a0f]/70 hidden md:block" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f]/70 to-transparent md:hidden" />
                         <div className="absolute bottom-4 left-4 font-mono text-[0.58rem] uppercase tracking-[0.14em] text-[#00FFB3] bg-[#00FFB3]/10 border border-[#00FFB3]/20 px-3 py-1 rounded-full">
                           {currentCourse.category}
                         </div>
@@ -233,17 +235,17 @@ export default function DashboardPage() {
                       {/* Content */}
                       <div className="flex-1 p-7 flex flex-col justify-between gap-6">
                         <div>
-                          <h3 className="font-display font-black text-[1.45rem] text-white leading-tight tracking-[-0.02em] group-hover:text-[#4b98ad] transition-colors duration-300 mb-3">
+                          <h3 className="font-display font-black text-[1.45rem] text-white leading-tight tracking-[-0.02em] group-hover:text-[#00FFB3] transition-colors duration-300 mb-3">
                             {currentCourse.title}
                           </h3>
-                          <span className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-white/55 flex items-center gap-1.5">
+                          <span className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-white/50 flex items-center gap-1.5">
                             <Clock className="w-3 h-3" /> {currentCourse.duration}
                           </span>
                         </div>
 
                         <div className="space-y-2.5">
                           <div className="flex justify-between items-center">
-                            <span className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-white/55">Progress</span>
+                            <span className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-white/50">Progress</span>
                             <span className="font-mono text-2xl font-bold text-white">{currentCourse.progress}%</span>
                           </div>
                           <div className="h-[3px] w-full bg-white/[0.06] rounded-full overflow-hidden">
@@ -251,13 +253,12 @@ export default function DashboardPage() {
                               initial={{ width: 0 }}
                               animate={{ width: `${currentCourse.progress}%` }}
                               transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1], delay: 0.35 }}
-                              className="h-full rounded-full"
-                              style={{ background: "linear-gradient(90deg, #4b98ad, #00FFB3)" }}
+                              className="h-full rounded-full bg-[#00FFB3]"
                             />
                           </div>
                           <div className="flex items-center justify-between pt-1">
                             <span className="font-mono text-[0.58rem] text-white/50">Continue your journey</span>
-                            <span className="font-mono text-[0.62rem] uppercase tracking-[0.1em] text-[#4b98ad] flex items-center gap-1.5 group-hover:translate-x-1 transition-transform duration-300">
+                            <span className="font-mono text-[0.62rem] uppercase tracking-[0.1em] text-[#00FFB3] flex items-center gap-1.5 group-hover:translate-x-1 transition-transform duration-300">
                               Resume <ArrowRight className="w-3 h-3" />
                             </span>
                           </div>
@@ -267,16 +268,16 @@ export default function DashboardPage() {
                   </DarkPanel>
                 </Link>
               ) : (
-                <DarkPanel className="p-10 text-center" style={{ borderStyle: "dashed" }}>
-                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-5" style={{ background: "#4b98ad15", border: "1px solid #4b98ad30" }}>
-                    <Play className="w-5 h-5 text-[#4b98ad]" />
+                <DarkPanel className="p-10 text-center border-dashed">
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-5 bg-[#00FFB3]/[0.08] border border-[#00FFB3]/20">
+                    <Play className="w-5 h-5 text-[#00FFB3]" />
                   </div>
                   <h3 className="font-display font-black text-xl text-white mb-2 tracking-tight">Start Your First Byte</h3>
-                  <p className="font-body text-white/35 text-sm max-w-xs mx-auto mb-6 leading-relaxed">
+                  <p className="font-body text-white/40 text-sm max-w-xs mx-auto mb-6 leading-relaxed">
                     Pick a topic and jumpstart your AI understanding in just 15 minutes.
                   </p>
                   <Link href="/courses">
-                    <button className="font-mono text-[0.65rem] uppercase tracking-[0.15em] px-6 py-2.5 rounded-full border border-[#4b98ad]/35 text-[#4b98ad] hover:bg-[#4b98ad]/10 transition-colors cursor-pointer">
+                    <button className="font-mono text-[0.65rem] uppercase tracking-[0.15em] px-6 py-2.5 rounded-full border border-[#00FFB3]/35 text-[#00FFB3] hover:bg-[#00FFB3]/10 transition-colors cursor-pointer">
                       Browse Curriculum
                     </button>
                   </Link>
@@ -291,14 +292,14 @@ export default function DashboardPage() {
                 <div className="grid sm:grid-cols-2 gap-4">
                   {courses.slice(1).map(c => (
                     <Link key={c.id} href={`/courses/${c.id}`} className="group">
-                      <DarkPanel className="p-4 flex gap-4 items-center hover:border-white/[0.1] transition-colors duration-300">
+                      <DarkPanel className="p-4 flex gap-4 items-center hover:border-white/[0.12] transition-colors duration-300">
                         <div className="w-16 h-16 shrink-0 rounded-xl overflow-hidden relative">
                           <Image src={c.image} alt={c.title} fill className="object-cover group-hover:scale-110 transition-transform duration-500" sizes="64px" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-display font-bold text-white text-sm line-clamp-2 leading-tight group-hover:text-[#4b98ad] transition-colors">{c.title}</h4>
+                          <h4 className="font-display font-bold text-white text-sm line-clamp-2 leading-tight group-hover:text-[#00FFB3] transition-colors">{c.title}</h4>
                           <div className="mt-2.5 h-[2px] w-full bg-white/[0.06] rounded-full">
-                            <div className="h-full rounded-full bg-[#4b98ad]/70" style={{ width: `${c.progress}%` }} />
+                            <div className="h-full rounded-full bg-[#00FFB3]/70" style={{ width: `${c.progress}%` }} />
                           </div>
                           <p className="font-mono text-[0.58rem] text-white/50 mt-1">{c.progress}% complete</p>
                         </div>
@@ -321,14 +322,14 @@ export default function DashboardPage() {
                     transition={{ delay: 0.12 + i * 0.07, ease: [0.16, 1, 0.3, 1] }}
                   >
                     <Link href={`/courses/${c.id}`} className="block group h-full">
-                      <DarkPanel className="p-3 h-full flex flex-col hover:border-white/[0.1] transition-colors duration-300">
+                      <DarkPanel className="p-3 h-full flex flex-col hover:border-white/[0.12] transition-colors duration-300">
                         <div className="w-full aspect-video rounded-2xl overflow-hidden relative mb-4">
                           <Image src={c.image} alt={c.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width:768px)100vw,33vw" />
-                          <div className="absolute top-2 left-2 font-mono text-[0.55rem] uppercase tracking-[0.1em] px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white/55 border border-white/[0.08]">
+                          <div className="absolute top-2 left-2 font-mono text-[0.55rem] uppercase tracking-[0.1em] px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white/65 border border-white/[0.08]">
                             {c.level}
                           </div>
                         </div>
-                        <h4 className="font-display font-bold text-white/90 text-sm leading-snug line-clamp-2 mb-2 group-hover:text-[#4b98ad] transition-colors px-1">{c.title}</h4>
+                        <h4 className="font-display font-bold text-white/90 text-sm leading-snug line-clamp-2 mb-2 group-hover:text-[#00FFB3] transition-colors px-1">{c.title}</h4>
                         <div className="mt-auto flex items-center gap-1.5 font-mono text-[0.58rem] text-white/50 px-1">
                           <Clock className="w-3 h-3 shrink-0" /> {c.duration}
                         </div>
@@ -349,13 +350,13 @@ export default function DashboardPage() {
               <p className="font-mono text-[0.59rem] uppercase tracking-[0.22em] text-white/40 mb-6">— Your Momentum</p>
 
               {/* Streak */}
-              <div className="flex items-center justify-between mb-6 pb-6 border-b border-white/[0.04]">
+              <div className="flex items-center justify-between mb-6 pb-6 border-b border-white/[0.08]">
                 <div>
-                  <p className="font-mono text-[0.58rem] uppercase tracking-[0.14em] text-white/55 mb-1.5">Day Streak</p>
-                  <p className="font-mono font-bold text-[#FFB347]" style={{ fontSize: "2.4rem", lineHeight: 1 }}>{profile?.current_streak ?? 0}</p>
-                  <p className="font-mono text-[0.58rem] text-white/45 mt-1">consecutive days</p>
+                  <p className="font-mono text-[0.58rem] uppercase tracking-[0.14em] text-white/50 mb-1.5">Day Streak</p>
+                  <p className="font-mono font-bold text-[#FFB347] text-[2.4rem] leading-none">{profile?.current_streak ?? 0}</p>
+                  <p className="font-mono text-[0.58rem] text-white/40 mt-1">consecutive days</p>
                 </div>
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "#FFB34712", border: "1px solid #FFB34728" }}>
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 bg-[#FFB347]/[0.07] border border-[#FFB347]/[0.16]">
                   <Flame className="w-6 h-6 text-[#FFB347]" />
                 </div>
               </div>
@@ -363,7 +364,7 @@ export default function DashboardPage() {
               {/* Weekly XP */}
               <div className="space-y-2.5">
                 <div className="flex justify-between items-center">
-                  <p className="font-mono text-[0.58rem] uppercase tracking-[0.14em] text-white/55">Weekly XP Goal</p>
+                  <p className="font-mono text-[0.58rem] uppercase tracking-[0.14em] text-white/50">Weekly XP Goal</p>
                   <p className="font-mono text-[0.68rem] text-white/50">{weeklyXp} / 100</p>
                 </div>
                 <div className="h-[3px] w-full bg-white/[0.06] rounded-full overflow-hidden">
@@ -371,21 +372,20 @@ export default function DashboardPage() {
                     initial={{ width: 0 }}
                     animate={{ width: `${weeklyXp}%` }}
                     transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1], delay: 0.45 }}
-                    className="h-full rounded-full"
-                    style={{ background: "linear-gradient(90deg, #FFB347, #FF6B6B)" }}
+                    className="h-full rounded-full bg-gradient-to-r from-[#FFB347] to-[#FF6B6B]"
                   />
                 </div>
-                <p className="font-mono text-[0.58rem]" style={{ color: "#FFB347" }}>{weeklyXp}% of weekly goal</p>
+                <p className="font-mono text-[0.58rem] text-[#FFB347]">{weeklyXp}% of weekly goal</p>
               </div>
 
               {/* Total XP */}
-              <div className="mt-5 pt-5 border-t border-white/[0.04] flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "#4b98ad12", border: "1px solid #4b98ad28" }}>
-                  <Zap className="w-4 h-4 text-[#4b98ad]" />
+              <div className="mt-5 pt-5 border-t border-white/[0.08] flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-[#00FFB3]/[0.07] border border-[#00FFB3]/[0.16]">
+                  <Zap className="w-4 h-4 text-[#00FFB3]" />
                 </div>
                 <div>
-                  <p className="font-mono text-[0.58rem] uppercase tracking-[0.1em] text-white/55">Total XP Earned</p>
-                  <p className="font-mono text-xl font-bold text-[#4b98ad]">{profile?.total_xp ?? 0}</p>
+                  <p className="font-mono text-[0.58rem] uppercase tracking-[0.1em] text-white/50">Total XP Earned</p>
+                  <p className="font-mono text-xl font-bold text-[#00FFB3]">{profile?.total_xp ?? 0}</p>
                 </div>
               </div>
             </DarkPanel>
@@ -409,13 +409,15 @@ export default function DashboardPage() {
                     className={cn(
                       "flex flex-col items-center text-center p-4 rounded-2xl border transition-all duration-300",
                       m.earned
-                        ? "border-[#00FFB3]/18"
+                        ? "bg-[#00FFB3]/[0.03] border-[#00FFB3]/[0.11]"
                         : "bg-white/[0.015] border-white/[0.04] opacity-45"
                     )}
-                    style={m.earned ? { background: "#00FFB308" } : {}}
                   >
-                    <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center mb-3 relative overflow-hidden", m.earned ? "" : "opacity-50")}
-                         style={m.earned ? { background: "#00FFB310", border: "1px solid #00FFB320" } : { background: "rgba(255,255,255,0.04)" }}>
+                    <div className={cn(
+                      "w-12 h-12 rounded-xl flex items-center justify-center mb-3 relative overflow-hidden",
+                      m.earned ? "bg-[#00FFB3]/[0.06] border border-[#00FFB3]/[0.13]" : "bg-white/[0.04]",
+                      !m.earned && "opacity-50"
+                    )}>
                       <Image src={m.image} alt={m.label} fill className="object-cover p-2" sizes="48px" />
                     </div>
                     <p className="font-display font-bold text-xs text-white/80 leading-tight">{m.label}</p>
@@ -433,18 +435,17 @@ export default function DashboardPage() {
               <p className="font-mono text-[0.59rem] uppercase tracking-[0.22em] text-white/40 mb-4">— Quick Links</p>
               <div className="space-y-1">
                 {[
-                  { href: "/courses",     label: "Browse Courses",  icon: BookOpen, color: "#4b98ad" },
-                  { href: "/my-learning", label: "My Learning",     icon: Layers,   color: "#00FFB3" },
-                  { href: "/pricing",     label: "Upgrade Plan",    icon: Zap,      color: "#FFB347" },
+                  { href: "/courses",     label: "Browse Courses",  icon: BookOpen, colorClass: "text-[#00FFB3]", bgClass: "bg-[#00FFB3]/[0.07] border border-[#00FFB3]/[0.13]" },
+                  { href: "/my-learning", label: "My Learning",     icon: Layers,   colorClass: "text-[#00FFB3]", bgClass: "bg-[#00FFB3]/[0.07] border border-[#00FFB3]/[0.13]" },
+                  { href: "/pricing",     label: "Upgrade Plan",    icon: Zap,      colorClass: "text-[#FFB347]", bgClass: "bg-[#FFB347]/[0.07] border border-[#FFB347]/[0.13]" },
                 ].map((link) => (
                   <Link key={link.href} href={link.href}
                     className="group flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.04] transition-colors cursor-pointer">
-                    <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
-                         style={{ background: `${link.color}12`, border: `1px solid ${link.color}22` }}>
-                      <link.icon className="w-3.5 h-3.5" style={{ color: link.color }} />
+                    <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0", link.bgClass)}>
+                      <link.icon className={cn("w-3.5 h-3.5", link.colorClass)} />
                     </div>
-                    <span className="font-body text-sm text-white/55 group-hover:text-white/85 transition-colors">{link.label}</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-white/12 ml-auto group-hover:text-white/35 group-hover:translate-x-0.5 transition-all" />
+                    <span className="font-body text-sm text-white/65 group-hover:text-white/90 transition-colors">{link.label}</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-white/20 ml-auto group-hover:text-white/40 group-hover:translate-x-0.5 transition-all" />
                   </Link>
                 ))}
               </div>
@@ -453,6 +454,8 @@ export default function DashboardPage() {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

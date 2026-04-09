@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Course Page — Design Directions</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #07070e;
+    color: #f0f0f8;
+    font-family: -apple-system, 'Inter', sans-serif;
+    padding: 32px 24px 80px;
+  }
+  .page-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: #4b98ad;
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 8px;
+    letter-spacing: -0.03em;
+  }
+  .subtitle {
+    font-size: 15px;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 40px;
+    line-height: 1.6;
+  }
+
+  .direction-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .direction-card {
+    border-radius: 20px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid rgba(255,255,255,0.06);
+    transition: border-color 0.2s, transform 0.2s;
+    background: #0e0e1a;
+    position: relative;
+  }
+  .direction-card:hover { border-color: rgba(255,255,255,0.14); transform: translateY(-3px); }
+  .direction-card.selected { border-color: #4b98ad; }
+  .direction-card.selected::after {
+    content: '✓ Selected';
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #4b98ad;
+    color: #07070e;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+  }
+
+  .direction-label {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .direction-letter {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+  .direction-name {
+    font-size: 14px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.01em;
+  }
+  .direction-tagline {
+    font-size: 11px;
+    color: rgba(255,255,255,0.38);
+    letter-spacing: 0.05em;
+    margin-top: 2px;
+  }
+
+  /* ── PREVIEW AREA ── */
+  .preview { padding: 0; }
+
+  /* ── A: ORBITAL ── */
+  .preview-a {
+    background: linear-gradient(160deg, #08080f 0%, #0c0c18 100%);
+    padding: 20px;
+    min-height: 520px;
+  }
+  .orbital-header {
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #00FFB3;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .orbital-header::before {
+    content: '';
+    width: 16px;
+    height: 1px;
+    background: #00FFB3;
+    opacity: 0.5;
+  }
+  .orbital-module {
+    position: relative;
+    padding-left: 28px;
+    margin-bottom: 10px;
+  }
+  .orbital-module::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 24px;
+    bottom: -10px;
+    width: 1px;
+    background: linear-gradient(to bottom, rgba(0,255,179,0.25), transparent);
+  }
+  .orbital-module:last-child::before { display: none; }
+  .orbital-dot {
+    position: absolute;
+    left: 4px;
+    top: 10px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    border: 1.5px solid #00FFB3;
+    background: #08080f;
+    box-shadow: 0 0 8px rgba(0,255,179,0.3);
+  }
+  .orbital-mod-header {
+    background: rgba(0,255,179,0.04);
+    border: 1px solid rgba(0,255,179,0.12);
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .orbital-num {
+    font-size: 9px;
+    font-weight: 900;
+    color: #00FFB3;
+    font-family: monospace;
+    opacity: 0.6;
+  }
+  .orbital-title { font-size: 11px; font-weight: 700; color: #fff; }
+  .orbital-meta { margin-left: auto; font-size: 9px; color: rgba(255,255,255,0.3); }
+  .orbital-lessons {
+    padding-left: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-bottom: 4px;
+  }
+  .orbital-lesson {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.02);
+  }
+  .orbital-lesson-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(0,255,179,0.4);
+    flex-shrink: 0;
+  }
+  .orbital-lesson-title { font-size: 10px; color: rgba(255,255,255,0.55); }
+  .orbital-lesson-time { margin-left: auto; font-size: 9px; color: rgba(255,255,255,0.2); font-family: monospace; }
+
+  /* ── B: BENTO ── */
+  .preview-b {
+    background: #0a0a10;
+    padding: 20px;
+    min-height: 520px;
+  }
+  .bento-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .bento-h { font-size: 16px; font-weight: 900; color: #fff; letter-spacing: -0.03em; }
+  .bento-sub { font-size: 9px; color: rgba(255,255,255,0.25); letter-spacing: 0.15em; text-transform: uppercase; }
+  .bento-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .bento-cell {
+    border-radius: 12px;
+    padding: 12px 14px;
+    border: 1px solid rgba(255,255,255,0.06);
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+    min-height: 80px;
+  }
+  .bento-cell.wide { grid-column: span 2; }
+  .bento-cell.accent-teal {
+    background: linear-gradient(135deg, rgba(0,255,179,0.06), transparent);
+    border-color: rgba(0,255,179,0.15);
+  }
+  .bento-cell.accent-iris {
+    background: linear-gradient(135deg, rgba(155,143,255,0.06), transparent);
+    border-color: rgba(155,143,255,0.12);
+  }
+  .bento-cell.accent-amber {
+    background: linear-gradient(135deg, rgba(255,179,71,0.06), transparent);
+    border-color: rgba(255,179,71,0.12);
+  }
+  .bento-cell-num {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+  .bento-cell-title { font-size: 11px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+  .bento-cell-sub { font-size: 9px; color: rgba(255,255,255,0.35); }
+  .bento-cell-lessons {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .bento-pill {
+    font-size: 8px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.4);
+  }
+  .bento-glow {
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    filter: blur(20px);
+    opacity: 0.15;
+  }
+
+  /* ── C: CINEMATIC ── */
+  .preview-c {
+    background: #07070d;
+    padding: 0;
+    min-height: 520px;
+    overflow: hidden;
+  }
+  .cinematic-mod {
+    position: relative;
+    overflow: hidden;
+  }
+  .cinematic-mod-bg {
+    position: absolute;
+    inset: 0;
+    opacity: 0.08;
+    background-size: cover;
+    background-position: center;
+  }
+  .cinematic-mod-inner {
+    position: relative;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .cinematic-bignum {
+    font-size: 42px;
+    font-weight: 900;
+    letter-spacing: -0.06em;
+    line-height: 1;
+    opacity: 0.12;
+    flex-shrink: 0;
+    width: 44px;
+  }
+  .cinematic-content { flex: 1; min-width: 0; }
+  .cinematic-tag {
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .cinematic-mod-title { font-size: 13px; font-weight: 800; color: #fff; letter-spacing: -0.02em; margin-bottom: 4px; }
+  .cinematic-lessons-row {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .cinematic-lesson-chip {
+    font-size: 8px;
+    color: rgba(255,255,255,0.4);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 4px;
+    padding: 2px 6px;
+    white-space: nowrap;
+  }
+  .cinematic-progress {
+    width: 40px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .cinematic-ring {
+    width: 32px;
+    height: 32px;
+  }
+  .cinematic-pct {
+    font-size: 8px;
+    color: rgba(255,255,255,0.3);
+    font-family: monospace;
+  }
+
+  /* bottom bar shared */
+  .bottom-cta {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 10px;
+  }
+  .bottom-cta-text { color: rgba(255,255,255,0.5); }
+  .bottom-cta-btn {
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 800;
+    color: #07070e;
+    background: #4b98ad;
+    border: none;
+    cursor: pointer;
+  }
+
+  .direction-desc {
+    padding: 14px 20px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    line-height: 1.6;
+  }
+  .direction-desc strong { color: rgba(255,255,255,0.7); font-weight: 700; }
+  .direction-desc ul { padding-left: 16px; margin-top: 4px; }
+  .direction-desc li { margin-bottom: 2px; }
+
+  .footer-note {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.25);
+  }
+</style>
+</head>
+<body>
+
+<div class="page-title">Course Page Redesign</div>
+<h1>Three design directions</h1>
+<p class="subtitle">All sections below "What You'll Learn" — modules, lessons, CTA.<br>Each direction has a distinct visual identity and motion language. Click to select your favourite.</p>
+
+<div class="direction-grid">
+
+  <!-- ── A: TIMELINE ORBITAL ── -->
+  <div class="direction-card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="direction-label">
+      <div class="direction-letter" style="background:rgba(0,255,179,0.12);color:#00FFB3;">A</div>
+      <div>
+        <div class="direction-name">Editorial Timeline</div>
+        <div class="direction-tagline">Linear × Stripe vibes</div>
+      </div>
+    </div>
+
+    <div class="preview preview-a">
+      <div class="orbital-header">Curriculum</div>
+
+      <!-- module 1 expanded -->
+      <div class="orbital-module">
+        <div class="orbital-dot"></div>
+        <div class="orbital-mod-header">
+          <span class="orbital-num">01</span>
+          <span class="orbital-title">Foundations of AI</span>
+          <span class="orbital-meta">4 lessons · 60 min</span>
+        </div>
+        <div class="orbital-lessons">
+          <div class="orbital-lesson">
+            <div class="orbital-lesson-dot"></div>
+            <span class="orbital-lesson-title">What is Machine Learning?</span>
+            <span class="orbital-lesson-time">15m</span>
+          </div>
+          <div class="orbital-lesson">
+            <div class="orbital-lesson-dot"></div>
+            <span class="orbital-lesson-title">Neural Networks Explained</span>
+            <span class="orbital-lesson-time">15m</span>
+          </div>
+          <div class="orbital-lesson">
+            <div class="orbital-lesson-dot" style="background:rgba(155,143,255,0.4)"></div>
+            <span class="orbital-lesson-title">Training vs Inference</span>
+            <span class="orbital-lesson-time">15m</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- module 2 collapsed -->
+      <div class="orbital-module">
+        <div class="orbital-dot" style="border-color:rgba(155,143,255,0.5);box-shadow:0 0 8px rgba(155,143,255,0.2)"></div>
+        <div class="orbital-mod-header" style="background:rgba(155,143,255,0.03);border-color:rgba(155,143,255,0.1)">
+          <span class="orbital-num" style="color:#9B8FFF">02</span>
+          <span class="orbital-title">Generative AI & LLMs</span>
+          <span class="orbital-meta">5 lessons · 75 min</span>
+        </div>
+      </div>
+
+      <!-- module 3 -->
+      <div class="orbital-module">
+        <div class="orbital-dot" style="border-color:rgba(255,179,71,0.5);box-shadow:0 0 8px rgba(255,179,71,0.2)"></div>
+        <div class="orbital-mod-header" style="background:rgba(255,179,71,0.03);border-color:rgba(255,179,71,0.1)">
+          <span class="orbital-num" style="color:#FFB347">03</span>
+          <span class="orbital-title">Prompt Engineering</span>
+          <span class="orbital-meta">4 lessons · 60 min</span>
+        </div>
+      </div>
+
+      <div class="bottom-cta" style="background:rgba(0,255,179,0.05);border:1px solid rgba(0,255,179,0.12)">
+        <span class="bottom-cta-text">Unlock all 13 lessons</span>
+        <button class="bottom-cta-btn">Start Free</button>
+      </div>
+    </div>
+
+    <div class="direction-desc">
+      <strong>Motion language:</strong> Timeline line draws in on scroll, module rows stagger-slide in from left, lessons cascade open like code editor trees.<br><br>
+      <ul>
+        <li>Vertical timeline spine with coloured module dots</li>
+        <li>Each module rotates accent colour (teal → iris → amber → nova)</li>
+        <li>Lessons reveal as a sliding tree beneath each module</li>
+        <li>Progress shown as glowing fill on the spine</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── B: BENTO GRID ── -->
+  <div class="direction-card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="direction-label">
+      <div class="direction-letter" style="background:rgba(155,143,255,0.12);color:#9B8FFF;">B</div>
+      <div>
+        <div class="direction-name">Spatial Bento</div>
+        <div class="direction-tagline">Vercel × Apple vibes</div>
+      </div>
+    </div>
+
+    <div class="preview preview-b">
+      <div class="bento-header">
+        <span class="bento-h">Curriculum</span>
+        <span class="bento-sub">3 modules · 13 lessons</span>
+      </div>
+
+      <div class="bento-grid">
+        <!-- Wide card: module 1 -->
+        <div class="bento-cell wide accent-teal">
+          <div class="bento-glow" style="background:#00FFB3"></div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div>
+              <div class="bento-cell-num" style="color:#00FFB3">01</div>
+            </div>
+            <div style="flex:1">
+              <div class="bento-cell-title">Foundations of AI</div>
+              <div class="bento-cell-sub">4 lessons · 60 min · Beginner</div>
+              <div class="bento-cell-lessons">
+                <span class="bento-pill">What is ML?</span>
+                <span class="bento-pill">Neural Networks</span>
+                <span class="bento-pill">Training vs Inference</span>
+                <span class="bento-pill">+ 1 more</span>
+              </div>
+            </div>
+            <div style="text-align:right">
+              <div style="width:36px;height:36px;border-radius:50%;border:2px solid rgba(0,255,179,0.3);display:flex;align-items:center;justify-content:center;font-size:9px;color:#00FFB3">75%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Small card: module 2 -->
+        <div class="bento-cell accent-iris">
+          <div class="bento-glow" style="background:#9B8FFF"></div>
+          <div class="bento-cell-num" style="color:#9B8FFF">02</div>
+          <div class="bento-cell-title">Generative AI</div>
+          <div class="bento-cell-sub">5 lessons · 75 min</div>
+          <div class="bento-cell-lessons">
+            <span class="bento-pill">LLMs</span>
+            <span class="bento-pill">GPT-4</span>
+          </div>
+        </div>
+
+        <!-- Small card: module 3 -->
+        <div class="bento-cell accent-amber">
+          <div class="bento-glow" style="background:#FFB347"></div>
+          <div class="bento-cell-num" style="color:#FFB347">03</div>
+          <div class="bento-cell-title">Prompt Engineering</div>
+          <div class="bento-cell-sub">4 lessons · 60 min</div>
+          <div class="bento-cell-lessons">
+            <span class="bento-pill">Chain-of-Thought</span>
+          </div>
+        </div>
+
+        <!-- CTA card -->
+        <div class="bento-cell wide" style="background:linear-gradient(135deg,rgba(75,152,173,0.12),rgba(75,152,173,0.04));border-color:rgba(75,152,173,0.2);display:flex;align-items:center;gap:16px;min-height:auto">
+          <div style="flex:1">
+            <div style="font-size:11px;font-weight:800;color:#fff;margin-bottom:2px">Ready to unlock full access?</div>
+            <div style="font-size:9px;color:rgba(255,255,255,0.3)">All courses · Certificates · AI tutor Sterling</div>
+          </div>
+          <button class="bottom-cta-btn" style="flex-shrink:0">Start Free →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="direction-desc">
+      <strong>Motion language:</strong> Cards float in from bottom with depth stagger, hover triggers 3D tilt + glow intensify, lesson pills ripple outward on expand.<br><br>
+      <ul>
+        <li>Bento card grid — modules as floating tiles</li>
+        <li>Wide (2-col) cards for big modules, compact for short</li>
+        <li>3D perspective tilt on hover (like Apple product pages)</li>
+        <li>Circular progress ring per module</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── C: CINEMATIC FULL-BLEED ── -->
+  <div class="direction-card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="direction-label">
+      <div class="direction-letter" style="background:rgba(255,107,107,0.12);color:#FF6B6B;">C</div>
+      <div>
+        <div class="direction-name">Cinematic Scroll</div>
+        <div class="direction-tagline">Awwwards × Readymag vibes</div>
+      </div>
+    </div>
+
+    <div class="preview preview-c">
+      <!-- Module 1 -->
+      <div class="cinematic-mod">
+        <div class="cinematic-mod-bg" style="background:linear-gradient(90deg,#00FFB3,transparent)"></div>
+        <div class="cinematic-mod-inner">
+          <div class="cinematic-bignum" style="color:#00FFB3">01</div>
+          <div class="cinematic-content">
+            <div class="cinematic-tag" style="color:#00FFB3">Module One</div>
+            <div class="cinematic-mod-title">Foundations of AI</div>
+            <div class="cinematic-lessons-row">
+              <span class="cinematic-lesson-chip">What is ML?</span>
+              <span class="cinematic-lesson-chip">Neural Nets</span>
+              <span class="cinematic-lesson-chip">Training</span>
+              <span class="cinematic-lesson-chip">+1</span>
+            </div>
+          </div>
+          <div class="cinematic-progress">
+            <svg class="cinematic-ring" viewBox="0 0 36 36">
+              <path d="M18 2 a16 16 0 0 1 0 32 a16 16 0 0 1 0-32" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="2.5"/>
+              <path d="M18 2 a16 16 0 0 1 0 32 a16 16 0 0 1 0-32" fill="none" stroke="#00FFB3" stroke-width="2.5" stroke-dasharray="75,100" stroke-linecap="round"/>
+            </svg>
+            <div class="cinematic-pct">75%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Module 2 -->
+      <div class="cinematic-mod">
+        <div class="cinematic-mod-bg" style="background:linear-gradient(90deg,#9B8FFF,transparent)"></div>
+        <div class="cinematic-mod-inner">
+          <div class="cinematic-bignum" style="color:#9B8FFF">02</div>
+          <div class="cinematic-content">
+            <div class="cinematic-tag" style="color:#9B8FFF">Module Two</div>
+            <div class="cinematic-mod-title">Generative AI & LLMs</div>
+            <div class="cinematic-lessons-row">
+              <span class="cinematic-lesson-chip">LLM Architecture</span>
+              <span class="cinematic-lesson-chip">GPT-4</span>
+              <span class="cinematic-lesson-chip">Gemini</span>
+              <span class="cinematic-lesson-chip">+2</span>
+            </div>
+          </div>
+          <div class="cinematic-progress">
+            <svg class="cinematic-ring" viewBox="0 0 36 36">
+              <path d="M18 2 a16 16 0 0 1 0 32 a16 16 0 0 1 0-32" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="2.5"/>
+              <path d="M18 2 a16 16 0 0 1 0 32 a16 16 0 0 1 0-32" fill="none" stroke="#9B8FFF" stroke-width="2.5" stroke-dasharray="30,100" stroke-linecap="round"/>
+            </svg>
+            <div class="cinematic-pct">30%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Module 3 -->
+      <div class="cinematic-mod">
+        <div class="cinematic-mod-bg" style="background:linear-gradient(90deg,#FFB347,transparent)"></div>
+        <div class="cinematic-mod-inner">
+          <div class="cinematic-bignum" style="color:#FFB347">03</div>
+          <div class="cinematic-content">
+            <div class="cinematic-tag" style="color:#FFB347">Module Three</div>
+            <div class="cinematic-mod-title">Prompt Engineering</div>
+            <div class="cinematic-lessons-row">
+              <span class="cinematic-lesson-chip">Chain-of-Thought</span>
+              <span class="cinematic-lesson-chip">Few-shot</span>
+              <span class="cinematic-lesson-chip">+2</span>
+            </div>
+          </div>
+          <div class="cinematic-progress">
+            <svg class="cinematic-ring" viewBox="0 0 36 36">
+              <path d="M18 2 a16 16 0 0 1 0 32 a16 16 0 0 1 0-32" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="2.5"/>
+              <path d="M18 2 a16 16 0 0 1 0 32 a16 16 0 0 1 0-32" fill="none" stroke="#FFB347" stroke-width="2.5" stroke-dasharray="0,100" stroke-linecap="round"/>
+            </svg>
+            <div class="cinematic-pct">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- big CTA strip -->
+      <div style="padding:16px 20px;background:linear-gradient(135deg,rgba(75,152,173,0.1),rgba(75,152,173,0.03));border-top:1px solid rgba(75,152,173,0.12);display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:12px;font-weight:800;color:#fff;margin-bottom:2px">Start your AI journey</div>
+          <div style="font-size:9px;color:rgba(255,255,255,0.3)">Free to start · No card required</div>
+        </div>
+        <button class="bottom-cta-btn">Unlock →</button>
+      </div>
+    </div>
+
+    <div class="direction-desc">
+      <strong>Motion language:</strong> Full-bleed module rows slide in from bottom with parallax depth, numbered digits morph on hover, lesson chips scatter and reform on expand.<br><br>
+      <ul>
+        <li>Full-width horizontal module rows like a film reel</li>
+        <li>Giant faded number + gradient edge wash per module</li>
+        <li>Lesson chips inline, expand to full vertical track on click</li>
+        <li>Circular progress arcs animate on scroll-into-view</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<p class="footer-note">Click a card to select it — then tell me in the terminal which one you prefer (or if you want elements from multiple directions combined)</p>
+
+<script>
+function toggleSelect(el) {
+  document.querySelectorAll('.direction-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  if (window.__sp_select) window.__sp_select(el.dataset.choice, el.querySelector('.direction-name').textContent);
+}
+</script>
+</body>
+</html>

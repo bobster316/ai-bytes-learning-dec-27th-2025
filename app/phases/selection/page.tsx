@@ -9,7 +9,7 @@ import { Target, Brain, Sparkles, ArrowRight, CheckCircle2 } from "lucide-react"
 
 export default function SelectionPage() {
     return (
-        <div className="min-h-screen bg-background text-foreground">
+        <div className="min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)]">
             <Header />
 
             {/* Hero Section */}
@@ -102,7 +102,7 @@ export default function SelectionPage() {
 
                         <div className="space-y-6">
                             <div className="flex gap-4">
-                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">1</div>
+                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-[#030305] flex items-center justify-center font-bold">1</div>
                                 <div>
                                     <h4 className="font-bold text-lg text-slate-900 dark:text-white">Tell Us Your Goals</h4>
                                     <p className="text-slate-600 dark:text-slate-400">Share what you want to learn and why. Career change? New skill? We'll tailor our recommendations.</p>
@@ -110,7 +110,7 @@ export default function SelectionPage() {
                             </div>
 
                             <div className="flex gap-4">
-                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">2</div>
+                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-[#030305] flex items-center justify-center font-bold">2</div>
                                 <div>
                                     <h4 className="font-bold text-lg text-slate-900 dark:text-white">Quick Skill Assessment</h4>
                                     <p className="text-slate-600 dark:text-slate-400">Take our 5-minute assessment to determine your current knowledge level.</p>
@@ -118,7 +118,7 @@ export default function SelectionPage() {
                             </div>
 
                             <div className="flex gap-4">
-                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">3</div>
+                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-[#030305] flex items-center justify-center font-bold">3</div>
                                 <div>
                                     <h4 className="font-bold text-lg text-slate-900 dark:text-white">Get Your Personalized Path</h4>
                                     <p className="text-slate-600 dark:text-slate-400">Receive a custom learning roadmap designed specifically for your success.</p>
@@ -130,7 +130,7 @@ export default function SelectionPage() {
                     {/* CTA */}
                     <div className="text-center mt-16">
                         <Link href="/courses">
-                            <Button size="lg" className="bg-primary hover:bg-primary/90 text-white px-8 h-14 text-lg rounded-full shadow-lg shadow-primary/20">
+                            <Button size="lg" className="bg-primary hover:brightness-110 text-[#030305] font-black px-8 h-14 text-lg rounded-full shadow-lg shadow-primary/20">
                                 Browse All Courses <ArrowRight className="ml-2 w-5 h-5" />
                             </Button>
                         </Link>

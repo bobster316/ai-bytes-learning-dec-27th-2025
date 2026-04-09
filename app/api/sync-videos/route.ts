@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
             .from('courses')
             .select('id, title, intro_video_job_id, intro_video_status')
             .not('intro_video_job_id', 'is', null)
-            .neq('intro_video_status', 'completed');
+            .not('intro_video_status', 'in', '("completed","failed")');
 
         if (courses) {
             for (const course of courses) {
@@ -37,6 +37,12 @@ export async function GET(request: NextRequest) {
                             .eq('id', course.id);
                         console.log(`✅ Updated course: ${course.title}`);
                         updatedCount++;
+                    } else if (status.status === 'failed') {
+                        await supabase
+                            .from('courses')
+                            .update({ intro_video_status: 'failed' })
+                            .eq('id', course.id);
+                        console.log(`⚠️ Course HeyGen job permanently failed: ${course.title}`);
                     }
                 } catch (e: any) {
                     console.error(`Error checking course ${course.id}:`, e.message);
@@ -49,7 +55,7 @@ export async function GET(request: NextRequest) {
             .from('course_topics')
             .select('id, title, intro_video_job_id, intro_video_status')
             .not('intro_video_job_id', 'is', null)
-            .neq('intro_video_status', 'completed');
+            .not('intro_video_status', 'in', '("completed","failed")');
 
         if (topics) {
             for (const topic of topics) {
@@ -65,6 +71,12 @@ export async function GET(request: NextRequest) {
                             .eq('id', topic.id);
                         console.log(`✅ Updated topic: ${topic.title}`);
                         updatedCount++;
+                    } else if (status.status === 'failed') {
+                        await supabase
+                            .from('course_topics')
+                            .update({ intro_video_status: 'failed' })
+                            .eq('id', topic.id);
+                        console.log(`⚠️ Topic HeyGen job permanently failed: ${topic.title}`);
                     }
                 } catch (e: any) {
                     console.error(`Error checking topic ${topic.id}:`, e.message);

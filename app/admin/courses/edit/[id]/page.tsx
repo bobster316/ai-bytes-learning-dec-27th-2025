@@ -198,7 +198,7 @@ export default function AdminCourseEditClientPage() {
         }
     };
 
-    const [regenerating, setRegenerating] = useState<Record<string, 'audio' | 'video' | null>>({});
+    const [regenerating, setRegenerating] = useState<Record<string, 'audio' | 'video' | 'video_block' | null>>({});
     const [generatingAll, setGeneratingAll] = useState(false);
 
     // Update a lesson's url in local state without re-fetching
@@ -263,10 +263,10 @@ export default function AdminCourseEditClientPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-black text-white flex items-center justify-center">
+            <div className="min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)] flex items-center justify-center">
                 <div className="text-center">
-                    <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-indigo-500" />
-                    <p className="text-white/60">Loading course...</p>
+                    <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-[#00FFB3]" />
+                    <p className="text-white/50">Loading course...</p>
                 </div>
             </div>
         );
@@ -274,11 +274,11 @@ export default function AdminCourseEditClientPage() {
 
     if (!course) {
         return (
-            <div className="min-h-screen bg-black text-white flex items-center justify-center">
+            <div className="min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)] flex items-center justify-center">
                 <div className="text-center">
-                    <p className="text-xl text-white/60">Course not found</p>
+                    <p className="text-xl text-white/50">Course not found</p>
                     <Link href="/admin/courses">
-                        <Button className="mt-4">Back to Courses</Button>
+                        <Button className="mt-4 bg-[#00FFB3] hover:bg-[#00FFB3]/90 text-black font-bold">Back to Courses</Button>
                     </Link>
                 </div>
             </div>
@@ -286,27 +286,27 @@ export default function AdminCourseEditClientPage() {
     }
 
     return (
-        <div className="min-h-screen bg-black text-white font-sans selection:bg-indigo-500/30">
+        <div className="min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)] font-sans selection:bg-[#9B8FFF]/30">
             {/* Top Bar */}
-            <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/10 h-16 flex items-center justify-between px-6">
+            <header className="sticky top-0 z-50 bg-[var(--page-bg)]/80 backdrop-blur-md border-b border-[var(--page-border)] h-16 flex items-center justify-between px-6">
                 <div className="flex items-center gap-4">
                     <Link href="/admin/courses">
-                        <Button variant="ghost" size="icon" className="text-white/60 hover:text-white">
+                        <Button variant="ghost" size="icon" className="text-white/50 hover:text-white hover:bg-white/[0.08]">
                             <ArrowLeft className="w-5 h-5" />
                         </Button>
                     </Link>
-                    <div className="h-6 w-px bg-white/10" />
+                    <div className="h-6 w-px bg-white/20" />
                     <h1 className="text-lg font-semibold tracking-tight text-white/90">
                         Course Editor
                     </h1>
-                    <Badge variant="outline" className="border-indigo-500/50 text-indigo-400 text-xs">
+                    <Badge variant="outline" className="border-[#00FFB3]/50 text-[#00FFB3] text-xs">
                         {course.published ? 'Live' : 'Draft'}
                     </Badge>
                 </div>
 
                 <div className="flex items-center gap-2">
                     <Link href={`/courses/${courseId}`} target="_blank">
-                        <Button variant="outline" size="sm" className="border-white/10 hover:bg-white/5 text-white/60 hover:text-white gap-2 h-9">
+                        <Button variant="outline" size="sm" className="border-white/[0.08] hover:bg-white/[0.08] text-white/50 hover:text-white gap-2 h-9">
                             <Eye className="w-4 h-4" />
                             <span className="hidden sm:inline">Preview</span>
                         </Button>
@@ -315,7 +315,7 @@ export default function AdminCourseEditClientPage() {
                         size="sm"
                         onClick={handleSave}
                         disabled={saving}
-                        className="bg-indigo-600 hover:bg-indigo-500 text-white gap-2 h-9 min-w-[120px]"
+                        className="bg-[#00FFB3] hover:bg-[#00FFB3]/90 text-black font-bold gap-2 h-9 min-w-[120px] disabled:bg-white/[0.04] disabled:text-white/20 disabled:cursor-not-allowed"
                     >
                         {saving ? (
                             <>
@@ -344,7 +344,7 @@ export default function AdminCourseEditClientPage() {
                     <div className="space-y-3">
                         <label className="text-xs font-bold uppercase tracking-wider text-white/40">Course Thumbnail</label>
                         <div className="relative group">
-                            <div className="aspect-video w-full rounded-xl overflow-hidden bg-white/5 border border-white/10 relative">
+                            <div className="aspect-video w-full rounded-xl overflow-hidden bg-white/[0.04] border border-white/[0.08] relative">
                                 {thumbnailUrl ? (
                                     <Image
                                         src={thumbnailUrl}
@@ -358,8 +358,8 @@ export default function AdminCourseEditClientPage() {
                                     </div>
                                 )}
                                 {uploadingImage && (
-                                    <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
-                                        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                                    <div className="absolute inset-0 bg-[var(--page-bg)]/80 flex items-center justify-center">
+                                        <Loader2 className="w-8 h-8 animate-spin text-[#00FFB3]" />
                                     </div>
                                 )}
                             </div>
@@ -374,7 +374,7 @@ export default function AdminCourseEditClientPage() {
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={uploadingImage}
-                                className="w-full mt-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white gap-2"
+                                className="w-full mt-3 bg-white/[0.06] hover:bg-white/[0.10] border border-white/[0.08] text-white gap-2 disabled:bg-white/[0.04] disabled:text-white/20 disabled:cursor-not-allowed"
                             >
                                 <Upload className="w-4 h-4" />
                                 {uploadingImage ? 'Uploading...' : 'Upload New Image'}
@@ -388,7 +388,7 @@ export default function AdminCourseEditClientPage() {
                             <Input
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
-                                className="bg-white/5 border-white/10 text-white text-lg font-medium h-12 focus:border-indigo-500 transition-colors"
+                                className="bg-white/[0.06] border-white/[0.10] text-white text-lg font-medium h-12 focus:bg-white/[0.08] focus:border-white/20 transition-colors"
                             />
                         </div>
 
@@ -397,7 +397,7 @@ export default function AdminCourseEditClientPage() {
                             <Textarea
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
-                                className="bg-white/5 border-white/10 text-white min-h-[150px] focus:border-indigo-500 transition-colors resize-none"
+                                className="bg-white/[0.06] border-white/[0.10] text-white min-h-[150px] focus:bg-white/[0.08] focus:border-white/20 transition-colors resize-none"
                             />
                         </div>
 
@@ -407,7 +407,7 @@ export default function AdminCourseEditClientPage() {
                                 <select
                                     value={difficulty}
                                     onChange={(e) => setDifficulty(e.target.value)}
-                                    className="w-full bg-white/5 border border-white/10 rounded-md h-10 px-3 text-sm text-white focus:outline-none focus:border-indigo-500"
+                                    className="w-full bg-white/[0.06] border border-white/[0.10] rounded-md h-10 px-3 text-sm text-white focus:outline-none focus:border-white/20 transition-colors"
                                 >
                                     <option value="beginner">Beginner</option>
                                     <option value="intermediate">Intermediate</option>
@@ -420,7 +420,7 @@ export default function AdminCourseEditClientPage() {
                                     type="number"
                                     value={price}
                                     onChange={(e) => setPrice(Number(e.target.value))}
-                                    className="bg-white/5 border-white/10 text-white h-10 focus:border-indigo-500"
+                                    className="bg-white/[0.06] border-white/[0.10] text-white h-10 focus:bg-white/[0.08] focus:border-white/20"
                                 />
                             </div>
                         </div>
@@ -437,13 +437,13 @@ export default function AdminCourseEditClientPage() {
                                 variant="outline"
                                 onClick={() => handleGenerateAllAudio(false)}
                                 disabled={generatingAll}
-                                className="border-[#00FFB3]/30 hover:bg-[#00FFB3]/10 text-[#00FFB3] gap-2"
+                                className="border-[#00FFB3]/30 hover:bg-[#00FFB3]/10 text-[#00FFB3] gap-2 disabled:bg-white/[0.04] disabled:text-white/20 disabled:cursor-not-allowed"
                                 title="Generate Gemini TTS audio overview for all lessons in this course"
                             >
                                 {generatingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <Headphones className="w-4 h-4" />}
                                 {generatingAll ? 'Generating...' : 'Generate All Audio'}
                             </Button>
-                            <Button size="sm" variant="outline" className="border-white/10 hover:bg-white/5 text-indigo-400 gap-2">
+                            <Button size="sm" variant="outline" className="border-white/[0.08] hover:bg-white/[0.08] text-[#00FFB3] gap-2">
                                 <Plus className="w-4 h-4" />
                                 Add Module
                             </Button>
@@ -452,10 +452,10 @@ export default function AdminCourseEditClientPage() {
 
                     <div className="space-y-4">
                         {course.course_topics.map((topic: Topic, idx: number) => (
-                            <div key={topic.id} className="group border border-white/10 rounded-xl bg-[#0A0A0C] overflow-hidden transition-all hover:border-white/20">
+                            <div key={topic.id} className="group border border-white/[0.08] rounded-xl bg-white/[0.04] backdrop-blur-sm overflow-hidden transition-all hover:border-white/20">
                                 <div className="flex items-start justify-between p-4 bg-white/[0.02]">
                                     <div className="flex items-center gap-4">
-                                        <div className="h-6 w-6 rounded flex items-center justify-center bg-white/5 text-xs text-white/40 font-mono">
+                                        <div className="h-6 w-6 rounded flex items-center justify-center bg-white/[0.06] text-xs text-white/40 font-mono">
                                             {idx + 1}
                                         </div>
                                         <div>
@@ -478,32 +478,32 @@ export default function AdminCourseEditClientPage() {
                                                 size="sm" variant="ghost"
                                                 disabled={!!regenerating[topic.id]}
                                                 onClick={() => handleRegenerate(topic.id, 'audio')}
-                                                className="h-7 px-2 text-[10px] font-bold text-white/40 hover:text-[#00FFB3] gap-1"
+                                                className="h-7 px-2 text-[10px] font-bold text-white/40 hover:text-[#00FFB3] hover:bg-[#00FFB3]/10 gap-1"
                                                 title={topic.audio_url ? 'Re-generate module audio' : 'Generate module audio'}
                                             >
                                                 {regenerating[topic.id] === 'audio' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Headphones className="w-3 h-3" />}
                                                 {topic.audio_url ? 'Re-gen Audio' : 'Gen Audio'}
                                             </Button>
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-white/40 hover:text-white">
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/[0.08]">
                                                 <Settings className="w-4 h-4" />
                                             </Button>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="border-t border-white/5 p-2 space-y-1">
+                                <div className="border-t border-white/[0.05] p-2 space-y-1">
                                     {topic.course_lessons?.map((lesson: Lesson) => (
-                                        <div key={lesson.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-white/5 group/lesson transition-colors cursor-pointer">
+                                        <div key={lesson.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-white/[0.06] group/lesson transition-colors cursor-pointer">
                                             <div className="flex items-center gap-3">
                                                 <div className="text-white/20">
                                                     {lesson.content_type === 'video' ? <Video className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
                                                 </div>
-                                                <span className="text-sm text-white/80 font-medium group-hover/lesson:text-white">
+                                                <span className="text-sm text-white/65 font-medium group-hover/lesson:text-white transition-colors">
                                                     {lesson.title}
                                                 </span>
                                                 {/* Media status dots */}
                                                 <div className="flex items-center gap-1">
                                                     {lesson.video_url && (
-                                                        <span title="Video ready" className="w-1.5 h-1.5 rounded-full bg-[#4b98ad] shadow-[0_0_6px_#4b98ad]" />
+                                                        <span title="Video ready" className="w-1.5 h-1.5 rounded-full bg-[#00FFB3] shadow-[0_0_6px_#00FFB3]" />
                                                     )}
                                                 </div>
                                             </div>
@@ -513,7 +513,7 @@ export default function AdminCourseEditClientPage() {
                                                     variant="ghost"
                                                     disabled={!!regenerating[lesson.id]}
                                                     onClick={(e) => { e.stopPropagation(); handleRegenerate(lesson.id, 'video'); }}
-                                                    className="h-8 px-2 text-[10px] font-bold text-white/40 hover:text-[#4b98ad] gap-1.5"
+                                                    className="h-8 px-2 text-[10px] font-bold text-white/40 hover:text-[#00FFB3] hover:bg-[#00FFB3]/10 gap-1.5"
                                                     title={lesson.video_url ? 'Re-generate overview video' : 'Generate overview video'}
                                                 >
                                                     {regenerating[lesson.id] === 'video' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <PlayCircle className="w-3.5 h-3.5" />}
@@ -524,8 +524,8 @@ export default function AdminCourseEditClientPage() {
                                                     variant="ghost"
                                                     disabled={!!regenerating[lesson.id]}
                                                     onClick={(e) => { e.stopPropagation(); handleRegenerate(lesson.id, 'video_block'); }}
-                                                    className="h-8 px-2 text-[10px] font-bold text-white/40 hover:text-[#00FFB3] gap-1.5"
-                                                    title="Generate missing Veo video for video_snippet block in content"
+                                                    className="h-8 px-2 text-[10px] font-bold text-white/40 hover:text-[#00FFB3] hover:bg-[#00FFB3]/10 gap-1.5"
+                                                    title="Generate missing Kie video for video_snippet block in content"
                                                 >
                                                     {regenerating[lesson.id] === 'video_block' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
                                                     Block Vid

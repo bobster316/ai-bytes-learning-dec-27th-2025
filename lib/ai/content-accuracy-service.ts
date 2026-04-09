@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { OpenAI } from "openai";
 
 export interface AccuracyAuditResult {
     score: number; // 0-100
@@ -13,10 +13,9 @@ export interface AccuracyAuditResult {
 }
 
 export class ContentAccuracyService {
-    private static genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || "");
-    private static model = ContentAccuracyService.genAI.getGenerativeModel({
-        model: "gemini-2.0-flash",
-        generationConfig: { responseMimeType: "application/json" }
+    private static openai = new OpenAI({
+        baseURL: "https://openrouter.ai/api/v1",
+        apiKey: process.env.OPENROUTER_API_KEY || "",
     });
 
     /**
@@ -48,9 +47,14 @@ export class ContentAccuracyService {
         `;
 
         try {
-            const result = await this.model.generateContent(prompt);
-            const response = await result.response;
-            return JSON.parse(response.text());
+            const result = await this.openai.chat.completions.create({
+                model: "deepseek/deepseek-v3.2",
+                messages: [{ role: "user", content: prompt }],
+                response_format: { type: "json_object" }
+            });
+            const text = result.choices[0].message.content;
+            if (!text) throw new Error("Empty response from OpenRouter");
+            return JSON.parse(text);
         } catch (error) {
             console.error("Accuracy Audit Failed:", error);
             return {

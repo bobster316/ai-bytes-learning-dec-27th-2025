@@ -13,7 +13,7 @@ export function AudioRecapProminent({ audioUrl, onPlay }: AudioRecapProminentPro
     return (
         <div className="my-16 relative">
             {/* Background Glow */}
-            <div className="absolute -inset-4 bg-gradient-to-r from-[#00FFB3]/10 to-[#4b98ad]/10 blur-3xl opacity-50 rounded-full" />
+            <div className="absolute -inset-4 bg-gradient-to-r from-[#00FFB3]/10 to-[#9B8FFF]/10 blur-3xl opacity-50 rounded-full" />
 
             <div className="relative bg-[#0f0f1c]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-10 shadow-2xl overflow-hidden group">
 
@@ -35,10 +35,10 @@ export function AudioRecapProminent({ audioUrl, onPlay }: AudioRecapProminentPro
                     {/* Right: Content Section */}
                     <div className="flex-1 text-center md:text-left">
                         <h3 className="font-display text-[clamp(1.5rem,4vw,2rem)] font-extrabold text-white mb-4 leading-tight">
-                            Audio lesson recap
+                            Audio module recap
                         </h3>
                         <p className="font-body text-[17px] text-[#C8C8E0] mb-8 leading-relaxed max-w-xl">
-                            A concise audio summary of this lesson — great for reinforcing key concepts on the go.
+                            A concise audio summary of this module — great for reinforcing key concepts on the go.
                         </p>
 
                         <motion.button

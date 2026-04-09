@@ -4,7 +4,7 @@
 
 /* ─── Focus-visible: keyboard accessibility ─────────────────────── */
 :focus-visible {
-  outline: 2px solid #4b98ad;
+  outline: 2px solid #00C896;
   outline-offset: 3px;
   border-radius: 4px;
 }
@@ -26,7 +26,7 @@
 }
 
 :root {
-  --font-outfit: 'Outfit', sans-serif;
+  --font-outfit: Arial, sans-serif;
   --font-jetbrains-mono: 'JetBrains Mono', monospace;
   --font-cormorant: 'Cormorant Garamond', serif;
   --app-scale: 1;
@@ -34,7 +34,7 @@
 
   /* AI Bytes Design System */
   --pulse:   #00FFB3;
-  --iris:    #4b98ad;
+  --iris:    #9B8FFF;
   --amber:   #FFB347;
   --nova:    #FF6B6B;
   --bg:      #080810;
@@ -42,9 +42,12 @@
   --glass-border: rgba(255,255,255,0.06);
   --text-primary: #e8e8f0;
   --text-muted:   #6b6b80;
-  --font-display: var(--font-jakarta, 'Plus Jakarta Sans', sans-serif);
+  --font-syne:    'Arial Black', Arial, sans-serif;
+  --font-jakarta: Arial, sans-serif;
+  --font-display: Arial, sans-serif;
   --font-body-serif: var(--font-instrument, 'Instrument Serif', serif);
-  --font-mono:    var(--font-dm-mono, 'DM Mono', monospace);
+  --font-mono:    Consolas, 'Courier New', monospace;
+  --font-dm-mono: Consolas, 'Courier New', monospace;
 }
 
 :root {
@@ -81,21 +84,27 @@
   --navy-blue: #0A1628;
   --dark-navy: #020617;
   --obsidian: #0B0E19;
-  --royal-blue: #4b98ad;
-  --electric-indigo: #06b6d4;
-  --cyan-glow: #4b98ad;
+  --royal-blue: #00C896;
+  --electric-indigo: #00C896;
+  --cyan-glow: #00C896;
 
   --pure-white: #FFFFFF;
   --soft-white: #E0E0E0;
   --off-white: #F8FAFC;
 
-  /* Theme Defaults */
+  /* Theme Defaults — Light */
   --background: var(--off-white);
   --foreground: var(--navy-blue);
+  --page-bg: #F8FAFC;
+  --page-fg: #0A1628;
+  --page-border: rgba(0, 0, 0, 0.08);
+  --page-surface: rgba(0, 0, 0, 0.03);
+  --page-surface-hover: rgba(0, 0, 0, 0.06);
+  --page-muted: rgba(0, 0, 0, 0.45);
 
-  --primary: #4b98ad;
-  --primary-glow: rgba(75, 152, 173, 0.4);
-  --primary-foreground: #020617;
+  --primary: #00C896;
+  --primary-glow: rgba(0, 200, 150, 0.2);
+  --primary-foreground: #030305;
   --muted: #475569;
   --mid-grey: #64748B;
   --slate-900: #0F172A;
@@ -123,10 +132,16 @@
 .dark {
   --background: var(--obsidian);
   --foreground: var(--pure-white);
-  --primary: #4b98ad;
-  --primary-glow: rgba(75, 152, 173, 0.3);
-  --primary-foreground: #020617;
-  --accent: #4b98ad;
+  --page-bg: #080810;
+  --page-fg: #e8e8f0;
+  --page-border: rgba(255, 255, 255, 0.07);
+  --page-surface: rgba(255, 255, 255, 0.03);
+  --page-surface-hover: rgba(255, 255, 255, 0.06);
+  --page-muted: rgba(255, 255, 255, 0.45);
+  --primary: #00C896;
+  --primary-glow: rgba(0, 200, 150, 0.2);
+  --primary-foreground: #030305;
+  --accent: #00C896;
   --muted: #94A3B8;
   --mid-grey: #64748B;
   --glass-bg: rgba(15, 23, 42, 0.6);
@@ -136,9 +151,9 @@
 
   /* ── THEME ENGINE (A+ GRADE) ── */
   &[data-theme="quantum"] {
-    --primary: #4b98ad;
-    --primary-glow: rgba(75, 152, 173, 0.3);
-    --accent: #4b98ad;
+    --primary: #00C896;
+    --primary-glow: rgba(0, 200, 150, 0.2);
+    --accent: #00C896;
   }
 
   &[data-theme="neural"] {
@@ -154,8 +169,8 @@
   }
 
   &[data-theme="future"] {
-    --primary: #4b98ad;
-    --primary-glow: rgba(75, 152, 173, 0.3);
+    --primary: #00C896;
+    --primary-glow: rgba(0, 200, 150, 0.2);
     --accent: #8B5CF6;
   }
 
@@ -191,19 +206,13 @@ html {
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-outfit), sans-serif;
+  background: var(--page-bg);
+  color: var(--page-fg);
+  font-family: Arial, sans-serif;
   font-size: var(--fs-body);
   line-height: var(--lh-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-.dark body {
-  background: var(--obsidian);
-  color: #E2E8F0;
-  /* Slate-200 for luxury feel */
 }
 
 .app-scale {
@@ -227,6 +236,91 @@ video {
 
 .page-shell * {
   min-width: 0;
+}
+
+/*
+  ── Light-Mode Theme Override ─────────────────────────────────────────
+  When html does NOT have .dark, convert dark-background-only classes so
+  all content remains readable on the light (#F8FAFC) background.
+
+  Scope: only within .page-shell so admin/auth panels that may still use
+  hardcoded dark values are not accidentally affected.
+*/
+
+/* White text → page foreground.
+   Exclude elements that carry their own dark background (teal buttons,
+   dark badges) by scoping to elements WITHOUT an explicit bg- class. */
+html:not(.dark) .page-shell .text-white {
+  color: var(--page-fg) !important;
+}
+
+/* Semi-transparent white text → dark navy in light mode.
+   Floor is raised so every value passes WCAG AA (4.5:1) on a white background. */
+html:not(.dark) .page-shell .text-white\/90 { color: rgba(10,22,40,0.97) !important; }
+html:not(.dark) .page-shell .text-white\/80 { color: rgba(10,22,40,0.95) !important; }
+html:not(.dark) .page-shell .text-white\/70 { color: rgba(10,22,40,0.92) !important; }
+html:not(.dark) .page-shell .text-white\/65 { color: rgba(10,22,40,0.90) !important; }
+html:not(.dark) .page-shell .text-white\/60 { color: rgba(10,22,40,0.88) !important; }
+html:not(.dark) .page-shell .text-white\/55 { color: rgba(10,22,40,0.85) !important; }
+html:not(.dark) .page-shell .text-white\/50 { color: rgba(10,22,40,0.82) !important; }
+html:not(.dark) .page-shell .text-white\/45 { color: rgba(10,22,40,0.80) !important; }
+html:not(.dark) .page-shell .text-white\/40 { color: rgba(10,22,40,0.78) !important; }
+html:not(.dark) .page-shell .text-white\/35 { color: rgba(10,22,40,0.75) !important; }
+html:not(.dark) .page-shell .text-white\/32 { color: rgba(10,22,40,0.73) !important; }
+html:not(.dark) .page-shell .text-white\/30 { color: rgba(10,22,40,0.72) !important; }
+html:not(.dark) .page-shell .text-white\/28 { color: rgba(10,22,40,0.70) !important; }
+html:not(.dark) .page-shell .text-white\/25 { color: rgba(10,22,40,0.68) !important; }
+html:not(.dark) .page-shell .text-white\/22 { color: rgba(10,22,40,0.65) !important; }
+html:not(.dark) .page-shell .text-white\/20 { color: rgba(10,22,40,0.62) !important; }
+html:not(.dark) .page-shell .text-white\/15 { color: rgba(10,22,40,0.58) !important; }
+html:not(.dark) .page-shell .text-white\/10 { color: rgba(10,22,40,0.54) !important; }
+
+/* Cards / surfaces with subtle white overlays (e.g. bg-white/[0.03]) →
+   use equivalent dark overlay in light mode.
+   Only targets bracket-notation transparencies (bg-white/[0.xx]),
+   NOT standard fractions like bg-white/95 (header bg). */
+html:not(.dark) .page-shell [class*="bg-white/[0"] {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Borders using white/% opacity → use dark equivalent in light mode */
+html:not(.dark) .page-shell [class*="border-white/"] {
+  border-color: rgba(0, 0, 0, 0.14) !important;
+}
+
+/* Table/grid dividers using white/% opacity → dark equivalent in light mode */
+html:not(.dark) .page-shell [class*="divide-white/"] > * + * {
+  border-color: rgba(0, 0, 0, 0.07) !important;
+}
+
+/* Teal accent colour: use a darker shade for light-bg readability */
+html:not(.dark) .page-shell [class*="text-[#00FFB3]"] {
+  color: #00976E !important;
+}
+
+/* Keep text on solid teal buttons black (they already use text-black in most places) */
+html:not(.dark) .page-shell .keep-white {
+  color: #ffffff !important;
+}
+
+/* .keep-dark: sections that have intentional dark bg (video overlays, etc.)
+   all text inside them keeps white colour even in light mode.
+   The container rule provides an inheritance fallback for unclassed text. */
+html:not(.dark) .page-shell .keep-dark {
+  color: #ffffff;
+}
+html:not(.dark) .page-shell .keep-dark .text-white {
+  color: #ffffff !important;
+}
+html:not(.dark) .page-shell .keep-dark [class*="text-white/"] {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+/* Preserve border and bg overrides inside keep-dark sections */
+html:not(.dark) .page-shell .keep-dark [class*="border-white/"] {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+html:not(.dark) .page-shell .keep-dark [class*="bg-white/[0"] {
+  background-color: rgba(255, 255, 255, 0.04) !important;
 }
 
 @media (max-width: 1024px) {
@@ -288,15 +382,15 @@ video {
   z-index: -1;
   margin: -1px;
   border-radius: inherit;
-  background: linear-gradient(135deg, rgba(75, 152, 173, 0.5), rgba(124, 58, 237, 0.5));
+  background: linear-gradient(135deg, rgba(0, 200, 150, 0.45), rgba(0, 255, 179, 0.2));
 }
 
 .mesh-gradient {
   background-color: #030305;
   background-image:
-    radial-gradient(at 0% 0%, hsla(188, 100%, 50%, 0.1) 0, transparent 50%),
-    radial-gradient(at 50% 0%, hsla(262, 70%, 50%, 0.1) 0, transparent 50%),
-    radial-gradient(at 100% 0%, hsla(188, 100%, 50%, 0.1) 0, transparent 50%);
+    radial-gradient(at 0% 0%, hsla(162, 100%, 39%, 0.1) 0, transparent 50%),
+    radial-gradient(at 50% 0%, hsla(172, 100%, 39%, 0.07) 0, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(162, 100%, 39%, 0.1) 0, transparent 50%);
 }
 
 /* 
@@ -306,7 +400,7 @@ video {
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  background-image: linear-gradient(135deg, #4b98ad, #124eb1);
+  background-image: linear-gradient(135deg, #00FFB3, #00C896);
 }
 
 /* Animations from previous file + new ones */
@@ -424,7 +518,7 @@ video {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #7C3AED;
+  color: #00C896;
   margin-bottom: 0.5rem;
   display: block;
 }
@@ -467,8 +561,8 @@ video {
 
 .btn-expand-all:hover,
 .btn-download-syllabus:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(124, 58, 237, 0.3);
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(0, 200, 150, 0.3);
   color: #F9FAFB;
   transform: translateY(-1px);
 }
@@ -484,7 +578,7 @@ video {
 }
 
 .module-container:hover {
-  border-color: rgba(124, 58, 237, 0.3);
+  border-color: rgba(0, 200, 150, 0.2);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
@@ -540,12 +634,12 @@ video {
   width: 56px;
   height: 56px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+  background: linear-gradient(135deg, #00C896 0%, #00FFB3 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 200, 150, 0.2);
   flex-shrink: 0;
 }
 
@@ -1619,7 +1713,7 @@ video {
 
 /* Lesson body typography baseline */
 .lesson-body p, .lesson-body li {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 1.05rem;
   line-height: 1.85;
   color: #e8e8f0;

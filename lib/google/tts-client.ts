@@ -16,9 +16,16 @@ export class GoogleTTSClient {
     }
 
     /**
-     * Generates speech from text using Google Cloud TTS Neural2 voices.
+     * Generates speech from text or SSML using Google Cloud TTS Neural2 voices.
+     * Pass text containing <break> tags — it will be auto-wrapped in <speak> for SSML.
+     * Returns MP3 buffer.
      */
-    async generateSpeech(text: string, voiceId: string = 'en-GB-Neural2-A'): Promise<Buffer> {
+    async generateSpeech(text: string, voiceId: string = 'en-GB-Neural2-B'): Promise<Buffer> {
+        // If text contains SSML break/prosody tags, send as SSML input
+        const hasSsml = /<break|<prosody|<emphasis/.test(text);
+        const input = hasSsml
+            ? { ssml: `<speak>${text}</speak>` }
+            : { text };
 
         try {
             const client = await this.auth.getClient();
@@ -29,17 +36,16 @@ export class GoogleTTSClient {
             }
 
             const requestBody = {
-                input: { text },
+                input,
                 voice: {
                     languageCode: voiceId.split('-').slice(0, 2).join('-'),
                     name: voiceId
                 },
                 audioConfig: {
-                    audioEncoding: 'LINEAR16', // WAV format for deterministic duration
+                    audioEncoding: 'MP3',
                     sampleRateHertz: 24000,
-                    effectsProfileId: ['small-bluetooth-speaker-class-device'],
                     pitch: 0,
-                    speakingRate: 1
+                    speakingRate: 0.95, // Slightly slower than default — clearer for learning content
                 }
             };
 

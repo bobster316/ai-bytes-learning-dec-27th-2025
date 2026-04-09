@@ -2,6 +2,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCourseDNARender } from "@/lib/ai/generate-course-dna";
 import { CourseDNAProvider } from "@/components/course/course-dna-provider";
+import { CourseBackground } from "@/components/course/course-background";
 
 export default async function CourseLayout({
     params,
@@ -22,6 +23,7 @@ export default async function CourseLayout({
 
     return (
         <CourseDNAProvider render={render}>
+            <CourseBackground />
             {children}
         </CourseDNAProvider>
     );

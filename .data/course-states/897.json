@@ -1,0 +1,61 @@
+{
+  "course_id": 897,
+  "course_topic": "Generative AI for Everyone",
+  "domain_history": [
+    "Travel",
+    "Nature",
+    "Culinary",
+    "Craftsmanship"
+  ],
+  "structure_history": [
+    "The Hook",
+    "The Journey",
+    "The Contrast",
+    "The Build"
+  ],
+  "tone_history": [
+    "Warm Mentor",
+    "Curious Explorer",
+    "Confident Expert",
+    "Playful Storyteller"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "3D model sampling probability AI",
+    "AI language model token generation animation",
+    "AI text interface animation",
+    "text transformation animation data",
+    "ai prompt refinement animation"
+  ],
+  "used_image_urls": [
+    "https://v3b.fal.media/files/b/0a95233a/5WjBLiwfHRT-2xCTwIzMP_acd7b3eb1ec64ca7b163554c624e173e.jpg",
+    "https://v3b.fal.media/files/b/0a95233a/Be5C9EQt8wx3s8ZVuF_A-_f86f6bd61dac4316aced672930e1003c.jpg",
+    "https://v3b.fal.media/files/b/0a952342/0uHkbCdajrJJt6A7guag7_1d8a9020ad7a4df38265358891418504.jpg",
+    "https://v3b.fal.media/files/b/0a952342/OLj-olXleg6sW2s60rxAw_a8a3db93016b4554ae0846d99421f1a2.jpg",
+    "https://v3b.fal.media/files/b/0a952342/VygPC4ykAemqkZFqjUyuy_723a705733914102a87863f6c7ec23c8.jpg",
+    "https://v3b.fal.media/files/b/0a95234c/E04hULnpAA94kXCMrnMtj_fab96c7d9cc941deb019a6f670d8f5f2.jpg",
+    "https://v3b.fal.media/files/b/0a95234c/YFpsp9AWzFY_jTJy4jCgv_c1b17a31e4b44bde89f96ba005940af5.jpg",
+    "https://v3b.fal.media/files/b/0a952355/P-hqZuLrkpXiOWK0AJw9q_02e8db02cafb46069295e649a1944d07.jpg",
+    "https://v3b.fal.media/files/b/0a9525fa/Wu_Q8qUevRGMqS1aGAu2S_2e99d8051d814d82a9a0895410b954a8.jpg"
+  ],
+  "used_video_urls": [],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 2,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 5,
+    "type_cards": 2,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 3,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

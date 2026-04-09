@@ -16,7 +16,8 @@ import { VideoGenerationService } from '../services/video-generation';
 import { instance as cache } from '../cache/cache-service';
 import { getEnhancedPlanningPrompt } from './prompts/enhanced-planning-prompt';
 
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const MODEL_NAME = 'deepseek/deepseek-v3.2';
 
 // ⚙️ FEATURE FLAG: Enhanced Prompt System (Tier 1 Improvements)
 // Set to TRUE to enable improved quality verification, pedagogical architecture, and industry grounding
@@ -96,13 +97,11 @@ function sanitizeJson(text: string): string {
 
 abstract class BaseAgent {
     protected async makeRequest(prompt: string, isJson: boolean = true, allowRepair: boolean = true) {
-        const contents = [{
-            parts: [{ text: prompt }]
-        }];
+        const messages = [{ role: 'user', content: prompt }];
 
-        if (!process.env.GEMINI_API_KEY) {
-            console.error("CRITICAL: GEMINI_API_KEY is missing in BaseAgent!");
-            throw new Error("GEMINI_API_KEY is missing");
+        if (!process.env.OPENROUTER_API_KEY) {
+            console.error("CRITICAL: OPENROUTER_API_KEY is missing in BaseAgent!");
+            throw new Error("OPENROUTER_API_KEY is missing");
         }
 
         // --- Timeout & Retry Logic ---
@@ -114,15 +113,19 @@ abstract class BaseAgent {
             const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
             try {
-                const response = await fetch(`${GEMINI_URL}?key=${process.env.GEMINI_API_KEY}`, {
+                const response = await fetch(`${OPENROUTER_URL}`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+                        'HTTP-Referer': 'http://localhost:3000'
+                    },
                     body: JSON.stringify({
-                        contents,
-                        generationConfig: {
-                            temperature: 0.7,
-                            responseMimeType: isJson ? "application/json" : "text/plain",
-                        }
+                        model: MODEL_NAME,
+                        messages,
+                        temperature: 0.7,
+                        max_tokens: 8000,
+                        ...(isJson ? { response_format: { type: "json_object" } } : {})
                     }),
                     signal: controller.signal
                 });
@@ -154,9 +157,9 @@ abstract class BaseAgent {
                 }
 
                 const data = await response.json();
-                let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                let text = data.choices?.[0]?.message?.content;
 
-                if (!text) throw new Error("Empty response from Gemini API");
+                if (!text) throw new Error("Empty response from OpenRouter API");
 
                 if (isJson) {
                     try {

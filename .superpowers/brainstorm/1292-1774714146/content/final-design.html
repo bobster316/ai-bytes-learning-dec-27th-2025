@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Course Curriculum — Final Design</title>
+<style>
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; font-weight: 700; }
+
+
+:root {
+  --pulse: #00FFB3;
+  --iris: #9B8FFF;
+  --amber: #FFB347;
+  --nova: #FF6B6B;
+  --bg: #07070e;
+  --surface: #0d0d1a;
+  --border: rgba(255,255,255,0.07);
+}
+
+body {
+  background: var(--bg);
+  color: #ffffff;
+  font-family: Arial, sans-serif !important;
+  font-weight: 700;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── PAGE WRAPPER ── */
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 48px 24px 120px;
+}
+
+/* ── SECTION LABEL ── */
+.section-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+.section-eyebrow-line {
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(90deg, rgba(255,255,255,0.1), transparent);
+}
+.section-eyebrow-text {
+  font-family: Consolas, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+}
+.section-eyebrow-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--pulse);
+  box-shadow: 0 0 8px var(--pulse);
+}
+
+/* ── STATS ROW ── */
+.stats-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.75);
+}
+.stat-pill-icon { font-size: 14px; }
+.stat-pill strong { color: #ffffff; font-weight: 800; }
+
+/* ══════════════════════════════════════════════
+   MODULE — COLLAPSED STATE
+══════════════════════════════════════════════ */
+.module-wrap {
+  margin-bottom: 2px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: border-color 0.3s;
+}
+.module-wrap:hover { border-color: rgba(255,255,255,0.11); }
+.module-wrap.open { border-color: rgba(255,255,255,0.1); }
+
+.module-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0;
+  cursor: pointer;
+  overflow: hidden;
+  min-height: 80px;
+}
+
+/* Colour wash — unique per module */
+.module-header-wash {
+  position: absolute;
+  inset: 0;
+  opacity: 1;
+  pointer-events: none;
+}
+
+/* Big ghost number */
+.module-ghost-num {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Arial Black', 'Arial', sans-serif;
+  font-weight: 900;
+  font-size: 110px;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Module number badge */
+.module-num-badge {
+  width: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+.module-num-label { display: none; }
+.module-num-value {
+  font-family: 'Arial Black', 'Arial', sans-serif;
+  font-weight: 900;
+  font-size: 34px;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+/* Divider */
+.module-num-divider {
+  width: 1px;
+  height: 40px;
+  background: rgba(255,255,255,0.08);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
+/* Module content */
+.module-content {
+  flex: 1;
+  padding: 20px 20px 20px 20px;
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+}
+.module-tag {
+  font-family: Consolas, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin-bottom: 7px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.module-tag-sep {
+  width: 16px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.3;
+  display: inline-block;
+}
+.module-title {
+  font-family: 'Arial Black', 'Arial', sans-serif;
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  margin-bottom: 10px;
+  line-height: 1.15;
+}
+.module-meta-chips {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.module-chip {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 5px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.85);
+}
+
+/* Progress arc + expand arrow */
+.module-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 20px 16px 12px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+.progress-ring-wrap { position: relative; }
+.progress-ring-wrap svg { display: block; }
+.progress-ring-pct {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+}
+.expand-arrow {
+  font-size: 14px;
+  color: rgba(255,255,255,0.6);
+  transition: transform 0.3s;
+}
+.module-wrap.open .expand-arrow { transform: rotate(180deg); }
+
+/* ══════════════════════════════════════════════
+   LESSONS — EXPANDED STATE (Option B)
+══════════════════════════════════════════════ */
+.lessons-panel {
+  display: none;
+  flex-direction: column;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.module-wrap.open .lessons-panel { display: flex; }
+
+.lesson-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 24px;
+  cursor: pointer;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.25s;
+}
+.lesson-row:last-child { border-bottom: none; }
+
+/* Atmospheric image background */
+.lesson-bg-image {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transition: opacity 0.35s ease;
+  opacity: 0;
+}
+.lesson-bg-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    rgba(7,7,14,0.92) 0%,
+    rgba(7,7,14,0.70) 45%,
+    rgba(7,7,14,0.88) 100%
+  );
+  pointer-events: none;
+}
+.lesson-row:hover .lesson-bg-image { opacity: 0.18; }
+.lesson-row:hover { background: rgba(255,255,255,0.015); }
+
+/* Lesson number */
+.lesson-num {
+  font-family: Consolas, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.65);
+  flex-shrink: 0;
+  width: 24px;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+/* Lesson body */
+.lesson-body {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  z-index: 2;
+}
+.lesson-title {
+  font-family: Arial, sans-serif !important;
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lesson-objective {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.72);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Duration */
+.lesson-dur {
+  font-family: Consolas, monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.62);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
+/* Thumbnail — small crisp right-side */
+.lesson-thumb {
+  width: 68px;
+  height: 46px;
+  border-radius: 7px;
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: transform 0.25s, border-color 0.25s;
+}
+.lesson-row:hover .lesson-thumb {
+  transform: scale(1.05);
+  border-color: rgba(255,255,255,0.14);
+}
+.lesson-thumb-inner {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+
+/* Play button */
+.lesson-play {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.12);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px;
+  color: rgba(255,255,255,0.35);
+  flex-shrink: 0;
+  transition: border-color 0.25s, color 0.25s, background 0.25s;
+  position: relative; z-index: 2;
+}
+.lesson-row:hover .lesson-play {
+  border-color: var(--pulse);
+  color: var(--pulse);
+  background: rgba(0,255,179,0.08);
+}
+
+/* Module quiz card */
+.quiz-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: rgba(255,255,255,0.02);
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.quiz-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.quiz-body { flex: 1; }
+.quiz-label { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.75); }
+.quiz-title { font-size: 15px; font-weight: 800; color: #fff; }
+.quiz-btn {
+  padding: 7px 16px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: transparent;
+  color: rgba(255,255,255,0.85);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: Arial, sans-serif !important;
+}
+.quiz-btn:hover { border-color: var(--pulse); color: var(--pulse); }
+
+/* ══════════════════════════════════════════════
+   CTA SECTION
+══════════════════════════════════════════════ */
+.cta-section {
+  margin-top: 40px;
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  padding: 40px 40px;
+  border: 1px solid rgba(75,152,173,0.18);
+}
+.cta-bg {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(75,152,173,0.08) 0%, rgba(75,152,173,0.02) 50%, rgba(155,143,255,0.04) 100%);
+}
+.cta-grain {
+  position: absolute; inset: 0;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+.cta-glow {
+  position: absolute;
+  top: -60px; left: -60px;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(75,152,173,0.12), transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+}
+.cta-content { position: relative; z-index: 2; text-align: center; }
+.cta-eyebrow {
+  font-family: Consolas, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(75,152,173,1);
+  margin-bottom: 14px;
+}
+.cta-title {
+  font-family: 'Arial Black', 'Arial', sans-serif;
+  font-weight: 900;
+  font-size: 32px;
+  letter-spacing: -0.04em;
+  color: #fff;
+  margin-bottom: 10px;
+  line-height: 1.1;
+}
+.cta-sub {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.78);
+  max-width: 380px;
+  margin: 0 auto 28px;
+  line-height: 1.6;
+}
+.cta-actions { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.cta-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 28px;
+  border-radius: 14px;
+  background: #4b98ad;
+  color: #07070e;
+  font-family: 'Arial Black', 'Arial', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  letter-spacing: -0.01em;
+  box-shadow: 0 0 30px rgba(75,152,173,0.25);
+  transition: box-shadow 0.3s, transform 0.2s;
+}
+.cta-btn-primary:hover {
+  box-shadow: 0 0 50px rgba(75,152,173,0.4);
+  transform: translateY(-1px);
+}
+.cta-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 24px;
+  border-radius: 14px;
+  background: transparent;
+  color: rgba(255,255,255,0.85);
+  font-family: Arial, sans-serif !important;
+  font-weight: 700;
+  font-size: 14px;
+  border: 1px solid rgba(255,255,255,0.18);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.cta-btn-secondary:hover {
+  border-color: rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.7);
+}
+.cta-trust {
+  margin-top: 16px;
+  font-family: Consolas, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* ── MOTION ANNOTATION BADGE ── */
+.motion-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 9px;
+  font-family: Consolas, monospace;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(155,143,255,0.1);
+  border: 1px solid rgba(155,143,255,0.2);
+  color: rgba(155,143,255,0.7);
+  letter-spacing: 0.05em;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+/* ── PAGE INTRO ── */
+.page-intro {
+  text-align: center;
+  padding: 32px 0 48px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  margin-bottom: 48px;
+}
+.page-intro-label {
+  font-family: Consolas, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--pulse);
+  margin-bottom: 12px;
+}
+.page-intro-title {
+  font-family: 'Arial Black', 'Arial', sans-serif;
+  font-size: 26px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -0.03em;
+  margin-bottom: 10px;
+  line-height: 1.15;
+}
+.page-intro-sub {
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.68);
+  line-height: 1.6;
+}
+
+/* ── fake image fills ── */
+.fill-teal    { background: linear-gradient(135deg,#061c1c,#0a2e2e); }
+.fill-iris    { background: linear-gradient(135deg,#0e0c1e,#1a1435); }
+.fill-amber   { background: linear-gradient(135deg,#1a1005,#2e1e08); }
+.fill-nova    { background: linear-gradient(135deg,#1a0808,#2e1010); }
+.fill-teal2   { background: linear-gradient(135deg,#081a14,#0e2e22); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- PAGE INTRO -->
+  <div class="page-intro">
+    <div class="page-intro-label">Final Design — High Fidelity Mockup</div>
+    <div class="page-intro-title">Course Curriculum · Cinematic Scroll + Atmospheric Lessons</div>
+    <div class="page-intro-sub">
+      Click any module header to expand/collapse · Hover lesson rows to see the atmospheric thumbnail effect<br>
+      <span class="motion-tag">⬡ motion</span> badges show where animations fire in production
+    </div>
+  </div>
+
+  <!-- SECTION EYEBROW -->
+  <div class="section-eyebrow">
+    <div class="section-eyebrow-dot"></div>
+    <div class="section-eyebrow-text">Curriculum</div>
+    <div class="section-eyebrow-line"></div>
+  </div>
+
+  <!-- STATS ROW -->
+  <div class="stats-row">
+    <div class="stat-pill">
+      <span class="stat-pill-icon">⬡</span>
+      <span><strong>3</strong> modules</span>
+    </div>
+    <div class="stat-pill">
+      <span class="stat-pill-icon">◈</span>
+      <span><strong>13</strong> lessons</span>
+    </div>
+    <div class="stat-pill">
+      <span class="stat-pill-icon">◷</span>
+      <span><strong>3h 15m</strong> total</span>
+    </div>
+    <div class="stat-pill">
+      <span class="stat-pill-icon">◎</span>
+      <span><strong>3</strong> knowledge checks</span>
+    </div>
+  </div>
+
+  <!-- ═══════════ MODULE 1 — OPEN ═══════════ -->
+  <div class="module-wrap open" id="mod1">
+    <div class="module-header" onclick="toggleModule('mod1')">
+
+      <!-- Colour wash: teal -->
+      <div class="module-header-wash" style="background:linear-gradient(105deg,rgba(0,255,179,0.09) 0%,rgba(0,255,179,0.03) 45%,transparent 70%)"></div>
+
+      <!-- Ghost number -->
+      <div class="module-ghost-num" style="color:#00FFB3;opacity:0.055">01</div>
+
+      <!-- Number badge -->
+      <div class="module-num-badge">
+        <div class="module-num-label" style="color:#00FFB3">MOD</div>
+        <div class="module-num-value" style="color:#00FFB3">01</div>
+      </div>
+      <div class="module-num-divider"></div>
+
+      <!-- Content -->
+      <div class="module-content">
+        <div class="module-tag" style="color:#00FFB3">Foundations</div>
+        <div class="module-title">Foundations of Artificial Intelligence</div>
+        <div class="module-meta-chips">
+          <span class="module-chip">4 lessons</span>
+          <span class="module-chip">60 min</span>
+          <span class="module-chip">Beginner</span>
+          <span class="module-chip">Quiz included</span>
+          <span class="motion-tag">⬡ stagger-in on scroll</span>
+        </div>
+      </div>
+
+      <!-- Progress ring -->
+      <div class="module-right">
+        <div class="progress-ring-wrap">
+          <svg width="44" height="44" viewBox="0 0 44 44">
+            <circle cx="22" cy="22" r="17" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="2.5"/>
+            <circle cx="22" cy="22" r="17" fill="none" stroke="#00FFB3" stroke-width="2.5"
+              stroke-dasharray="106.8" stroke-dashoffset="26.7"
+              stroke-linecap="round" transform="rotate(-90 22 22)"/>
+          </svg>
+          <div class="progress-ring-pct">75%</div>
+        </div>
+        <div class="expand-arrow">▾</div>
+      </div>
+    </div>
+
+    <!-- LESSONS -->
+    <div class="lessons-panel">
+
+      <div class="lesson-row">
+        <div class="lesson-bg-image" style="background-image:url('https://images.unsplash.com/photo-1677442136019-21780ecad979?w=800&q=80')"></div>
+        <div class="lesson-bg-gradient"></div>
+        <div class="lesson-num">01</div>
+        <div class="lesson-body">
+          <div class="lesson-title">What is Machine Learning?</div>
+          <div class="lesson-objective">Understand how machines learn patterns from data</div>
+        </div>
+        <div class="lesson-dur">15m</div>
+        <div class="lesson-thumb" style="background-image:url('https://images.unsplash.com/photo-1677442136019-21780ecad979?w=120&q=80');background-size:cover;background-position:center"></div>
+        <div class="lesson-play">▶</div>
+      </div>
+
+      <div class="lesson-row">
+        <div class="lesson-bg-image" style="background-image:url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80')"></div>
+        <div class="lesson-bg-gradient"></div>
+        <div class="lesson-num">02</div>
+        <div class="lesson-body">
+          <div class="lesson-title">Neural Networks Explained</div>
+          <div class="lesson-objective">How layers of neurons process and transform information</div>
+        </div>
+        <div class="lesson-dur">15m</div>
+        <div class="lesson-thumb" style="background-image:url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=120&q=80');background-size:cover;background-position:center"></div>
+        <div class="lesson-play">▶</div>
+      </div>
+
+      <div class="lesson-row">
+        <div class="lesson-bg-image" style="background-image:url('https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&q=80')"></div>
+        <div class="lesson-bg-gradient"></div>
+        <div class="lesson-num">03</div>
+        <div class="lesson-body">
+          <div class="lesson-title">Training vs Inference</div>
+          <div class="lesson-objective">The two phases every AI model goes through</div>
+        </div>
+        <div class="lesson-dur">15m</div>
+        <div class="lesson-thumb" style="background-image:url('https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=120&q=80');background-size:cover;background-position:center"></div>
+        <div class="lesson-play">▶</div>
+      </div>
+
+      <div class="lesson-row">
+        <div class="lesson-bg-image" style="background-image:url('https://images.unsplash.com/photo-1509228627152-72ae9ae6848d?w=800&q=80')"></div>
+        <div class="lesson-bg-gradient"></div>
+        <div class="lesson-num">04</div>
+        <div class="lesson-body">
+          <div class="lesson-title">Deep Learning Basics</div>
+          <div class="lesson-objective">Why depth in networks changes everything</div>
+        </div>
+        <div class="lesson-dur">15m</div>
+        <div class="lesson-thumb" style="background-image:url('https://images.unsplash.com/photo-1509228627152-72ae9ae6848d?w=120&q=80');background-size:cover;background-position:center"></div>
+        <div class="lesson-play">▶</div>
+      </div>
+
+      <!-- Module quiz -->
+      <div class="quiz-row">
+        <div class="quiz-icon" style="background:rgba(0,255,179,0.08);border:1px solid rgba(0,255,179,0.15)">🎯</div>
+        <div class="quiz-body">
+          <div class="quiz-label">Knowledge Check</div>
+          <div class="quiz-title">Foundations of AI — Quiz</div>
+        </div>
+        <button class="quiz-btn">Start Quiz →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ MODULE 2 — COLLAPSED ═══════════ -->
+  <div class="module-wrap" id="mod2">
+    <div class="module-header" onclick="toggleModule('mod2')">
+      <div class="module-header-wash" style="background:linear-gradient(105deg,rgba(155,143,255,0.09) 0%,rgba(155,143,255,0.03) 45%,transparent 70%)"></div>
+      <div class="module-ghost-num" style="color:#9B8FFF;opacity:0.055">02</div>
+      <div class="module-num-badge">
+        <div class="module-num-label" style="color:#9B8FFF">MOD</div>
+        <div class="module-num-value" style="color:#9B8FFF">02</div>
+      </div>
+      <div class="module-num-divider"></div>
+      <div class="module-content">
+        <div class="module-tag" style="color:#9B8FFF">Generative AI</div>
+        <div class="module-title">Generative AI & Large Language Models</div>
+        <div class="module-meta-chips">
+          <span class="module-chip">5 lessons</span>
+          <span class="module-chip">75 min</span>
+          <span class="module-chip">Intermediate</span>
+          <span class="module-chip">Quiz included</span>
+        </div>
+      </div>
+      <div class="module-right">
+        <div class="progress-ring-wrap">
+          <svg width="44" height="44" viewBox="0 0 44 44">
+            <circle cx="22" cy="22" r="17" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="2.5"/>
+            <circle cx="22" cy="22" r="17" fill="none" stroke="#9B8FFF" stroke-width="2.5"
+              stroke-dasharray="106.8" stroke-dashoffset="74.8"
+              stroke-linecap="round" transform="rotate(-90 22 22)"/>
+          </svg>
+          <div class="progress-ring-pct">30%</div>
+        </div>
+        <div class="expand-arrow">▾</div>
+      </div>
+    </div>
+    <div class="lessons-panel">
+      <div class="lesson-row">
+        <div class="lesson-bg-image" style="background-image:url('https://images.unsplash.com/photo-1655720828018-edd2daec9349?w=800&q=80')"></div>
+        <div class="lesson-bg-gradient"></div>
+        <div class="lesson-num">01</div>
+        <div class="lesson-body">
+          <div class="lesson-title">How LLMs Actually Work</div>
+          <div class="lesson-objective">Tokens, context windows, and next-token prediction</div>
+        </div>
+        <div class="lesson-dur">15m</div>
+        <div class="lesson-thumb" style="background-image:url('https://images.unsplash.com/photo-1655720828018-edd2daec9349?w=120&q=80');background-size:cover;background-position:center"></div>
+        <div class="lesson-play">▶</div>
+      </div>
+      <div class="lesson-row">
+        <div class="lesson-bg-image" style="background-image:url('https://images.unsplash.com/photo-1664575602554-2087b04935a5?w=800&q=80')"></div>
+        <div class="lesson-bg-gradient"></div>
+        <div class="lesson-num">02</div>
+        <div class="lesson-body">
+          <div class="lesson-title">GPT-4 vs Gemini vs Claude</div>
+          <div class="lesson-objective">What makes each model different under the hood</div>
+        </div>
+        <div class="lesson-dur">15m</div>
+        <div class="lesson-thumb" style="background-image:url('https://images.unsplash.com/photo-1664575602554-2087b04935a5?w=120&q=80');background-size:cover;background-position:center"></div>
+        <div class="lesson-play">▶</div>
+      </div>
+      <div class="quiz-row">
+        <div class="quiz-icon" style="background:rgba(155,143,255,0.08);border:1px solid rgba(155,143,255,0.15)">🎯</div>
+        <div class="quiz-body">
+          <div class="quiz-label">Knowledge Check</div>
+          <div class="quiz-title">Generative AI — Quiz</div>
+        </div>
+        <button class="quiz-btn" style="border-color:rgba(155,143,255,0.2);color:rgba(155,143,255,0.6)">Start Quiz →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ MODULE 3 — COLLAPSED ═══════════ -->
+  <div class="module-wrap" id="mod3">
+    <div class="module-header" onclick="toggleModule('mod3')">
+      <div class="module-header-wash" style="background:linear-gradient(105deg,rgba(255,179,71,0.09) 0%,rgba(255,179,71,0.03) 45%,transparent 70%)"></div>
+      <div class="module-ghost-num" style="color:#FFB347;opacity:0.055">03</div>
+      <div class="module-num-badge">
+        <div class="module-num-label" style="color:#FFB347">MOD</div>
+        <div class="module-num-value" style="color:#FFB347">03</div>
+      </div>
+      <div class="module-num-divider"></div>
+      <div class="module-content">
+        <div class="module-tag" style="color:#FFB347">Prompt Engineering</div>
+        <div class="module-title">The Art of Prompt Engineering</div>
+        <div class="module-meta-chips">
+          <span class="module-chip">4 lessons</span>
+          <span class="module-chip">60 min</span>
+          <span class="module-chip">Intermediate</span>
+          <span class="module-chip">Quiz included</span>
+        </div>
+      </div>
+      <div class="module-right">
+        <div class="progress-ring-wrap">
+          <svg width="44" height="44" viewBox="0 0 44 44">
+            <circle cx="22" cy="22" r="17" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="2.5"/>
+            <circle cx="22" cy="22" r="17" fill="none" stroke="#FFB347" stroke-width="2.5"
+              stroke-dasharray="106.8" stroke-dashoffset="106.8"
+              stroke-linecap="round" transform="rotate(-90 22 22)"/>
+          </svg>
+          <div class="progress-ring-pct">—</div>
+        </div>
+        <div class="expand-arrow">▾</div>
+      </div>
+    </div>
+    <div class="lessons-panel">
+      <div class="lesson-row">
+        <div class="lesson-bg-image" style="background-image:url('https://images.unsplash.com/photo-1686191128892-3b37add4c844?w=800&q=80')"></div>
+        <div class="lesson-bg-gradient"></div>
+        <div class="lesson-num">01</div>
+        <div class="lesson-body">
+          <div class="lesson-title">Chain-of-Thought Prompting</div>
+          <div class="lesson-objective">Make AI reason step-by-step before answering</div>
+        </div>
+        <div class="lesson-dur">15m</div>
+        <div class="lesson-thumb" style="background-image:url('https://images.unsplash.com/photo-1686191128892-3b37add4c844?w=120&q=80');background-size:cover;background-position:center"></div>
+        <div class="lesson-play">▶</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ CTA SECTION ═══════════ -->
+  <div class="cta-section">
+    <div class="cta-bg"></div>
+    <div class="cta-grain"></div>
+    <div class="cta-glow"></div>
+    <div class="cta-content">
+      <div class="cta-eyebrow">Ready when you are</div>
+      <div class="cta-title">Start learning today.<br>It takes 15 minutes.</div>
+      <div class="cta-sub">Everything above is yours the moment you sign up. No card required to start.</div>
+      <div class="cta-actions">
+        <button class="cta-btn-primary">
+          <span>✦</span> Start Free Today
+        </button>
+        <button class="cta-btn-secondary">
+          View full syllabus →
+        </button>
+      </div>
+      <div class="cta-trust">Free to start · No credit card · Cancel anytime</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function toggleModule(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+</script>
+</body>
+</html>

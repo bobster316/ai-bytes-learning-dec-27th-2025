@@ -1,0 +1,41 @@
+{
+  "course_id": 878,
+  "course_topic": "Generative AI for Everyone: An Introduction",
+  "domain_history": [
+    "Travel"
+  ],
+  "structure_history": [
+    "The Hook"
+  ],
+  "tone_history": [
+    "Warm Mentor"
+  ],
+  "used_analogies": [],
+  "used_opening_lines": [],
+  "used_search_queries": [],
+  "video_queries_used": [
+    "AI image generation"
+  ],
+  "used_image_urls": [
+    "https://v3b.fal.media/files/b/0a950f02/otr_3ONQz2K81WUF3QcVJ_f572d53e43ec4047b0a777f80eb6a563.jpg",
+    "https://v3b.fal.media/files/b/0a950f03/0R8xyj2K6sbuMQHzqb9VF_9265b2d5c70c4cd98a2b92a0affbba0c.jpg"
+  ],
+  "used_video_urls": [],
+  "narration_history": [],
+  "visual_type_counts": {
+    "full_image": 0,
+    "video_snippet": 0,
+    "concept_illustration": 0,
+    "flow_diagram": 1,
+    "type_cards": 0,
+    "interactive_vis": 0,
+    "mindmap": 0,
+    "image_text_row": 1,
+    "instructor_insight": 0,
+    "industry_tabs": 0,
+    "applied_case": 0,
+    "prediction": 0,
+    "open_exercise": 0
+  },
+  "validation_log": []
+}

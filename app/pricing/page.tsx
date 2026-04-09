@@ -75,7 +75,7 @@ export default function PricingPage() {
       id: "standard",
       name: "Growth",
       icon: Star,
-      iconColor: "#4b98ad",
+      iconColor: "#00FFB3",
       description: "Build consistency and range",
       price: PLAN_DETAILS.byte_pass.prices,
       features: [
@@ -93,7 +93,7 @@ export default function PricingPage() {
       id: "professional",
       name: "Pro",
       icon: Users,
-      iconColor: "#4b98ad",
+      iconColor: "#00FFB3",
       description: "Serious learners and teams",
       price: PLAN_DETAILS.professional.prices,
       features: [
@@ -132,10 +132,10 @@ export default function PricingPage() {
   const cross = <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#FF6B6B]/10 text-[#FF6B6B] text-xs font-bold">✕</span>;
 
   return (
-    <div className="min-h-screen bg-[#080810] text-white selection:bg-[#4b98ad]/30">
+    <div className="min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)] selection:bg-[#00FFB3]/30">
       {/* Mesh blobs */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-[#4b98ad] opacity-[0.08] blur-[120px]" />
+        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-[#00FFB3] opacity-[0.08] blur-[120px]" />
         <div className="absolute top-[40%] right-[-15%] w-[500px] h-[500px] rounded-full bg-[#00FFB3] opacity-[0.05] blur-[120px]" />
         <div className="absolute bottom-[-10%] left-[30%] w-[400px] h-[400px] rounded-full bg-[#FFB347] opacity-[0.05] blur-[120px]" />
       </div>
@@ -172,7 +172,7 @@ export default function PricingPage() {
                   className={cn(
                     "px-6 py-2 rounded-lg text-sm font-bold transition-all duration-200",
                     billingCycle === "monthly"
-                      ? "bg-[#4b98ad] text-white shadow-lg shadow-[#4b98ad]/20"
+                      ? "bg-[#00FFB3] text-white shadow-lg shadow-[#00FFB3]/20"
                       : "text-white/50 hover:text-white"
                   )}
                 >
@@ -183,15 +183,12 @@ export default function PricingPage() {
                   className={cn(
                     "px-6 py-2 rounded-lg text-sm font-bold transition-all duration-200",
                     billingCycle === "annual"
-                      ? "bg-[#4b98ad] text-white shadow-lg shadow-[#4b98ad]/20"
+                      ? "bg-[#00FFB3] text-white shadow-lg shadow-[#00FFB3]/20"
                       : "text-white/50 hover:text-white"
                   )}
                 >
                   YEARLY
                 </button>
-              </div>
-              <div className="bg-[#00FFB3]/10 text-[#00FFB3] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide border border-[#00FFB3]/20">
-                Limited Time: 20% Off
               </div>
             </div>
           </div>
@@ -201,7 +198,7 @@ export default function PricingPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
               {plans.map((plan) => {
                 const isAnnual = billingCycle === "annual";
-                const price = isAnnual && plan.price ? Math.round(plan.price.annual / 12) : plan.price?.monthly ?? 0;
+                const price = isAnnual ? (plan.price?.annual ?? 0) : (plan.price?.monthly ?? 0);
                 const PlanIcon = plan.icon;
 
                 return (
@@ -210,13 +207,13 @@ export default function PricingPage() {
                     className={cn(
                       "relative rounded-2xl p-7 flex flex-col transition-all duration-300 border",
                       plan.highlight
-                        ? "bg-[#0d0d1c] border-[#4b98ad]/40 shadow-[0_0_50px_rgba(155,143,255,0.12)] scale-[1.02] z-10"
-                        : "bg-[#0d0d1c] border-white/[0.06] hover:border-white/[0.12] hover:-translate-y-1"
+                        ? "bg-[var(--page-surface)] border-[#00FFB3]/40 shadow-[0_0_50px_rgba(155,143,255,0.12)] scale-[1.02] z-10"
+                        : "bg-[var(--page-surface)] border-white/[0.06] hover:border-white/[0.12] hover:-translate-y-1"
                     )}
                   >
                     {plan.highlight && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <span className="font-mono text-[10px] font-bold text-[#4b98ad] bg-[#4b98ad]/15 px-3 py-1 rounded-full uppercase tracking-wider border border-[#4b98ad]/30">
+                        <span className="font-mono text-[10px] font-bold text-[#00FFB3] bg-[#00FFB3]/15 px-3 py-1 rounded-full uppercase tracking-wider border border-[#00FFB3]/30">
                           {plan.tag}
                         </span>
                       </div>
@@ -232,12 +229,14 @@ export default function PricingPage() {
 
                       <div className="flex items-baseline gap-1 mb-1">
                         <span className="text-4xl font-black text-white">£{price}</span>
-                        {price > 0 && <span className="text-white/40 text-sm">/mo</span>}
+                        {price > 0 && (
+                          <span className="text-white/40 text-sm">/{isAnnual ? "yr" : "mo"}</span>
+                        )}
                       </div>
 
-                      {isAnnual && plan.price && plan.price.annual > 0 && (
-                        <p className="font-mono text-[10px] text-white/30 mt-1">
-                          Billed £{plan.price.annual} yearly
+                      {isAnnual && plan.price && plan.price.monthly > 0 && (
+                        <p className="font-mono text-[10px] text-[#00FFB3]/60 mt-1">
+                          Save £{(plan.price.monthly * 12) - plan.price.annual} vs monthly
                         </p>
                       )}
 
@@ -259,7 +258,7 @@ export default function PricingPage() {
                       className={cn(
                         "w-full rounded-xl font-bold h-11 transition-all border-0",
                         plan.highlight
-                          ? "bg-[#4b98ad] hover:bg-[#4b98ad]/90 text-white shadow-lg shadow-[#4b98ad]/20"
+                          ? "bg-[#00FFB3] hover:bg-[#00FFB3]/90 text-white shadow-lg shadow-[#00FFB3]/20"
                           : "bg-white/[0.06] hover:bg-white/[0.10] text-white border border-white/[0.10]"
                       )}
                     >
@@ -272,7 +271,7 @@ export default function PricingPage() {
 
             {/* Comparison Table */}
             <div className="mt-16">
-              <div className="bg-[#0d0d1c] rounded-2xl border border-white/[0.06] overflow-hidden">
+              <div className="bg-[var(--page-surface)] rounded-2xl border border-white/[0.06] overflow-hidden">
                 <div className="p-6 md:p-8 border-b border-white/[0.06]">
                   <h2 className="font-display text-2xl font-black text-white">Compare plans</h2>
                   <p className="text-white/40 text-sm mt-1">Pick the plan that matches your learning pace.</p>
@@ -284,7 +283,7 @@ export default function PricingPage() {
                         <th className="px-6 py-4 font-bold">Feature</th>
                         <th className="px-6 py-4 font-bold">Starter £0</th>
                         <th className="px-6 py-4 font-bold">Growth £15</th>
-                        <th className="px-6 py-4 font-bold text-[#4b98ad]">Pro £25</th>
+                        <th className="px-6 py-4 font-bold text-[#00FFB3]">Pro £25</th>
                         <th className="px-6 py-4 font-bold">Elite £35</th>
                       </tr>
                     </thead>
@@ -360,7 +359,7 @@ export default function PricingPage() {
                 <AccordionItem
                   key={i}
                   value={`item-${i}`}
-                  className="border border-white/[0.06] rounded-xl px-6 bg-[#0d0d1c]"
+                  className="border border-white/[0.06] rounded-xl px-6 bg-[var(--page-surface)]"
                 >
                   <AccordionTrigger className="text-white/80 hover:text-white hover:no-underline py-5 text-left font-semibold text-sm">
                     {item.q}

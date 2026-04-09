@@ -49,8 +49,10 @@ export function generateLessonHTML(lessonData: CompletedLesson): string {
     return h;
   };
 
-  const renderBody = (text: string): string => {
+  const renderBody = (text: any): string => {
     if (!text) return '';
+    if (Array.isArray(text)) text = text.join('\n');
+    else if (typeof text !== 'string') text = String(text);
     const lines = text.split('\n');
     let html = '';
     let inUl = false;
@@ -268,7 +270,7 @@ export function generateLessonHTML(lessonData: CompletedLesson): string {
   --void:#161B33;--obsidian:#1C2242;--carbon:#242B4A;--slate:#2A3250;--mist:#353F63;
   --silver:#8997bd;--ghost:#d2d8e8;--white:#F0F0FF;
   --pulse:#00FFB3;--pulse-dim:rgba(0,255,179,0.09);--pulse-glow:rgba(0,255,179,0.35);
-  --iris:#4b98ad;--iris-dim:rgba(155,143,255,0.09);--iris-glow:rgba(155,143,255,0.35);
+  --iris:#9B8FFF;--iris-dim:rgba(155,143,255,0.09);--iris-glow:rgba(155,143,255,0.35);
   --amber:#FFB347;--amber-dim:rgba(255,179,71,0.09);
   --nova:#FF6B6B;--nova-dim:rgba(255,107,107,0.10);--cyan:#00D4FF;
   --r:14px;--r-lg:22px;--r-xl:32px;
@@ -562,8 +564,8 @@ code{background:var(--slate);padding:2px 6px;border-radius:5px;font-family:'DM M
         <div class="nn-mode active" onclick="setMode(0,this)" data-color="#00FFB3">
           <div class="nn-mode-dot" style="background:#00FFB3"></div>Forward
         </div>
-        <div class="nn-mode" onclick="setMode(1,this)" data-color="#4b98ad">
-          <div class="nn-mode-dot" style="background:#4b98ad"></div>Backprop
+        <div class="nn-mode" onclick="setMode(1,this)" data-color="#9B8FFF">
+          <div class="nn-mode-dot" style="background:#9B8FFF"></div>Backprop
         </div>
         <div class="nn-mode" onclick="setMode(2,this)" data-color="#FFB347">
           <div class="nn-mode-dot" style="background:#FFB347"></div>Inference
@@ -767,7 +769,7 @@ function showDone(){
 }
 function launchCft(){
   const c=document.getElementById('cft');c.innerHTML='';c.classList.add('on');
-  const cols=['#00FFB3','#4b98ad','#FFB347','#FF6B6B','#FFFFFF','#00D4FF'];
+  const cols=['#00FFB3','#9B8FFF','#FFB347','#FF6B6B','#FFFFFF','#00D4FF'];
   for(let i=0;i<80;i++){
     const p=document.createElement('div');p.className='cp';
     p.style.left=Math.random()*100+'vw';

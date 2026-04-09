@@ -6,7 +6,7 @@ import { useCourseDNA } from "../course-dna-provider";
 
 const ACCENT: Record<string, string> = {
     pulse: "#00FFB3",
-    iris:  "#4b98ad",
+    iris:  "#9B8FFF",
     amber: "#FFB347",
     nova:  "#FF6B6B",
 };
@@ -15,7 +15,7 @@ const ICONS: Record<string, string> = {
     pulse: "◈", iris: "◇", amber: "△", nova: "○",
 };
 
-const COLOUR_CYCLE = ["#00FFB3", "#4b98ad", "#FFB347", "#FF6B6B", "#4b98ad", "#00FFB3"];
+const COLOUR_CYCLE = ["#00FFB3", "#9B8FFF", "#FFB347", "#FF6B6B", "#9B8FFF", "#00FFB3"];
 
 interface Card {
     title: string;

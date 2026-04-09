@@ -7,7 +7,7 @@ const DIFFICULTY_COLOURS: Record<string, string> = {
     Beginner:     "#00FFB3",
     Intermediate: "#FFB347",
     Advanced:     "#FF6B6B",
-    Mastery:      "#4b98ad",
+    Mastery:      "#00FFB3",
 };
 
 interface LessonTopNavProps {
@@ -30,13 +30,13 @@ export function LessonTopNav({ lessonTitle, difficulty = "Intermediate", courseI
         return () => window.removeEventListener("scroll", onScroll);
     }, []);
 
-    const chipColour = DIFFICULTY_COLOURS[difficulty] ?? "#4b98ad";
+    const chipColour = DIFFICULTY_COLOURS[difficulty] ?? "#00FFB3";
 
     return (
         <header className="h-[52px] bg-[#080810]/95 backdrop-blur-md border-b border-white/5 sticky top-0 z-50 flex items-center px-5 gap-4">
             {/* Brand mark */}
             <Link href="/" className="shrink-0 flex items-center gap-1.5 group">
-                <span className="font-display font-black text-white text-[13px] tracking-tight group-hover:text-[#4b98ad] transition-colors">
+                <span className="font-display font-black text-white text-[13px] tracking-tight group-hover:text-[#00FFB3] transition-colors">
                     AI Bytes Learning
                 </span>
             </Link>

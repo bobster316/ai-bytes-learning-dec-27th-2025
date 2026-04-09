@@ -180,7 +180,7 @@ const NeuralLoom = ({ progress, logs, stage = "Synthesizing", error }: { progres
     return (
         <div className="w-full h-screen relative bg-[#030305] overflow-hidden">
             {/* 3D Scene */}
-            <Canvas camera={{ position: [0, 0, 18], fov: 50 }} gl={{ antialias: true }}>
+            <Canvas camera={{ position: [0, 0, 18], fov: 50 }} gl={{ antialias: false, powerPreference: 'low-power' }} onCreated={({ gl }) => { gl.domElement.addEventListener('webglcontextlost', (e) => e.preventDefault(), false); }}>
                 <color attach="background" args={["#030305"]} />
                 <fog attach="fog" args={["#030305", 15, 30]} />
                 <Stars radius={150} depth={50} count={7000} factor={4} saturation={0} fade speed={0.5} />

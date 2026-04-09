@@ -9,7 +9,7 @@ import { Award, Shield, Trophy, Globe, Linkedin, ArrowRight, CheckCircle2 } from
 
 export default function ValidationPage() {
     return (
-        <div className="min-h-screen bg-background text-foreground">
+        <div className="min-h-screen bg-[var(--page-bg)] text-[var(--page-fg)]">
             <Header />
 
             {/* Hero Section */}

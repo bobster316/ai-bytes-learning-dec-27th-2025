@@ -21,12 +21,12 @@ export default async function NewsHub() {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-[#080810] selection:bg-[#4b98ad]/30 pt-32 pb-32">
+      <div className="min-h-screen bg-[var(--page-bg)] selection:bg-[#00FFB3]/30 pt-32 pb-32">
         <div className="mx-auto w-[88%] max-w-6xl px-6 lg:px-12">
           
           {/* Header */}
           <div className="mb-16">
-          <span className="font-mono text-[13px] uppercase tracking-[0.28em] text-[#4b98ad] mb-5 block">AI Bytes Learning</span>
+          <span className="font-mono text-[13px] uppercase tracking-[0.28em] text-[#00FFB3] mb-5 block">AI Bytes Learning</span>
           <h1 className="font-black text-white leading-tight mb-6" style={{ fontSize: "clamp(3rem, 6vw, 5rem)", letterSpacing: "-0.03em" }}>
             The Pulse.<br />
             <span className="text-white/30">Live Tech News.</span>
@@ -44,7 +44,7 @@ export default async function NewsHub() {
               <Link 
                 key={article.slug} 
                 href={`/news/${article.slug}`}
-                className="group flex flex-col bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.05] hover:border-white/[0.1] rounded-3xl overflow-hidden transition-all duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#4b98ad]/10"
+                className="group flex flex-col bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.05] hover:border-white/[0.1] rounded-3xl overflow-hidden transition-all duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#00FFB3]/10"
               >
                 {article.featured_image_url ? (
                   <div className="relative h-56 w-full overflow-hidden">
@@ -58,7 +58,7 @@ export default async function NewsHub() {
                   </div>
                 ) : (
                   <div className="relative h-56 w-full bg-[#111116] flex items-center justify-center">
-                    <span className="text-[#4b98ad]/20 font-black text-6xl tracking-tighter">AI</span>
+                    <span className="text-[#00FFB3]/20 font-black text-6xl tracking-tighter">AI</span>
                   </div>
                 )}
                 
@@ -73,7 +73,7 @@ export default async function NewsHub() {
                     </h2>
                   </div>
                   
-                  <div className="mt-6 text-[#4b98ad] font-mono text-xs uppercase tracking-widest opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                  <div className="mt-6 text-[#00FFB3] font-mono text-xs uppercase tracking-widest opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
                     Read Story &rarr;
                   </div>
                 </div>

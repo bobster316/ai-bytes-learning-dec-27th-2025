@@ -1,0 +1,8 @@
+data: {"stage":"init","message":"Initializing V2 Enterprise Pipeline..."}
+
+data: {"stage":"setup","progress":5,"message":"V2 Course shell created."}
+
+data: {"stage":"planning","progress":10,"message":"Drafting deterministic Course Manifest..."}
+
+data: {"stage":"error","api":"generation","errorCode":"internal_error","message":"Validation Failed: Error: Validation Failed: The AI generated a severely truncated or structurally invalid Course Manifest. Payload snippet: \"undefined\"\n    at D:\\ai-bytes-leaning-22nd-feb-2026 Backup\\.next\\dev\\server\\chunks\\[root-of-the-server]__9a8f0201._.js:8266:23","retryable":false}
+

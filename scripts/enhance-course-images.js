@@ -50,7 +50,7 @@ async function enhanceAllCourses() {
                 const prompt = `Topic: ${lesson.title}. Generate 12 specific search keywords for premium stock photography that visualize this lesson's concepts. 
                 STRICT JSON ARRAY: ["keyword1", "keyword2", ...]`;
 
-                const geminiResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+                const geminiResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } })

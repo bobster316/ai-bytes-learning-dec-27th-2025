@@ -87,7 +87,7 @@ export default function LearningPathsPage() {
             <section className="relative mx-auto w-[95%] max-w-screen-2xl my-4 rounded-3xl border border-white/5 shadow-2xl py-16 bg-slate-900 overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-900/20 via-slate-900 to-slate-900"></div>
                 <div className="container relative z-10 mx-auto px-4 max-w-screen-2xl text-center">
-                    <Badge className="mb-4 bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
+                    <Badge className="mb-4 bg-[#00FFB3]/20 text-[#00FFB3] border-[#00FFB3]/30">
                         STRUCTURED LEARNING
                     </Badge>
                     <h1 className="text-4xl lg:text-5xl font-black text-white mb-4">
@@ -114,7 +114,7 @@ export default function LearningPathsPage() {
                                     <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${path.color} flex items-center justify-center`}>
                                         <path.icon className="w-6 h-6 text-white" />
                                     </div>
-                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-cyan-600 transition-colors">
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-[#00FFB3] transition-colors">
                                         {path.title}
                                     </h3>
                                     <p className="text-slate-600 dark:text-slate-400 text-sm">{path.description}</p>

@@ -104,18 +104,18 @@ function NewsArticleContent() {
         <div className="container mx-auto px-4 py-16 max-w-4xl">
           <Link
             href="/#trending"
-            className="inline-flex items-center gap-2 text-foreground/80 hover:text-[#00BFA5] transition-colors mb-8"
+            className="inline-flex items-center gap-2 text-white/60 hover:text-[#00BFA5] transition-colors mb-8"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Trending News
           </Link>
 
-          <div className="bg-card rounded-2xl shadow-lg p-12 text-center border border-border">
+          <div className="bg-white/[0.04] rounded-2xl shadow-lg p-12 text-center border border-white/[0.08]">
             <div className="w-20 h-20 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
               <ExternalLink className="w-10 h-10 text-red-600 dark:text-red-400" />
             </div>
-            <h1 className="text-3xl font-bold text-foreground mb-4">Unable to Load Article</h1>
-            <p className="text-lg text-foreground/80 mb-8 max-w-2xl mx-auto">
+            <h1 className="text-3xl font-bold text-white mb-4">Unable to Load Article</h1>
+            <p className="text-lg text-white/60 mb-8 max-w-2xl mx-auto">
               We couldn't automatically load the content from the source website.
               You can read the original article by clicking the link below.
             </p>
@@ -140,21 +140,21 @@ function NewsArticleContent() {
         {/* Back button */}
         <Link
           href="/#trending"
-          className="inline-flex items-center gap-2 text-foreground/80 hover:text-[#00BFA5] transition-colors mb-8"
+          className="inline-flex items-center gap-2 text-white/60 hover:text-[#00BFA5] transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Trending News
         </Link>
 
-        <article className="bg-card rounded-2xl shadow-lg overflow-hidden border border-border">
+        <article className="bg-white/[0.04] rounded-2xl shadow-lg overflow-hidden border border-white/[0.08]">
           {/* Article Header */}
-          <div className="p-8 md:p-12 border-b border-border">
-            <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-6 leading-tight">
+          <div className="p-8 md:p-12 border-b border-white/[0.08]">
+            <h1 className="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">
               {article?.title}
             </h1>
 
             {/* Metadata */}
-            <div className="flex flex-wrap items-center gap-4 text-sm text-foreground/80">
+            <div className="flex flex-wrap items-center gap-4 text-sm text-white/60">
               {sourceDomain && (
                 <div className="flex items-center gap-2">
                   <Globe className="w-4 h-4 text-[#00BFA5]" />
@@ -166,7 +166,7 @@ function NewsArticleContent() {
 
           {/* Featured Image */}
           {imageUrl && (
-            <div className="relative aspect-video overflow-hidden bg-muted">
+            <div className="relative aspect-video overflow-hidden bg-white/[0.04]">
               <img
                 src={imageUrl}
                 alt={article?.title || "Article image"}
@@ -179,27 +179,27 @@ function NewsArticleContent() {
           <div className="p-8 md:p-12">
             <div
               className="prose prose-lg max-w-none
-                prose-headings:text-foreground prose-headings:font-bold
-                prose-p:text-foreground/80 prose-p:leading-relaxed prose-p:mb-6
+                prose-headings:text-white prose-headings:font-bold
+                prose-p:text-white/60 prose-p:leading-relaxed prose-p:mb-6
                 prose-a:text-[#00BFA5] prose-a:no-underline hover:prose-a:underline
-                prose-strong:text-foreground prose-strong:font-semibold
+                prose-strong:text-white prose-strong:font-semibold
                 prose-ul:my-6 prose-ol:my-6
-                prose-li:text-foreground/80 prose-li:my-2
+                prose-li:text-white/60 prose-li:my-2
                 prose-img:rounded-lg prose-img:shadow-md
                 prose-blockquote:border-l-4 prose-blockquote:border-[#00BFA5]
-                prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-foreground/80
+                prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-white/60
                 dark:prose-invert"
               dangerouslySetInnerHTML={{ __html: article?.articleBody || "" }}
             />
           </div>
 
           {/* Footer with external link */}
-          <div className="p-8 md:p-12 bg-muted border-t border-border">
-            <div className="flex items-start gap-4 p-6 bg-card border-l-4 border-[#00BFA5] rounded-lg">
+          <div className="p-8 md:p-12 bg-white/[0.04] border-t border-white/[0.08]">
+            <div className="flex items-start gap-4 p-6 bg-white/[0.04] border-l-4 border-[#00BFA5] rounded-lg">
               <ExternalLink className="w-5 h-5 text-[#00BFA5] flex-shrink-0 mt-1" />
               <div>
-                <h3 className="font-semibold text-foreground mb-2">Read the Original Article</h3>
-                <p className="text-sm text-foreground/80 mb-3">
+                <h3 className="font-semibold text-white mb-2">Read the Original Article</h3>
+                <p className="text-sm text-white/60 mb-3">
                   This article was originally published on {sourceDomain}
                 </p>
                 <a

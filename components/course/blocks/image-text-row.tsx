@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 const COLOUR_MAP: Record<string, string> = {
     pulse: "#00FFB3",
-    iris:  "#4b98ad",
+    iris:  "#9B8FFF",
     amber: "#FFB347",
     nova:  "#FF6B6B",
 };
@@ -18,7 +18,7 @@ export function ImageTextRow({
     const finalImageUrl = imageUrl || image_url || url;
     const finalText = text || body || "";
     const finalAlt = imageAlt || alt_text || alt || title;
-    const accent = COLOUR_MAP[colour] ?? "#4b98ad";
+    const accent = COLOUR_MAP[colour] ?? "#9B8FFF";
 
     const hasImage = !!finalImageUrl;
 
